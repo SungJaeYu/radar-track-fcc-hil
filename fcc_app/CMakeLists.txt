@@ -8,4 +8,5 @@ target_sources(app PRIVATE
     src/frame.c
     src/uart_rx.c
     src/tracking.c
+    src/display.c
 )
