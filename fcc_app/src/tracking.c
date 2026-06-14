@@ -15,6 +15,8 @@ K_MUTEX_DEFINE(g_track_mutex);
 /* TrackPayload를 프레임으로 인코딩하여 폴링 TX */
 static void fcc_send_track(const FccTrackPayload *tp)
 {
+    /* TODO: uart_poll_out은 바이트당 busy-wait (~1.8ms/프레임 @ 115200).
+     * Kalman 포팅 후 지터 문제 시 TX 큐 + 별도 스레드로 분리할 것. */
     uint8_t  buf[5U + sizeof(FccTrackPayload)];
     uint16_t n = fcc_encode_frame(FCC_MSG_TRACK,
                                   (const uint8_t *)tp, sizeof(*tp),

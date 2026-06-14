@@ -85,7 +85,9 @@ void uart_rx_thread(void *p1, void *p2, void *p3)
 
                 if (k_msgq_put(&meas_msgq, &msg, K_NO_WAIT) != 0) {
                     k_msgq_purge(&meas_msgq);
-                    printk("[uart_rx ] meas_msgq 포화, 퍼지\n");
+                    printk("[uart_rx ] meas_msgq 포화, 퍼지 (링버퍼 오버플로: %u회)\n",
+                           g_rx_overflow_cnt);
+                    g_rx_overflow_cnt = 0;
                 }
 
             } else if (frame.msg_type == FCC_MSG_CTRL &&
