@@ -16,6 +16,7 @@ run_sim.py — HIL 시뮬레이터 메인 루프
 """
 
 import argparse
+import math
 import random
 import time
 
@@ -100,7 +101,6 @@ def _print_step(step: int, ts_ms: int, targets, meas_list) -> None:
 
 
 def _print_track(trk: TrackPayload, targets, ts_ms: int) -> None:
-    import math
     # 가장 가까운 ground truth 표적 찾기
     best_err = float("inf")
     for tgt in targets:

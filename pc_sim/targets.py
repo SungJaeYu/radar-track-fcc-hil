@@ -10,6 +10,8 @@ import random
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from protocol import MeasPayload
+
 
 # ── 표적 운동 모델 (등속, CV) ──────────────────────────────────────────────────
 
@@ -79,8 +81,6 @@ class RadarSensorModel:
         (MeasPayload 데이터 딕셔너리) 리스트 반환.
         순서는 랜덤 셔플 (데이터 연관 알고리즘이 순서에 의존 못하도록).
         """
-        from protocol import MeasPayload  # 순환 임포트 방지용 지연 임포트
-
         measurements = []
 
         for tgt in targets:
