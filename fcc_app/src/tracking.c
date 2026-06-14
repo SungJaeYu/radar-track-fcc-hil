@@ -28,6 +28,7 @@ void tracking_thread(void *p1, void *p2, void *p3)
 {
     ARG_UNUSED(p1); ARG_UNUSED(p2); ARG_UNUSED(p3);
 
+    const bool tx_ready = device_is_ready(g_hil_uart);
     FccMeasPayload mp;
     uint32_t cnt = 0U;
 
@@ -41,8 +42,9 @@ void tracking_thread(void *p1, void *p2, void *p3)
                (double)mp.doppler_mps);
 
         /* TODO: 칼만 필터 업데이트 + 트랙 관리 후 g_track_table 갱신
+         * 주의: 현재 g_track_table은 갱신되지 않으므로 display_thread는 항상 "활성 트랙: 0" 출력
          * 임시: range를 x에 그대로 넣은 더미 에코 */
-        if (device_is_ready(g_hil_uart)) {
+        if (tx_ready) {
             FccTrackPayload tp = {
                 .timestamp_ms = mp.timestamp_ms,
                 .track_id     = 0U,
