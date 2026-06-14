@@ -6,7 +6,6 @@
 #include "uart_rx.h"
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/ring_buffer.h>
-#include <string.h>
 
 /* USART6 장치 포인터 */
 const struct device *g_hil_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
@@ -15,6 +14,9 @@ const struct device *g_hil_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 #define HIL_RX_BUF_SIZE 256U
 RING_BUF_DECLARE(g_uart_rx_ring, HIL_RX_BUF_SIZE);
 static K_SEM_DEFINE(g_uart_rx_sem, 0, 1);
+
+/* ISR 컨텍스트 — printk 불가, 오버플로우 횟수만 카운트 */
+static volatile uint32_t g_rx_overflow_cnt;
 
 /* 측정값 큐 */
 K_MSGQ_DEFINE(meas_msgq, sizeof(FccMeasPayload), 8, 4);
@@ -31,7 +33,9 @@ static void hil_uart_isr(const struct device *dev, void *user_data)
             break;
         }
         while (uart_fifo_read(dev, &byte, 1) > 0) {
-            ring_buf_put(&g_uart_rx_ring, &byte, 1);
+            if (ring_buf_put(&g_uart_rx_ring, &byte, 1) == 0) {
+                g_rx_overflow_cnt++;
+            }
             got_data = true;
         }
     }
@@ -53,7 +57,9 @@ void uart_rx_thread(void *p1, void *p2, void *p3)
 
     if (!device_is_ready(g_hil_uart)) {
         printk("[uart_rx ] USART6 준비 안됨 - HIL 비활성\n");
-        return;
+        while (1) {
+            k_sleep(K_SECONDS(10));
+        }
     }
 
     uart_irq_callback_set(g_hil_uart, hil_uart_isr);
