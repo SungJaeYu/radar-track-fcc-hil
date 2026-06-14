@@ -70,8 +70,11 @@ void frame_parser_init(FrameParser *p)
 
 void frame_parser_reset(FrameParser *p)
 {
-    p->state   = FP_WAIT_STX;
-    p->buf_idx = 0;
+    p->state    = FP_WAIT_STX;
+    p->buf_idx  = 0;
+    p->len      = 0;
+    p->msg_type = 0;
+    p->crc_h    = 0;
 }
 
 bool frame_parser_feed(FrameParser *p, uint8_t b, FccFrame *out)
