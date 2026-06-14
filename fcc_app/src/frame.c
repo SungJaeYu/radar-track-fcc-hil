@@ -4,6 +4,7 @@
  */
 
 #include "frame.h"
+#include <zephyr/toolchain.h>
 #include <string.h>
 
 /* 페이로드 크기 컴파일 타임 검증 (Python struct calcsize 와 일치해야 함) */

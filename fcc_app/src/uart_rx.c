@@ -28,7 +28,8 @@ static void hil_uart_isr(const struct device *dev, void *user_data)
     uint8_t byte;
     bool    got_data = false;
 
-    while (uart_irq_update(dev) && uart_irq_is_pending(dev)) {
+    uart_irq_update(dev);
+    while (uart_irq_is_pending(dev)) {
         if (!uart_irq_rx_ready(dev)) {
             break;
         }
