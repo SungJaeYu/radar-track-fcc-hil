@@ -108,7 +108,8 @@ pc_sim/
 
 - [x] PC Python 시뮬레이터 (프레이밍, FrameParser, RadarSensorModel, 유닛테스트)
 - [x] STM32 앱 골격 (3-스레드)
-- [x] UART 프레이밍 (보드측): frame.h/c, uart_rx.h/c, tracking.h/c, display.h/c
+- [x] UART 프레이밍 (보드측): frame.h/c (CRC16, encode, FrameParser), USART6 ISR+링버퍼
+- [x] STM32 3-스레드 골격: uart_rx.h/c, tracking.h/c, display.h/c (모듈 분리 완료)
 - [ ] Kalman 포팅 ← 다음 작업
 - [ ] 트랙 관리 (M-of-N, 데이터 연관)
 - [ ] LVGL PPI 디스플레이
