@@ -16,6 +16,9 @@
 /* 첫 측정만으로는 속도를 모르므로 초기 속도 분산을 크게 잡는다 (m/s)^2 */
 #define INIT_VEL_VAR      10000.0f
 
+/* CV 모델 가속도 잡음 강도 (튜닝 대상, 초기값) */
+#define PROCESS_NOISE_Q   1.0f
+
 void kalman_init(struct kalman_state *ks, float range_m, float azimuth_rad)
 {
     float sin_az = sinf(azimuth_rad);
@@ -44,4 +47,74 @@ void kalman_init(struct kalman_state *ks, float range_m, float azimuth_rad)
     ks->P[1][0] = cov_xy;
     ks->P[2][2] = INIT_VEL_VAR;
     ks->P[3][3] = INIT_VEL_VAR;
+}
+
+static void mat4_mul(const float a[4][4], const float b[4][4], float out[4][4])
+{
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            float sum = 0.0f;
+            for (int k = 0; k < 4; k++) {
+                sum += a[i][k] * b[k][j];
+            }
+            out[i][j] = sum;
+        }
+    }
+}
+
+static void mat4_transpose(const float a[4][4], float out[4][4])
+{
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            out[j][i] = a[i][j];
+        }
+    }
+}
+
+static void mat4_add(const float a[4][4], const float b[4][4], float out[4][4])
+{
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            out[i][j] = a[i][j] + b[i][j];
+        }
+    }
+}
+
+void kalman_predict(struct kalman_state *ks, float dt_s)
+{
+    float dt = dt_s;
+
+    /* x' = F x  (CV 모델) */
+    ks->x[0] += ks->x[2] * dt;
+    ks->x[1] += ks->x[3] * dt;
+    /* vx, vy 불변 */
+
+    float F[4][4] = {
+        {1.0f, 0.0f, dt,   0.0f},
+        {0.0f, 1.0f, 0.0f, dt  },
+        {0.0f, 0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 1.0f},
+    };
+    float Ft[4][4];
+    float FP[4][4];
+    float FPFt[4][4];
+
+    mat4_transpose(F, Ft);
+    mat4_mul(F, ks->P, FP);
+    mat4_mul(FP, Ft, FPFt);
+
+    /* discrete white-noise-acceleration 모델 Q (x, y축 독립) */
+    float dt2 = dt * dt;
+    float dt3 = dt2 * dt;
+    float dt4 = dt3 * dt;
+    float q = PROCESS_NOISE_Q;
+
+    float Q[4][4] = {
+        {q * dt4 / 4.0f, 0.0f,            q * dt3 / 2.0f, 0.0f          },
+        {0.0f,           q * dt4 / 4.0f,  0.0f,           q * dt3 / 2.0f},
+        {q * dt3 / 2.0f, 0.0f,            q * dt2,        0.0f          },
+        {0.0f,           q * dt3 / 2.0f,  0.0f,           q * dt2       },
+    };
+
+    mat4_add(FPFt, Q, ks->P);
 }
