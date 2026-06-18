@@ -118,3 +118,111 @@ void kalman_predict(struct kalman_state *ks, float dt_s)
 
     mat4_add(FPFt, Q, ks->P);
 }
+
+/* azimuth 차이를 [-pi, pi]로 wrap */
+static float wrap_angle(float a)
+{
+    const float pi = 3.14159265358979323846f;
+
+    while (a > pi) {
+        a -= 2.0f * pi;
+    }
+    while (a < -pi) {
+        a += 2.0f * pi;
+    }
+    return a;
+}
+
+void kalman_update(struct kalman_state *ks, float range_m, float azimuth_rad)
+{
+    float x = ks->x[0];
+    float y = ks->x[1];
+    float r2 = x * x + y * y;
+    float r  = sqrtf(r2);
+
+    if (r < 1.0f) {
+        r  = 1.0f;   /* 원점 근처 발산 방지 */
+        r2 = 1.0f;
+    }
+
+    /* 야코비안 H (2x4): h(x) = [range, az] = [sqrt(x^2+y^2), atan2(x, y)] */
+    float H[2][4] = {
+        { x / r,   y / r,   0.0f, 0.0f },
+        { y / r2, -x / r2,  0.0f, 0.0f },
+    };
+
+    float range_hat = r;
+    float az_hat     = atan2f(x, y);
+    float innov[2] = {
+        range_m - range_hat,
+        wrap_angle(azimuth_rad - az_hat),
+    };
+
+    float R[2][2] = {
+        { SIGMA_RANGE_M * SIGMA_RANGE_M, 0.0f },
+        { 0.0f, SIGMA_AZIMUTH_RAD * SIGMA_AZIMUTH_RAD },
+    };
+
+    /* PHt = P * H^T  (4x4 * 4x2 = 4x2) */
+    float PHt[4][2];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 2; j++) {
+            float sum = 0.0f;
+            for (int k = 0; k < 4; k++) {
+                sum += ks->P[i][k] * H[j][k];
+            }
+            PHt[i][j] = sum;
+        }
+    }
+
+    /* S = H * PHt + R  (2x4 * 4x2 = 2x2) */
+    float S[2][2];
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            float sum = 0.0f;
+            for (int k = 0; k < 4; k++) {
+                sum += H[i][k] * PHt[k][j];
+            }
+            S[i][j] = sum + R[i][j];
+        }
+    }
+
+    /* S 역행렬 (2x2 닫힌형) */
+    float det = S[0][0] * S[1][1] - S[0][1] * S[1][0];
+    if (fabsf(det) < 1e-9f) {
+        return;   /* 특이행렬: 이번 업데이트 건너뜀 */
+    }
+    float inv_det = 1.0f / det;
+    float Sinv[2][2] = {
+        {  S[1][1] * inv_det, -S[0][1] * inv_det },
+        { -S[1][0] * inv_det,  S[0][0] * inv_det },
+    };
+
+    /* K = PHt * Sinv  (4x2 * 2x2 = 4x2) */
+    float K[4][2];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 2; j++) {
+            K[i][j] = PHt[i][0] * Sinv[0][j] + PHt[i][1] * Sinv[1][j];
+        }
+    }
+
+    /* x += K * innov */
+    for (int i = 0; i < 4; i++) {
+        ks->x[i] += K[i][0] * innov[0] + K[i][1] * innov[1];
+    }
+
+    /* P = (I - K H) P */
+    float KH[4][4];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            KH[i][j] = K[i][0] * H[0][j] + K[i][1] * H[1][j];
+        }
+    }
+    float KHP[4][4];
+    mat4_mul(KH, ks->P, KHP);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            ks->P[i][j] -= KHP[i][j];
+        }
+    }
+}
