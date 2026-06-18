@@ -77,3 +77,53 @@ ZTEST(kalman, test_azimuth_wrap_around)
     zassert_within(y_after, y_before, 50.0f,
                   "wrap-around bug: state jumped too much");
 }
+
+ZTEST(kalman, test_filtering_reduces_rmse_for_cv_target)
+{
+    struct kalman_state ks;
+    const float dt = 0.1f;
+    const int n_steps = 40;
+    const int warmup = 10;
+    const float x0 = 300.0f, y0 = 2000.0f, vx = 10.0f, vy = -5.0f;
+
+    float r0  = sqrtf(x0 * x0 + y0 * y0);
+    float az0 = atan2f(x0, y0);
+    kalman_init(&ks, r0, az0);
+
+    double raw_err2 = 0.0, filt_err2 = 0.0;
+    int count = 0;
+
+    for (int i = 1; i <= n_steps; i++) {
+        float true_x = x0 + vx * (float)i * dt;
+        float true_y = y0 + vy * (float)i * dt;
+        float true_r = sqrtf(true_x * true_x + true_y * true_y);
+        float true_az = atan2f(true_x, true_y);
+
+        /* 결정론적 (재현 가능한) 가짜 노이즈: 부호가 주기적으로 바뀜 */
+        float r_noise  = (i % 2 == 0) ?  10.0f : -10.0f;
+        float az_noise = (i % 3 == 0) ?  0.01f : -0.01f;
+        float r_meas   = true_r + r_noise;
+        float az_meas  = true_az + az_noise;
+
+        kalman_predict(&ks, dt);
+        kalman_update(&ks, r_meas, az_meas);
+
+        if (i > warmup) {
+            float raw_x = r_meas * sinf(az_meas);
+            float raw_y = r_meas * cosf(az_meas);
+
+            raw_err2  += (double)((raw_x - true_x) * (raw_x - true_x)
+                                 + (raw_y - true_y) * (raw_y - true_y));
+            filt_err2 += (double)((ks.x[0] - true_x) * (ks.x[0] - true_x)
+                                 + (ks.x[1] - true_y) * (ks.x[1] - true_y));
+            count++;
+        }
+    }
+
+    double raw_rmse  = sqrt(raw_err2 / count);
+    double filt_rmse = sqrt(filt_err2 / count);
+
+    zassert_true(filt_rmse < raw_rmse,
+                "filtered RMSE(%.2f) should be lower than raw RMSE(%.2f)",
+                filt_rmse, raw_rmse);
+}
