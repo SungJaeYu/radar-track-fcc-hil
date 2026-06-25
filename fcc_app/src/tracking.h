@@ -9,13 +9,16 @@
 #include <zephyr/kernel.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "kalman.h"
 
 #define MAX_TRACKS 8
 
 struct track {
     bool    active;
     uint8_t id;
-    /* TODO: 칼만 상태벡터(x, y, vx, vy), 공분산, M-of-N 카운터 */
+    struct kalman_state ekf;
+    uint32_t last_update_ms;
+    /* TODO: M-of-N 카운터 (트랙 관리 단계에서 추가) */
 };
 
 struct track_table {

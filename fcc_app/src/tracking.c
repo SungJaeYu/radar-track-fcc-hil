@@ -6,6 +6,7 @@
 #include "tracking.h"
 #include "uart_rx.h"
 #include "frame.h"
+#include "kalman.h"
 #include <zephyr/sys/printk.h>
 
 /* 공유 트랙 테이블 */
@@ -33,6 +34,7 @@ void tracking_thread(void *p1, void *p2, void *p3)
     const bool tx_ready = device_is_ready(g_hil_uart);
     FccMeasPayload mp;
     uint32_t cnt = 0U;
+    struct track *trk = &g_track_table.tracks[0];
 
     while (1) {
         k_msgq_get(&meas_msgq, &mp, K_FOREVER);
@@ -43,18 +45,34 @@ void tracking_thread(void *p1, void *p2, void *p3)
                (double)mp.azimuth_rad,
                (double)mp.doppler_mps);
 
-        /* TODO: 칼만 필터 업데이트 + 트랙 관리 후 g_track_table 갱신
-         * 주의: 현재 g_track_table은 갱신되지 않으므로 display_thread는 항상 "활성 트랙: 0" 출력
-         * 임시: range를 x에 그대로 넣은 더미 에코 */
+        /* 범위: 단일 트랙(track 0)만 운용. 데이터 연관/다중 트랙은
+         * 다음 단계(트랙 관리)에서 추가. 들어오는 모든 측정값을
+         * 이 트랙에 그대로 적용한다 (클러터 대응 없음). */
+        k_mutex_lock(&g_track_mutex, K_FOREVER);
+        if (!trk->active) {
+            kalman_init(&trk->ekf, mp.range_m, mp.azimuth_rad);
+            trk->active = true;
+            trk->id = 0U;
+        } else {
+            float dt = (float)(mp.timestamp_ms - trk->last_update_ms) / 1000.0f;
+            if (dt > 0.0f) {
+                kalman_predict(&trk->ekf, dt);
+            }
+            kalman_update(&trk->ekf, mp.range_m, mp.azimuth_rad);
+        }
+        trk->last_update_ms = mp.timestamp_ms;
+
+        FccTrackPayload tp = {
+            .timestamp_ms = mp.timestamp_ms,
+            .track_id     = trk->id,
+            .x_m          = trk->ekf.x[0],
+            .y_m          = trk->ekf.x[1],
+            .vx_mps       = trk->ekf.x[2],
+            .vy_mps       = trk->ekf.x[3],
+        };
+        k_mutex_unlock(&g_track_mutex);
+
         if (tx_ready) {
-            FccTrackPayload tp = {
-                .timestamp_ms = mp.timestamp_ms,
-                .track_id     = 0U,
-                .x_m          = mp.range_m,
-                .y_m          = 0.0f,
-                .vx_mps       = 0.0f,
-                .vy_mps       = 0.0f,
-            };
             fcc_send_track(&tp);
         }
 

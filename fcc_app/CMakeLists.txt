@@ -9,4 +9,5 @@ target_sources(app PRIVATE
     src/uart_rx.c
     src/tracking.c
     src/display.c
+    src/kalman.c
 )
