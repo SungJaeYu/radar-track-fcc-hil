@@ -23,3 +23,7 @@ void kalman_predict(struct kalman_state *ks, float dt_s);
 
 /* 극좌표 측정으로 EKF 갱신. */
 void kalman_update(struct kalman_state *ks, float range_m, float azimuth_rad);
+
+/* 측정값과 트랙 간 Mahalanobis 거리²를 반환. 상태 변경 없음. 게이팅용.
+ * chi-square 2-dof 95% 임계값(5.99)과 비교한다. */
+float kalman_gate_sq(const struct kalman_state *ks, float range_m, float azimuth_rad);
