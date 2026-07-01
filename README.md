@@ -64,7 +64,7 @@ cd pc_sim
 # 보드 없이 PC 단독 테스트
 python run_sim.py --mock --scenario single_approach
 
-# 실제 STM32 연결 (USB-UART 어댑터: Arduino D0/D1 → /dev/ttyUSB0)
+# 실제 STM32 연결 (USB-UART 어댑터 → /dev/ttyUSB0, 배선은 docs/HIL-wiring.md)
 python run_sim.py --serial /dev/ttyUSB0 --scenario single_approach
 ```
 
@@ -115,10 +115,19 @@ pc_sim/
 - [ ] LVGL PPI 디스플레이
 - [ ] HIL 통합 + 정량 검증
 
-## HIL 통합 검증 방법
+## HIL 통신 구조 · 배선
+
+PC에 USB 2개: **채널 A** = ST-Link VCP(`/dev/ttyACM0`, 콘솔·플래시),
+**채널 B** = STM32 USART6 → USB-UART 어댑터(`/dev/ttyUSB0`, 프레임 데이터).
+
+- 어댑터 권장: **FT232RL 3.3V** (우노 브릿지 금지 — 5V 로직이 PG9 3.3V 손상 위험).
+- 배선 3선: 어댑터 GND↔보드 GND, TXD→D0(PG9=USART6_RX), RXD←D1(PG14=USART6_TX). VCC 미연결.
+- 핀별 신호·구매 가이드·자가진단 전체: **[docs/HIL-wiring.md](docs/HIL-wiring.md)**
+
+검증 순서:
 
 1. 빌드·플래시 후 `tio /dev/ttyACM0` 으로 Zephyr 콘솔 연결
-2. USB-UART 어댑터로 Arduino D0(RX)/D1(TX) 연결 → `/dev/ttyUSB0`
+2. USB-UART 어댑터 3선 배선 → PC USB → `/dev/ttyUSB0` 확인
 3. `python run_sim.py --serial /dev/ttyUSB0 --scenario single_approach`
 4. 콘솔에 `[tracking] #N t=... r=... az=...` 로그 → RX 파이프라인 정상
 5. run_sim.py 출력에 `[TRACK] ID0 x=...` → TX 파이프라인 정상
