@@ -1,7 +1,8 @@
 /*
  * display.c — display 스레드 (LVGL)
  * F746G-DISCO 온보드 LCD에 HIL 상태판 렌더.
- * 이 단계: 정적 "RADAR FCC (HIL)" 라벨만 표시 (LVGL 배선 검증용).
+ * g_hil_stats(스냅샷)를 주기적으로 읽어 최신 측정값·프레임 카운터를
+ * 멀티라인 라벨로 표시. 측정 전엔 "--", azimuth는 rad→deg 변환.
  */
 
 #include "display.h"
@@ -13,6 +14,12 @@
 #include <lvgl.h>
 #include <stdio.h>
 #include <math.h>
+
+/* M_PI는 C 표준이 아닌 POSIX 확장 — libc(picolibc 등)가 기능 매크로 없이는
+ * 노출 안 할 수 있어 방어적 폴백 정의. */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #define RAD2DEG(r) ((r) * 180.0f / (float)M_PI)
 
