@@ -12,6 +12,10 @@
 struct track_table g_track_table;
 K_MUTEX_DEFINE(g_track_mutex);
 
+/* HIL 통계 스냅샷 (display 스레드가 read) */
+struct hil_stats g_hil_stats;
+K_MUTEX_DEFINE(g_stats_mutex);
+
 /* TrackPayload를 프레임으로 인코딩하여 폴링 TX */
 static void fcc_send_track(const FccTrackPayload *tp)
 {
@@ -42,6 +46,16 @@ void tracking_thread(void *p1, void *p2, void *p3)
                (double)mp.range_m,
                (double)mp.azimuth_rad,
                (double)mp.doppler_mps);
+
+        /* display용 통계 스냅샷 갱신 */
+        k_mutex_lock(&g_stats_mutex, K_FOREVER);
+        g_hil_stats.frames_rx        = cnt + 1U;
+        g_hil_stats.has_meas         = true;
+        g_hil_stats.last_ts_ms       = mp.timestamp_ms;
+        g_hil_stats.last_range_m     = mp.range_m;
+        g_hil_stats.last_azimuth_rad = mp.azimuth_rad;
+        g_hil_stats.last_doppler_mps = mp.doppler_mps;
+        k_mutex_unlock(&g_stats_mutex);
 
         /* TODO: 칼만 필터 업데이트 + 트랙 관리 후 g_track_table 갱신
          * 주의: 현재 g_track_table은 갱신되지 않으므로 display_thread는 항상 "활성 트랙: 0" 출력
