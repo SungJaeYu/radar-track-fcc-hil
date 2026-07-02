@@ -34,7 +34,8 @@ PC가 레이더 환경/측정을 시뮬레이션하고, STM32(FCC 역할)가 트
 - [x] UART 프레이밍 (보드측): frame.h/c (CRC16, encode, FrameParser), USART6 ISR+링버퍼
 - [ ] Kalman 포팅 ← 다음 작업
 - [ ] 트랙 관리 (M-of-N, 데이터 연관)
-- [ ] LVGL PPI 디스플레이
+- [x] LVGL 상태판(텍스트): 최신 측정·프레임 카운터 LCD 표시
+- [ ] LVGL PPI 디스플레이 (트랙 스코프) ← Kalman 이후
 - [ ] HIL 통합 + 정량 검증
 
 ## UART 프레이밍 보드 검증 방법

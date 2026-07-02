@@ -97,7 +97,7 @@ fcc_app/src/
     frame.h/c     바이너리 프레임 코덱 (CRC16, 인코더, FrameParser)
     uart_rx.h/c   UART ISR·링버퍼·FrameParser → meas_msgq
     tracking.h/c  트랙 테이블·Kalman(예정)·TX 에코
-    display.h/c   LVGL PPI 디스플레이(예정)
+    display.h/c   LVGL 텍스트 상태판 (PPI는 예정)
 
 pc_sim/
     protocol.py   프레임 코덱 + FrameParser (Python)
@@ -115,7 +115,8 @@ pc_sim/
 - [x] STM32 3-스레드 골격: uart_rx.h/c, tracking.h/c, display.h/c (모듈 분리 완료)
 - [ ] Kalman 포팅 ← 다음 작업
 - [ ] 트랙 관리 (M-of-N, 데이터 연관)
-- [ ] LVGL PPI 디스플레이
+- [x] LVGL 상태판(텍스트): 최신 측정·프레임 카운터 LCD 표시
+- [ ] LVGL PPI 디스플레이 (트랙 스코프) — Kalman 이후
 - [ ] HIL 통합 + 정량 검증
 
 ## HIL 통신 구조 · 배선
