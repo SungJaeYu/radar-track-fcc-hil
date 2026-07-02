@@ -1,30 +1,39 @@
 /*
- * display.c — display 스레드
- * g_track_mutex 잠금 → g_track_table read-only → (TODO: LVGL PPI 화면 갱신)
- * 현재: 2초마다 활성 트랙 수 로그 출력
+ * display.c — display 스레드 (LVGL)
+ * F746G-DISCO 온보드 LCD에 HIL 상태판 렌더.
+ * 이 단계: 정적 "RADAR FCC (HIL)" 라벨만 표시 (LVGL 배선 검증용).
  */
 
 #include "display.h"
 #include "tracking.h"
 #include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/display.h>
 #include <zephyr/sys/printk.h>
+#include <lvgl.h>
 
 void display_thread(void *p1, void *p2, void *p3)
 {
     ARG_UNUSED(p1); ARG_UNUSED(p2); ARG_UNUSED(p3);
 
+    const struct device *disp = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
+    if (!device_is_ready(disp)) {
+        printk("[display ] LCD 디바이스 미준비 — 렌더 중단\n");
+        return;
+    }
+
+    /* 좌상단 정렬 멀티라인 라벨 1개
+     * 주의: Zephyr v4.2는 LVGL v9를 번들함 — v8 이전 API인
+     * lv_scr_act()/lv_task_handler()는 기본 설정(LV_USE_OBSOLETE_API=n)에서
+     * 존재하지 않음. v9 API인 lv_screen_active()/lv_timer_handler() 사용. */
+    lv_obj_t *label = lv_label_create(lv_screen_active());
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 8, 8);
+    lv_label_set_text(label, "RADAR FCC (HIL)\nbooting...");
+
+    display_blanking_off(disp);
+
     while (1) {
-        k_mutex_lock(&g_track_mutex, K_FOREVER);
-        uint8_t active = 0U;
-
-        for (int i = 0; i < MAX_TRACKS; i++) {
-            if (g_track_table.tracks[i].active) {
-                active++;
-            }
-        }
-        k_mutex_unlock(&g_track_mutex);
-
-        printk("[display ] 활성 트랙: %u\n", active);
-        k_sleep(K_MSEC(2000));
+        lv_timer_handler();
+        k_sleep(K_MSEC(30));
     }
 }
