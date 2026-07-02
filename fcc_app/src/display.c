@@ -11,6 +11,10 @@
 #include <zephyr/drivers/display.h>
 #include <zephyr/sys/printk.h>
 #include <lvgl.h>
+#include <stdio.h>
+#include <math.h>
+
+#define RAD2DEG(r) ((r) * 180.0f / (float)M_PI)
 
 void display_thread(void *p1, void *p2, void *p3)
 {
@@ -32,8 +36,43 @@ void display_thread(void *p1, void *p2, void *p3)
 
     display_blanking_off(disp);
 
+    char buf[256];
+
     while (1) {
+        /* 스냅샷 복사 (락 최소 구간) */
+        struct hil_stats s;
+        k_mutex_lock(&g_stats_mutex, K_FOREVER);
+        s = g_hil_stats;
+        k_mutex_unlock(&g_stats_mutex);
+
+        if (s.has_meas) {
+            snprintf(buf, sizeof(buf),
+                     "RADAR FCC (HIL)\n"
+                     "frames rx : %u\n"
+                     "last meas\n"
+                     "  t   : %u ms\n"
+                     "  rng : %.1f m\n"
+                     "  az  : %.1f deg\n"
+                     "  dop : %.1f m/s\n"
+                     "tracks: 0 (kalman TODO)",
+                     s.frames_rx, s.last_ts_ms,
+                     (double)s.last_range_m,
+                     (double)RAD2DEG(s.last_azimuth_rad),
+                     (double)s.last_doppler_mps);
+        } else {
+            snprintf(buf, sizeof(buf),
+                     "RADAR FCC (HIL)\n"
+                     "frames rx : 0\n"
+                     "last meas\n"
+                     "  t   : --\n"
+                     "  rng : --\n"
+                     "  az  : --\n"
+                     "  dop : --\n"
+                     "tracks: 0 (kalman TODO)");
+        }
+        lv_label_set_text(label, buf);
+
         lv_timer_handler();
-        k_sleep(K_MSEC(30));
+        k_sleep(K_MSEC(100));
     }
 }
