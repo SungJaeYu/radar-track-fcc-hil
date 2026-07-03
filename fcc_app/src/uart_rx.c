@@ -17,6 +17,7 @@ static K_SEM_DEFINE(g_uart_rx_sem, 0, 1);
 
 /* ISR 컨텍스트 — printk 불가, 오버플로우 횟수만 카운트 */
 static volatile uint32_t g_rx_overflow_cnt;
+static volatile uint32_t g_rx_byte_cnt;
 
 /* 측정값 큐 */
 K_MSGQ_DEFINE(meas_msgq, sizeof(FccMeasPayload), 8, 4);
@@ -37,6 +38,7 @@ static void hil_uart_isr(const struct device *dev, void *user_data)
             if (ring_buf_put(&g_uart_rx_ring, &byte, 1) == 0) {
                 g_rx_overflow_cnt++;
             }
+            g_rx_byte_cnt++;
             got_data = true;
         }
     }
@@ -68,8 +70,15 @@ void uart_rx_thread(void *p1, void *p2, void *p3)
 
     printk("[uart_rx ] USART6 준비 완료, HIL 수신 시작\n");
 
+    static uint32_t last_reported = 0;
     while (1) {
-        k_sem_take(&g_uart_rx_sem, K_FOREVER);
+        k_sem_take(&g_uart_rx_sem, K_MSEC(2000));
+
+        uint32_t cnt = g_rx_byte_cnt;
+        if (cnt != last_reported) {
+            printk("[uart_rx ] rx=%u bytes\n", cnt);
+            last_reported = cnt;
+        }
 
         uint8_t byte;
 

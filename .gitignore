@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .understand-anything/
+
+# Zephyr/CMake 빌드 산출물
+build/
+build_*/
