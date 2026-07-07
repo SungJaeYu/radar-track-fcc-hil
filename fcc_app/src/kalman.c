@@ -9,6 +9,7 @@
 #include "kalman.h"
 #include <math.h>
 #include <string.h>
+#include <zephyr/sys/__assert.h>
 
 #define SIGMA_RANGE_M     10.0f
 #define SIGMA_AZIMUTH_RAD 0.01f
@@ -21,6 +22,9 @@
 
 void kalman_init(struct kalman_state *ks, float range_m, float azimuth_rad)
 {
+    __ASSERT(ks != NULL, "kalman_init: ks is NULL");
+    __ASSERT(range_m >= 0.0f, "kalman_init: range_m < 0 (%f)", (double)range_m);
+
     float sin_az = sinf(azimuth_rad);
     float cos_az = cosf(azimuth_rad);
 
@@ -82,6 +86,9 @@ static void mat4_add(const float a[4][4], const float b[4][4], float out[4][4])
 
 void kalman_predict(struct kalman_state *ks, float dt_s)
 {
+    __ASSERT(ks != NULL, "kalman_predict: ks is NULL");
+    __ASSERT(dt_s >= 0.0f, "kalman_predict: dt_s < 0 (%f)", (double)dt_s);
+
     float dt = dt_s;
 
     /* x' = F x  (CV 모델) */
@@ -135,6 +142,9 @@ static float wrap_angle(float a)
 
 void kalman_update(struct kalman_state *ks, float range_m, float azimuth_rad)
 {
+    __ASSERT(ks != NULL, "kalman_update: ks is NULL");
+    __ASSERT(range_m >= 0.0f, "kalman_update: range_m < 0 (%f)", (double)range_m);
+
     float x = ks->x[0];
     float y = ks->x[1];
     float r2 = x * x + y * y;
@@ -225,6 +235,14 @@ void kalman_update(struct kalman_state *ks, float range_m, float azimuth_rad)
             ks->P[i][j] -= KHP[i][j];
         }
     }
+
+    /* 발산/수치붕괴 조기 포착 (debug 전용) */
+    for (int i = 0; i < 4; i++) {
+        __ASSERT(isfinite(ks->x[i]), "kalman_update: state[%d] not finite", i);
+    }
+    __ASSERT(ks->P[0][0] >= 0.0f && ks->P[1][1] >= 0.0f &&
+             ks->P[2][2] >= 0.0f && ks->P[3][3] >= 0.0f,
+             "kalman_update: negative covariance diagonal");
 }
 
 float kalman_gate_sq(const struct kalman_state *ks, float range_m, float azimuth_rad)
