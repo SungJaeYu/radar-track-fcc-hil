@@ -47,6 +47,11 @@ uint16_t fcc_encode_frame(uint8_t msg_type,
     __ASSERT(payload_len <= FCC_MAX_PAYLOAD,
              "fcc_encode_frame: payload_len %u > max", payload_len);
 
+    /* release(ASSERT=n)에서도 사는 하드 가드: crc_in 스택 오버런 방지 */
+    if (payload_len > FCC_MAX_PAYLOAD) {
+        return 0;
+    }
+
     uint16_t total = 5U + payload_len;
 
     if (buf_size < total) {
