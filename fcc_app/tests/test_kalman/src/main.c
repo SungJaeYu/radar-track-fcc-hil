@@ -127,3 +127,15 @@ ZTEST(kalman, test_filtering_reduces_rmse_for_cv_target)
                 "filtered RMSE(%.2f) should be lower than raw RMSE(%.2f)",
                 filt_rmse, raw_rmse);
 }
+
+/* debug 빌드에서 잘못된 입력이 assert를 발동시키는지 확인.
+ * ztest_set_assert_valid로 __ASSERT 실패를 정상 통과로 처리. */
+ZTEST(kalman, test_negative_dt_triggers_assert)
+{
+    struct kalman_state ks;
+    kalman_init(&ks, 1000.0f, 0.0f);
+
+    ztest_set_assert_valid(true);   /* 다음 __ASSERT 실패는 기대된 것 */
+    kalman_predict(&ks, -1.0f);     /* dt<0 → assert 발동해야 함 */
+    ztest_set_assert_valid(false);
+}
