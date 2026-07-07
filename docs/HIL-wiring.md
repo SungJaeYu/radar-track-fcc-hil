@@ -8,7 +8,7 @@ PC 하나에 **USB 케이블 2개**가 꽂힌다. 채널이 두 개인 이유:
 콘솔(사람이 보는 로그)과 데이터 링크(프레임 스트림)를 분리해야
 서로 간섭 없이 디버깅 가능하기 때문.
 
-```
+```c
         ┌────────────────────────────────────────────────────────────┐
         │ PC:  tio /dev/ttyACM0     run_sim.py --serial /dev/ttyUSB0 │
         │       (console / printk)    (data link / frames)           │
@@ -39,6 +39,7 @@ PC 하나에 **USB 케이블 2개**가 꽂힌다. 채널이 두 개인 이유:
 ## 2. USB-UART 어댑터 선택
 
 아두이노 우노를 브릿지로 쓰지 말 것. 이유:
+
 - 우노 D0/D1은 **5V 로직** → STM32F746 RX(PG9) 3.3V에 직결 시 핀 손상 위험.
   (F7 일부 핀만 5V-tolerant, PG9는 보장 안 됨 → 레벨 시프터 필수)
 - 우노 USB-시리얼은 ATmega328에 물려 있어 순수 패스스루가 아니다.
@@ -68,12 +69,13 @@ STM32F746G-DISCO의 **아두이노 규격 헤더**(CN 헤더의 Arduino Uno R3 �
 | VCC / 5V / 3V3 | ✗ | **연결 안 함** | 보드는 ST-Link USB로 자가 전원 |
 
 핵심 규칙:
+
 - **TX↔RX 크로스.** 어댑터 TX → 보드 RX, 어댑터 RX ← 보드 TX. 직결(TX-TX) 하면 무통신.
 - **GND는 반드시 공통.** 안 잡으면 프레임 깨지거나 랜덤 CRC 오류.
 - **전원선(VCC) 연결 금지.** 보드와 어댑터 둘 다 각자 USB로 급전 →
   전원선 이으면 역급전/충돌. 신호 3선(TX/RX/GND)만.
 
-```
+```text
  FT232RL(3.3V)                STM32F746G-DISCO (Arduino header)
  ┌─────────┐
  │ GND ────┼──────────────── GND
@@ -89,9 +91,11 @@ STM32F746G-DISCO의 **아두이노 규격 헤더**(CN 헤더의 Arduino Uno R3 �
 아이들 = High(3.3V), 스타트비트 = Low.
 
 프레임(양쪽 동일):
-```
+
+```text
 STX(0x7E) | LEN(1) | TYPE(1) | PAYLOAD(LEN) | CRC16-BE(2)
 ```
+
 - CRC 범위 = `[LEN, TYPE, PAYLOAD...]` (STX 제외), CRC16-CCITT XModem(poly=0x1021, init=0).
 - 페이로드 엔디언 = little-endian.
 
@@ -111,5 +115,6 @@ STX(0x7E) | LEN(1) | TYPE(1) | PAYLOAD(LEN) | CRC16-BE(2)
 6. run_sim.py 출력에 `[TRACK] ID0 x=...` → **TX 파이프라인 정상** (PG14 송신 OK).
 
 배선 자가진단:
+
 - 콘솔에 아무 `[tracking]` 로그도 없다 → TX/RX 크로스 뒤바뀜 또는 GND 미연결 의심.
 - 로그는 나오는데 CRC 오류 → GND 불량 또는 어댑터 5V 로직(레벨 불일치) 의심.

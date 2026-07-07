@@ -5,8 +5,10 @@
 없어 **빌드·플래시·LCD·HIL 실측은 아직 안 됐다.** 별도 보드 머신에서 아래를 수행한다.
 
 관련 문서:
+
 - 설계: `docs/superpowers/specs/2026-07-02-lcd-status-panel-design.md`
-- 구현 계획: `docs/superpowers/plans/2026-07-02-lcd-status-panel.md` (Task 3 Step 3-4가 검증 절차)
+- 구현 계획: `docs/superpowers/plans/2026-07-02-lcd-status-panel.md`
+  (Task 3 Step 3-4가 검증 절차)
 
 ## 1. 빌드
 
@@ -22,7 +24,7 @@ west flash --runner openocd     # 반드시 openocd 러너
 
 플래시 직후 LCD 좌상단에:
 
-```
+```text
 RADAR FCC (HIL)
 frames rx : 0
 last meas
@@ -34,7 +36,8 @@ tracks: 0 (kalman TODO)
 ```
 
 - 화면 백라이트 켜지고 텍스트 뜨면 LVGL 파이프라인 정상.
-- 아무것도 안 뜨면 → `zephyr,display` chosen 노드 / LVGL config / display 스레드 로그(`[display ] LCD 디바이스 미준비`) 확인.
+- 아무것도 안 뜨면 → `zephyr,display` chosen 노드 / LVGL config / display
+  스레드 로그(`[display ] LCD 디바이스 미준비`) 확인.
 
 ## 3. HIL 실측 (측정 흐름)
 
@@ -50,6 +53,7 @@ python run_sim.py --serial /dev/ttyUSB0 --scenario single_approach
 ```
 
 확인:
+
 - LCD `frames rx` 값이 증가.
 - LCD `rng`/`az`/`dop`가 콘솔 `[tracking] #N t=... r=... az=...` 최신 로그와 일치.
   - 주의: 콘솔 az는 **rad**, LCD az는 **deg**. `deg = rad * 180 / π`로 대조.

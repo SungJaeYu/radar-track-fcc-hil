@@ -15,7 +15,7 @@
 STM32가 그걸 받아서 트래킹한 결과를 다시 PC로 보내면,
 PC가 "정답(ground truth)"과 비교해서 오차를 측정한다.
 
-```
+```c
 ┌─────────────────────────────────────────┐
 │  PC (Python)                            │
 │  "target here" -> generate measurement  │
@@ -42,7 +42,7 @@ PC가 "정답(ground truth)"과 비교해서 오차를 측정한다.
 
 ## 1. 전체 파일 구조
 
-```
+```text
 radar-track-fcc-hil/
 │
 ├── fcc_app/                  ← STM32에 올라가는 C 프로그램 (Zephyr 앱)
@@ -109,7 +109,7 @@ target_sources(app PRIVATE
 
 ### 2-3. `prj.conf` (Kconfig)
 
-```
+```text
 CONFIG_PRINTK=y                 # printk() 콘솔 출력
 CONFIG_LOG=y                    # 로그 서브시스템
 CONFIG_LOG_DEFAULT_LEVEL=3      # info 레벨
@@ -204,7 +204,7 @@ Zephyr에 의존하지 않는 **순수 C**. PC `protocol.py`를 그대로 포팅
 
 #### 프레임 구조
 
-```
+```text
 byte:    0      1      2      3 ... 3+LEN-1  3+LEN  4+LEN
         ┌──────┬──────┬──────┬───────────┬───────┬───────┐
         │ STX  │ LEN  │ TYPE │  PAYLOAD  │ CRC_H │ CRC_L │
@@ -293,7 +293,7 @@ PC 버전과 달리 **호출자가 출력 버퍼를 준다**(임베디드는 동
 UART는 경계 없는 바이트 스트림. "어디부터 어디까지가 한 프레임인지"를 바이트 하나씩
 먹으며 알아내는 6-상태 머신.
 
-```
+```c
          b==STX          LEN<=64            always      buf full
 WAIT_STX ──▶ WAIT_LEN ──────▶ WAIT_TYPE ──▶ WAIT_PAYLOAD ──┐
    ▲  ▲      │ LEN>64                                      │ (LEN==0: skip)
@@ -556,7 +556,7 @@ tracking이 테이블을 아직 안 채우니 출력은 늘 "활성 트랙: 0".
 
 ### 2-10. 모듈 간 관계 요약
 
-```
+```text
 ┌──────────────────────────────────────────────┐
 │  frame.h/c  (pure C, no Zephyr dep)          │
 │  fcc_crc16 . fcc_encode_frame . FrameParser  │
@@ -580,7 +580,7 @@ frame.h/c는 RTOS 비의존 순수 C라 PC 테스트·재사용 가능. 스레�
 
 ### 3-1. 의존 관계
 
-```
+```text
 run_sim.py ──┬─▶ protocol.py    (프레임 인코딩/디코딩)
              ├─▶ targets.py     (표적 + 센서 모델) ─▶ protocol.py
              └─▶ transport.py   (보내기/받기)
@@ -723,7 +723,8 @@ def run(transport, scenario_name, dt, duration, pd, clutter_rate, seed):
 `_print_track()`은 수신 트랙과 **가장 가까운 ground truth 표적과의 거리(gt_err)** 출력 —
 시간에 걸쳐 모으면 **RMSE**가 된다(정량 검증 핵심).
 
-CLI: `--mock`/`--serial PORT`(택1), `--scenario`, `--dt`, `--duration`, `--pd`, `--clutter`, `--seed`.
+CLI: `--mock`/`--serial PORT`(택1), `--scenario`, `--dt`, `--duration`,
+`--pd`, `--clutter`, `--seed`.
 
 ### 3-6. `test_protocol.py` — 유닛테스트 (29개)
 
@@ -760,7 +761,7 @@ tio /dev/ttyACM0                                  # 시리얼 콘솔 (115200 8N1
 
 예상 부팅 출력:
 
-```
+```text
 === FCC HIL booting ===
 [uart_rx ] USART6 준비 완료, HIL 수신 시작
 [display ] 활성 트랙: 0
@@ -778,7 +779,7 @@ python run_sim.py --serial /dev/ttyUSB0 --scenario single_approach  # 실제 HIL
 
 ### HIL 배선
 
-```
+```text
 PC ─USB─▶ ST-Link ─USART1─▶ /dev/ttyACM0   [콘솔/로그]
 PC ─USB─▶ USB-UART 어댑터 ──┬─ 어댑터 RX ◀─ 보드 D1(PG14,TX)
                             └─ 어댑터 TX ─▶ 보드 D0(PG9,RX)   → /dev/ttyUSB0  [데이터]
@@ -793,7 +794,7 @@ TX↔RX 교차 연결 + 공통 GND 필수.
 작업 원칙: **작은 검증 사다리**. 각 단계는 직전 단계 위에서 검증 가능, 매 단계 끝에
 "보드에서 어떻게 확인하는지" 명시.
 
-```
+```text
 [칸 0] pytest 29개 통과            → 프로토콜 코덱(Python)이 명세대로
 [칸 1] 부팅 로그                   → 3-스레드 + USART6 초기화 성공
 [칸 2] [tracking] #N t=.. r=.. 로그 → RX 파이프라인 정상 (PC→ISR→파서→큐→tracking)
@@ -805,7 +806,7 @@ TX↔RX 교차 연결 + 공통 GND 필수.
 
 ### 진행 상태 (정직하게)
 
-```
+```text
 [x] PC 시뮬레이터 (프레임 코덱, 센서 모델, 전송 추상화, 유닛테스트 29개)
 [x] STM32 3-스레드 골격 + UART 프레이밍 (CRC16, 인코더, FrameParser, ISR+링버퍼)
 [ ] 칼만 필터 포팅            ← 다음. tracking_thread 더미 에코 → 진짜 추정

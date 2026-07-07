@@ -4,7 +4,7 @@
 PC가 레이더 환경·측정을 시뮬레이션하고, STM32(FCC 역할)가 트래킹 결과를 PC로 돌려보내
 정량 검증(RMSE, 트랙 연속성)하는 폐루프 구조.
 
-```
+```text
            ┌─────────────────────────────────────┐
            │           PC  (Python)              │
            │  RadarSensorModel → encode_frame    │
@@ -76,11 +76,12 @@ cd pc_sim && python -m pytest test_protocol.py -v
 
 ## UART 프레임 포맷
 
-```
+```text
 STX(0x7E) | LEN(1) | TYPE(1) | PAYLOAD(LEN) | CRC16-BE(2)
 ```
 
-- CRC 범위 = `[LEN, TYPE, PAYLOAD...]` (STX 제외), CRC16-CCITT XModem (poly=0x1021, init=0).
+- CRC 범위 = `[LEN, TYPE, PAYLOAD...]` (STX 제외),
+  CRC16-CCITT XModem (poly=0x1021, init=0).
 - 페이로드 엔디언 = little-endian. 물리 계층 = UART TTL 3.3V, 115200 8N1, 흐름제어 없음.
 
 | TYPE           | 방향     | 페이로드                                                       |
@@ -91,7 +92,7 @@ STX(0x7E) | LEN(1) | TYPE(1) | PAYLOAD(LEN) | CRC16-BE(2)
 
 ## 파일 구조
 
-```
+```text
 fcc_app/src/
     main.c        스레드 생성 진입점
     frame.h/c     바이너리 프레임 코덱 (CRC16, 인코더, FrameParser)
