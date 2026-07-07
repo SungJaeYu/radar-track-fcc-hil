@@ -7,6 +7,14 @@
 #include <zephyr/toolchain.h>
 #include <string.h>
 
+/* host 유닛테스트 이식성: 보드는 Zephyr __ASSERT, 그 외는 표준 assert */
+#ifdef __ZEPHYR__
+#include <zephyr/sys/__assert.h>
+#else
+#include <assert.h>
+#define __ASSERT(cond, ...) assert(cond)
+#endif
+
 /* 페이로드 크기 컴파일 타임 검증 (Python struct calcsize 와 일치해야 함) */
 BUILD_ASSERT(sizeof(FccMeasPayload)  == 20, "FccMeasPayload 크기 불일치");
 BUILD_ASSERT(sizeof(FccTrackPayload) == 21, "FccTrackPayload 크기 불일치");
@@ -35,6 +43,10 @@ uint16_t fcc_encode_frame(uint8_t msg_type,
                           const uint8_t *payload, uint8_t payload_len,
                           uint8_t *buf, uint16_t buf_size)
 {
+    __ASSERT(buf != NULL, "fcc_encode_frame: buf is NULL");
+    __ASSERT(payload_len <= FCC_MAX_PAYLOAD,
+             "fcc_encode_frame: payload_len %u > max", payload_len);
+
     uint16_t total = 5U + payload_len;
 
     if (buf_size < total) {
@@ -80,6 +92,9 @@ void frame_parser_reset(FrameParser *p)
 
 bool frame_parser_feed(FrameParser *p, uint8_t b, FccFrame *out)
 {
+    __ASSERT(p != NULL, "frame_parser_feed: p is NULL");
+    __ASSERT(out != NULL, "frame_parser_feed: out is NULL");
+
     switch (p->state) {
 
     case FP_WAIT_STX:
@@ -105,6 +120,8 @@ bool frame_parser_feed(FrameParser *p, uint8_t b, FccFrame *out)
         break;
 
     case FP_WAIT_PAYLOAD:
+        __ASSERT(p->buf_idx < FCC_MAX_PAYLOAD,
+                 "frame_parser_feed: buf overrun (idx=%u)", p->buf_idx);
         p->buf[p->buf_idx++] = b;
         if (p->buf_idx == p->len) {
             p->state = FP_WAIT_CRC_H;
