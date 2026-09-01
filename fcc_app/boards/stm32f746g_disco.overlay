@@ -1,11 +1,12 @@
 /*
  * stm32f746g_disco.overlay
  *
- * HIL 통신용 USART6 활성화.
- * 하드웨어 연결: Arduino 헤더 D0(PG9, RX) / D1(PG14, TX)
- * → USB-UART 어댑터를 연결하고 PC에서 /dev/ttyUSB0 으로 접근.
+ * HIL data link: USART6 on PC6 (TX) / PC7 (RX), 115200 8N1.
+ * These pins are used with the external 3.3 V USB-UART adapter.
  *
- * USART1(ST-Link VCP, /dev/ttyACM0)은 Zephyr 콘솔(printk)에 계속 사용.
+ * Note: older comments in this project referenced PG9/PG14 (Arduino D0/D1),
+ * but the working Zephyr pinctrl configuration for this board uses PC6/PC7.
+ * USART1 remains available for the Zephyr console through the board's ST-Link VCP.
  */
 
 &usart6 {
