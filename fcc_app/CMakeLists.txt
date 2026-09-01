@@ -5,9 +5,4 @@ project(fcc_app)
 
 target_sources(app PRIVATE
     src/main.c
-    src/frame.c
-    src/uart_rx.c
-    src/tracking.c
-    src/display.c
-    src/kalman.c
 )
