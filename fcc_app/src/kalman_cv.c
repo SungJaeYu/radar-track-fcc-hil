@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include "angle_utils.h"
 
-static float wrap_angle_deg(float angle);
 static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt, bool is_angle);
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle);
 
@@ -38,19 +37,6 @@ void kalman_cv_correct(struct kalman_cv_filter *p_kf, float value_measurement)
 void kalman_cv_correct_angle(struct kalman_cv_filter *p_kf, float angle_measurement)
 {
     kalman_cv_correct_internal(p_kf, angle_measurement, true);
-}
-
-static float wrap_angle_deg(float angle)
-{
-    while (angle > 180.0f) {
-        angle -= 360.0f;
-    }
-
-    while (angle <= -180.0f) {
-        angle += 360.0f;
-    }
-
-    return angle;
 }
 
 static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt, bool is_angle)
