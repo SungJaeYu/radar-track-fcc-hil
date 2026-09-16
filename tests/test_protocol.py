@@ -1,7 +1,7 @@
 """test_protocol.py — FrameParser + 코덱 유닛테스트."""
 
 import pytest
-from protocol import (
+from pc_sim.protocol import (
     STX,
     MSG_MEAS, MSG_TRACK, MSG_CTRL,
     CTRL_START, CTRL_STOP, CTRL_RESET,

@@ -31,6 +31,15 @@ PC가 합성 표적·측정값을 생성하고 STM32가 추적 결과를 반환�
 | SDK            | `~/zephyr-sdk-1.0.1`         |
 | west workspace | `~/zephyrproject`            |
 
+## 현재 학습용 보드 시험
+
+현재 XOR 체크섬 기반 STM32 펌웨어의 송신 도구는 [`tools/hil/`](tools/hil/README.md)에 있습니다.
+`radar_sender.py`와 `small_byte_test.py`는 `pc_sim/`에서 이곳으로 이동했습니다.
+자동 테스트는 `tests/`에 모았습니다.
+
+아래 `pc_sim` 실행 예시와 CRC16 설명은 기존 시뮬레이터 기준입니다.
+현재 학습 펌웨어와는 규격이 달라 실제 보드 시험에는 위 도구를 사용하세요.
+
 ## 빠른 시작
 
 ### 1. 환경 활성화
@@ -73,7 +82,8 @@ python run_sim.py --serial /dev/ttyUSB0 --scenario single_approach
 ### 6. 유닛테스트
 
 ```bash
-cd pc_sim && python -m pytest test_protocol.py -v
+# 저장소 루트에서
+python -m pytest
 ```
 
 ## UART 프레임 포맷
@@ -106,7 +116,16 @@ pc_sim/
     targets.py    등속 표적 모델 + 센서 측정 모델
     transport.py  MockTransport / SerialTransport
     run_sim.py    시뮬레이터 메인 루프
-    test_protocol.py  유닛테스트 (pytest)
+
+tools/hil/
+    radar_sender.py     현재 보드용 레이더 측정 송신
+    small_byte_test.py  단일 프레임 송신·초기화
+    protocol.py        공통 XOR 프레임 생성
+
+tests/
+    test_protocol.py      기존 CRC16 시뮬레이터 테스트
+    test_radar_sender.py  레이더 송신 도구 테스트
+    test_hil_protocol.py  현재 XOR 규격·단일 프레임 송신 테스트
 ```
 
 ## 진행 상태
