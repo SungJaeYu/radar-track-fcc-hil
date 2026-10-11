@@ -18,7 +18,8 @@ def main():
     parser.add_argument("--range", type=float, default=1000.0)
     parser.add_argument("--rate", type=float, default=-20.0)
     parser.add_argument("--noise", type=float, default=5.0)
-    parser.add_argument("--azimuth", type=int, default=30)
+    parser.add_argument("--azimuth", type=int, default=178956971,
+                        help="int32 semicircle azimuth (default: 178956971, about 30 degrees)")
     parser.add_argument("--hz", type=float, default=10.0)
     parser.add_argument("--count", type=int, default=20)
 
@@ -30,8 +31,8 @@ def main():
         parser.error("--count and --baud must be positive")
     if not all(math.isfinite(x) for x in (args.range, args.rate, args.noise)) or args.noise < 0:
         parser.error("range/rate/noise must be finite; noise must be nonnegative")
-    if not -180 <= args.azimuth <= 180:
-        parser.error("--azimuth must be -180..180")
+    if not -2147483648 <= args.azimuth <= 2147483647:
+        parser.error("--azimuth must be -2147483648..2147483647 semicircles")
 
     connection = nullcontext(None)
     if args.port:

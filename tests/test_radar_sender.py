@@ -19,21 +19,38 @@ class RadarSenderTest(unittest.TestCase):
             sender.main()
         writes = serial.Serial.return_value.__enter__.return_value.write.call_args_list
         self.assertEqual([call.args[0] for call in writes], [
-            sender.build_radar_frame(0, 1000, 30),
-            sender.build_radar_frame(100, 998, 30),
+            sender.build_radar_frame(0, 1000, 178956971),
+            sender.build_radar_frame(100, 998, 178956971),
         ])
         sleep.assert_called_once_with(0.1)
 
     def test_big_endian_signed_azimuth_and_checksum(self):
         self.assertEqual(
-            sender.build_radar_frame(100, 1000, -30),
-            bytes.fromhex('7e 08 02 00 00 00 64 03 e8 ff e2 90'),
+            sender.build_radar_frame(100, 1000, -1073741824),
+            bytes.fromhex('7e 0a 02 00 00 00 64 03 e8 c0 00 00 00 4d'),
         )
+
+    def test_semicircle_boundaries(self):
+        for value, encoded in [(-2147483648, '80000000'),
+                               (0, '00000000'),
+                               (2147483647, '7fffffff')]:
+            with self.subTest(value=value):
+                frame = sender.build_radar_frame(0, 1000, value)
+                self.assertEqual(frame[1], 10)
+                self.assertEqual(frame[9:13], bytes.fromhex(encoded))
+
+    def test_cli_accepts_semicircle(self):
+        with patch.object(sys, 'argv', ['sender', '--count', '1',
+                                       '--noise', '0', '--azimuth', '-1073741824']), \
+                contextlib.redirect_stdout(io.StringIO()) as output:
+            sender.main()
+        self.assertIn('c0 00 00 00', output.getvalue())
 
     def test_invalid_settings(self):
         for option, value in [('--hz', '0'), ('--hz', 'nan'),
                               ('--count', '0'), ('--noise', '-1'),
-                              ('--azimuth', '181')]:
+                              ('--azimuth', '2147483648'),
+                              ('--azimuth', '-2147483649')]:
             with self.subTest(option=option, value=value), \
                     patch.object(sys, 'argv', ['sender', option, value]), \
                     contextlib.redirect_stderr(io.StringIO()), \

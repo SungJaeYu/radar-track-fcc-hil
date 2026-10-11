@@ -1,141 +1,239 @@
-#include <zephyr/ztest.h>
 #include <math.h>
-#include "kalman.h"
+#include <stdint.h>
+#include <string.h>
 
-ZTEST_SUITE(kalman, NULL, NULL, NULL, NULL, NULL);
+#include "angle_utils.h"
+#include "gating.h"
+#include "kalman_cv.h"
+#include "radar_message.h"
+#include "track.h"
 
-ZTEST(kalman, test_init_coordinate_convention)
+#ifdef TRACK_TEST_HOST
+#include <stdio.h>
+#include <stdlib.h>
+#define CHECK(condition) do { \
+    if (!(condition)) { \
+        fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #condition); \
+        exit(EXIT_FAILURE); \
+    } \
+} while (0)
+#define TEST(name) static void name(void)
+#else
+#include <zephyr/ztest.h>
+#define CHECK(condition) zassert_true((condition), "%s", #condition)
+#define TEST(name) ZTEST(tracking, name)
+ZTEST_SUITE(tracking, NULL, NULL, NULL, NULL, NULL);
+#endif
+
+#define PI_F 3.14159265358979323846f
+#define RAD(degrees) ((degrees) * PI_F / 180.0f)
+#define NEAR(actual, expected) CHECK(fabsf((actual) - (expected)) < 1e-5f)
+
+static struct track new_track(uint32_t timestamp)
 {
-    struct kalman_state ks;
-
-    /* az=0 → 정면(북쪽): x=0, y=range */
-    kalman_init(&ks, 1000.0f, 0.0f);
-    zassert_within(ks.x[0], 0.0f, 1e-3f, "x should be 0 at az=0");
-    zassert_within(ks.x[1], 1000.0f, 1e-3f, "y should equal range at az=0");
-
-    /* az=π/2 → 동쪽: x=range, y=0 */
-    kalman_init(&ks, 1000.0f, 1.57079632679f);
-    zassert_within(ks.x[0], 1000.0f, 1.0f, "x should equal range at az=pi/2");
-    zassert_within(ks.x[1], 0.0f, 1.0f, "y should be 0 at az=pi/2");
+    struct track t = {0};
+    track_init(&t);
+    track_start(&t, 1000.0f, RAD(30.0f), timestamp);
+    return t;
 }
 
-ZTEST(kalman, test_predict_propagates_constant_velocity)
+static void hit(struct track *t, uint32_t timestamp)
 {
-    struct kalman_state ks;
-
-    kalman_init(&ks, 1000.0f, 0.0f);  /* x=0, y=1000, vx=vy=0 */
-    ks.x[2] = 20.0f;   /* vx */
-    ks.x[3] = -5.0f;   /* vy */
-    float p00_before = ks.P[0][0];
-
-    kalman_predict(&ks, 2.0f);
-
-    zassert_within(ks.x[0], 40.0f, 1e-3f, "x should advance by vx*dt");
-    zassert_within(ks.x[1], 990.0f, 1e-3f, "y should advance by vy*dt");
-    zassert_within(ks.x[2], 20.0f, 1e-3f, "vx should be unchanged by CV predict");
-    zassert_within(ks.x[3], -5.0f, 1e-3f, "vy should be unchanged by CV predict");
-    zassert_true(ks.P[0][0] > p00_before,
-                 "position uncertainty should grow after predict");
+    CHECK(track_predict(t, timestamp));
+    CHECK(gating_check(1000.0f, t->range_filter.estimate,
+                       RAD(30.0f), t->azimuth_filter.estimate));
+    track_hit(t, 1000.0f, RAD(30.0f));
 }
 
-ZTEST(kalman, test_converges_to_stationary_measurement)
+TEST(test_angle_wrap)
 {
-    struct kalman_state ks;
-    const float range = 5000.0f;
-    const float az = 0.3f;
+    NEAR(wrap_angle_rad(RAD(181.0f)), RAD(-179.0f));
+    NEAR(wrap_angle_rad(RAD(-181.0f)), RAD(179.0f));
+    NEAR(wrap_angle_rad(-PI_F), PI_F);
+    NEAR(angle_diff_rad(RAD(-179.0f), RAD(179.0f)), RAD(2.0f));
+    NEAR(angle_diff_rad(RAD(179.0f), RAD(-179.0f)), RAD(-2.0f));
+}
 
-    kalman_init(&ks, range, az);
-    for (int i = 0; i < 50; i++) {
-        kalman_predict(&ks, 0.05f);
-        kalman_update(&ks, range, az);
+TEST(test_gate)
+{
+    CHECK(gating_check(1100, 1000, RAD(9), 0));
+    CHECK(!gating_check(1101, 1000, 0, 0));
+    CHECK(!gating_check(899, 1000, 0, 0));
+    CHECK(!gating_check(1000, 1000, RAD(11), 0));
+    CHECK(!gating_check(1000, 1000, RAD(-11), 0));
+    CHECK(gating_check(1000, 1000, RAD(-179), RAD(179)));
+}
+
+TEST(test_cv_prediction_and_covariance)
+{
+    struct kalman_cv_filter k;
+    kalman_cv_init(&k, 10, 2, 4, 0, 0, 9, 4, 1);
+    kalman_cv_predict(&k, 0.5f);
+    NEAR(k.estimate, 11); NEAR(k.rate, 2);
+    // Hand-calculated F P F^T + Q for dt=0.5, acceleration variance=4.
+    NEAR(k.p00, 6.3125f); NEAR(k.p01, 4.75f);
+    NEAR(k.p10, 4.75f); NEAR(k.p11, 10);
+}
+
+TEST(test_cv_correction)
+{
+    struct kalman_cv_filter k;
+    kalman_cv_init(&k, 10, 2, 4, 1, 1, 9, 0, 4);
+    kalman_cv_correct(&k, 14);
+    NEAR(k.estimate, 12); NEAR(k.rate, 2.5f);
+    NEAR(k.p00, 2); NEAR(k.p01, 0.5f);
+    NEAR(k.p10, 0.5f); NEAR(k.p11, 8.875f);
+}
+
+TEST(test_angle_prediction_and_correction)
+{
+    struct kalman_cv_filter k;
+    kalman_cv_init(&k, RAD(179), RAD(4), 1, 0, 0, 1, 0, 1);
+    kalman_cv_predict_angle(&k, 1);
+    NEAR(k.estimate, RAD(-177));
+    kalman_cv_init(&k, RAD(179), 0, 1, 0, 0, 1, 0, 1);
+    kalman_cv_correct_angle(&k, RAD(-177));
+    NEAR(k.estimate, RAD(-179));
+    NEAR(k.rate, 0);
+}
+
+TEST(test_stationary_convergence)
+{
+    struct kalman_cv_filter k;
+    kalman_cv_init(&k, 990, 0, 25, 0, 0, 100, 1, 4);
+    for (int i = 0; i < 200; ++i) {
+        kalman_cv_predict(&k, 0.1f);
+        kalman_cv_correct(&k, 1000);
+        CHECK(isfinite(k.estimate) && k.p00 >= 0 && k.p11 >= 0);
+        NEAR(k.p01, k.p10);
     }
-
-    float expect_x = range * sinf(az);
-    float expect_y = range * cosf(az);
-    zassert_within(ks.x[0], expect_x, 1.0f, "x did not converge");
-    zassert_within(ks.x[1], expect_y, 1.0f, "y did not converge");
-    zassert_within(ks.x[2], 0.0f, 1.0f, "vx should settle near 0");
-    zassert_within(ks.x[3], 0.0f, 1.0f, "vy should settle near 0");
+    CHECK(fabsf(k.estimate - 1000) < 0.1f);
+    CHECK(fabsf(k.rate) < 0.1f);
 }
 
-ZTEST(kalman, test_azimuth_wrap_around)
+TEST(test_decode_semicircle)
 {
-    struct kalman_state ks;
-    const float range = 1000.0f;
-    const float az_true = 3.14f;    /* 거의 -y 방향, +π 근접 */
-    const float az_meas = -3.14f;   /* wrap 경계 반대편이지만 실제 차이는 작음 */
-
-    kalman_init(&ks, range, az_true);
-    float y_before = ks.x[1];
-
-    kalman_predict(&ks, 0.05f);
-    kalman_update(&ks, range, az_meas);
-
-    /* wrap을 안 했다면 혁신이 ~6.28rad이 되어 상태가 크게 튀어야 한다.
-     * wrap이 맞다면 실제 각도 차이는 0.0032rad 수준이라 변화가 작아야 한다. */
-    float y_after = ks.x[1];
-    zassert_within(y_after, y_before, 50.0f,
-                  "wrap-around bug: state jumped too much");
+    uint8_t payload[] = {0, 0, 0, 100, 0x03, 0xe8, 0x40, 0, 0, 0};
+    struct radar_measurement m;
+    CHECK(decode_radar_measurement(payload, sizeof payload, &m));
+    CHECK(m.timestamp_ms == 100); NEAR(m.range_m, 1000);
+    NEAR(m.azimuth_rad, PI_F / 2); CHECK(validate_radar_measurement(&m));
+    payload[6] = 0xc0;
+    CHECK(decode_radar_measurement(payload, sizeof payload, &m));
+    NEAR(m.azimuth_rad, -PI_F / 2);
+    payload[6] = 0x80;
+    CHECK(decode_radar_measurement(payload, sizeof payload, &m));
+    NEAR(m.azimuth_rad, -PI_F); CHECK(validate_radar_measurement(&m));
+    payload[6] = 0x7f; payload[7] = payload[8] = payload[9] = 0xff;
+    CHECK(decode_radar_measurement(payload, sizeof payload, &m));
+    NEAR(m.azimuth_rad, PI_F); CHECK(validate_radar_measurement(&m));
+    CHECK(!decode_radar_measurement(payload, 8, &m));
+    CHECK(!decode_radar_measurement(NULL, 10, &m));
+    CHECK(!decode_radar_measurement(payload, 10, NULL));
+    m.range_m = 0; CHECK(!validate_radar_measurement(&m));
 }
 
-ZTEST(kalman, test_filtering_reduces_rmse_for_cv_target)
+TEST(test_timestamp_rejection)
 {
-    struct kalman_state ks;
-    const float dt = 0.1f;
-    const int n_steps = 40;
-    const int warmup = 10;
-    const float x0 = 300.0f, y0 = 2000.0f, vx = 10.0f, vy = -5.0f;
+    const uint32_t rejected[] = {100, 99, 100 + UINT32_C(0x80000000)};
+    for (unsigned i = 0; i < sizeof rejected / sizeof rejected[0]; ++i) {
+        struct track t = new_track(100);
+        unsigned char before[sizeof t];
+        memcpy(before, &t, sizeof t);
+        CHECK(!track_predict(&t, rejected[i]));
+        CHECK(memcmp(before, &t, sizeof t) == 0);
+    }
+}
 
-    float r0  = sqrtf(x0 * x0 + y0 * y0);
-    float az0 = atan2f(x0, y0);
-    kalman_init(&ks, r0, az0);
+TEST(test_elapsed_time_and_wraparound)
+{
+    struct track t = new_track(100);
+    t.range_filter.rate = 20;
+    CHECK(track_predict(&t, 400)); NEAR(t.range_filter.estimate, 1006);
+    CHECK(t.last_measurement_time_ms == 400);
+    t = new_track(UINT32_MAX - 49);
+    t.range_filter.rate = 20;
+    CHECK(track_predict(&t, 50)); NEAR(t.range_filter.estimate, 1002);
+    CHECK(t.last_measurement_time_ms == 50);
+}
 
-    double raw_err2 = 0.0, filt_err2 = 0.0;
-    int count = 0;
+TEST(test_long_gap_and_restart)
+{
+    struct track t = new_track(100);
+    CHECK(track_predict(&t, 1100));
+    t = new_track(100);
+    CHECK(!track_predict(&t, 1101)); CHECK(t.state == TRACK_EMPTY);
+    CHECK(t.hit_count == 0 && t.miss_count == 0);
+    track_start(&t, 2000, RAD(-30), 1200);
+    CHECK(t.state == TRACK_TENTATIVE && t.hit_count == 1);
+    NEAR(t.range_filter.estimate, 2000); NEAR(t.range_filter.rate, 0);
+    NEAR(t.azimuth_filter.estimate, RAD(-30));
+}
 
-    for (int i = 1; i <= n_steps; i++) {
-        float true_x = x0 + vx * (float)i * dt;
-        float true_y = y0 + vy * (float)i * dt;
-        float true_r = sqrtf(true_x * true_x + true_y * true_y);
-        float true_az = atan2f(true_x, true_y);
+TEST(test_confirmation_coasting_and_loss)
+{
+    struct track t = new_track(0);
+    hit(&t, 100); CHECK(t.state == TRACK_TENTATIVE);
+    hit(&t, 200); CHECK(t.state == TRACK_CONFIRMED);
+    CHECK(track_predict(&t, 300)); track_miss(&t);
+    CHECK(t.state == TRACK_COASTING && t.hit_count == 0 && t.miss_count == 1);
+    hit(&t, 400); CHECK(t.state == TRACK_CONFIRMED && t.miss_count == 0);
+    for (unsigned i = 1; i <= 5; ++i) {
+        CHECK(track_predict(&t, 400 + i * 100)); track_miss(&t);
+        CHECK(t.state == (i < 5 ? TRACK_COASTING : TRACK_LOST));
+    }
+}
 
-        /* 결정론적 (재현 가능한) 가짜 노이즈: 부호가 주기적으로 바뀜 */
-        float r_noise  = (i % 2 == 0) ?  10.0f : -10.0f;
-        float az_noise = (i % 3 == 0) ?  0.01f : -0.01f;
-        float r_meas   = true_r + r_noise;
-        float az_meas  = true_az + az_noise;
+TEST(test_tentative_miss_and_inactive_calls)
+{
+    struct track t = new_track(0);
+    track_miss(&t);
+    CHECK(t.state == TRACK_EMPTY && t.hit_count == 0 && t.miss_count == 0);
+    unsigned char before[sizeof t];
+    memcpy(before, &t, sizeof t);
+    track_hit(&t, 500, 0); track_miss(&t);
+    CHECK(!track_predict(&t, 100)); CHECK(memcmp(before, &t, sizeof t) == 0);
+}
 
-        kalman_predict(&ks, dt);
-        kalman_update(&ks, r_meas, az_meas);
-
-        if (i > warmup) {
-            float raw_x = r_meas * sinf(az_meas);
-            float raw_y = r_meas * cosf(az_meas);
-
-            raw_err2  += (double)((raw_x - true_x) * (raw_x - true_x)
-                                 + (raw_y - true_y) * (raw_y - true_y));
-            filt_err2 += (double)((ks.x[0] - true_x) * (ks.x[0] - true_x)
-                                 + (ks.x[1] - true_y) * (ks.x[1] - true_y));
-            count++;
+TEST(test_lost_restarts_for_any_timestamp)
+{
+    const uint32_t timestamps[] = {0, 900, 1000};
+    for (unsigned i = 0; i < sizeof timestamps / sizeof timestamps[0]; ++i) {
+        struct track t = new_track(0);
+        hit(&t, 100); hit(&t, 200);
+        for (unsigned n = 1; n <= 5; ++n) {
+            CHECK(track_predict(&t, 400 + n * 100)); track_miss(&t);
         }
+        CHECK(t.state == TRACK_LOST);
+        unsigned char before[sizeof t];
+        memcpy(before, &t, sizeof t);
+        track_hit(&t, 500, 0); track_miss(&t);
+        CHECK(memcmp(before, &t, sizeof t) == 0);
+        CHECK(!track_predict(&t, timestamps[i]));
+        CHECK(t.state == TRACK_EMPTY && t.hit_count == 0 && t.miss_count == 0);
+        track_start(&t, 500, 0, timestamps[i] + 100);
+        CHECK(t.state == TRACK_TENTATIVE && t.hit_count == 1);
+        NEAR(t.range_filter.estimate, 500); NEAR(t.range_filter.rate, 0);
     }
-
-    double raw_rmse  = sqrt(raw_err2 / count);
-    double filt_rmse = sqrt(filt_err2 / count);
-
-    zassert_true(filt_rmse < raw_rmse,
-                "filtered RMSE(%.2f) should be lower than raw RMSE(%.2f)",
-                filt_rmse, raw_rmse);
 }
 
-/* debug 빌드에서 잘못된 입력이 assert를 발동시키는지 확인.
- * ztest_set_assert_valid로 __ASSERT 실패를 정상 통과로 처리. */
-ZTEST(kalman, test_negative_dt_triggers_assert)
+#ifdef TRACK_TEST_HOST
+int main(void)
 {
-    struct kalman_state ks;
-    kalman_init(&ks, 1000.0f, 0.0f);
-
-    ztest_set_assert_valid(true);   /* 다음 __ASSERT 실패는 기대된 것 */
-    kalman_predict(&ks, -1.0f);     /* dt<0 → assert 발동해야 함 */
-    ztest_set_assert_valid(false);
+#define RUN(name) do { name(); puts("PASS: " #name); } while (0)
+    RUN(test_angle_wrap);
+    RUN(test_gate);
+    RUN(test_cv_prediction_and_covariance);
+    RUN(test_cv_correction);
+    RUN(test_angle_prediction_and_correction);
+    RUN(test_stationary_convergence);
+    RUN(test_decode_semicircle);
+    RUN(test_timestamp_rejection);
+    RUN(test_elapsed_time_and_wraparound);
+    RUN(test_long_gap_and_restart);
+    RUN(test_confirmation_coasting_and_loss);
+    RUN(test_tentative_miss_and_inactive_calls);
+    RUN(test_lost_restarts_for_any_timestamp);
+    return 0;
 }
+#endif

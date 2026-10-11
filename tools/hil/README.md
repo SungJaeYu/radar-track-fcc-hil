@@ -10,7 +10,10 @@
 - `protocol.py`: 두 도구가 공유하는 프레임 생성과 XOR 체크섬 계산.
 
 프레임: `7E | payload 길이 | TYPE | payload | XOR(TYPE, payload)`.
-레이더 TYPE은 `2`, payload는 big-endian `uint32 timestamp_ms + uint16 range_m + int16 azimuth_deg`입니다.
+레이더 TYPE은 `2`, payload는 big-endian `uint32 timestamp_ms + uint16 range_m + int32 azimuth_sc`의 10바이트(`struct.pack(">IHi", ...)`)입니다.
+`--azimuth`는 degree가 아닌 int32 semicircle 값(-2147483648..2147483647)을 직접 받습니다.
+변환식은 `azimuth_rad = azimuth_sc × π / 2³¹`이며, `1073741824`는 90°, `-1073741824`는 -90°입니다.
+기본값은 기존 약 30° 방향을 유지하는 `178956971`입니다. FCC는 수신 후 라디안으로 변환합니다.
 
 ## 실행
 

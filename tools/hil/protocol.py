@@ -23,13 +23,13 @@ def encode_frame(frame_type, payload):
             + bytes([calculate_checksum(frame_type, payload)]))
 
 
-def build_radar_frame(timestamp_ms, range_m, azimuth_deg):
+def build_radar_frame(timestamp_ms, range_m, azimuth_sc):
+    """Encode int32 semicircle azimuth (radians = azimuth_sc * pi / 2**31)."""
     payload = struct.pack(
-        ">IHh",
+        ">IHi",
         timestamp_ms,
         range_m,
-        azimuth_deg
+        azimuth_sc
     )
 
     return encode_frame(TYPE_RADAR_MEAS, payload)
-

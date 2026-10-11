@@ -7,8 +7,7 @@
 
 void frame_handler_init(struct frame_handler *p_handler) 
 {
-    p_handler->is_filter_initialized = false;
-    p_handler->last_measurement_time_ms = 0;
+    track_init(&p_handler->track);
 }
 
 void frame_handler_reset(struct frame_handler *p_handler) 
@@ -40,88 +39,49 @@ void handle_frame(struct frame_handler *p_handler, const struct frame_parser *p_
             break;
         }
     
-        if (!p_handler->is_filter_initialized) {            
-            kalman_cv_init(
-                &p_handler->range_filter,
-                (float)rm.range,      // initial_range
-                0.0f,      // initial_range_rate
-                25.0f,     // p00: range uncertainty
-                0.0f,      // p01
-                0.0f,      // p10
-                10000.0f,  // p11: range-rate uncertainty
-                100.0f,    // q: acceleration noise variance
-                25.0f      // R: measurement noise variance
-            );
+        printk("range: %.2f\n", rm.range_m);
+        printk("azimuth: %.2f\n", rm.azimuth_rad);
 
-            kalman_cv_init(
-                &p_handler->azimuth_filter,
-                (float)rm.azimuth,      // initial_azimuth
-                0.0f,      // initial_azimuth_rate
-                4.0f,     // p00: azimuth uncertainty
-                0.0f,      // p01
-                0.0f,      // p10
-                100.0f,  // p11: range-rate uncertainty
-                25.0f,    // q: acceleration noise variance
-                4.0f      // R: measurement noise variance
-            );
-
-            p_handler->is_filter_initialized = true;
-            printk("range: %u\n", rm.range);
-            printk("azimuth: %d\n", rm.azimuth);
-
-            printk("Filters initialized at range: %u\n", rm.range);
-
-        } else {
-            const uint32_t delta_ms = rm.timestamp_ms - p_handler->last_measurement_time_ms;
-
-            const float dt = (float)delta_ms / 1000.0f;
+        if (p_handler->track.state == TRACK_EMPTY) {            
+            track_start(&p_handler->track, (float)rm.range_m, (float)rm.azimuth_rad, rm.timestamp_ms);
             
-            if (delta_ms == 0U || dt > 1.0f) {
-                printk("Invalid measurement dt: %.3f\n", (double)dt);
-                p_handler->last_measurement_time_ms = rm.timestamp_ms;
+            printk("Filters initialized at range: %.2f\n", rm.range_m);
+            printk("Filters initialized at azimuth: %.2f\n", rm.azimuth_rad);
+        } else {
+
+            if(!track_predict(&p_handler->track, rm.timestamp_ms)) {
+                printk("Invalid measurement interval\n");
                 break;
             }
 
-            printk("range: %u\n", rm.range);
-            printk("azimuth: %d\n", rm.azimuth);
-
-            // Prediction
-            kalman_cv_predict(
-                &p_handler->range_filter, dt);
-
-            kalman_cv_predict_angle(
-                &p_handler->azimuth_filter,dt);
-
-
-            const float predicted_range = p_handler->range_filter.estimate;
-            const float predicted_azimuth = p_handler->azimuth_filter.estimate;
+            const float predicted_range = p_handler->track.range_filter.estimate;
+            const float predicted_azimuth = p_handler->track.azimuth_filter.estimate;
             
             printk("predicted range: %.2f\n", (double)predicted_range);
             printk("predicted azimuth: %.2f\n", (double)predicted_azimuth);
 
             // Gating
             const bool is_in_gate = gating_check(
-                (float)rm.range,
+                rm.range_m,
                 predicted_range,
-                (float)rm.azimuth,
+                rm.azimuth_rad,
                 predicted_azimuth
             );
 
             // Correction
             if (is_in_gate) {
-                kalman_cv_correct(&p_handler->range_filter, (float)rm.range);
-                kalman_cv_correct_angle(&p_handler->azimuth_filter, (float)rm.azimuth);
-
+                track_hit(&p_handler->track, rm.range_m, rm.azimuth_rad);
                 printk("Measurement accepted\n");
             } else {
+                track_miss(&p_handler->track);
                 printk("Measurement rejected by gate\n");
             }
 
             const float filtered_range =
-                p_handler->range_filter.estimate;
+                p_handler->track.range_filter.estimate;
 
             const float filtered_azimuth =
-                p_handler->azimuth_filter.estimate;
+                p_handler->track.azimuth_filter.estimate;
 
   
             printk("filtered range: %.2f\n",
@@ -131,12 +91,10 @@ void handle_frame(struct frame_handler *p_handler, const struct frame_parser *p_
                 (double)filtered_azimuth);
 
             printk("estimated range rate: %.2f\n",
-                (double)p_handler->range_filter.rate);
+                (double)p_handler->track.range_filter.rate);
             printk("estimated azimuth rate: %.2f\n",
-                (double)p_handler->azimuth_filter.rate);
+                (double)p_handler->track.azimuth_filter.rate);
         }
-
-        p_handler->last_measurement_time_ms = rm.timestamp_ms;
         break;
     }
     case TYPE_STATUS:

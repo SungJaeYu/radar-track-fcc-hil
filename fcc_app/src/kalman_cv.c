@@ -44,7 +44,7 @@ static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt, 
     // State Prediction
     p_kf->estimate += p_kf->rate * dt;
     if (is_angle) {
-        p_kf->estimate = wrap_angle_deg(p_kf->estimate);
+        p_kf->estimate = wrap_angle_rad(p_kf->estimate);
     }
 
     // Covariance Prediction
@@ -80,7 +80,7 @@ static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float valu
     float residual = value_measurement - p_kf->estimate;
     
     if (is_angle) {
-        residual = wrap_angle_deg(residual);
+        residual = wrap_angle_rad(residual);
     }
 
     // Innovation covariance
@@ -97,7 +97,7 @@ static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float valu
     // State Correction
     p_kf->estimate += k0 * residual;
     if (is_angle) {
-        p_kf->estimate = wrap_angle_deg(p_kf->estimate);
+        p_kf->estimate = wrap_angle_rad(p_kf->estimate);
     }
 
     p_kf->rate += k1 * residual;

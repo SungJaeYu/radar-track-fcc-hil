@@ -1,19 +1,21 @@
 #include "angle_utils.h"
 
-float wrap_angle_deg(float angle)
+#define PI_F 3.14159265358979323846f
+
+float wrap_angle_rad(float angle)
 {
-    while (angle > 180.0f) {
-        angle -= 360.0f;
+    while (angle > PI_F) {
+        angle -= 2 * PI_F;
     }
 
-    while (angle <= -180.0f) {
-        angle += 360.0f;
+    while (angle <= -PI_F) {
+        angle += 2 * PI_F;
     }
 
     return angle;
 }
 
-float angle_diff_deg(float a, float b)
+float angle_diff_rad(float a, float b)
 {
-    return wrap_angle_deg(a - b);
+    return wrap_angle_rad(a - b);
 }

@@ -2,14 +2,10 @@
 #define FRAME_HANDLER_H
 
 #include "frame_parser.h"
-#include "kalman_cv.h"
+#include "track.h"
 
 struct frame_handler {
-    struct kalman_cv_filter range_filter;
-    struct kalman_cv_filter azimuth_filter;
-
-    bool is_filter_initialized;
-    uint32_t last_measurement_time_ms;
+    struct track track;
 };
 
 void frame_handler_init(struct frame_handler *p_handler);
