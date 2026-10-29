@@ -2,53 +2,39 @@
 
 ## 프로젝트 정체성
 
-다중표적 레이더 트래킹을 STM32에서 실시간 처리하는 Hardware-in-the-Loop(HIL) 시스템.
-PC가 레이더 환경/측정을 시뮬레이션하고, STM32(FCC 역할)가 트래킹한 결과를
-다시 PC로 돌려보내 정량 검증하는 폐루프 구조.
+STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
+현재는 PC 측정 송신 → STM32 단일 트랙 처리 → ST-Link 콘솔 확인 구조입니다.
+다중표적·폐루프 정량 검증은 목표이며 현재 동작으로 단정하지 않습니다.
 
-핵심 포지셔닝: "검증을 아는 개발자". 따라서 모든 기능은
-정량 검증 가능한 형태로 만든다 (RMSE, 트랙 연속성 등).
+## 개발 환경
 
-## 개발 환경 (이미 검증 완료)
+- 보드: STM32F746G-DISCO, 보드 ID `stm32f746g_disco`.
+- west workspace: `~/zephyrproject`, Python venv: `~/zephyrproject/.venv`.
+- 작업 전 `source ~/zephyrproject/.venv/bin/activate`.
+- 빌드: `west build -p always -b stm32f746g_disco <app_path>`.
+- flash: `west flash --runner openocd` (openocd 러너 사용).
 
-- 보드: STM32F746G-DISCO (Cortex-M7), 보드 ID: `stm32f746g_disco`
-- RTOS: Zephyr v4.2, SDK: ~/zephyr-sdk-1.0.1
-- west workspace: ~/zephyrproject
-- 빌드: `west build -p always -b stm32f746g_disco <app_path>`
-- 굽기: `west flash --runner openocd`  (← 반드시 openocd 러너 사용)
-- 시리얼 콘솔: tio /dev/ttyACM0 (115200 8N1)
-- 작업 전 항상: `source ~/zephyrproject/.venv/bin/activate`
+## 현재 구조와 규격
 
-## 아키텍처 (3계층)
+- PC 도구는 `pc_sim/` 하나. 모든 송신기가 `pc_sim/protocol.py`를 공유합니다.
+- `radar_sender.py`: 거리 변화율 기반 송신. `run_sim.py`: 표적·센서 시나리오.
+- `small_byte_test.py`: 수동 INIT 등 단일 프레임 송신.
+- 프레임: `7E | LEN | TYPE | PAYLOAD | XOR(TYPE, PAYLOAD)`.
+- 측정 TYPE=2, payload `>IHi` 10바이트: uint32 ms, uint16 m, int32 semicircle.
+- 보드 `radar_message.c`가 semicircle을 rad로 변환합니다.
+- `uart_rx` 스레드가 파싱·handler·track 처리를 수행합니다.
+- 단일 트랙, CV Kalman, 게이팅, hit/miss 상태 전이, 정상 측정 수신 timeout이 있습니다.
+- 다중표적 데이터 연관·이진 트랙 응답·LCD는 현재 실행 경로에 없습니다.
+- 기존 CRC16 코덱과 구버전 설계 문서는 제거했습니다. 과거 구현은 Git 이력에 남아 있습니다.
 
-1. PC측 (Python, 이미 구현/검증됨): 표적 시나리오 + 레이더 측정 모델
-   (가우시안 노이즈, Pd, 클러터/오탐) + UART 송수신 + ground truth 비교
-2. 통신 계층: UART 프레임 `STX | len | type | payload | CRC16`,
-   메시지 타입 = measurement / track / control
-3. STM32 FCC측 (이번에 구현): 3-스레드 구조
-   - UART RX 스레드: 프레임 수신·파싱 → k_msgq로 Tracking에 전달
-   - Tracking 스레드: 게이팅 → 데이터연관(NN→GNN) → Kalman → M-of-N 트랙관리
-   - Display 스레드: LVGL PPI 디스플레이 (트랙 테이블 read-only 접근)
-   - 트랙 테이블은 mutex로 보호
+## 검증
 
-## 진행 상태 (정직하게 유지)
-
-- [x] PC Python 시뮬레이터 (프레이밍, FrameParser, RadarSensorModel, 유닛테스트)
-- [x] STM32 앱 골격 (3-스레드)
-- [x] UART 프레이밍 (보드측): frame.h/c (CRC16, encode, FrameParser), USART6 ISR+링버퍼
-- [ ] Kalman 포팅 ← 다음 작업
-- [ ] 트랙 관리 (M-of-N, 데이터 연관)
-- [x] LVGL 상태판(텍스트): 최신 측정·프레임 카운터 LCD 표시
-- [ ] LVGL PPI 디스플레이 (트랙 스코프) ← Kalman 이후
-- [ ] HIL 통합 + 정량 검증
-
-## UART 프레이밍 보드 검증 방법
-
-1. 빌드·플래시 후 tio /dev/ttyACM0 으로 Zephyr 콘솔 연결
-2. USB-UART 어댑터 Arduino D0(RX)/D1(TX) 연결 → /dev/ttyUSB0
-3. `python run_sim.py --serial /dev/ttyUSB0 --scenario single_approach`
-4. 콘솔에 `[tracking] #N t=... r=... az=...` 로그 보이면 RX 파이프라인 정상
-5. run_sim.py 출력에 dummy TrackPayload(x=range, y=0) 수신되면 TX 정상
+- `python -m pytest`: PC 테스트. 실제 보드와 별도입니다.
+- 수동 초기화만 필요할 때: `python pc_sim/small_byte_test.py init --type 1 --port PORT`.
+- 송신: `python pc_sim/radar_sender.py --port PORT --count 20 --noise 0`.
+- 두 연속 송신기는 실행마다 INIT을 한 번 자동 전송하고 timestamp를 0부터 시작합니다.
+- 보드 수신·추적 결과는 ST-Link 콘솔에서 확인합니다.
+- Python/host 테스트, 펌웨어 빌드, flash, 실제 보드 HIL을 구분해서 보고합니다.
 
 ## 작업 원칙
 

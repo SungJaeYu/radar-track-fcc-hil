@@ -7,10 +7,17 @@ targets.py — 등속 표적 운동 모델 + 레이더 센서 모델
 
 import math
 import random
-from dataclasses import dataclass, field
-from typing import List, Optional
+from dataclasses import dataclass
+from typing import List
 
-from protocol import MeasPayload
+@dataclass
+class Measurement:
+    """센서 모델의 물리량. 앙각·도플러는 PC 모델에만 남고 wire에는 보내지 않는다."""
+    timestamp_ms: int
+    range_m: float
+    azimuth_rad: float
+    elevation_rad: float
+    doppler_mps: float
 
 
 # ── 표적 운동 모델 (등속, CV) ──────────────────────────────────────────────────
@@ -78,7 +85,7 @@ class RadarSensorModel:
                 rng: random.Random = random.Random()
                 ) -> list:
         """
-        (MeasPayload 데이터 딕셔너리) 리스트 반환.
+        Measurement 객체 리스트 반환.
         순서는 랜덤 셔플 (데이터 연관 알고리즘이 순서에 의존 못하도록).
         """
         measurements = []
@@ -94,7 +101,7 @@ class RadarSensorModel:
             el  = tgt.elevation_rad  # elevation 노이즈는 생략 (2D 시나리오)
             dop = tgt.radial_velocity() + rng.gauss(0, self.sigma_doppler_mps)
 
-            measurements.append(MeasPayload(
+            measurements.append(Measurement(
                 timestamp_ms=timestamp_ms,
                 range_m=max(0.0, r),
                 azimuth_rad=az,
@@ -108,7 +115,7 @@ class RadarSensorModel:
             r   = rng.uniform(0, self.max_range_m)
             az  = rng.uniform(-math.pi, math.pi)
             dop = rng.gauss(0, self.sigma_doppler_mps * 3)
-            measurements.append(MeasPayload(
+            measurements.append(Measurement(
                 timestamp_ms=timestamp_ms,
                 range_m=r,
                 azimuth_rad=az,

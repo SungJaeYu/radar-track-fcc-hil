@@ -5,14 +5,40 @@
 #include "radar_message.h"
 #include "gating.h"
 
+// Expire the track after 1000 ms without a decoded and validated radar measurement.
+#define RADAR_RX_TIMEOUT_MS 1000
+
 void frame_handler_init(struct frame_handler *p_handler) 
 {
     track_init(&p_handler->track);
+
+    // Arm timeout monitoring only after the next valid radar measurement.
+    p_handler->last_valid_rx_ms = 0;
+    p_handler->timeout_armed = false;
 }
 
 void frame_handler_reset(struct frame_handler *p_handler) 
 {
     frame_handler_init(p_handler);
+}
+
+void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms)
+{
+    // No timeout before the first valid measurement after initialization or reset.
+    if (!p_handler->timeout_armed) {
+        return;
+    }
+
+    // Both times use board uptime in ms, not the sender's measurement timestamp.
+    const int64_t elapsed_ms = now_ms - p_handler->last_valid_rx_ms;
+
+    if (elapsed_ms < RADAR_RX_TIMEOUT_MS) {
+        return;
+    }
+
+    // Clear the stale track and disarm monitoring so this timeout is logged once.
+    frame_handler_reset(p_handler);
+    printk("Radar measurement timeout: track cleared\n");
 }
 
 void handle_frame(struct frame_handler *p_handler, const struct frame_parser *p_parser)
@@ -39,6 +65,11 @@ void handle_frame(struct frame_handler *p_handler, const struct frame_parser *p_
             break;
         }
     
+        // Record processing time for valid radar payloads, before timestamp/gate checks.
+        // A later tracking rejection still counts as receiving a valid measurement payload.
+        p_handler->last_valid_rx_ms = k_uptime_get();
+        p_handler->timeout_armed = true;
+
         printk("range: %.2f\n", rm.range_m);
         printk("azimuth: %.2f\n", rm.azimuth_rad);
 

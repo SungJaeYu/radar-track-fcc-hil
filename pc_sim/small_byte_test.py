@@ -33,8 +33,8 @@ def main():
     parser.add_argument("--port")
     parser.add_argument("--baud", type=int, default=115200)
     parser.add_argument(
-        "--type", type=lambda value: int(value, 0), choices=(1, 2, 3, 4),
-        default=1, help="1=INIT (default), 2=RADAR_MEAS, 3=STATUS, 4=COMMAND",
+        "--type", type=lambda value: int(value, 0), choices=(1, 2, 3, 4, 5),
+        default=1, help="1=INIT (default), 2=RADAR_MEAS, 3=STATUS, 4=COMMAND, 5=RESET",
     )
 
     args = parser.parse_args()

@@ -5,9 +5,9 @@ import time
 import random
 
 if __package__:
-    from .protocol import build_radar_frame
+    from .protocol import build_init_frame, build_radar_frame
 else:
-    from protocol import build_radar_frame
+    from protocol import build_init_frame, build_radar_frame
 
 
 def main():
@@ -43,6 +43,13 @@ def main():
     true_range = args.range
 
     with connection as ser:
+        # timestamp를 0부터 다시 보내기 전에 수신 트랙을 한 번 초기화한다.
+        init_frame = build_init_frame()
+        if ser is not None:
+            ser.write(init_frame)
+            ser.flush()
+        print(f"INIT frame={init_frame.hex(' ')}")
+
         for i in range(args.count):
             timestamp_ms = int(i * dt * 1000)
 

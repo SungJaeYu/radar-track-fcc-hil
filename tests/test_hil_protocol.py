@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from tools.hil import protocol, small_byte_test
+from pc_sim import protocol, small_byte_test
 
 
 def test_init_frame_matches_firmware_wire_format():
@@ -34,3 +34,13 @@ def test_small_byte_rejects_invalid_byte_length(payload):
         small_byte_test.main()
     assert error.value.code == 2
     port.assert_not_called()
+
+
+def test_small_byte_sender_can_send_firmware_reset():
+    with patch.object(sys, 'argv', ['sender', 'r', '--type', '5', '--port', 'test']), \
+            patch.object(small_byte_test.serial, 'Serial') as port, \
+            contextlib.redirect_stdout(io.StringIO()):
+        small_byte_test.main()
+    port.return_value.__enter__.return_value.write.assert_called_once_with(
+        bytes.fromhex('7e 01 05 72 77')
+    )

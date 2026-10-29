@@ -2,6 +2,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/sys/printk.h>
+#include <zephyr/sys/atomic.h>
 
 #include "ring_buffer.h"
 #include "frame_parser.h"
@@ -14,8 +15,12 @@ static const struct device *uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 static struct ring_buffer rx_ring;
 static struct frame_parser parser;
 static struct frame_handler handler;
+static atomic_t rx_overflow = ATOMIC_INIT(0);
 
+// Notify the RX thread of buffered data; the bytes remain in rx_ring.
 K_SEM_DEFINE(rx_sem, 0, 1);
+// Keep the RX thread waiting until the ring, parser, and handler are initialized.
+K_SEM_DEFINE(rx_ready_sem, 0, 1);
 
 static void uart_callback(const struct device *dev, void *user_data);
 static void uart_rx_thread(void *p1, void *p2, void *p3);
@@ -48,6 +53,9 @@ int uart_rx_init(void) {
     // Enable RX Interrupt
     uart_irq_rx_enable(uart);
 
+    // Signal that RX initialization is completed
+    k_sem_give(&rx_ready_sem);
+
     return 0;
 }
 
@@ -65,9 +73,15 @@ static void uart_callback(const struct device *dev, void *user_data) {
             uint8_t c;
             // UART FIFO Read
             while(uart_fifo_read(dev, &c, 1) == 1) {
-                if (ring_push(&rx_ring, c)) {
-                    k_sem_give(&rx_sem);
+                // drop new byte after overflow before recover
+                if (atomic_get(&rx_overflow) != 0) {
+                    continue;
                 }
+
+                if (!ring_push(&rx_ring, c)) {
+                    atomic_set(&rx_overflow, 1);
+                }
+                k_sem_give(&rx_sem);
             }
         }
     }
@@ -79,11 +93,24 @@ static void uart_rx_thread(void *p1, void *p2, void *p3)
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
 
+    // Wait for RX initialization to complete
+    k_sem_take(&rx_ready_sem, K_FOREVER);
+
     while (1) {
-        k_sem_take(&rx_sem, K_FOREVER);
+        // Wake on RX notification, or after 50 ms even when no data arrives.
+        // This wait interval is separate from the measurement timeout threshold.
+        k_sem_take(&rx_sem, K_MSEC(50));
+
+        // Check even when the receive buffer is empty.
+        frame_handler_check_timeout(&handler, k_uptime_get());
 
         uint8_t c;
         while (ring_pop(&rx_ring, &c)) {
+
+            // Keep checking while continuous input keeps the buffer nonempty.
+            // Expire the old track before processing a new measurement.
+            frame_handler_check_timeout(&handler, k_uptime_get());
+
             if (parser_feed(&parser, c)) {
                 // frame complete
                 handle_frame(&handler, &parser);

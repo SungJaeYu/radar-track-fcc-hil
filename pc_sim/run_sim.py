@@ -1,145 +1,96 @@
-"""
-run_sim.py — HIL 시뮬레이터 메인 루프
-
-사용법:
-    python run_sim.py --mock                        # 보드 없이 PC 단독 테스트
-    python run_sim.py --serial /dev/ttyACM0         # 실제 STM32 연결
-    python run_sim.py --mock --scenario four_targets
-    python run_sim.py --mock --dt 0.1 --duration 30
-
-루프 구조 (매 dt초):
-    1. 표적 위치 전진 (등속)
-    2. 센서 모델로 측정값 생성 (노이즈 + 미탐지 + 클러터)
-    3. 각 측정값을 MSG_MEAS 프레임으로 인코딩 → transport.send()
-    4. transport.recv()로 STM32 트랙 결과 수신 → FrameParser로 파싱
-    5. 수신된 MSG_TRACK을 ground truth와 비교해 콘솔 출력
-"""
-
+"""표적 시나리오를 현재 STM32 XOR 규격으로 출력하거나 UART로 송신한다."""
 import argparse
+from contextlib import nullcontext
 import math
 import random
 import time
 
-from protocol import (
-    MSG_MEAS, MSG_TRACK, MSG_CTRL,
-    CTRL_START, CTRL_STOP,
-    encode_frame, FrameParser,
-    MeasPayload, TrackPayload, CtrlPayload,
-)
-from targets import RadarSensorModel, SCENARIOS
-from transport import MockTransport, SerialTransport
+if __package__:
+    from .protocol import build_init_frame, build_radar_frame_from_radians
+    from .targets import RadarSensorModel, SCENARIOS
+else:
+    from protocol import build_init_frame, build_radar_frame_from_radians
+    from targets import RadarSensorModel, SCENARIOS
 
 
-def run(transport, scenario_name: str, dt: float, duration: float,
-        pd: float, clutter_rate: float, seed: int) -> None:
+def run(ser, scenario_name, dt, duration, pd, clutter_rate, seed,
+        noise=10.0, azimuth_noise=0.01):
+    targets = SCENARIOS[scenario_name]()
+    sensor = RadarSensorModel(pd=pd, clutter_rate=clutter_rate,
+                              sigma_range_m=noise, sigma_azimuth_rad=azimuth_noise)
+    rng = random.Random(seed)
+    # 미탐지 여부와 무관하게 시퀀스 시작 시 한 번만 INIT을 보낸다.
+    init_frame = build_init_frame()
+    if ser is not None:
+        ser.write(init_frame)
+        ser.flush()
+    print(f"INIT frame={init_frame.hex(' ')}")
 
-    rng      = random.Random(seed)
-    targets  = SCENARIOS[scenario_name]()
-    sensor   = RadarSensorModel(pd=pd, clutter_rate=clutter_rate)
-    parser   = FrameParser()
-    t_elapsed = 0.0
-    step      = 0
-
-    print(f"[sim] 시작: scenario={scenario_name}, dt={dt}s, "
-          f"duration={duration}s, pd={pd}, clutter={clutter_rate}")
-    print(f"[sim] 표적 {len(targets)}개: "
-          + ", ".join(f"ID{t.target_id}" for t in targets))
-
-    # STM32에 시작 신호
-    transport.send(encode_frame(MSG_CTRL, CtrlPayload(CTRL_START).encode()))
-
-    try:
-        while t_elapsed < duration:
-            tick_start    = time.monotonic()
-            timestamp_ms  = int(t_elapsed * 1000)
-
-            # 1. 표적 전진
-            for tgt in targets:
-                tgt.update(dt)
-
-            # 2. 측정값 생성
-            meas_list = sensor.measure(targets, timestamp_ms, rng)
-
-            # 3. 측정값 송신
-            for meas in meas_list:
-                transport.send(encode_frame(MSG_MEAS, meas.encode()))
-
-            # 4. 트랙 수신 (non-blocking: 짧은 타임아웃)
-            raw = transport.recv(n=512)
-            for msg_type, payload in parser.feed(raw):
-                if msg_type == MSG_TRACK:
-                    trk = TrackPayload.decode(payload)
-                    _print_track(trk, targets, timestamp_ms)
-
-            # 5. 콘솔 요약
-            if step % 10 == 0:
-                _print_step(step, timestamp_ms, targets, meas_list)
-
-            step += 1
-            t_elapsed += dt
-
-            # dt 주기 맞추기 (실제 serial 모드에서 의미 있음)
-            elapsed = time.monotonic() - tick_start
-            if elapsed < dt:
-                time.sleep(dt - elapsed)
-
-    except KeyboardInterrupt:
-        print("\n[sim] 중단 (Ctrl+C)")
-    finally:
-        transport.send(encode_frame(MSG_CTRL, CtrlPayload(CTRL_STOP).encode()))
-        transport.close()
-        print("[sim] 종료")
+    step = 0
+    start = time.monotonic()
+    while step * dt < duration:
+        # 첫 측정은 초기 위치와 t=0을 일치시키고, 다음 스텝 전에 전진한다.
+        timestamp_ms = round(step * dt * 1000)
+        measurements = sensor.measure(targets, timestamp_ms, rng)
+        print(f"step={step} t={timestamp_ms} ms measurements={len(measurements)}")
+        for meas in measurements:
+            try:
+                frame = build_radar_frame_from_radians(
+                    meas.timestamp_ms, meas.range_m, meas.azimuth_rad)
+            except ValueError as error:
+                # wire에 표현할 수 없는 측정을 조용히 잘라내거나 보정하지 않는다.
+                print(f"measurement skipped: {error}")
+                continue
+            if ser is not None:
+                ser.write(frame)
+                ser.flush()
+            print(f"range={meas.range_m:.2f} azimuth_rad={meas.azimuth_rad:.6f} "
+                  f"frame={frame.hex(' ')}")
+        step += 1
+        for target in targets:
+            target.update(dt)
+        # 미탐지 스텝도 시간은 진행한다. 출력 전용 모드에서는 기다리지 않는다.
+        if ser is not None and step * dt < duration:
+            time.sleep(max(0.0, start + step * dt - time.monotonic()))
 
 
-def _print_step(step: int, ts_ms: int, targets, meas_list) -> None:
-    print(f"\n--- step {step:4d}  t={ts_ms/1000:.2f}s  "
-          f"측정 {len(meas_list)}개 ---")
-    for tgt in targets:
-        print(f"  GT ID{tgt.target_id}: "
-              f"x={tgt.x_m:8.0f}m  y={tgt.y_m:8.0f}m  "
-              f"r={tgt.range_m:8.0f}m  az={tgt.azimuth_rad:5.2f}rad")
+def main():
+    parser = argparse.ArgumentParser(description="현재 STM32용 레이더 시나리오 송신기")
+    parser.add_argument('--port', help='생략하면 UART 없이 프레임만 출력')
+    parser.add_argument('--baud', type=int, default=115200)
+    parser.add_argument('--scenario', choices=list(SCENARIOS), default='single_approach')
+    parser.add_argument('--dt', type=float, default=0.05)
+    parser.add_argument('--duration', type=float, default=60.0)
+    parser.add_argument('--pd', type=float, default=1.0)
+    parser.add_argument('--clutter', type=float, default=0.0)
+    parser.add_argument('--noise', type=float, default=10.0, help='거리 잡음 표준편차(m)')
+    parser.add_argument('--azimuth-noise', type=float, default=0.01,
+                        help='방위각 잡음 표준편차(rad)')
+    parser.add_argument('--seed', type=int, default=42)
+    args = parser.parse_args()
+    values = (args.dt, args.duration, args.pd, args.clutter, args.noise, args.azimuth_noise)
+    if not all(math.isfinite(value) for value in values):
+        parser.error('simulation settings must be finite')
+    if args.dt < 0.001 or args.duration <= 0 or args.duration * 1000 > 0xFFFFFFFF:
+        parser.error('dt must be >= 0.001 s; duration must fit a uint32 millisecond clock')
+    if not 0 <= args.pd <= 1 or min(args.clutter, args.noise, args.azimuth_noise) < 0:
+        parser.error('pd must be 0..1; clutter and noise must be nonnegative')
+    if args.baud <= 0:
+        parser.error('baud must be positive')
+    # 현재 펌웨어는 스캔별 다중 측정 연관 기능이 없는 단일 트랙이다.
+    if args.port and (len(SCENARIOS[args.scenario]()) != 1 or args.clutter != 0):
+        parser.error('firmware requires a single target and zero clutter; omit --port for preview')
+    connection = nullcontext(None)
+    if args.port:
+        import serial
+        connection = serial.Serial(args.port, args.baud, write_timeout=2)
+    with connection as ser:
+        try:
+            run(ser, args.scenario, args.dt, args.duration, args.pd, args.clutter,
+                args.seed, args.noise, args.azimuth_noise)
+        except KeyboardInterrupt:
+            print('\n시뮬레이션 중단')
 
 
-def _print_track(trk: TrackPayload, targets, ts_ms: int) -> None:
-    # 가장 가까운 ground truth 표적 찾기
-    best_err = float("inf")
-    for tgt in targets:
-        err = math.hypot(trk.x_m - tgt.x_m, trk.y_m - tgt.y_m)
-        best_err = min(best_err, err)
-    print(f"  [TRACK] ID{trk.track_id}  "
-          f"x={trk.x_m:8.0f}m  y={trk.y_m:8.0f}m  "
-          f"gt_err={best_err:.1f}m")
-
-
-def main() -> None:
-    ap = argparse.ArgumentParser(description="Radar HIL PC 시뮬레이터")
-    mode = ap.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--mock",   action="store_true", help="인메모리 MockTransport")
-    mode.add_argument("--serial", metavar="PORT",      help="시리얼 포트 (예: /dev/ttyACM0)")
-
-    ap.add_argument("--scenario", choices=list(SCENARIOS.keys()),
-                    default="two_crossing")
-    ap.add_argument("--dt",       type=float, default=0.05,  help="스텝 간격 (초)")
-    ap.add_argument("--duration", type=float, default=60.0,  help="총 시뮬레이션 시간 (초)")
-    ap.add_argument("--pd",       type=float, default=0.9,   help="탐지확률")
-    ap.add_argument("--clutter",  type=float, default=0.5,   help="스캔당 오탐 평균 개수")
-    ap.add_argument("--seed",     type=int,   default=42,    help="난수 시드")
-    ap.add_argument("--baudrate", type=int,   default=115200)
-    args = ap.parse_args()
-
-    if args.mock:
-        transport = MockTransport()
-    else:
-        transport = SerialTransport(args.serial, baudrate=args.baudrate)
-
-    run(transport,
-        scenario_name=args.scenario,
-        dt=args.dt,
-        duration=args.duration,
-        pd=args.pd,
-        clutter_rate=args.clutter,
-        seed=args.seed)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -5,7 +5,7 @@ import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
-from tools.hil import radar_sender as sender
+from pc_sim import radar_sender as sender
 
 
 class RadarSenderTest(unittest.TestCase):
@@ -19,6 +19,7 @@ class RadarSenderTest(unittest.TestCase):
             sender.main()
         writes = serial.Serial.return_value.__enter__.return_value.write.call_args_list
         self.assertEqual([call.args[0] for call in writes], [
+            bytes.fromhex("7e 01 01 00 01"),
             sender.build_radar_frame(0, 1000, 178956971),
             sender.build_radar_frame(100, 998, 178956971),
         ])
@@ -44,6 +45,7 @@ class RadarSenderTest(unittest.TestCase):
                                        '--noise', '0', '--azimuth', '-1073741824']), \
                 contextlib.redirect_stdout(io.StringIO()) as output:
             sender.main()
+        self.assertEqual(output.getvalue().splitlines()[0], 'INIT frame=7e 01 01 00 01')
         self.assertIn('c0 00 00 00', output.getvalue())
 
     def test_invalid_settings(self):

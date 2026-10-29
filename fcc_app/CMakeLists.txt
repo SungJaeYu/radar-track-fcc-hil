@@ -10,7 +10,6 @@ target_sources(app PRIVATE
     src/ring_buffer.c
     src/frame_handler.c
     src/radar_message.c
-    src/kalman_scalar.c
     src/kalman_cv.c
     src/gating.c
     src/angle_utils.c
