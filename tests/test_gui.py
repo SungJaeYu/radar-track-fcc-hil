@@ -131,3 +131,37 @@ def test_gui_same_port_rejected_before_open(app):
     finally:
         worker.requestInterruption()
         worker.wait(2000)
+
+
+def test_gui_settings_remain_accessible_in_short_window(app):
+    window = MainWindow()
+    window.resize(1000, 650)
+    window.show()
+    try:
+        app.processEvents()
+        assert window.height() <= 650
+        from PySide6.QtCore import Qt
+        assert window.content_split.orientation() == Qt.Orientation.Horizontal
+        assert window.plots_split.orientation() == Qt.Orientation.Vertical
+        assert window.log_tabs.height() >= window.plots_split.height() - 2
+        window.control_tabs.setCurrentIndex(1)
+        app.processEvents()
+        fields = list(window.inputs.values())
+        for field in fields:
+            assert field.height() >= field.minimumSizeHint().height()
+        for previous, following in zip(fields, fields[1:]):
+            assert previous.geometry().bottom() < following.geometry().top()
+        window.control_tabs.setCurrentIndex(1)
+        app.processEvents()
+        window.controls_scroll.ensureWidgetVisible(fields[-1])
+        app.processEvents()
+        from PySide6.QtCore import QPoint
+        viewport = window.controls_scroll.viewport()
+        position = fields[-1].mapTo(viewport, QPoint(0, 0))
+        assert position.y() >= 0
+        assert position.y() + fields[-1].height() <= viewport.height()
+        assert window.start_button.isVisible()
+        assert window.stop_button.isVisible()
+        assert window.stop_button.mapTo(window, QPoint(0, 0)).y() + window.stop_button.height() <= window.height()
+    finally:
+        window.close()

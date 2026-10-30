@@ -34,7 +34,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 검증
 
-- `python -m pytest`: GUI 의존성 설치 시 55개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
+- `python -m pytest`: GUI 의존성 설치 시 56개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 복구·링버퍼 8개 사례. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [Tracking C 테스트](fcc_app/tests/test_kalman/README.md): 필터·게이팅·추적 정책 13개 사례.
 - 수동 초기화만 필요할 때: `python pc_sim/small_byte_test.py init --type 1 --port PORT`.

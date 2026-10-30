@@ -12,11 +12,11 @@
 | 연속 측정 송신기 | `tests/test_radar_sender.py` | 5 + 내부 subtest 9 | Python, serial·sleep 모사 |
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
 | GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
-| GUI 화면·통신 작업부 | `tests/test_gui.py` | 4 | offscreen Qt, serial 모사 |
+| GUI 화면·통신 작업부 | `tests/test_gui.py` | 5 | offscreen Qt, serial 모사 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 8 | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **55개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **56개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
 UART C는 각 함수를 CTest에 따로 등록하므로 8개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
@@ -127,6 +127,7 @@ GUI 의존성 설치·실행법은 [GUI 안내](../pc_sim/GUI.md)를 참고합�
 | `test_gui_preview_start_stop_restart_and_close` | 1 | 실제 Qt 화면의 연결·시작·중지·재시작·그래프 갱신·실행 중 창 닫기 |
 | `test_gui_worker_init_restart_and_serial_cleanup` | 1 | 실행마다 INIT 선행, 중지 후 재시작 순서, 스레드 종료 시 포트 해제 |
 | `test_gui_worker_write_failure_closes_port` | 1 | serial write 실패 시 오류 전달·스레드 종료·포트 해제 |
+| `test_gui_settings_remain_accessible_in_short_window` | 1 | 1000×650 창에서 탭 전환 후 입력칸 최소 높이·비겹침, 마지막 항목 스크롤 접근, 고정 시작·중지 버튼과 세로 그래프·우측 전체 높이 콘솔 배치 확인 |
 | `test_gui_same_port_rejected_before_open` | 1 | 데이터·콘솔에 동일 포트 지정 시 실제 포트를 열기 전에 거부 |
 
 ## 실행 방법
