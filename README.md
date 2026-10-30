@@ -46,6 +46,19 @@ python -m pytest
 
 전체 Python·C 테스트의 케이스와 검증 범위는 [테스트 케이스 목록](docs/test-cases.md)에 정리했습니다.
 
+## 데스크톱 GUI
+
+```sh
+source ~/zephyrproject/.venv/bin/activate
+python -m pip install -r pc_sim/requirements-gui.txt
+python -m pc_sim.gui
+```
+
+미리보기·실제 UART 송신, 실시간 표적/거리 그래프, ST-Link 콘솔을 지원합니다.
+[GUI 실행 안내](pc_sim/GUI.md)를 참고하세요. 그래프는 PC 생성값이며 보드 추정 결과가 아닙니다.
+
+![Radar Lab GUI 미리보기: PC 합성 실제값과 측정값](docs/images/radar-gui-preview.png)
+
 ## UART 복구 C 테스트 (보드 불필요)
 
 ```bash
@@ -111,6 +124,9 @@ fcc_app/tests/
     test_uart_rx/      UART drain·링버퍼 host 회귀 테스트
     test_kalman/       필터·게이팅·추적 C 회귀 테스트
 pc_sim/
+    gui.py             데스크톱 화면·실시간 그래프
+    gui_worker.py      시리얼 소유·송신·콘솔 작업 스레드
+    gui_model.py       GUI 설정·단일표적 측정 생성
     protocol.py        유일한 프레임 생성·단위 변환
     radar_sender.py    간단한 거리 변화 측정 송신
     small_byte_test.py 단일 프레임 송신·수동 INIT

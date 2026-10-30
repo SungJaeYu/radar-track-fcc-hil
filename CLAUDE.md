@@ -19,6 +19,8 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - PC 도구는 `pc_sim/` 하나. 모든 송신기가 `pc_sim/protocol.py`를 공유합니다.
 - `radar_sender.py`: 거리 변화율 기반 송신. `run_sim.py`: 표적·센서 시나리오.
 - `small_byte_test.py`: 수동 INIT 등 단일 프레임 송신.
+- `python -m pc_sim.gui`: PySide6/pyqtgraph 단일표적 GUI. 설정·측정 생성·시리얼 작업은 `gui_model.py`·`gui_worker.py`로 분리합니다.
+- GUI 그래프는 PC 합성 실제값·측정값입니다. 보드 추정값이나 수신 ACK로 표현하지 않습니다.
 - 프레임: `7E | LEN | TYPE | PAYLOAD | XOR(TYPE, PAYLOAD)`.
 - 측정 TYPE=2, payload `>IHi` 10바이트: uint32 ms, uint16 m, int32 semicircle.
 - 보드 `radar_message.c`가 semicircle을 rad로 변환합니다.
@@ -32,7 +34,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 검증
 
-- `python -m pytest`: PC 테스트. 실제 보드와 별도입니다.
+- `python -m pytest`: GUI 의존성 설치 시 55개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 복구·링버퍼 8개 사례. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [Tracking C 테스트](fcc_app/tests/test_kalman/README.md): 필터·게이팅·추적 정책 13개 사례.
 - 수동 초기화만 필요할 때: `python pc_sim/small_byte_test.py init --type 1 --port PORT`.

@@ -11,10 +11,12 @@
 | 프로토콜·단위 변환 | `tests/test_protocol.py` | 18 | Python |
 | 연속 측정 송신기 | `tests/test_radar_sender.py` | 5 + 내부 subtest 9 | Python, serial·sleep 모사 |
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
+| GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
+| GUI 화면·통신 작업부 | `tests/test_gui.py` | 4 | offscreen Qt, serial 모사 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 8 | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **44개 항목**을 수집합니다. unittest 내부 subtest 9개는 이 44개와 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **55개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
 UART C는 각 함수를 CTest에 따로 등록하므로 8개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
@@ -111,6 +113,21 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 현재 선택된 **drain 정책**을 검증하므로 discard-all 정책으로 변경하면 일부 기대값이 맞지 않습니다.
 실제 ISR·복구·링버퍼·파서를 사용하지만 UART FIFO, IRQ, atomic, 시간, handler는 모사합니다.
 무한 RX 스레드는 실행하지 않으며 실제 동시성·스케줄링·무수신 timeout 의미는 검증하지 않습니다.
+
+## GUI 테스트
+
+GUI 의존성 설치·실행법은 [GUI 안내](../pc_sim/GUI.md)를 참고합니다.
+`test_gui.py`는 PySide6/pyqtgraph가 없으면 모듈 전체를 skip합니다.
+
+| 테스트 함수 | 수 | 검증 내용 |
+|---|---:|---|
+| `test_gui_sample_matches_wire_and_motion` | 1 | 200ms 시점의 접근 거리 996m, -90°의 signed semicircle과 실제 wire payload |
+| `test_gui_rejects_invalid_settings` | 5 | hz=0, noise=-1, range=nan, duration=0, azimuth=181° 거부 |
+| `test_gui_stops_out_of_range_instead_of_wrapping` | 1 | 접근 중 거리 범위 이탈 시 잘못된 정수로 순환하지 않고 오류 반환 |
+| `test_gui_preview_start_stop_restart_and_close` | 1 | 실제 Qt 화면의 연결·시작·중지·재시작·그래프 갱신·실행 중 창 닫기 |
+| `test_gui_worker_init_restart_and_serial_cleanup` | 1 | 실행마다 INIT 선행, 중지 후 재시작 순서, 스레드 종료 시 포트 해제 |
+| `test_gui_worker_write_failure_closes_port` | 1 | serial write 실패 시 오류 전달·스레드 종료·포트 해제 |
+| `test_gui_same_port_rejected_before_open` | 1 | 데이터·콘솔에 동일 포트 지정 시 실제 포트를 열기 전에 거부 |
 
 ## 실행 방법
 

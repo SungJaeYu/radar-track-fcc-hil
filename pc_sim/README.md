@@ -3,6 +3,13 @@
 PC 측정 생성과 UART 시험 도구를 이 폴더 하나로 통합했습니다. 자동 테스트는 루트의 `tests/`에 있습니다.
 모든 송신기는 현재 펌웨어의 XOR 규격을 공유합니다. 이전 CRC16 코덱과 트랙 응답 수신 경로는 제거했습니다.
 
+## 데스크톱 GUI
+
+`python -m pip install -r pc_sim/requirements-gui.txt`로 선택 의존성을 설치하고,
+저장소 루트에서 `python -m pc_sim.gui`로 실행합니다.
+포트 선택·시작/중지·실시간 그래프·보드 콘솔 사용법은 [GUI 안내](GUI.md)를 참고하세요.
+기존 CLI와 펌웨어는 그대로 사용할 수 있습니다.
+
 ## 파일 역할
 
 - `small_byte_test.py`: 문자열을 담은 프레임 하나 송신. 기본 TYPE=1로 필터 초기화에 사용. TYPE=5 RESET도 지원.
