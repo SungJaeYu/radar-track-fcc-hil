@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define BUFFER_SIZE 8
+#define BUFFER_SIZE 256
 
 struct ring_buffer {
     uint8_t data[BUFFER_SIZE];

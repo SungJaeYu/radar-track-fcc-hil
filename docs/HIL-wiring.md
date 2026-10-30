@@ -44,6 +44,13 @@ macOS에서는 `cu.usbmodem...`, `cu.usbserial...` 등 실제 장치명을 사�
 - 측정 TYPE=2, payload=`>IHi` 10바이트: uint32 ms, uint16 m, int32 semicircle.
 - INIT TYPE=1은 트랙과 timeout 감시를 초기화합니다.
 
+## 수신 버퍼
+
+펌웨어 소프트웨어 링버퍼는 256바이트(실제 저장 용량 255바이트)입니다.
+이는 UART 하드웨어 FIFO 크기와 다르며 버퍼 변경으로 baud나 핀 배선이 바뀌지 않습니다.
+현재 overflow 복구는 drain 정책이고 복구 중 새 입력은 버립니다.
+부하·복구 검증은 [보드 시험 절차](board-bringup.md)를 따릅니다.
+
 ## 연결·검증
 
 1. 빌드·flash 후 ST-Link 콘솔에서 부팅 로그를 확인합니다.

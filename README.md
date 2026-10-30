@@ -44,6 +44,21 @@ python -m pytest
 두 연속 송신기는 실행마다 INIT을 한 번 자동 전송한 뒤 timestamp를 0부터 시작합니다. `run_sim.py --port ...`로 시나리오를 보드에 보낼 수도 있습니다.
 다중표적·클러터 시나리오는 현재 단일 트랙 펌웨어의 제약 때문에 PC 출력 모드에서만 허용합니다.
 
+전체 Python·C 테스트의 케이스와 검증 범위는 [테스트 케이스 목록](docs/test-cases.md)에 정리했습니다.
+
+## UART 복구 C 테스트 (보드 불필요)
+
+```bash
+cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests
+cmake --build /tmp/radar-uart-tests
+ctest --test-dir /tmp/radar-uart-tests --output-on-failure
+```
+
+실제 수신·복구 코드와 모사 UART를 사용하는 8개 테스트입니다.
+실행 조건과 검증 한계는 [UART 테스트 안내](fcc_app/tests/test_uart_rx/README.md)를 참고하세요.
+Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
+필터·추적 정책은 [Tracking C 테스트](fcc_app/tests/test_kalman/README.md)로 별도 검증합니다.
+
 ## 펌웨어 빌드·플래시
 
 ```bash
@@ -68,6 +83,19 @@ west flash --runner openocd
 - INIT/RESET은 트랙을 초기화합니다. STATUS/COMMAND는 현재 로그만 출력합니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
 
+## RX 버퍼와 overflow 복구
+
+`fcc_app/src/ring_buffer.h`의 `BUFFER_SIZE`는 **256바이트**, 실제 저장 용량은 **255바이트**입니다.
+빈 상태와 가득 찬 상태를 구분하기 위해 한 칸을 비웁니다. `uint8_t` 인덱스는 0..255를
+표현하므로 현재 크기에 맞지만, 256보다 크게 늘릴 때는 인덱스 타입도 변경해야 합니다.
+
+현재 `uart_rx.h`의 `RX_OVERFLOW_POLICY`는 `RX_OVERFLOW_DRAIN_BUFFER`입니다.
+이는 헤더에서 선택하는 빌드 시점 설정이며 Kconfig 옵션은 아직 없습니다.
+버퍼가 가득 차면 실패한 바이트를 버리고 overflow 플래그를 설정합니다. 복구 중 새 입력도
+버리며, 기존 파서 상태와 저장된 바이트로 완성할 수 있는 프레임만 처리한 뒤 나머지를 초기화합니다.
+`RX_OVERFLOW_DISCARD_ALL`은 저장된 바이트와 부분 프레임을 모두 바로 폐기합니다.
+두 정책 모두 무손실 수신을 보장하지 않습니다. 실제 overflow 빈도·복구 타이밍은 보드 시험 대상입니다.
+
 ## 파일 구조
 
 ```text
@@ -79,6 +107,9 @@ fcc_app/src/
     track.c            단일 트랙 상태·시간·hit/miss
     kalman_cv.c        거리·방위각 등속 칼만 필터
     gating.c           예측과 측정의 게이트 검사
+fcc_app/tests/
+    test_uart_rx/      UART drain·링버퍼 host 회귀 테스트
+    test_kalman/       필터·게이팅·추적 C 회귀 테스트
 pc_sim/
     protocol.py        유일한 프레임 생성·단위 변환
     radar_sender.py    간단한 거리 변화 측정 송신

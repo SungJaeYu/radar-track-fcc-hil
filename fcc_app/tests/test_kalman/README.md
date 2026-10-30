@@ -22,6 +22,8 @@ ctest --test-dir /tmp/radar-track-tests --output-on-failure
 
 실행 파일 `track_tests`를 직접 실행하면 13개 개별 테스트 이름을 볼 수 있습니다.
 호스트 실행은 Zephyr 스레드, UART, 보드 동작을 검증하지 않습니다.
+링버퍼 크기·overflow drain 복구는 별도의 [UART host 테스트](../test_uart_rx/README.md)에서 검증합니다.
+해당 테스트 역시 실제 보드 IRQ 타이밍이나 하드웨어 수신 성공을 보장하지 않습니다.
 
 ## Zephyr 실행
 

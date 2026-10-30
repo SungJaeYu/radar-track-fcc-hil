@@ -45,6 +45,22 @@ TYPE_INIT=1은 이전 트랙을 초기화합니다. payload 길이 0은 파서�
 링버퍼가 비어 있어도 timeout을 검사하고, 바이트가 계속 들어올 때도 내부 루프에서 검사합니다.
 `parser_feed()`가 정상 체크섬의 프레임을 완성하면 `handle_frame()`이 처리합니다.
 
+### 버퍼와 overflow
+
+소프트웨어 링버퍼는 256바이트이며 한 칸을 비워 실제로 255바이트를 저장합니다.
+head/tail은 `uint8_t`로 0..255를 표현합니다. 버퍼를 256보다 크게 늘리려면 인덱스 타입도 바꿔야 합니다.
+
+ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overflow`를 설정한 뒤
+`rx_sem`으로 스레드에 알립니다. 플래그가 설정된 동안 ISR은 하드웨어 FIFO를 읽되 새 바이트는 저장하지 않습니다.
+일반 수신 루프는 IRQ 잠금 안에서 overflow 확인·한 바이트 pop·파싱을 수행하고,
+완성된 프레임의 handler는 잠금을 해제한 뒤 호출합니다.
+
+현재 헤더의 `RX_OVERFLOW_POLICY`는 `RX_OVERFLOW_DRAIN_BUFFER`입니다.
+복구는 IRQ를 허용한 상태에서 기존 파서와 버퍼로 완성할 수 있는 프레임을 처리합니다.
+마지막에 짧게 IRQ를 잠그고 링버퍼·부분 프레임을 초기화한 뒤 overflow를 해제합니다.
+`RX_OVERFLOW_DISCARD_ALL`을 선택하면 drain 없이 바로 초기화합니다. Kconfig 선택은 아직 없습니다.
+복구 중 새 입력은 손실되며, 초기화는 하드웨어 FIFO를 비우거나 다음 프레임 경계 정렬을 보장하지 않습니다.
+
 ## 4. 측정과 추적
 
 `decode_radar_measurement()`와 `validate_radar_measurement()`를 통과한 측정은
@@ -69,6 +85,8 @@ STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 
 Python 테스트는 프레임 바이트·단위 변환·송신 순서·시나리오 CLI를 검증합니다.
 `fcc_app/tests/test_kalman`은 C 필터·게이팅·추적 정책 등의 별도 테스트입니다.
-둘 다 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
+[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서의 8개 사례를 검증합니다.
+UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
+이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
 현재 보드는 이진 트랙 응답을 송신하지 않으므로 PC의 폐루프 RMSE 계산은 아직 없습니다.
 구버전 CRC16·LCD·다중 트랙 문서는 제거했으며 과거 기록은 Git 이력에서 확인할 수 있습니다.

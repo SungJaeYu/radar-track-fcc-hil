@@ -70,14 +70,14 @@ void handle_frame(struct frame_handler *p_handler, const struct frame_parser *p_
         p_handler->last_valid_rx_ms = k_uptime_get();
         p_handler->timeout_armed = true;
 
-        printk("range: %.2f\n", rm.range_m);
-        printk("azimuth: %.2f\n", rm.azimuth_rad);
+        printk("range: %.2f\n", (double)rm.range_m);
+        printk("azimuth: %.2f\n", (double)rm.azimuth_rad);
 
         if (p_handler->track.state == TRACK_EMPTY) {            
             track_start(&p_handler->track, (float)rm.range_m, (float)rm.azimuth_rad, rm.timestamp_ms);
             
-            printk("Filters initialized at range: %.2f\n", rm.range_m);
-            printk("Filters initialized at azimuth: %.2f\n", rm.azimuth_rad);
+            printk("Filters initialized at range: %.2f\n", (double)rm.range_m);
+            printk("Filters initialized at azimuth: %.2f\n", (double)rm.azimuth_rad);
         } else {
 
             if(!track_predict(&p_handler->track, rm.timestamp_ms)) {
