@@ -27,22 +27,20 @@ def test_single_target_cli_emits_current_frames(direct):
     assert result.returncode == 0, result.stderr
     emitted = frames(result.stdout)
     assert len(emitted) == 3
-    assert emitted[0] == bytes.fromhex("7e 01 01 00 01")
+    assert emitted[0] == bytes.fromhex("7e 01 01 00 c8 9d")
     for frame, expected in zip(emitted[1:], [(0, 30000, 0), (100, 29985, 0)]):
         assert frame[:3] == bytes.fromhex('7e 0a 02')
-        assert len(frame) == 14
-        assert struct.unpack('>IHi', frame[3:-1]) == expected
-        checksum = 0
-        for byte in frame[2:-1]:
-            checksum ^= byte
-        assert frame[-1] == checksum
+        assert len(frame) == 15
+        assert struct.unpack('>IHi', frame[3:-2]) == expected
+        import binascii
+        assert int.from_bytes(frame[-2:], 'big') == binascii.crc_hqx(frame[1:-2], 0xffff)
 
 
 def test_multitarget_generation_remains_available_without_board():
     result = invoke('--scenario', 'four_targets', '--duration', '0.1')
     assert result.returncode == 0, result.stderr
     assert len(frames(result.stdout)) == 9
-    assert frames(result.stdout)[0] == bytes.fromhex("7e 01 01 00 01")
+    assert frames(result.stdout)[0] == bytes.fromhex("7e 01 01 00 c8 9d")
 
 
 @pytest.mark.parametrize('extra', [
@@ -57,7 +55,7 @@ def test_serial_rejects_unsupported_multimeasurement_scans(extra):
 def test_missed_detections_emit_no_measurement():
     result = invoke('--pd', '0', '--duration', '0.2')
     assert result.returncode == 0, result.stderr
-    assert frames(result.stdout) == [bytes.fromhex("7e 01 01 00 01")]
+    assert frames(result.stdout) == [bytes.fromhex("7e 01 01 00 c8 9d")]
 
 
 @pytest.mark.parametrize('option,value', [
@@ -82,7 +80,7 @@ def test_uart_scenario_sends_current_frames_and_closes(monkeypatch):
     run_sim.main()
     connection = serial.Serial.return_value
     sent = [call.args[0] for call in connection.__enter__.return_value.write.call_args_list]
-    assert sent == [bytes.fromhex('7e 01 01 00 01'),
-                    bytes.fromhex('7e 0a 02 00 00 00 00 75 30 00 00 00 00 47'),
-                    bytes.fromhex('7e 0a 02 00 00 00 64 75 21 00 00 00 00 32')]
+    assert sent == [bytes.fromhex('7e 01 01 00 c8 9d'),
+                    bytes.fromhex('7e 0a 02 00 00 00 00 75 30 00 00 00 00 33 7b'),
+                    bytes.fromhex('7e 0a 02 00 00 00 64 75 21 00 00 00 00 ef ac')]
     connection.__exit__.assert_called_once()

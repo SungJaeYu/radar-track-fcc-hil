@@ -19,7 +19,7 @@ class RadarSenderTest(unittest.TestCase):
             sender.main()
         writes = serial.Serial.return_value.__enter__.return_value.write.call_args_list
         self.assertEqual([call.args[0] for call in writes], [
-            bytes.fromhex("7e 01 01 00 01"),
+            bytes.fromhex("7e 01 01 00 c8 9d"),
             sender.build_radar_frame(0, 1000, 178956971),
             sender.build_radar_frame(100, 998, 178956971),
         ])
@@ -28,7 +28,7 @@ class RadarSenderTest(unittest.TestCase):
     def test_big_endian_signed_azimuth_and_checksum(self):
         self.assertEqual(
             sender.build_radar_frame(100, 1000, -1073741824),
-            bytes.fromhex('7e 0a 02 00 00 00 64 03 e8 c0 00 00 00 4d'),
+            bytes.fromhex('7e 0a 02 00 00 00 64 03 e8 c0 00 00 00 0f b1'),
         )
 
     def test_semicircle_boundaries(self):
@@ -45,7 +45,7 @@ class RadarSenderTest(unittest.TestCase):
                                        '--noise', '0', '--azimuth', '-1073741824']), \
                 contextlib.redirect_stdout(io.StringIO()) as output:
             sender.main()
-        self.assertEqual(output.getvalue().splitlines()[0], 'INIT frame=7e 01 01 00 01')
+        self.assertEqual(output.getvalue().splitlines()[0], 'INIT frame=7e 01 01 00 c8 9d')
         self.assertIn('c0 00 00 00', output.getvalue())
 
     def test_invalid_settings(self):

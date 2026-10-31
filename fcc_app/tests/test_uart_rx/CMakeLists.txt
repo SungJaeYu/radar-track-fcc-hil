@@ -16,7 +16,8 @@ foreach(test_name IN ITEMS
     test_dispatch_drains_complete_frame
     test_preserves_partial_parser_and_drops_new_input
     test_discards_incomplete_frame
-    test_rejects_bad_checksum
+    test_rejects_bad_crc
+    test_drain_rejects_bad_length_then_handles_valid_frame
     test_receives_after_recovery
     test_empty_recovery
     test_ring_overflow_preserves_buffer

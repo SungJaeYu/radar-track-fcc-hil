@@ -36,11 +36,11 @@ macOS에서는 `cu.usbmodem...`, `cu.usbserial...` 등 실제 장치명을 사�
 ## 프레임
 
 ```text
-7E | LEN(1) | TYPE(1) | PAYLOAD(LEN) | XOR(1)
+7E | LEN(1) | TYPE(1) | PAYLOAD(LEN) | CRC_H(1) | CRC_L(1)
 ```
 
 - LEN: payload 1..32바이트.
-- 체크섬: TYPE과 PAYLOAD를 XOR.
+- CRC: LEN·TYPE·PAYLOAD 대상, 상위 바이트 우선.
 - 측정 TYPE=2, payload=`>IHi` 10바이트: uint32 ms, uint16 m, int32 semicircle.
 - INIT TYPE=1은 트랙과 timeout 감시를 초기화합니다.
 

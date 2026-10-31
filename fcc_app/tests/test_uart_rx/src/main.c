@@ -5,15 +5,15 @@
 
 // Reserve one slot to distinguish a full ring from an empty ring.
 #define RX_CAPACITY (BUFFER_SIZE - 1U)
-_Static_assert(BUFFER_SIZE >= 8, "Overflow fixtures require at least seven usable slots");
+_Static_assert(BUFFER_SIZE >= 9, "Overflow fixtures require at least eight usable slots");
 _Static_assert(BUFFER_SIZE <= UINT8_MAX + 1U, "Ring indices must represent every slot");
 
 static unsigned int handled;
 static struct frame_parser last_frame;
 static bool inject_during_handle;
-static const uint8_t init_frame[] = {0x7e, 1, 1, 0, 1};
+static const uint8_t init_frame[] = {0x7e, 0x1, 0x1, 0x0, 0xc8, 0x9d};
 static const uint8_t radar_frame[] = {
-    0x7e, 0x0a, 0x02, 0, 0, 0, 0x64, 0x03, 0xe8, 0xc0, 0, 0, 0, 0x4d
+    0x7e, 0xa, 0x2, 0x0, 0x0, 0x0, 0x64, 0x3, 0xe8, 0xc0, 0x0, 0x0, 0x0, 0xf, 0xb1
 };
 
 static void receive(const uint8_t *bytes, size_t size)
@@ -74,7 +74,7 @@ static void assert_recovered(void)
 static void test_dispatch_drains_complete_frame(void)
 {
     reset_test();
-    const uint8_t stream[] = {0x7e,1,1,0,1, 0x7e,0x0a};
+    const uint8_t stream[] = {0x7e, 0x1, 0x1, 0x0, 0xc8, 0x9d, 0x7e, 0xa};
     receive_overflow(stream, sizeof(stream), RX_CAPACITY - sizeof(stream));
     rx_recover_overflow();
     assert(handled == 1);
@@ -85,7 +85,7 @@ static void test_dispatch_drains_complete_frame(void)
 static void test_preserves_partial_parser_and_drops_new_input(void)
 {
     reset_test();
-    for (size_t i = 0; i < 7; ++i) assert(!parser_feed(&parser, radar_frame[i]));
+    for (size_t i = 0; i < 7; ++i) assert(parser_feed(&parser, radar_frame[i]) == PARSER_INCOMPLETE);
     receive_overflow(radar_frame + 7, sizeof(radar_frame) - 7, 0);
     inject_during_handle = true;
     rx_recover_overflow();
@@ -105,13 +105,24 @@ static void test_discards_incomplete_frame(void)
     assert_recovered();
 }
 
-static void test_rejects_bad_checksum(void)
+static void test_rejects_bad_crc(void)
 {
     reset_test();
-    const uint8_t stream[] = {0x7e,1,1,0,0xff};
+    const uint8_t stream[] = {0x7e,1,1,0,0xff,0xff};
     receive_overflow(stream, sizeof(stream), 0);
     rx_recover_overflow();
     assert(handled == 0);
+    assert_recovered();
+}
+
+static void test_drain_rejects_bad_length_then_handles_valid_frame(void)
+{
+    reset_test();
+    uint8_t stream[2 + sizeof(init_frame)] = {0x7e, 0};
+    memcpy(stream + 2, init_frame, sizeof(init_frame));
+    receive_overflow(stream, sizeof(stream), 0);
+    rx_recover_overflow();
+    assert(handled == 1 && last_frame.type == TYPE_INIT);
     assert_recovered();
 }
 
@@ -122,7 +133,7 @@ static void test_receives_after_recovery(void)
     assert(!atomic_get(&rx_overflow));
     uint8_t byte;
     while (ring_pop(&rx_ring, &byte)) {
-        if (parser_feed(&parser, byte)) handle_frame(&handler, &parser);
+        if (parser_feed(&parser, byte) == PARSER_FRAME_READY) handle_frame(&handler, &parser);
     }
     assert(handled == 1 && last_frame.type == TYPE_INIT);
 }
@@ -176,7 +187,8 @@ static const struct test_case cases[] = {
     CASE(test_dispatch_drains_complete_frame),
     CASE(test_preserves_partial_parser_and_drops_new_input),
     CASE(test_discards_incomplete_frame),
-    CASE(test_rejects_bad_checksum),
+    CASE(test_rejects_bad_crc),
+    CASE(test_drain_rejects_bad_length_then_handles_valid_frame),
     CASE(test_receives_after_recovery),
     CASE(test_empty_recovery),
     CASE(test_ring_overflow_preserves_buffer),

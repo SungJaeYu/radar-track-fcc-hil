@@ -1,4 +1,4 @@
-"""표적 시나리오를 현재 STM32 XOR 규격으로 출력하거나 UART로 송신한다."""
+"""표적 시나리오를 현재 STM32 CRC-16 규격으로 출력하거나 UART로 송신한다."""
 import argparse
 from contextlib import nullcontext
 import math

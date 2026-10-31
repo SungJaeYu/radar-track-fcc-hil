@@ -1,7 +1,7 @@
 # PC 레이더 시뮬레이터 · 보드 시험 도구
 
 PC 측정 생성과 UART 시험 도구를 이 폴더 하나로 통합했습니다. 자동 테스트는 루트의 `tests/`에 있습니다.
-모든 송신기는 현재 펌웨어의 XOR 규격을 공유합니다. 이전 CRC16 코덱과 트랙 응답 수신 경로는 제거했습니다.
+모든 송신기는 현재 펌웨어의 CRC-16/IBM-3740 규격을 공유합니다. 이전 XOR 프레임은 호환되지 않습니다.
 
 ## 데스크톱 GUI
 
@@ -14,11 +14,11 @@ PC 측정 생성과 UART 시험 도구를 이 폴더 하나로 통합했습니�
 
 - `small_byte_test.py`: 문자열을 담은 프레임 하나 송신. 기본 TYPE=1로 필터 초기화에 사용. TYPE=5 RESET도 지원.
 - `radar_sender.py`: 거리·방위각 측정값을 생성하고 연속 송신. `--port` 생략 시 출력만 수행.
-- `protocol.py`: 모든 송신기가 공유하는 프레임 생성·XOR 체크섬·라디안 변환.
+- `protocol.py`: 모든 송신기가 공유하는 프레임 생성·CRC-16·라디안 변환.
 - `targets.py`: 등속 표적, 잡음, 미탐지, 클러터 모델.
 - `run_sim.py`: 표적 시나리오를 현재 규격으로 송신하거나 프레임만 출력.
 
-프레임: `7E | payload 길이 | TYPE | payload | XOR(TYPE, payload)`.
+프레임: `7E | payload 길이 | TYPE | payload | CRC_H | CRC_L`.
 레이더 TYPE은 `2`, payload는 big-endian `uint32 timestamp_ms + uint16 range_m + int32 azimuth_sc`의 10바이트(`struct.pack(">IHi", ...)`)입니다.
 `--azimuth`는 degree가 아닌 int32 semicircle 값(-2147483648..2147483647)을 직접 받습니다.
 변환식은 `azimuth_rad = azimuth_sc × π / 2³¹`이며, `1073741824`는 90°, `-1073741824`는 -90°입니다.
@@ -84,7 +84,7 @@ python -m pc_sim.run_sim --pd 0.8 --duration 1
 - 기본 시나리오는 `single_approach`, 탐지확률 1, 클러터 0입니다.
   `--noise`는 거리 표준편차(m), `--azimuth-noise`는 방위각 표준편차(rad)입니다.
 - 보드의 이진 트랙 응답·RMSE 계산은 아직 지원하지 않습니다. 결과는 ST-Link 콘솔로 확인합니다.
-- 두 연속 송신기 모두 실행마다 `7e 01 01 00 01` INIT을 한 번 보낸 뒤 timestamp를 0부터 시작합니다.
+- 두 연속 송신기 모두 실행마다 `7e 01 01 00 c8 9d` INIT을 한 번 보낸 뒤 timestamp를 0부터 시작합니다.
   출력 전용 모드에도 INIT이 먼저 표시됩니다. INIT은 측정 개수(`--count`)에 포함되지 않습니다.
   `flush()`는 송신 완료 대기이며 보드의 처리 완료 응답은 아닙니다.
 
@@ -101,6 +101,6 @@ overflow 시 기본 drain 정책은 저장된 데이터로 완성 가능한 프�
 
 ## 통합과 이력
 
-이전 CRC16 규격은 현재 보드와 호환되지 않아 실행 코드에서 제거했습니다.
+이전 XOR 규격은 현재 CRC-16 펌웨어와 호환되지 않습니다.
 이전 구현은 Git 이력에 남아 있으며, 구버전과 신버전 송신기를 섞어 사용하지 않습니다.
 현재와 맞지 않는 과거 설계·계획 문서는 제거했습니다. 현재 실행 방법은 이 문서를 따릅니다.

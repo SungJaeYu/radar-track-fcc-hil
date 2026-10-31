@@ -11,7 +11,7 @@ def test_gui_sample_matches_wire_and_motion():
     settings.validate()
     sample = make_sample(settings, 200, random.Random(42))
     assert sample.truth_m == 996
-    assert struct.unpack('>IHi', sample.frame[3:-1]) == (200, 996, -1073741824)
+    assert struct.unpack('>IHi', sample.frame[3:-2]) == (200, 996, -1073741824)
     assert sample.measured_m == 996
 
 

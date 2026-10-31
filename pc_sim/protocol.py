@@ -1,4 +1,4 @@
-"""현재 STM32 규격: XOR 체크섬, big-endian 10바이트 레이더 payload."""
+"""STM32 CRC-16/IBM-3740 framing with a big-endian 10-byte radar payload."""
 import math
 import struct
 
@@ -7,21 +7,22 @@ TYPE_INIT = 0x01
 TYPE_RADAR_MEAS = 0x02
 
 
-def calculate_checksum(frame_type, payload):
-    checksum = frame_type
-
-    for byte in payload:
-        checksum ^= byte
-
-    return checksum
+def crc16(data):
+    """CRC-16/IBM-3740: poly=0x1021, init=0xFFFF, no reflection or final XOR."""
+    crc = 0xFFFF
+    for byte in data:
+        crc ^= byte << 8
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x1021) & 0xFFFF if crc & 0x8000 else (crc << 1) & 0xFFFF
+    return crc
 
 
 def encode_frame(frame_type, payload):
-    """STX | payload length | type | payload | XOR(type, payload)."""
+    """STX | LEN | TYPE | PAYLOAD | CRC_H | CRC_L; CRC covers LEN through payload."""
     if not 1 <= len(payload) <= 32:
         raise ValueError("payload length must be 1..32 bytes")
-    return (bytes([STX, len(payload), frame_type]) + payload
-            + bytes([calculate_checksum(frame_type, payload)]))
+    body = bytes([len(payload), frame_type]) + payload
+    return bytes([STX]) + body + crc16(body).to_bytes(2, "big")
 
 
 def build_init_frame():

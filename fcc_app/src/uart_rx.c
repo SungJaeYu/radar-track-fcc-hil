@@ -136,13 +136,21 @@ static void uart_rx_thread(void *p1, void *p2, void *p3)
                 break;
             }
 
-            bool frame_complete = parser_feed(&parser, c);
+            ParserResult parser_result = parser_feed(&parser, c);
 
             irq_unlock(key);
 
-            if (frame_complete) {
-                // Process tracking and logging for complete frames outside the IRQ lock.
-                handle_frame(&handler, &parser);
+            switch(parser_result) {
+                case PARSER_FRAME_READY:
+                    // Process tracking and logging for complete frames outside the IRQ lock.
+                    handle_frame(&handler, &parser);
+                    break;
+                case PARSER_CRC_ERROR:
+                case PARSER_LENGTH_ERROR:
+                case PARSER_INCOMPLETE:
+                default:
+                    // Do nothing
+                    break;
             }
         }
     }
@@ -164,9 +172,20 @@ static void rx_recover_drain_buffer(void)
     while (ring_pop(&rx_ring, &c)) {
         frame_handler_check_timeout(&handler, k_uptime_get());
 
-        if (parser_feed(&parser, c)) {
-            handle_frame(&handler, &parser);
-        }
+        ParserResult parser_result = parser_feed(&parser, c);
+
+        switch(parser_result) {
+                case PARSER_FRAME_READY:
+                    // Process tracking and logging for complete frames outside the IRQ lock.
+                    handle_frame(&handler, &parser);
+                    break;
+                case PARSER_CRC_ERROR:
+                case PARSER_LENGTH_ERROR:
+                case PARSER_INCOMPLETE:
+                default:
+                    // Do nothing
+                    break;
+            }
     }
 
     // Discard any incomplete frame remaining after the buffer has been drained.

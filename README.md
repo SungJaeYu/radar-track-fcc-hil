@@ -8,7 +8,7 @@ PC가 합성 표적·측정값을 생성하고 STM32가 추적 결과를 반환�
 
 ```text
 pc_sim (Python 측정 생성)
-  → XOR 프레임 / USB-UART
+  → CRC-16 프레임 / USB-UART
   → STM32: uart_rx → frame_parser → frame_handler → track / Kalman
   → ST-Link 콘솔에서 결과 확인
 ```
@@ -25,7 +25,7 @@ pc_sim (Python 측정 생성)
 ## PC 도구: `pc_sim/` 하나로 통합
 
 [실행 방법과 옵션](pc_sim/README.md). 기존 `tools/hil/` 도구를 `pc_sim/`으로 옮기고,
-기존 시나리오 실행기도 현재 펌웨어 규격으로 변경했습니다. CRC16 프로토콜은 더 이상 사용하지 않습니다.
+기존 시나리오 실행기도 현재 펌웨어 규격으로 변경했습니다. 현재 프로토콜은 CRC-16/IBM-3740이며 이전 XOR 규격과 호환되지 않습니다.
 
 ```bash
 source ~/zephyrproject/.venv/bin/activate
@@ -67,7 +67,7 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-실제 수신·복구 코드와 모사 UART를 사용하는 8개 테스트입니다.
+실제 수신·복구 코드와 모사 UART를 사용하는 9개 테스트입니다.
 실행 조건과 검증 한계는 [UART 테스트 안내](fcc_app/tests/test_uart_rx/README.md)를 참고하세요.
 Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 필터·추적 정책은 [Tracking C 테스트](fcc_app/tests/test_kalman/README.md)로 별도 검증합니다.
@@ -86,10 +86,10 @@ west flash --runner openocd
 ## 현재 UART 규격
 
 ```text
-7E | LEN(1) | TYPE(1) | PAYLOAD(LEN) | XOR(1)
+7E | LEN(1) | TYPE(1) | PAYLOAD(LEN) | CRC_H(1) | CRC_L(1)
 ```
 
-- LEN은 payload 길이이며 1..32바이트. 체크섬은 TYPE과 payload를 XOR합니다.
+- LEN은 payload 길이이며 1..32바이트. CRC는 LEN·TYPE·payload를 포함하며 상위 바이트부터 전송합니다.
 - 측정 payload는 big-endian `>IHi`: timestamp_ms(uint32), range_m(uint16), azimuth_sc(int32), 총 10바이트.
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
 - TYPE: INIT=1, RADAR_MEAS=2, STATUS=3, COMMAND=4, RESET=5.
@@ -109,12 +109,18 @@ west flash --runner openocd
 `RX_OVERFLOW_DISCARD_ALL`은 저장된 바이트와 부분 프레임을 모두 바로 폐기합니다.
 두 정책 모두 무손실 수신을 보장하지 않습니다. 실제 overflow 빈도·복구 타이밍은 보드 시험 대상입니다.
 
+CRC 규격은 **CRC-16/IBM-3740 (CCITT-FALSE)**입니다. poly=`0x1021`, init=`0xFFFF`,
+refin/refout=false, xorout=`0x0000`이며 `123456789`의 기준값은 `0x29B1`입니다.
+규격 이름과 매개변수는 [Zephyr CRC 문서](https://docs.zephyrproject.org/latest/doxygen/html/group__crc.html)와 일치합니다.
+STX와 CRC 자체는 계산에서 제외합니다. 측정 프레임은 총 15바이트, INIT은 6바이트입니다.
+Python 송신기·GUI와 보드 펌웨어를 함께 갱신해야 합니다. 전환 전 보드 시험은 XOR 버전의 결과이며 CRC 실보드 시험은 별도입니다.
+
 ## 파일 구조
 
 ```text
 fcc_app/src/
     uart_rx.c          UART 인터럽트·링버퍼·수신 스레드
-    frame_parser.c     XOR 프레임 파서
+    frame_parser.c     CRC-16 프레임 파서
     frame_handler.c    측정 처리·초기화·수신 timeout
     radar_message.c    10바이트 해석·semicircle → rad
     track.c            단일 트랙 상태·시간·hit/miss

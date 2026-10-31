@@ -12,7 +12,8 @@ typedef enum {
     WAIT_LEN,
     WAIT_TYPE,
     READ_PAYLOAD,
-    WAIT_CRC
+    WAIT_CRC_H,
+    WAIT_CRC_L
 } ParserState;
 
 typedef enum {
@@ -23,15 +24,23 @@ typedef enum {
     TYPE_RESET      = 0x05,
 } FrameType;
 
+typedef enum {
+    PARSER_INCOMPLETE,
+    PARSER_FRAME_READY,
+    PARSER_CRC_ERROR,
+    PARSER_LENGTH_ERROR,
+} ParserResult;
+
 struct frame_parser {
     ParserState state;
     uint8_t payload_length;
     uint8_t payload_index;
     FrameType type;
     uint8_t payload[MAX_PAYLOAD];
+    uint16_t received_crc;
 };
 
 void parser_init(struct frame_parser *p_parser);
-bool parser_feed(struct frame_parser *p_parser, uint8_t byte);
+ParserResult parser_feed(struct frame_parser *p_parser, uint8_t byte);
 
 #endif

@@ -26,10 +26,10 @@
 ## 2. 통신 규격
 
 ```text
-7E | LEN | TYPE | PAYLOAD | XOR
+7E | LEN | TYPE | PAYLOAD | CRC_H | CRC_L
 ```
 
-LEN은 payload 길이 1..32바이트이고 XOR 범위는 TYPE과 payload입니다.
+LEN은 payload 길이 1..32바이트이고 CRC 범위는 LEN·TYPE·payload입니다.
 TYPE_RADAR_MEAS=2의 payload는 `>IHi` 10바이트입니다.
 
 | 필드 | 크기 | 의미 |
@@ -41,7 +41,7 @@ TYPE_RADAR_MEAS=2의 payload는 `>IHi` 10바이트입니다.
 보드 변환식은 `azimuth_rad = azimuth_sc × π / 2³¹`입니다.
 TYPE_INIT=1은 이전 트랙을 초기화합니다. payload 길이 0은 파서가 거부하므로
 수동 INIT에도 문자열 등 최소 1바이트를 넣습니다.
-두 연속 송신기는 매 실행 시 `7e 01 01 00 01` INIT 프레임을 한 번 보낸 뒤 측정을 시작합니다.
+두 연속 송신기는 매 실행 시 `7e 01 01 00 c8 9d` INIT 프레임을 한 번 보낸 뒤 측정을 시작합니다.
 자동 INIT의 payload는 더미 바이트 `0x00`입니다. 출력 전용 모드에서도 INIT이 먼저 표시됩니다.
 
 ## 3. UART 수신
@@ -95,8 +95,8 @@ STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 Python 테스트는 프레임 바이트·단위 변환·송신 순서·시나리오 CLI와 GUI 모델을 검증합니다.
 GUI 의존성을 설치하면 offscreen Qt·모사 serial로 시작·중지·재시작·오류·포트 해제도 검사합니다.
 `fcc_app/tests/test_kalman`은 C 필터·게이팅·추적 정책 등의 별도 테스트입니다.
-[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서의 8개 사례를 검증합니다.
+[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서의 9개 사례를 검증합니다.
 UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
 이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
 현재 보드는 이진 트랙 응답을 송신하지 않으므로 PC의 폐루프 RMSE 계산은 아직 없습니다.
-구버전 CRC16·LCD·다중 트랙 문서는 제거했으며 과거 기록은 Git 이력에서 확인할 수 있습니다.
+구버전 LCD·다중 트랙 문서는 제거했으며 과거 기록은 Git 이력에서 확인할 수 있습니다.

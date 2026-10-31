@@ -1,4 +1,4 @@
-"""Current STM32 XOR protocol and manual sender regression checks."""
+"""Current STM32 CRC-16 protocol and manual sender regression checks."""
 import contextlib
 import io
 import sys
@@ -11,7 +11,7 @@ from pc_sim import protocol, small_byte_test
 
 def test_init_frame_matches_firmware_wire_format():
     assert protocol.encode_frame(1, b'hello') == bytes.fromhex(
-        '7e 05 01 68 65 6c 6c 6f 63'
+        '7e 05 01 68 65 6c 6c 6f 0e ab'
     )
 
 
@@ -21,7 +21,7 @@ def test_small_byte_sender_writes_init_frame():
             contextlib.redirect_stdout(io.StringIO()):
         small_byte_test.main()
     port.return_value.__enter__.return_value.write.assert_called_once_with(
-        bytes.fromhex('7e 05 01 68 65 6c 6c 6f 63')
+        bytes.fromhex('7e 05 01 68 65 6c 6c 6f 0e ab')
     )
 
 
@@ -42,5 +42,5 @@ def test_small_byte_sender_can_send_firmware_reset():
             contextlib.redirect_stdout(io.StringIO()):
         small_byte_test.main()
     port.return_value.__enter__.return_value.write.assert_called_once_with(
-        bytes.fromhex('7e 01 05 72 77')
+        bytes.fromhex('7e 01 05 72 5a 8c')
     )

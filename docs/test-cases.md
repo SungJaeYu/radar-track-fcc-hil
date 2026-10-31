@@ -13,12 +13,13 @@
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
 | GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 5 | offscreen Qt, serial 모사 |
+| CRC·펌웨어 상호운용 | `tests/test_crc_interop.py` | 18 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
-| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 8 | host C, Zephyr API 모사 |
+| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 9 | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **56개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **74개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
-UART C는 각 함수를 CTest에 따로 등록하므로 8개로 표시됩니다.
+UART C는 각 함수를 CTest에 따로 등록하므로 9개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
@@ -27,10 +28,10 @@ UART C는 각 함수를 CTest에 따로 등록하므로 8개로 표시됩니다.
 
 | 테스트 함수 | 수 | 입력·검증 내용 |
 |---|---:|---|
-| `test_init_frame_matches_firmware_wire_format` | 1 | TYPE=1, `hello` payload가 `7e 05 01 68 65 6c 6c 6f 63`으로 인코딩되는지 |
+| `test_init_frame_matches_firmware_wire_format` | 1 | TYPE=1, `hello` payload가 `7e 05 01 68 65 6c 6c 6f 0e ab`으로 인코딩되는지 |
 | `test_small_byte_sender_writes_init_frame` | 1 | 수동 송신기가 위 INIT 프레임을 모사 serial에 정확히 한 번 쓰는지 |
 | `test_small_byte_rejects_invalid_byte_length` | 3 | 빈 문자열, ASCII 33글자, UTF-8 `가` 11글자(33바이트)를 종료 코드 2로 거부하고 포트를 열지 않는지 |
-| `test_small_byte_sender_can_send_firmware_reset` | 1 | TYPE=5, payload `r`이 `7e 01 05 72 77`로 한 번 송신되는지 |
+| `test_small_byte_sender_can_send_firmware_reset` | 1 | TYPE=5, payload `r`이 `7e 01 05 72 5a 8c`로 한 번 송신되는지 |
 
 ## Python: 프로토콜·단위 변환
 
@@ -38,8 +39,8 @@ UART C는 각 함수를 CTest에 따로 등록하므로 8개로 표시됩니다.
 
 | 테스트 함수 | 수 | 입력·검증 내용 |
 |---|---:|---|
-| `test_init_wire_format` | 1 | 자동 INIT의 바이트가 `7e 01 01 00 01`인지 |
-| `test_radar_wire_format` | 1 | 100ms, 1000m, semicircle -1073741824의 전체 프레임·XOR가 기대값과 같은지 |
+| `test_init_wire_format` | 1 | 자동 INIT의 바이트가 `7e 01 01 00 c8 9d`인지 |
+| `test_radar_wire_format` | 1 | 100ms, 1000m, semicircle -1073741824의 전체 프레임·CRC-16가 기대값과 같은지 |
 | `test_reject_payload_lengths_firmware_cannot_parse` | 2 | payload 0바이트와 33바이트를 `ValueError`로 거부하는지 |
 | `test_scenario_radians_to_wire` | 6 | 0, ±π/2, ±π, 3π를 signed int32 semicircle로 변환하고 1000.4m를 1000m로 반올림하는지; ±π와 3π는 -2147483648 |
 | `test_scenario_rejects_unrepresentable_ranges` | 6 | 거리 0, 0.1, -1, 65536, inf, nan을 거부하는지 |
@@ -52,7 +53,7 @@ UART C는 각 함수를 CTest에 따로 등록하므로 8개로 표시됩니다.
 | 테스트 함수 | 입력·검증 내용 |
 |---|---|
 | `test_serial_stream_and_interval` | INIT 후 (0ms, 1000m), (100ms, 998m)를 순서대로 송신하고 두 측정 사이에 0.1초 sleep을 한 번 호출하는지 |
-| `test_big_endian_signed_azimuth_and_checksum` | 음수 semicircle의 big-endian 인코딩과 전체 XOR 프레임이 기대값과 같은지 |
+| `test_big_endian_signed_azimuth_and_checksum` | 음수 semicircle의 big-endian 인코딩과 전체 CRC-16 프레임이 기대값과 같은지 |
 | `test_semicircle_boundaries` | subtest 3개: int32 최솟값, 0, 최댓값의 방위각 바이트와 payload 길이 10 확인 |
 | `test_cli_accepts_semicircle` | CLI에서 -1073741824를 받아 INIT을 먼저 출력하고 측정에 `c0 00 00 00`을 포함하는지 |
 | `test_invalid_settings` | subtest 6개: hz=0/nan, count=0, noise=-1, int32 범위 밖 방위각 두 값을 종료 코드 2로 거부하는지 |
@@ -65,7 +66,7 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 
 | 테스트 함수 | 수 | 입력·검증 내용 |
 |---|---:|---|
-| `test_single_target_cli_emits_current_frames` | 2 | 모듈 실행과 파일 직접 실행 모두 INIT + 측정 2개 출력; (0ms, 30000m, 0), (100ms, 29985m, 0), 프레임 길이 14와 XOR 확인 |
+| `test_single_target_cli_emits_current_frames` | 2 | 모듈 실행과 파일 직접 실행 모두 INIT + 측정 2개 출력; (0ms, 30000m, 0), (100ms, 29985m, 0), 프레임 길이 15와 CRC-16 확인 |
 | `test_multitarget_generation_remains_available_without_board` | 1 | 보드 없는 four_targets 출력에 INIT을 포함한 프레임 9개가 나오는지 |
 | `test_serial_rejects_unsupported_multimeasurement_scans` | 2 | UART 모드에서 two_crossing 또는 clutter=1을 종료 코드 2와 single target 오류로 거부하는지 |
 | `test_missed_detections_emit_no_measurement` | 1 | 탐지확률 0이면 INIT만 출력하고 측정은 생성하지 않는지 |
@@ -101,9 +102,10 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 | 테스트 함수 | 입력·검증 내용 |
 |---|---|
 | `test_dispatch_drains_complete_frame` | 실제 ISR에 용량을 초과하는 입력을 넣고 복구 dispatcher 호출; 저장된 정상 INIT 1개 처리 후 링·파서·overflow 초기화 |
-| `test_preserves_partial_parser_and_drops_new_input` | 기존 파서의 레이더 앞 7바이트와 링의 뒤 7바이트로 프레임 완성; handler 중 새 INIT을 주입해 링에 저장되지 않는지 |
+| `test_preserves_partial_parser_and_drops_new_input` | 기존 파서의 레이더 앞 7바이트와 링의 뒤 8바이트로 프레임 완성; handler 중 새 INIT을 주입해 링에 저장되지 않는지 |
 | `test_discards_incomplete_frame` | 버퍼 끝의 레이더 앞 7바이트만으로는 handler를 호출하지 않고 복구 후 부분 프레임 폐기 |
-| `test_rejects_bad_checksum` | 잘못된 XOR를 가진 INIT을 handler로 전달하지 않는지 |
+| `test_rejects_bad_crc` | 잘못된 CRC를 가진 INIT을 handler로 전달하지 않는지 |
+| `test_drain_rejects_bad_length_then_handles_valid_frame` | 길이 오류를 handler로 전달하지 않고 바로 이어지는 정상 INIT만 한 번 처리 |
 | `test_receives_after_recovery` | 부분 프레임 폐기·복구 후 새 INIT을 정상 수신·파싱하는지 |
 | `test_empty_recovery` | 빈 링에 overflow 플래그만 설정해도 안전하게 초기화되는지 |
 | `test_ring_overflow_preserves_buffer` | 용량까지 채운 후 push 실패 시 head/tail과 기존 바이트 순서를 보존하는지 |
@@ -129,6 +131,22 @@ GUI 의존성 설치·실행법은 [GUI 안내](../pc_sim/GUI.md)를 참고합�
 | `test_gui_worker_write_failure_closes_port` | 1 | serial write 실패 시 오류 전달·스레드 종료·포트 해제 |
 | `test_gui_settings_remain_accessible_in_short_window` | 1 | 1000×650 창에서 탭 전환 후 입력칸 최소 높이·비겹침, 마지막 항목 스크롤 접근, 고정 시작·중지 버튼과 세로 그래프·우측 전체 높이 콘솔 배치 확인 |
 | `test_gui_same_port_rejected_before_open` | 1 | 데이터·콘솔에 동일 포트 지정 시 실제 포트를 열기 전에 거부 |
+
+## CRC와 실제 펌웨어 파서 상호운용
+
+소스: [test_crc_interop.py](../tests/test_crc_interop.py). 실제 `frame_parser.c`를 임시 공유 라이브러리로 컴파일합니다.
+호스트 C 컴파일러가 없으면 C 상호운용 사례는 skip됩니다. 컴파일 오류는 실패로 보고합니다.
+
+| 함수 | 수 | 검증 내용 |
+|---|---:|---|
+| `test_crc_standard_check_vector` | 1 | Python CRC의 `123456789` → `0x29B1` |
+| `test_crc_matches_independent_reference` | 3 | 최소·최대 payload와 특수 바이트를 Python 표준 라이브러리 CRC와 비교 |
+| `test_firmware_crc_standard_check_vector` | 1 | 실제 펌웨어 CRC 함수에 동일한 기준 벡터 적용 |
+| `test_python_frames_accepted_by_firmware` | 4 | INIT·측정·RESET·최대 payload를 C 파서가 READY로 반환하며 type·payload 보존 |
+| `test_corrupted_frame_rejected_then_next_frame_accepted` | 4 | TYPE·payload·CRC 상위·하위 변조 거부 후 정상 INIT 수신 |
+| `test_invalid_length_rejected_then_next_frame_accepted` | 3 | LEN 0/33/255는 LENGTH_ERROR, 이후 정상 INIT 수신 |
+| `test_crc_low_byte_required_for_completion` | 1 | CRC 하위 바이트 전까지 INCOMPLETE, 마지막 바이트 후 READY |
+| `test_plausible_corrupted_length_does_not_report_ready` | 1 | LEN 10→9 변조가 READY로 처리되지 않고 CRC_ERROR 발생 |
 
 ## 실행 방법
 
@@ -162,7 +180,7 @@ Zephyr Ztest 실행법은 [Tracking 안내](../fcc_app/tests/test_kalman/README.
 
 ## 실제 보드 시험과 남은 검증
 
-이번 세션에서 현재 소스를 빌드·플래시한 뒤 수행한 수동 smoke 시험은 자동 테스트 개수에 포함하지 않습니다.
+CRC 전환 전에 XOR 펌웨어를 빌드·플래시한 뒤 수행한 수동 smoke 시험은 자동 테스트 개수에 포함하지 않습니다.
 INIT 1개와 잡음 없는 측정 5개를 5Hz로 보내 콘솔에서 INIT 1회, 측정 5회,
 필터 초기화 후 보정 4회, 송신 중단 후 timeout 1회를 확인했습니다.
 이는 PC → USART6 RX와 ST-Link 콘솔 경로의 기본 동작 확인입니다.

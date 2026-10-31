@@ -1,4 +1,4 @@
-"""현재 펌웨어 XOR 규격과 시나리오 측정 변환 검증."""
+"""현재 펌웨어 CRC-16 규격과 시나리오 측정 변환 검증."""
 import math
 import struct
 
@@ -7,12 +7,12 @@ from pc_sim import protocol
 
 
 def test_init_wire_format():
-    assert protocol.build_init_frame() == bytes.fromhex("7e 01 01 00 01")
+    assert protocol.build_init_frame() == bytes.fromhex("7e 01 01 00 c8 9d")
 
 
 def test_radar_wire_format():
     assert protocol.build_radar_frame(100, 1000, -1073741824) == bytes.fromhex(
-        "7e 0a 02 00 00 00 64 03 e8 c0 00 00 00 4d")
+        "7e 0a 02 00 00 00 64 03 e8 c0 00 00 00 0f b1")
 
 
 @pytest.mark.parametrize("payload", [b"", b"x" * 33])
@@ -29,7 +29,7 @@ def test_reject_payload_lengths_firmware_cannot_parse(payload):
 def test_scenario_radians_to_wire(angle, expected):
     frame = protocol.build_radar_frame_from_radians(100, 1000.4, angle)
     assert frame[:3] == bytes.fromhex("7e 0a 02")
-    assert struct.unpack(">IHi", frame[3:-1]) == (100, 1000, expected)
+    assert struct.unpack(">IHi", frame[3:-2]) == (100, 1000, expected)
 
 
 @pytest.mark.parametrize("distance", [0, 0.1, -1, 65536, math.inf, math.nan])

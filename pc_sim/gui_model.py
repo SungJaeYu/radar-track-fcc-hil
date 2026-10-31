@@ -46,5 +46,5 @@ def make_sample(settings, timestamp_ms, rng: random.Random):
     frame = build_radar_frame_from_radians(
         timestamp_ms, truth + rng.gauss(0, settings.noise_m),
         math.radians(settings.azimuth_deg))
-    _, measured, semicircle = struct.unpack('>IHi', frame[3:-1])
+    _, measured, semicircle = struct.unpack('>IHi', frame[3:-2])
     return Sample(timestamp_ms, truth, measured, semicircle * math.pi / 2**31, frame)

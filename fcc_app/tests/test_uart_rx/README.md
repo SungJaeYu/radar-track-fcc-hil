@@ -13,7 +13,7 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-8개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
+9개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
 `uart_rx_tests test_receives_after_recovery`처럼 이름을 넘기면 한 사례를 실행합니다.
 Release 빌드에서도 검증용 `assert`가 제거되지 않도록 `-UNDEBUG`를 적용합니다.
 
@@ -39,6 +39,7 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 6. 빈 버퍼에서도 복구 후 overflow 해제·파서 초기화가 이루어지는지.
 7. 꽉 찬 버퍼의 push 실패가 기존 바이트와 head/tail을 변경하지 않는지.
 8. 초기화 없이 채우기·비우기를 반복해 인덱스가 배열 끝을 순환해도 바이트 순서와 full/empty 판정이 유지되는지.
+9. drain 중 잘못된 길이를 거부하고 이어지는 정상 INIT만 처리하는지.
 
 현재 `RX_OVERFLOW_DRAIN_BUFFER` 설정의 동작을 검증합니다. 전체 폐기로 설정을 바꾸면
 정상 프레임을 보존해야 한다는 drain 검증은 실패합니다. 두 정책을 모두 자동 선택해 빌드하는 테스트는 아닙니다.
@@ -47,8 +48,10 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 fixture는 `BUFFER_SIZE - 1`에서 입력 길이와 프레임 절단 위치를 계산합니다.
 WAIT_STX에서 무시되는 0으로 채운 뒤 용량 다음 바이트로 overflow를 발생시킵니다.
 부분 프레임 폐기 사례는 프레임 앞부분을 버퍼 끝에 배치하여 패딩으로 완성되지 않게 합니다.
-static assertion은 fixture의 최소 크기(8)와 현재 `uint8_t` 인덱스의 최대 크기(256)를 검사합니다.
+static assertion은 fixture의 최소 크기(9)와 현재 `uint8_t` 인덱스의 최대 크기(256)를 검사합니다.
 인덱스 타입을 바꾸면 이 상한 검사도 함께 갱신해야 합니다.
+
+모든 fixture는 CRC-16 기준이며 결과 비교는 `PARSER_FRAME_READY`를 명시합니다.
 
 ## 실제 코드와 모사의 경계
 
