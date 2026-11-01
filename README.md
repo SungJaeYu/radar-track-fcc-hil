@@ -14,6 +14,20 @@ pc_sim (Python 측정 생성)
   → ST-Link 콘솔에서 결과 확인
 ```
 
+## 시스템 역할
+
+**PC는 추적 전 레이더 탐지 측정 출력을 모사하고, STM32는 그 측정으로 표적을 추적하는 컴퓨터입니다.**
+이미 추적을 끝내고 안정적인 target ID를 제공하는 레이더 장비를 입력으로 가정하지 않습니다.
+
+- `pc_sim`: 합성 표적에서 시간·거리·방위각 측정을 생성합니다. 실제 RF 신호처리를 구현하지 않습니다.
+- 펌웨어: 예측·게이팅·칼만 필터·트랙 상태 관리를 담당합니다.
+  다중표적 확장 시 측정-트랙 연관과 `track_id` 부여도 펌웨어에서 구현합니다.
+- GUI: 시험 제어와 PC 합성값·보드 로그 표시를 담당합니다.
+- PC의 정답 `target_id`는 내부 시뮬레이션·향후 평가용이며 측정 payload로 보내지 않습니다.
+
+현재는 단일 트랙이며 **다중표적 연관·트랙 ID 관리·보드 추정 결과 반환은 미구현**입니다.
+역할 경계와 ID 정책은 [시스템 역할 문서](docs/system-roles.md)를 기준으로 합니다.
+
 ## 개발 환경
 
 | 항목           | 값                           |
@@ -77,8 +91,8 @@ Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 
 ```bash
 cd ~/zephyrproject
-west build -p always -b stm32f746g_disco /path/to/radar-track-fcc-hil/fcc_app
-west flash --runner openocd
+west build -d /path/to/radar-track-fcc-hil/build -b stm32f746g_disco /path/to/radar-track-fcc-hil/fcc_app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 ```
 
 콘솔은 ST-Link VCP에서 확인합니다. Linux 예: `tio /dev/ttyACM0`.
@@ -147,12 +161,50 @@ pc_sim/
 tests/                Python 프로토콜·송신기·시나리오 테스트
 ```
 
-## 구현 범위와 검증 구분
+## 구현 범위
 
-현재 소스에는 단일 트랙 상태 관리, CV 칼만 필터, 게이팅, 수신 timeout이 있습니다.
-다중표적 데이터 연관, 이진 트랙 송신, 폐루프 RMSE 검증, LCD 표시 기능은 현재 실행 경로에 없습니다.
-Python 테스트 통과는 펌웨어 빌드·flash·실제 UART 수신 검증을 대신하지 않습니다.
-현재 실행 설명은 이 README와 `pc_sim/README.md`를 기준으로 합니다. 구버전 문서·코드는 Git 이력에서 확인할 수 있습니다.
+| 영역 | 구현된 기능 | 미구현·제한 |
+| --- | --- | --- |
+| 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리 | 스캔 단위 다중 측정 규격, 부분 프레임 timeout |
+| 실행 구조 | RX 스레드 → 프레임 복사 큐 → handler 스레드, 큐 포화 시 드롭 집계 | TX 전용 처리·추적 결과 송신 |
+| 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
+| 제어·상태 | INIT/RESET으로 추적 상태 초기화 | STATUS/COMMAND는 로그만 출력; BIT·Lock On 미구현 |
+| 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
+| PC 시뮬레이터 | 측정·잡음 생성, PC 출력용 다중표적·미탐지·클러터 시나리오 | 실제 UART 모드는 단일표적·클러터 0으로 제한 |
+| GUI·평가 | 송신 제어, PC 합성값 그래프, 보드 콘솔 | 다중표적 GUI, 보드 추정값 그래프, 폐루프 RMSE·트랙 연속성 평가 |
+
+실제 RF 송수신·ADC/IQ·FFT 신호처리와 완성된 레이더 운용 시스템은 프로젝트 범위 밖입니다.
+EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에는 포함하지 않습니다.
+
+## TODO
+
+체크된 항목은 현재 구현·확인된 작업입니다. 미완료 항목은 다음 설계·개발 순서이며,
+스레드는 표적마다 만들지 않고 송신 대기 등 독립 실행이 필요한 경우에만 추가합니다.
+
+- [x] CRC-16 프로토콜과 PC 송신기·GUI 규격 통일
+- [x] RX·handler 스레드 분리 및 `rx_frame_processor` 모듈 분리
+- [x] 단일 트랙 필터·게이팅·timeout·INIT/RESET 구현
+- [x] 최신 펌웨어의 실제 GUI 연결·송신·중지·재시작 및 오류 프레임 시험
+- [ ] 다중표적 입력 설계: 스캔 경계·측정 묶음·상한 결정, PC 정답 target ID 제외
+- [ ] `track_manager` 설계·구현: 여러 트랙 저장, 펌웨어 자체 ID, 생성·유지·삭제
+- [ ] 예측·게이팅을 이용한 측정-트랙 연관과 미연관 측정·트랙 처리
+- [ ] 다중표적 UART 송신·GUI 확장, 교차·미탐지·클러터·소실/재등장 검증
+- [ ] STATUS/BIT의 상태·오류·드롭 통계 규격과 응답 구현
+- [ ] 보드 추적 결과 송신과 GUI 표시; 송신 대기 분리를 위한 TX 스레드 필요성 검토
+- [ ] PC 정답과 보드 결과의 오차·트랙 연속성 평가
+- [ ] 트랙 ID 기반 COMMAND/Lock On 동작·대상 소실 정책 설계
+- [ ] 실보드 링버퍼 overflow·drain 복구, USART6 TX, 장시간·고부하 검증
+
+## 검증 현황
+
+2026-11-01 분리본 기준 Python 74개 + subtest 9개, UART host C 13개를 통과했고
+펌웨어 빌드·플래시와 실제 GUI 연결·송신·중지·재시작을 확인했습니다.
+CRC·길이 오류 후 복귀, timeout, 큐 포화 후 정상 복귀도 보드에서 확인했습니다.
+**링버퍼 overflow는 해당 시험에서 발생하지 않았으므로 실보드 drain 검증은 미완료입니다.**
+USART6 TX, 장시간·최대 부하와 폐루프 추적 정확도도 아직 검증하지 않았습니다.
+
+[실보드 시험 기록](docs/hardware-test-2026-11-01.md) · [테스트 목록](docs/test-cases.md).
+자동 테스트·빌드 성공과 실제 보드 검증은 구분합니다. 과거 구현은 Git 이력에서 확인할 수 있습니다.
 
 ## HIL 통신 구조 · 배선
 

@@ -3,6 +3,15 @@
 PC 측정 생성과 UART 시험 도구를 이 폴더 하나로 통합했습니다. 자동 테스트는 루트의 `tests/`에 있습니다.
 모든 송신기는 현재 펌웨어의 CRC-16/IBM-3740 규격을 공유합니다. 이전 XOR 프레임은 호환되지 않습니다.
 
+## 역할 경계
+
+이 도구는 **추적 전 레이더 탐지 측정 출력**을 모사합니다.
+PC에서 추적을 완료한 트랙이나 안정적인 표적 ID를 보드에 제공하는 구조가 아닙니다.
+`Target.target_id`는 PC 내부 정답 식별자이며 현재 `Measurement`와 UART payload에는 없습니다.
+향후에도 정답 ID는 PC 평가용으로 분리하고, 측정 연관·트랙 생성·`track_id` 부여는
+펌웨어가 담당합니다. 다중표적 연관과 ID 관리는 아직 구현 전입니다.
+[시스템 역할과 ID 정책](../docs/system-roles.md)을 참고하세요.
+
 ## 데스크톱 GUI
 
 `python -m pip install -r pc_sim/requirements-gui.txt`로 선택 의존성을 설치하고,
