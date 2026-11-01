@@ -1,6 +1,6 @@
 # UART drain 복구 host 회귀 테스트
 
-실제 `uart_rx.c`의 ISR·복구 함수와 `ring_buffer.c`, `frame_parser.c`를 컴파일합니다.
+실제 `uart_rx.c`의 ISR·복구 함수, `rx_frame_processor.c`와 `ring_buffer.c`, `frame_parser.c`를 컴파일합니다.
 임시 `/private/tmp` 테스트를 저장소로 옮긴 것으로, 테스트는 외부 임시 파일에 의존하지 않습니다.
 
 ## 실행
@@ -41,7 +41,7 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 8. 초기화 없이 채우기·비우기를 반복해 인덱스가 배열 끝을 순환해도 바이트 순서와 full/empty 판정이 유지되는지.
 9. drain 중 잘못된 길이를 거부하고 이어지는 정상 INIT만 처리하는지.
 
-10. 전역 parser와 다른 객체를 전달해도 해당 객체의 내용과 수신 시각을 제출하는지.
+10. 프레임 내용·수신 시각 복사와 reset 시 누적 드롭 보존 여부.
 11. INCOMPLETE·CRC_ERROR·LENGTH_ERROR 결과는 큐 제출하지 않는지.
 12. 큐 제출 실패 시 드롭을 집계하고 다음 정상 제출이 가능한지.
 13. drain 중 큐 제출 실패가 발생해도 복구를 끝내고 overflow를 해제하는지.
@@ -63,7 +63,7 @@ static assertion은 fixture의 최소 크기(9)와 현재 `uint8_t` 인덱스의
 - 실제 코드: `uart_callback`, 복구 dispatcher·drain·마무리 함수, 링버퍼, 프레임 파서.
 - 모사: UART FIFO, Zephyr 세마포어·IRQ·atomic·시각, `frame_handler_submit()` 반환값과 프레임 복사.
 - `uart_rx_thread()`는 컴파일하지만 무한 루프를 실제로 스케줄링하지 않습니다.
-- `uart_rx.c`를 테스트 번역 단위에 직접 포함해 static 함수를 검사합니다.
+- `uart_rx.c`와 `rx_frame_processor.c`를 테스트 번역 단위에 직접 포함해 static 함수를 검사합니다.
   펌웨어에 테스트용 공개 함수나 조건부 코드를 추가하지 않습니다.
 - submit 모사는 전달된 프레임을 복사하고 IRQ 잠금 상태를 검사합니다. 실제 Zephyr 메시지 큐·처리 스레드·트랙 보정·timeout은 여기서 검증하지 않습니다.
 - 모사 IRQ와 atomic은 실제 동시성·메모리 순서·하드웨어 overrun을 재현하지 않습니다.

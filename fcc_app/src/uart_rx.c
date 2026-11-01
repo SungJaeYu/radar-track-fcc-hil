@@ -10,14 +10,12 @@
 #include "frame_parser.h"
 #include "uart_rx.h"
 #include "frame_handler.h"
+#include "rx_frame_processor.h"
 
 // Set UART device
 static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 
 static struct ring_buffer rx_ring;
-static struct frame_parser parser;
-
-static uint32_t frame_queue_drop_count;
 
 // 1 means bytes were lost: the ISR drops new input until the RX thread finishes recovery.
 static atomic_t rx_overflow = ATOMIC_INIT(0);
@@ -34,9 +32,6 @@ static void rx_recover_discard_all(void);
 static void rx_recover_drain_buffer(void);
 static void rx_recover_overflow(void);
 static void rx_finish_recovery(void);
-
-static void process_parser_result(ParserResult result, const struct frame_parser *p_parser);
-static void submit_parsed_frame(const struct frame_parser *p_parser);
 
 K_THREAD_DEFINE(uart_rx_tid, 1024, uart_rx_thread, NULL, NULL, NULL, 5, 0, 0);
 
@@ -58,8 +53,7 @@ int uart_rx_init(void) {
     ring_init(&rx_ring);
 
     // init Parser
-    parser_init(&parser);
-
+    rx_frame_processor_reset();
 
     // Enable RX Interrupt
     uart_irq_rx_enable(p_uart);
@@ -138,11 +132,9 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
                 break;
             }
 
-            ParserResult parser_result = parser_feed(&parser, c);
-
             irq_unlock(key);
 
-            process_parser_result(parser_result, &parser);
+            rx_frame_processor_feed(c);
         }
     }
 }
@@ -161,8 +153,7 @@ static void rx_recover_drain_buffer(void)
     // Preserve parser state to complete frames using bytes received before the loss.
     // New bytes arriving during processing are dropped by the ISR; recovery is not lossless.
     while (ring_pop(&rx_ring, &c)) {
-        ParserResult parser_result = parser_feed(&parser, c);
-        process_parser_result(parser_result, &parser);
+        rx_frame_processor_feed(c);
     }
 
     // Discard any incomplete frame remaining after the buffer has been drained.
@@ -194,46 +185,10 @@ static void rx_finish_recovery(void)
     // Clear the software buffer and partial frame, then resume searching for STX.
     // This does not flush the hardware FIFO or guarantee alignment with the next frame.
     ring_init(&rx_ring);
-    parser_init(&parser);
+    rx_frame_processor_reset();
 
     // Allow the ISR to store bytes only after all recovery state has been reset.
     atomic_clear(&rx_overflow);
 
     irq_unlock(key);
-}
-
-static void process_parser_result(ParserResult result, const struct frame_parser *p_parser)
-{
-    switch(result) {
-        case PARSER_FRAME_READY:
-            submit_parsed_frame(p_parser);
-            break;
-        case PARSER_CRC_ERROR:
-        case PARSER_LENGTH_ERROR:
-        case PARSER_INCOMPLETE:
-        default:
-            // Do nothing
-            break;
-    }
-}
-
-static void submit_parsed_frame(const struct frame_parser *p_parser)
-{
-    struct received_frame received = {
-        .type = p_parser->type,
-        .payload_length = p_parser->payload_length,
-        .received_at_ms = k_uptime_get(),
-    };
-    memcpy(received.payload, p_parser->payload, p_parser->payload_length);
-
-    int ret = frame_handler_submit(&received);
-
-    if (ret != 0) {
-        // Count the new frame dropped because the queue is full.
-        frame_queue_drop_count++;
-
-        if (frame_queue_drop_count == 1 || frame_queue_drop_count % 100 == 0) {
-            printk("Frame queue drops: %u\n", (unsigned int)frame_queue_drop_count);
-        }
-    }
 }

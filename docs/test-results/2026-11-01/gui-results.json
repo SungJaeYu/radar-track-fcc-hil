@@ -1,0 +1,10 @@
+[
+  "physical UART and console connected",
+  "board INIT and tracking logs",
+  "plot has samples",
+  "stop holds sample count and timeout occurs once",
+  "restart sends INIT and resumes samples",
+  "disconnect releases worker",
+  "reconnect opens ports",
+  "close stops worker"
+]

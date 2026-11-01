@@ -1,0 +1,71 @@
+[
+  {
+    "test": "INIT and no timeout before first measurement",
+    "pass": true,
+    "detail": "TYPE_INIT\r\nmain alive\r\nmain alive\r\n"
+  },
+  {
+    "test": "20 normal measurements",
+    "pass": true,
+    "detail": "range: 1000.00\r\nazimuth: 0.00\r\nFilters initialized at range: 1000.00\r\nFilters initialized at azimuth: 0.00\r\nrange: 999.00\r\nazimuth: 0.00\r\npredicted range: 1000.00\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 999.17\r\nfiltered azimuth: 0.00\r\nestimated range rate: -6.67\r\nestimated azimuth rate: 0.00\r\nrange: 998.00\r\nazimuth: 0.00\r\npredicted range: 998.50\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 998.11\r\nfiltered azimuth: 0.00\r\nestimated range rate: -8.89\r\nestimated azimuth rate: 0.00\r\nrange: 997.00\r\nazimuth: 0.00\r\npredicted range: 997.22\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 997.07\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.52\r\nestimated azimuth rate: 0.00\r\nrange: 996.00\r\nazimuth: 0.00\r\npredicted range: 996.12\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 996.05\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.76\r\nestimated azimuth rate: 0.00\r\nrange: 995.00\r\nazimuth: 0.00\r\npredicted range: 995.07\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 995.04\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.86\r\nestimated azimuth rate: 0.00\r\nrange: 994.00\r\nazimuth: 0.00\r\npredicted range: 994.05\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 994.03\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.91\r\nestimated azimuth rate: 0.00\r\nrange: 993.00\r\nazimuth: 0.00\r\npredicted range: 993.04\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 993.02\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.94\r\nestimated azimuth rate: 0.00\r\nrange: 992.00\r\nazimuth: 0.00\r\npredicted range: 992.03\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 992.02\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.96\r\nestimated azimuth rate: 0.00\r\nmain alive\r\nrange: 991.00\r\nazimuth: 0.00\r\npredicted range: 991.02\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 991.01\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.97\r\nestimated azimuth rate: 0.00\r\nrange: 990.00\r\nazimuth: 0.00\r\npredicted range: 990.02\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 990.01\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.98\r\nestimated azimuth rate: 0.00\r\nrange: 989.00\r\nazimuth: 0.00\r\npredicted range: 989.01\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 989.01\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.98\r\nestimated azimuth rate: 0.00\r\nrange: 988.00\r\nazimuth: 0.00\r\npredicted range: 988.01\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 988.01\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.99\r\nestimated azimuth rate: 0.00\r\nrange: 987.00\r\nazimuth: 0.00\r\npredicted range: 987.01\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 987.01\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.99\r\nestimated azimuth rate: 0.00\r\nrange: 986.00\r\nazimuth: 0.00\r\npredicted range: 986.01\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 986.01\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.99\r\nestimated azimuth rate: 0.00\r\nrange: 985.00\r\nazimuth: 0.00\r\npredicted range: 985.01\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 985.00\r\nfiltered azimuth: 0.00\r\nestimated range rate: -9.99\r\nestimated azimuth rate: 0.00\r\nrange: 984.00\r\nazimuth: 0.00\r\npredicted range: 984.01\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 984.00\r\nfiltered azimuth: 0.00\r\nestimated range rate: -10.00\r\nestimated azimuth rate: 0.00\r\nrange: 983.00\r\nazimuth: 0.00\r\npredicted range: 983.00\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 983.00\r\nfiltered azimuth: 0.00\r\nestimated range rate: -10.00\r\nestimated azimuth rate: 0.00\r\nmain alive\r\nrange: 982.00\r\nazimuth: 0.00\r\npredicted range: 982.00\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 982.00\r\nfiltered azimuth: 0.00\r\nestimated range rate: -10.00\r\nestimated azimuth rate: 0.00\r\nrange: 981.00\r\nazimuth: 0.00\r\npredicted range: 981.00\r\npredicted azimuth: 0.00\r\nMeasurement accepted\r\nfiltered range: 981.00\r\nfiltered azimuth: 0.00\r\nestimated range rate: -10.00\r\nestimated azimuth rate: 0.00\r\n"
+  },
+  {
+    "test": "one timeout after reception stops",
+    "pass": true,
+    "detail": "main alive\r\nRadar measurement timeout: track cleared\r\n"
+  },
+  {
+    "test": "timeout does not repeat",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "bad CRC ignored",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "bad CRC followed by valid frame",
+    "pass": true,
+    "detail": "range: 1200.00\r\nazimuth: 0.00\r\nFilters initialized at range: 1200.00\r\nFilters initialized at azimuth: 0.00\r\n"
+  },
+  {
+    "test": "length zero ignored",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "length zero followed by valid frame",
+    "pass": true,
+    "detail": "range: 1200.00\r\nazimuth: 0.00\r\nFilters initialized at range: 1200.00\r\nFilters initialized at azimuth: 0.00\r\nmain alive\r\n"
+  },
+  {
+    "test": "length 33 ignored",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "length 33 followed by valid frame",
+    "pass": true,
+    "detail": "range: 1200.00\r\nazimuth: 0.00\r\nFilters initialized at range: 1200.00\r\nFilters initialized at azimuth: 0.00\r\n"
+  },
+  {
+    "test": "RESET disarms timeout",
+    "pass": true,
+    "detail": "TYPE RESET\r\nmain alive\r\n"
+  },
+  {
+    "test": "burst outcome observed",
+    "pass": true,
+    "detail": {
+      "queue_drop_log": true,
+      "ring_overflow_log": false,
+      "console_chars": 6375
+    }
+  },
+  {
+    "test": "normal reception after burst",
+    "pass": true,
+    "detail": "range: 1500.00\r\nazimuth: 0.00\r\nFilters initialized at range: 1500.00\r\nFilters initialized at azimuth: 0.00\r\n"
+  }
+]

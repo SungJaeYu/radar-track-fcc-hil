@@ -15,11 +15,11 @@
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 5 | offscreen Qt, serial 모사 |
 | CRC·펌웨어 상호운용 | `tests/test_crc_interop.py` | 18 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
-| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 9 | host C, Zephyr API 모사 |
+| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 13 | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **74개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
-UART C는 각 함수를 CTest에 따로 등록하므로 9개로 표시됩니다.
+UART C는 각 함수를 CTest에 따로 등록하므로 13개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
@@ -109,11 +109,15 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 | `test_receives_after_recovery` | 부분 프레임 폐기·복구 후 새 INIT을 정상 수신·파싱하는지 |
 | `test_empty_recovery` | 빈 링에 overflow 플래그만 설정해도 안전하게 초기화되는지 |
 | `test_ring_overflow_preserves_buffer` | 용량까지 채운 후 push 실패 시 head/tail과 기존 바이트 순서를 보존하는지 |
+| `test_processor_copies_frame_and_reset_preserves_drops` | 프레임 복사와 reset 시 누적 드롭 보존 |
+| `test_nonready_results_do_not_submit` | 미완성·CRC 오류·길이 오류 미제출 |
+| `test_queue_full_counts_drop_and_recovers` | 큐 실패 집계와 다음 제출 재개 |
+| `test_drain_queue_full_still_finishes_recovery` | 큐 실패에도 drain 복구 완료 |
 | `test_ring_wraparound` | 초기화 없이 채우기·비우기 3회 반복; 인덱스 순환 후에도 바이트 순서와 full/empty 판정 유지 |
 
 현재 BUFFER_SIZE=256, 실제 용량=255이며 fixture는 버퍼 크기에서 입력 길이를 계산합니다.
 현재 선택된 **drain 정책**을 검증하므로 discard-all 정책으로 변경하면 일부 기대값이 맞지 않습니다.
-실제 ISR·복구·링버퍼·파서를 사용하지만 UART FIFO, IRQ, atomic, 시간, handler는 모사합니다.
+실제 ISR·복구·링버퍼·파서를 사용하지만 UART FIFO, IRQ, atomic, 시간, frame_handler_submit은 모사합니다.
 무한 RX 스레드는 실행하지 않으며 실제 동시성·스케줄링·무수신 timeout 의미는 검증하지 않습니다.
 
 ## GUI 테스트
@@ -180,10 +184,10 @@ Zephyr Ztest 실행법은 [Tracking 안내](../fcc_app/tests/test_kalman/README.
 
 ## 실제 보드 시험과 남은 검증
 
-CRC 전환 전에 XOR 펌웨어를 빌드·플래시한 뒤 수행한 수동 smoke 시험은 자동 테스트 개수에 포함하지 않습니다.
-INIT 1개와 잡음 없는 측정 5개를 5Hz로 보내 콘솔에서 INIT 1회, 측정 5회,
-필터 초기화 후 보정 4회, 송신 중단 후 timeout 1회를 확인했습니다.
-이는 PC → USART6 RX와 ST-Link 콘솔 경로의 기본 동작 확인입니다.
+2026-11-01 최신 CRC·큐·수신 모듈 분리본의 실제 GUI와 보드 시험을 완료했습니다.
+정상 측정 20개, timeout, CRC·길이 오류 후 정상 복귀, RESET, burst 후 복귀를 확인했습니다.
+GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
+[결과와 검증 한계](hardware-test-2026-11-01.md)를 참고하세요.
 
 아래 항목은 현재 자동 테스트 또는 해당 smoke 시험에서 확인하지 않았습니다.
 

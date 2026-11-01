@@ -13,7 +13,7 @@ target_compile_features(uart_rx_tests PRIVATE c_std_11)
 target_compile_options(uart_rx_tests PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 
 foreach(test_name IN ITEMS
-    test_dispatch_uses_supplied_parser
+    test_processor_copies_frame_and_reset_preserves_drops
     test_nonready_results_do_not_submit
     test_queue_full_counts_drop_and_recovers
     test_drain_queue_full_still_finishes_recovery

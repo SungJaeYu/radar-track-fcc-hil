@@ -1,6 +1,6 @@
 # 현재 학습 펌웨어 보드 검증
 
-현재 실행 경로는 USART6 수신 → 파싱 → 단일 트랙 추정 → ST-Link 로그입니다.
+현재 실행 경로는 USART6 수신 → rx_frame_processor → 메시지 큐 → handler 스레드 → ST-Link 로그입니다.
 과거 LCD 구현 문서와 달리 현재 소스에는 LCD 표시나 이진 트랙 응답 경로가 없습니다.
 
 ## 1. 빌드·플래시
@@ -8,8 +8,8 @@
 ```bash
 source ~/zephyrproject/.venv/bin/activate
 cd ~/zephyrproject
-west build -p always -b stm32f746g_disco <repo>/fcc_app
-west flash --runner openocd
+west build -d <repo>/build -b stm32f746g_disco <repo>/fcc_app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+west flash -d <repo>/build --runner openocd
 ```
 
 빌드 성공, flash 성공, 보드 실행 성공을 각각 구분해서 기록합니다.
@@ -69,3 +69,9 @@ python -m pc_sim.run_sim --port /dev/ttyUSB0 --duration 10 --noise 0 --azimuth-n
 
 Python 테스트, UART/Tracking host C 테스트, 펌웨어 빌드, flash, 실제 보드 로그를 별도 결과로 남깁니다.
 통합 도구의 테스트 통과만으로 새 보드 HIL까지 통과했다고 기록하지 않습니다.
+
+최신 결과: [2026-11-01 GUI·보드 검증](hardware-test-2026-11-01.md).
+
+VS Code의 로컬 기본 작업 `Zephyr: Build firmware`와 IntelliSense는 모두
+`<repo>/build`를 사용합니다. 새 C 파일을 CMake에 등록한 뒤 빌드하면
+`compile_commands.json`이 갱신됩니다. `.vscode/`는 Git 제외 대상입니다.

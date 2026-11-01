@@ -1,0 +1,269 @@
+main alive
+TYPE_INIT
+range: 1000.00
+azimuth: 0.26
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.26
+range: 998.00
+azimuth: 0.26
+predicted range: 1000.00
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 998.31
+filtered azimuth: 0.26
+estimated range rate: -13.06
+estimated azimuth rate: 0.00
+range: 996.00
+azimuth: 0.26
+predicted range: 996.98
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 996.22
+filtered azimuth: 0.26
+estimated range rate: -17.24
+estimated azimuth rate: 0.00
+range: 994.00
+azimuth: 0.26
+predicted range: 994.43
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 994.14
+filtered azimuth: 0.26
+estimated range rate: -18.41
+estimated azimuth rate: 0.00
+range: 992.00
+azimuth: 0.26
+predicted range: 992.28
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 992.11
+filtered azimuth: 0.26
+estimated range rate: -18.94
+estimated azimuth rate: 0.00
+range: 990.00
+azimuth: 0.26
+predicted range: 990.20
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 990.10
+filtered azimuth: 0.26
+estimated range rate: -19.21
+estimated azimuth rate: 0.00
+range: 988.00
+azimuth: 0.26
+predicted range: 988.06
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 988.03
+filtered azimuth: 0.26
+estimated range rate: -19.28
+estimated azimuth rate: 0.00
+range: 985.00
+azimuth: 0.26
+predicted range: 985.93
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 985.54
+filtered azimuth: 0.26
+estimated range rate: -20.04
+estimated azimuth rate: 0.00
+main alive
+range: 983.00
+azimuth: 0.26
+predicted range: 983.39
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 983.24
+filtered azimuth: 0.26
+estimated range rate: -20.30
+estimated azimuth rate: 0.00
+range: 981.00
+azimuth: 0.26
+predicted range: 981.11
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 981.07
+filtered azimuth: 0.26
+estimated range rate: -20.36
+estimated azimuth rate: 0.00
+range: 979.00
+azimuth: 0.26
+predicted range: 979.00
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 979.00
+filtered azimuth: 0.26
+estimated range rate: -20.36
+estimated azimuth rate: 0.00
+range: 977.00
+azimuth: 0.26
+predicted range: 976.86
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 976.90
+filtered azimuth: 0.26
+estimated range rate: -20.30
+estimated azimuth rate: 0.00
+range: 975.00
+azimuth: 0.26
+predicted range: 974.79
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 974.85
+filtered azimuth: 0.26
+estimated range rate: -20.23
+estimated azimuth rate: 0.00
+range: 973.00
+azimuth: 0.26
+predicted range: 972.79
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 972.84
+filtered azimuth: 0.26
+estimated range rate: -20.16
+estimated azimuth rate: 0.00
+range: 971.00
+azimuth: 0.26
+predicted range: 970.70
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 970.78
+filtered azimuth: 0.26
+estimated range rate: -20.08
+estimated azimuth rate: 0.00
+range: 969.00
+azimuth: 0.26
+predicted range: 968.63
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 968.72
+filtered azimuth: 0.26
+estimated range rate: -19.99
+estimated azimuth rate: 0.00
+range: 967.00
+azimuth: 0.26
+predicted range: 966.64
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 966.72
+filtered azimuth: 0.26
+estimated range rate: -19.90
+estimated azimuth rate: 0.00
+main alive
+range: 965.00
+azimuth: 0.26
+predicted range: 964.69
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 964.76
+filtered azimuth: 0.26
+estimated range rate: -19.83
+estimated azimuth rate: 0.00
+range: 962.00
+azimuth: 0.26
+predicted range: 962.68
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 962.53
+filtered azimuth: 0.26
+estimated range rate: -19.98
+estimated azimuth rate: 0.00
+range: 960.00
+azimuth: 0.26
+predicted range: 960.44
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 960.34
+filtered azimuth: 0.26
+estimated range rate: -20.07
+estimated azimuth rate: 0.00
+range: 957.00
+azimuth: 0.26
+predicted range: 957.11
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 957.09
+filtered azimuth: 0.26
+estimated range rate: -20.09
+estimated azimuth rate: 0.00
+main alive
+Radar measurement timeout: track cleared
+main alive
+TYPE_INIT
+range: 1000.00
+azimuth: 0.26
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.26
+range: 997.00
+azimuth: 0.26
+predicted range: 1000.00
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 997.28
+filtered azimuth: 0.26
+estimated range rate: -16.50
+estimated azimuth rate: 0.00
+range: 995.00
+azimuth: 0.26
+predicted range: 995.50
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 995.13
+filtered azimuth: 0.26
+estimated range rate: -18.20
+estimated azimuth rate: 0.00
+range: 993.00
+azimuth: 0.26
+predicted range: 993.21
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 993.08
+filtered azimuth: 0.26
+estimated range rate: -18.69
+estimated azimuth rate: 0.00
+main alive
+range: 991.00
+azimuth: 0.26
+predicted range: 991.15
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 991.07
+filtered azimuth: 0.26
+estimated range rate: -18.94
+estimated azimuth rate: 0.00
+range: 988.00
+azimuth: 0.26
+predicted range: 988.96
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 988.48
+filtered azimuth: 0.26
+estimated range rate: -20.13
+estimated azimuth rate: 0.00
+range: 986.00
+azimuth: 0.26
+predicted range: 986.41
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 986.22
+filtered azimuth: 0.26
+estimated range rate: -20.51
+estimated azimuth rate: 0.00
+range: 984.00
+azimuth: 0.26
+predicted range: 984.15
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 984.09
+filtered azimuth: 0.26
+estimated range rate: -20.63
+estimated azimuth rate: 0.00
+range: 982.00
+azimuth: 0.26
+predicted range: 982.01
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 982.01
+filtered azimuth: 0.26
+estimated range rate: -20.63
+estimated azimuth rate: 0.00

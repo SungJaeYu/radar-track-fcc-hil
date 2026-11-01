@@ -3,6 +3,7 @@
 // Include the real implementation to exercise its private recovery functions.
 // Do not compile uart_rx.c separately into this test executable.
 #include "uart_rx.c"
+#include "rx_frame_processor.c"
 
 // Reserve one slot to distinguish a full ring from an empty ring.
 #define RX_CAPACITY (BUFFER_SIZE - 1U)
@@ -65,7 +66,7 @@ static void reset_test(void)
     frame_queue_drop_count = 0;
     memset(&last_frame, 0, sizeof(last_frame));
     inject_during_submit = false;
-    ring_init(&rx_ring); parser_init(&parser);
+    ring_init(&rx_ring); rx_frame_processor_reset();
 }
 
 static void assert_recovered(void)
@@ -91,7 +92,8 @@ static void test_dispatch_drains_complete_frame(void)
 static void test_preserves_partial_parser_and_drops_new_input(void)
 {
     reset_test();
-    for (size_t i = 0; i < 7; ++i) assert(parser_feed(&parser, radar_frame[i]) == PARSER_INCOMPLETE);
+    for (size_t i = 0; i < 7; ++i) rx_frame_processor_feed(radar_frame[i]);
+    assert(submit_attempts == 0);
     receive_overflow(radar_frame + 7, sizeof(radar_frame) - 7, 0);
     inject_during_submit = true;
     rx_recover_overflow();
@@ -139,7 +141,7 @@ static void test_receives_after_recovery(void)
     assert(!atomic_get(&rx_overflow));
     uint8_t byte;
     while (ring_pop(&rx_ring, &byte)) {
-        process_parser_result(parser_feed(&parser, byte), &parser);
+        rx_frame_processor_feed(byte);
     }
     assert(submitted == 1 && last_frame.type == TYPE_INIT);
 }
@@ -183,29 +185,30 @@ static void test_ring_wraparound(void)
     }
 }
 
-static void test_dispatch_uses_supplied_parser(void)
+static void test_processor_copies_frame_and_reset_preserves_drops(void)
 {
     reset_test();
-    struct frame_parser local_parser;
-    parser_init(&local_parser);
     for (size_t i = 0; i < sizeof(radar_frame); ++i) {
-        process_parser_result(parser_feed(&local_parser, radar_frame[i]), &local_parser);
+        rx_frame_processor_feed(radar_frame[i]);
     }
     assert(submitted == 1 && submit_attempts == 1);
     assert(last_frame.type == TYPE_RADAR_MEAS && last_frame.payload_length == 10);
     assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
     assert(last_frame.received_at_ms == k_uptime_get());
     assert(frame_queue_drop_count == 0);
-    memset(local_parser.payload, 0, sizeof(local_parser.payload));
+    memset(parser.payload, 0, sizeof(parser.payload));
+    frame_queue_drop_count = 3;
+    rx_frame_processor_reset();
+    assert(frame_queue_drop_count == 3 && parser.state == WAIT_STX);
     assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
 }
 
 static void test_nonready_results_do_not_submit(void)
 {
     reset_test();
-    process_parser_result(PARSER_INCOMPLETE, &parser);
-    process_parser_result(PARSER_CRC_ERROR, &parser);
-    process_parser_result(PARSER_LENGTH_ERROR, &parser);
+    process_parser_result(PARSER_INCOMPLETE);
+    process_parser_result(PARSER_CRC_ERROR);
+    process_parser_result(PARSER_LENGTH_ERROR);
     assert(submit_attempts == 0 && frame_queue_drop_count == 0);
 }
 
@@ -214,12 +217,12 @@ static void test_queue_full_counts_drop_and_recovers(void)
     reset_test();
     submit_result = -ENOMSG;
     for (size_t i = 0; i < sizeof(init_frame); ++i) {
-        process_parser_result(parser_feed(&parser, init_frame[i]), &parser);
+        rx_frame_processor_feed(init_frame[i]);
     }
     assert(submit_attempts == 1 && submitted == 0 && frame_queue_drop_count == 1);
     submit_result = 0;
     for (size_t i = 0; i < sizeof(radar_frame); ++i) {
-        process_parser_result(parser_feed(&parser, radar_frame[i]), &parser);
+        rx_frame_processor_feed(radar_frame[i]);
     }
     assert(submit_attempts == 2 && submitted == 1 && frame_queue_drop_count == 1);
     assert(last_frame.type == TYPE_RADAR_MEAS);
@@ -242,7 +245,7 @@ struct test_case {
 
 #define CASE(test) { #test, test }
 static const struct test_case cases[] = {
-    CASE(test_dispatch_uses_supplied_parser),
+    CASE(test_processor_copies_frame_and_reset_preserves_drops),
     CASE(test_nonready_results_do_not_submit),
     CASE(test_queue_full_counts_drop_and_recovers),
     CASE(test_drain_queue_full_still_finishes_recovery),

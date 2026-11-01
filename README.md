@@ -4,12 +4,13 @@ STM32 + Zephyr RTOS 기반 레이더 추적 학습 프로젝트입니다. 현재
 PC가 합성 표적·측정값을 생성하고 STM32가 추적 결과를 반환해 RMSE와 트랙 연속성 같은 지표로 검증하는 구조를 목표로 합니다.
 
 > **개발 방식**  
-> 문제 정의, 요구사항, 시스템 구조와 검증 기준은 직접 설계하고 있습니다. 구현 과정에서는 AI 코딩 에이전트를 적극 활용하며, 생성된 코드는 요구사항과 테스트 결과를 기준으로 검토·수정합니다. 이 저장소는 개인 학습·포트폴리오용 합성 시뮬레이션이며 실제 군 운용 데이터나 내부 시스템 정보를 사용하지 않습니다.
+> 문제 정의, 요구사항, 시스템 구조와 검증 기준을 직접 설계하고, STM32/Zephyr 펌웨어는 직접 작성하며 학습하고 있습니다. PC 시뮬레이터와 GUI 구현에는 AI 코딩 에이전트를 활용하며, 결과를 검토하고 실제 보드와 연결해 검증합니다. 이 저장소는 개인 학습·포트폴리오용 합성 시뮬레이션이며 실제 군 운용 데이터나 내부 시스템 정보를 사용하지 않습니다.
 
 ```text
 pc_sim (Python 측정 생성)
   → CRC-16 프레임 / USB-UART
-  → STM32: uart_rx → frame_parser → frame_handler → track / Kalman
+  → STM32 RX: uart_rx → rx_frame_processor → frame_parser
+  → 메시지 큐 → frame_handler 스레드 → track / Kalman
   → ST-Link 콘솔에서 결과 확인
 ```
 
@@ -67,7 +68,7 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-실제 수신·복구 코드와 모사 UART를 사용하는 9개 테스트입니다.
+실제 수신·복구 코드와 모사 UART를 사용하는 13개 테스트입니다.
 실행 조건과 검증 한계는 [UART 테스트 안내](fcc_app/tests/test_uart_rx/README.md)를 참고하세요.
 Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 필터·추적 정책은 [Tracking C 테스트](fcc_app/tests/test_kalman/README.md)로 별도 검증합니다.
@@ -113,15 +114,19 @@ CRC 규격은 **CRC-16/IBM-3740 (CCITT-FALSE)**입니다. poly=`0x1021`, init=`0
 refin/refout=false, xorout=`0x0000`이며 `123456789`의 기준값은 `0x29B1`입니다.
 규격 이름과 매개변수는 [Zephyr CRC 문서](https://docs.zephyrproject.org/latest/doxygen/html/group__crc.html)와 일치합니다.
 STX와 CRC 자체는 계산에서 제외합니다. 측정 프레임은 총 15바이트, INIT은 6바이트입니다.
-Python 송신기·GUI와 보드 펌웨어를 함께 갱신해야 합니다. 전환 전 보드 시험은 XOR 버전의 결과이며 CRC 실보드 시험은 별도입니다.
+Python 송신기·GUI와 보드 펌웨어를 함께 갱신해야 합니다. 최신 실보드·GUI 시험 결과는 [검증 기록](docs/hardware-test-2026-11-01.md)을 참고하세요.
+
+정상 프레임은 깊이 8의 큐에 복사합니다. 큐가 가득 차면 새 프레임을 버리고 누적 드롭을 집계합니다.
+INIT/RESET도 큐 포화 시 드롭될 수 있습니다.
 
 ## 파일 구조
 
 ```text
 fcc_app/src/
     uart_rx.c          UART 인터럽트·링버퍼·수신 스레드
+    rx_frame_processor.c  파서 소유·큐 제출·드롭 집계
     frame_parser.c     CRC-16 프레임 파서
-    frame_handler.c    측정 처리·초기화·수신 timeout
+    frame_handler.c    메시지 큐·처리 스레드·수신 timeout
     radar_message.c    10바이트 해석·semicircle → rad
     track.c            단일 트랙 상태·시간·hit/miss
     kalman_cv.c        거리·방위각 등속 칼만 필터

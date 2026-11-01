@@ -95,3 +95,8 @@ python -m pytest tests/test_gui_model.py tests/test_gui.py -q
 
 GUI 라이브러리가 없으면 Qt 테스트 모듈은 skip됩니다. 모사 serial 테스트는 실제 보드 통신 검증을 대신하지 않습니다.
 Qt 실행 흐름은 [공식 QThread 문서](https://doc.qt.io/qtforpython-6/PySide6/QtCore/QThread.html)를 참고합니다.
+
+## 실제 보드 검증
+
+2026-11-01 최신 펌웨어로 GUI 연결·송신·중지 후 timeout·재시작·재연결·종료를 확인했습니다.
+[실제 화면과 결과](../docs/hardware-test-2026-11-01.md)를 참고하세요.

@@ -14,4 +14,5 @@ target_sources(app PRIVATE
     src/gating.c
     src/angle_utils.c
     src/track.c
+    src/rx_frame_processor.c
 )
