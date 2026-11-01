@@ -13,7 +13,7 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-9개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
+13개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
 `uart_rx_tests test_receives_after_recovery`처럼 이름을 넘기면 한 사례를 실행합니다.
 Release 빌드에서도 검증용 `assert`가 제거되지 않도록 `-UNDEBUG`를 적용합니다.
 
@@ -32,7 +32,7 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 
 1. ISR에서 overflow를 일으킨 뒤 선택된 정책이 버퍼 내 정상 INIT 프레임을 처리하는지.
 2. 기존 파서 상태와 버퍼의 뒷부분으로 레이더 프레임을 완성하는지.
-   handler 호출 중 새 UART 입력을 동기적으로 주입해 저장되지 않는지도 확인합니다.
+   submit 호출 중 새 UART 입력을 동기적으로 주입해 저장되지 않는지도 확인합니다.
 3. 불완전한 프레임을 처리하지 않고 복구 마지막에 폐기하는지.
 4. 잘못된 체크섬을 가진 프레임을 거부하는지.
 5. 복구 후 정상 프레임을 다시 수신·파싱할 수 있는지.
@@ -40,6 +40,11 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 7. 꽉 찬 버퍼의 push 실패가 기존 바이트와 head/tail을 변경하지 않는지.
 8. 초기화 없이 채우기·비우기를 반복해 인덱스가 배열 끝을 순환해도 바이트 순서와 full/empty 판정이 유지되는지.
 9. drain 중 잘못된 길이를 거부하고 이어지는 정상 INIT만 처리하는지.
+
+10. 전역 parser와 다른 객체를 전달해도 해당 객체의 내용과 수신 시각을 제출하는지.
+11. INCOMPLETE·CRC_ERROR·LENGTH_ERROR 결과는 큐 제출하지 않는지.
+12. 큐 제출 실패 시 드롭을 집계하고 다음 정상 제출이 가능한지.
+13. drain 중 큐 제출 실패가 발생해도 복구를 끝내고 overflow를 해제하는지.
 
 현재 `RX_OVERFLOW_DRAIN_BUFFER` 설정의 동작을 검증합니다. 전체 폐기로 설정을 바꾸면
 정상 프레임을 보존해야 한다는 drain 검증은 실패합니다. 두 정책을 모두 자동 선택해 빌드하는 테스트는 아닙니다.
@@ -56,11 +61,11 @@ static assertion은 fixture의 최소 크기(9)와 현재 `uint8_t` 인덱스의
 ## 실제 코드와 모사의 경계
 
 - 실제 코드: `uart_callback`, 복구 dispatcher·drain·마무리 함수, 링버퍼, 프레임 파서.
-- 모사: UART FIFO, Zephyr 세마포어·IRQ·atomic·시각, 프레임 handler.
+- 모사: UART FIFO, Zephyr 세마포어·IRQ·atomic·시각, `frame_handler_submit()` 반환값과 프레임 복사.
 - `uart_rx_thread()`는 컴파일하지만 무한 루프를 실제로 스케줄링하지 않습니다.
 - `uart_rx.c`를 테스트 번역 단위에 직접 포함해 static 함수를 검사합니다.
   펌웨어에 테스트용 공개 함수나 조건부 코드를 추가하지 않습니다.
-- handler는 전달된 프레임과 잠금 상태를 기록합니다. 실제 트랙 보정·timeout 의미는 여기서 검증하지 않습니다.
+- submit 모사는 전달된 프레임을 복사하고 IRQ 잠금 상태를 검사합니다. 실제 Zephyr 메시지 큐·처리 스레드·트랙 보정·timeout은 여기서 검증하지 않습니다.
 - 모사 IRQ와 atomic은 실제 동시성·메모리 순서·하드웨어 overrun을 재현하지 않습니다.
 
 따라서 이 테스트 통과는 실제 보드의 IRQ 타이밍·overflow 빈도·손실량·재동기화 성공을 보장하지 않습니다.

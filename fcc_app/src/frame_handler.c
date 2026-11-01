@@ -8,8 +8,14 @@
 // Expire the track after 1000 ms without a decoded and validated radar measurement.
 #define RADAR_RX_TIMEOUT_MS 1000
 
-static void handle_radar_measurement(struct frame_handler *p_handler, const struct frame_parser *p_parser);
+static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3);
+
+static void handle_radar_measurement(struct frame_handler *p_handler, const struct received_frame *p_frame);
 static void update_track_from_measurement(struct track *p_track, const struct radar_measurement *p_measurement);
+
+K_THREAD_DEFINE(frame_handler_tid, 2048, frame_handler_thread, NULL, NULL, NULL, 6, 0, 0);
+
+K_MSGQ_DEFINE(frame_queue, sizeof(struct received_frame), 8, 4);
 
 void frame_handler_init(struct frame_handler *p_handler) 
 {
@@ -19,6 +25,31 @@ void frame_handler_init(struct frame_handler *p_handler)
     p_handler->last_valid_rx_ms = 0;
     p_handler->timeout_armed = false;
 }
+
+static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3)
+{
+    ARG_UNUSED(p_arg1);
+    ARG_UNUSED(p_arg2);
+    ARG_UNUSED(p_arg3);
+
+    // Initialize handler state before processing queued frames.
+    struct frame_handler handler;
+    struct received_frame frame;
+
+    frame_handler_init(&handler);
+
+    while (1) {
+        int ret = k_msgq_get(&frame_queue, &frame, K_MSEC(50));
+
+        if (ret == 0) {
+            // Process the recieved frame here.
+            handle_frame(&handler, &frame);
+        }
+
+        frame_handler_check_timeout(&handler, k_uptime_get());
+    }
+}
+
 
 void frame_handler_reset(struct frame_handler *p_handler) 
 {
@@ -44,16 +75,16 @@ void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms
     printk("Radar measurement timeout: track cleared\n");
 }
 
-void handle_frame(struct frame_handler *p_handler, const struct frame_parser *p_parser)
+void handle_frame(struct frame_handler *p_handler, const struct received_frame *p_frame)
 {
-    switch (p_parser->type) {
+    switch (p_frame->type) {
     case TYPE_INIT:
         printk("TYPE_INIT\n");
         frame_handler_init(p_handler);
         break;
 
     case TYPE_RADAR_MEAS: {
-        handle_radar_measurement(p_handler, p_parser);
+        handle_radar_measurement(p_handler, p_frame);
         break;
     }
     case TYPE_STATUS:
@@ -69,18 +100,18 @@ void handle_frame(struct frame_handler *p_handler, const struct frame_parser *p_
         frame_handler_reset(p_handler);
         break;
     default:
-        printk("Unknown frame type: 0x%02X\n", p_parser->type);
+        printk("Unknown frame type: 0x%02X\n", p_frame->type);
         break;
     }
 }
 
-static void handle_radar_measurement(struct frame_handler *p_handler, const struct frame_parser *p_parser)
+static void handle_radar_measurement(struct frame_handler *p_handler, const struct received_frame *p_frame)
 {
     struct radar_measurement rm;
 
     if (!decode_radar_measurement(
-            p_parser->payload,
-            p_parser->payload_length,
+            p_frame->payload,
+            p_frame->payload_length,
             &rm)) {
         printk("Invalid radar payload\n");
         return;
@@ -91,9 +122,9 @@ static void handle_radar_measurement(struct frame_handler *p_handler, const stru
         return;
     }
 
-    // Record processing time for valid radar payloads, before timestamp/gate checks.
+    // Record received time for valid radar payloads, before timestamp/gate checks.
     // A later tracking rejection still counts as receiving a valid measurement payload.
-    p_handler->last_valid_rx_ms = k_uptime_get();
+    p_handler->last_valid_rx_ms = p_frame->received_at_ms;
     p_handler->timeout_armed = true;
 
     printk("range: %.2f\n", (double)rm.range_m);
@@ -158,4 +189,9 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
         printk("estimated azimuth rate: %.2f\n",
             (double)p_track->azimuth_filter.rate);
     }
+}
+
+int frame_handler_submit(const struct received_frame *p_frame)
+{
+    return k_msgq_put(&frame_queue, p_frame, K_NO_WAIT);
 }

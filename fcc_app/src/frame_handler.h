@@ -16,12 +16,22 @@ struct frame_handler {
     bool timeout_armed;
 };
 
+struct received_frame {
+    FrameType type;
+    uint8_t payload_length;
+    uint8_t payload[MAX_PAYLOAD];
+    int64_t received_at_ms;
+};
+
 void frame_handler_init(struct frame_handler *p_handler);
 void frame_handler_reset(struct frame_handler *p_handler);
 void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms);
 
-void handle_frame(
-    struct frame_handler *p_handler,
-    const struct frame_parser *p_parser);
+
+
+void handle_frame(struct frame_handler *p_handler, const struct received_frame *p_frame);
+
+int frame_handler_submit(const struct received_frame *p_frame);
+
 
 #endif
