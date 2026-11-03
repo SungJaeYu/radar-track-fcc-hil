@@ -15,11 +15,11 @@
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 5 | offscreen Qt, serial 모사 |
 | CRC·펌웨어 상호운용 | `tests/test_crc_interop.py` | 18 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
-| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 13 | host C, Zephyr API 모사 |
+| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 19 | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **74개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
-UART C는 각 함수를 CTest에 따로 등록하므로 13개로 표시됩니다.
+UART C는 각 함수를 CTest에 따로 등록하므로 19개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
@@ -114,11 +114,18 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 | `test_queue_full_counts_drop_and_recovers` | 큐 실패 집계와 다음 제출 재개 |
 | `test_drain_queue_full_still_finishes_recovery` | 큐 실패에도 drain 복구 완료 |
 | `test_ring_wraparound` | 초기화 없이 채우기·비우기 3회 반복; 인덱스 순환 후에도 바이트 순서와 full/empty 판정 유지 |
+| `test_timeout_boundary_for_every_partial_frame` | 모든 불완전 프레임 분할 지점: 만료 직전·경계값·중복 집계 방지 |
+| `test_timeout_ignores_idle_and_complete_frames` | 대기 상태와 정상 프레임 완료 후 timeout 제외 |
+| `test_timeout_recovers_next_valid_frame` | 만료 후 다음 정상 프레임 내용·시각 보존 |
+| `test_timeout_preserves_split_frames` | 모든 분할 지점의 제한 시간 이내 정상 수신 |
+| `test_timeout_refreshes_on_each_byte` | 바이트별 시각 갱신: 전체 조립 시간 제한과 구분 |
+| `test_explicit_reset_cancels_partial_timeout` | 명시적 reset 이후 만료 취소와 누적 카운터 보존 |
 
 현재 BUFFER_SIZE=256, 실제 용량=255이며 fixture는 버퍼 크기에서 입력 길이를 계산합니다.
 현재 선택된 **drain 정책**을 검증하므로 discard-all 정책으로 변경하면 일부 기대값이 맞지 않습니다.
 실제 ISR·복구·링버퍼·파서를 사용하지만 UART FIFO, IRQ, atomic, 시간, frame_handler_submit은 모사합니다.
-무한 RX 스레드는 실행하지 않으며 실제 동시성·스케줄링·무수신 timeout 의미는 검증하지 않습니다.
+무한 RX 스레드는 실행하지 않으며 실제 동시성·스케줄링과 트랙 무수신 timeout은 검증하지 않습니다.
+부분 프레임 timeout은 제어 가능한 모사 시각으로 실제 processor 함수를 검사합니다.
 
 ## GUI 테스트
 
@@ -199,3 +206,6 @@ GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 - 장시간 운전, 부하별 수신률, 추적 결과 반환을 통한 폐루프 오차 측정.
 
 추가 보드 시험은 [보드 검증 절차](board-bringup.md)를 따릅니다.
+
+2026-11-03: 부분 프레임 timeout host 사례 6개를 추가했습니다. 모사 uptime을 직접
+진행시키며 검사합니다. 이 변경의 실보드 timeout 검증은 아직 수행하지 않았습니다.

@@ -21,7 +21,9 @@ static int k_sem_take(struct k_sem *sem, int timeout) { (void)timeout; sem->coun
 static unsigned int irq_locked;
 static unsigned int irq_lock(void) { unsigned int old = irq_locked; irq_locked = 1; return old; }
 static void irq_unlock(unsigned int key) { irq_locked = key; }
-static int64_t k_uptime_get(void) { return 100; }
+// Tests advance board uptime explicitly; no wall-clock sleeps are needed.
+static int64_t test_now_ms = 100;
+static int64_t k_uptime_get(void) { return test_now_ms; }
 typedef int atomic_t;
 #define ATOMIC_INIT(x) (x)
 static int atomic_get(const atomic_t *p) { return *p; }

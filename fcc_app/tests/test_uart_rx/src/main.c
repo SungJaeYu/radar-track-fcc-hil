@@ -64,6 +64,9 @@ static void reset_test(void)
     submit_attempts = 0;
     submit_result = 0;
     frame_queue_drop_count = 0;
+    frame_timeout_count = 0;
+    last_byte_processed_ms = 0;
+    test_now_ms = 100;
     memset(&last_frame, 0, sizeof(last_frame));
     inject_during_submit = false;
     ring_init(&rx_ring); rx_frame_processor_reset();
@@ -238,6 +241,104 @@ static void test_drain_queue_full_still_finishes_recovery(void)
     assert_recovered();
 }
 
+static void feed_bytes(const uint8_t *p_bytes, size_t size)
+{
+    for (size_t i = 0; i < size; ++i) rx_frame_processor_feed(p_bytes[i]);
+}
+
+static void test_timeout_boundary_for_every_partial_frame(void)
+{
+    // Exercise every cut, including header, payload and a missing CRC low byte.
+    for (size_t cut = 1; cut < sizeof(radar_frame); ++cut) {
+        reset_test();
+        feed_bytes(radar_frame, cut);
+        ParserState pending_state = parser.state;
+        assert(pending_state != WAIT_STX);
+        test_now_ms += FRAME_RX_TIMEOUT_MS - 1;
+        rx_frame_processor_check_timeout(test_now_ms);
+        assert(parser.state == pending_state && frame_timeout_count == 0);
+        test_now_ms++;
+        rx_frame_processor_check_timeout(test_now_ms);
+        assert(parser.state == WAIT_STX && parser.payload_index == 0);
+        assert(frame_timeout_count == 1 && submit_attempts == 0);
+        test_now_ms += FRAME_RX_TIMEOUT_MS * 2;
+        rx_frame_processor_check_timeout(test_now_ms);
+        assert(frame_timeout_count == 1);
+    }
+}
+
+static void test_timeout_ignores_idle_and_complete_frames(void)
+{
+    reset_test();
+    test_now_ms += FRAME_RX_TIMEOUT_MS * 2;
+    rx_frame_processor_check_timeout(test_now_ms);
+    assert(frame_timeout_count == 0);
+    feed_bytes(radar_frame, sizeof(radar_frame));
+    assert(submitted == 1);
+    test_now_ms += FRAME_RX_TIMEOUT_MS * 2;
+    rx_frame_processor_check_timeout(test_now_ms);
+    assert(frame_timeout_count == 0 && submitted == 1);
+}
+
+static void test_timeout_recovers_next_valid_frame(void)
+{
+    reset_test();
+    feed_bytes(radar_frame, 7);
+    test_now_ms += FRAME_RX_TIMEOUT_MS;
+    rx_frame_processor_check_timeout(test_now_ms);
+    assert(frame_timeout_count == 1 && submit_attempts == 0);
+    feed_bytes(radar_frame, sizeof(radar_frame));
+    assert(submitted == 1 && last_frame.type == TYPE_RADAR_MEAS);
+    assert(last_frame.payload_length == 10);
+    assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
+    assert(last_frame.received_at_ms == test_now_ms);
+    assert(frame_timeout_count == 1 && frame_queue_drop_count == 0);
+}
+
+static void test_timeout_preserves_split_frames(void)
+{
+    for (size_t cut = 1; cut < sizeof(radar_frame); ++cut) {
+        reset_test();
+        feed_bytes(radar_frame, cut);
+        test_now_ms += FRAME_RX_TIMEOUT_MS - 1;
+        rx_frame_processor_check_timeout(test_now_ms);
+        feed_bytes(radar_frame + cut, sizeof(radar_frame) - cut);
+        assert(submitted == 1 && frame_timeout_count == 0);
+        assert(last_frame.payload_length == 10);
+        assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
+    }
+}
+
+static void test_timeout_refreshes_on_each_byte(void)
+{
+    reset_test();
+    int64_t started_ms = test_now_ms;
+    // Total assembly exceeds the threshold, but each gap stays below it.
+    for (size_t i = 0; i < sizeof(radar_frame); ++i) {
+        rx_frame_processor_feed(radar_frame[i]);
+        test_now_ms += FRAME_RX_TIMEOUT_MS - 1;
+        rx_frame_processor_check_timeout(test_now_ms);
+        assert(frame_timeout_count == 0);
+    }
+    assert(test_now_ms - started_ms > FRAME_RX_TIMEOUT_MS);
+    assert(submitted == 1 && last_frame.type == TYPE_RADAR_MEAS);
+}
+
+static void test_explicit_reset_cancels_partial_timeout(void)
+{
+    reset_test();
+    feed_bytes(radar_frame, 7);
+    test_now_ms += FRAME_RX_TIMEOUT_MS;
+    rx_frame_processor_check_timeout(test_now_ms);
+    assert(frame_timeout_count == 1);
+    feed_bytes(radar_frame, 7);
+    rx_frame_processor_reset();
+    test_now_ms += FRAME_RX_TIMEOUT_MS;
+    rx_frame_processor_check_timeout(test_now_ms);
+    assert(frame_timeout_count == 1 && parser.state == WAIT_STX);
+    assert(submit_attempts == 0);
+}
+
 struct test_case {
     const char *p_name;
     void (*p_run)(void);
@@ -245,6 +346,13 @@ struct test_case {
 
 #define CASE(test) { #test, test }
 static const struct test_case cases[] = {
+    CASE(test_timeout_boundary_for_every_partial_frame),
+    CASE(test_timeout_ignores_idle_and_complete_frames),
+    CASE(test_timeout_recovers_next_valid_frame),
+    CASE(test_timeout_preserves_split_frames),
+    CASE(test_timeout_refreshes_on_each_byte),
+    CASE(test_explicit_reset_cancels_partial_timeout),
+
     CASE(test_processor_copies_frame_and_reset_preserves_drops),
     CASE(test_nonready_results_do_not_submit),
     CASE(test_queue_full_counts_drop_and_recovers),

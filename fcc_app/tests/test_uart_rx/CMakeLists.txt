@@ -13,6 +13,13 @@ target_compile_features(uart_rx_tests PRIVATE c_std_11)
 target_compile_options(uart_rx_tests PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 
 foreach(test_name IN ITEMS
+    test_timeout_boundary_for_every_partial_frame
+    test_timeout_ignores_idle_and_complete_frames
+    test_timeout_recovers_next_valid_frame
+    test_timeout_preserves_split_frames
+    test_timeout_refreshes_on_each_byte
+    test_explicit_reset_cancels_partial_timeout
+
     test_processor_copies_frame_and_reset_preserves_drops
     test_nonready_results_do_not_submit
     test_queue_full_counts_drop_and_recovers

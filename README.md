@@ -82,7 +82,7 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-실제 수신·복구 코드와 모사 UART를 사용하는 13개 테스트입니다.
+실제 수신·복구 코드와 모사 UART를 사용하는 19개 테스트입니다.
 실행 조건과 검증 한계는 [UART 테스트 안내](fcc_app/tests/test_uart_rx/README.md)를 참고하세요.
 Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 필터·추적 정책은 [Tracking C 테스트](fcc_app/tests/test_kalman/README.md)로 별도 검증합니다.
@@ -165,7 +165,7 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 
 | 영역 | 구현된 기능 | 미구현·제한 |
 | --- | --- | --- |
-| 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리 | 스캔 단위 다중 측정 규격, 부분 프레임 timeout |
+| 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리·부분 프레임 timeout | 스캔 단위 다중 측정 규격 |
 | 실행 구조 | RX 스레드 → 프레임 복사 큐 → handler 스레드, 큐 포화 시 드롭 집계 | TX 전용 처리·추적 결과 송신 |
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
 | 제어·상태 | INIT/RESET으로 추적 상태 초기화 | STATUS/COMMAND는 로그만 출력; BIT·Lock On 미구현 |
@@ -187,7 +187,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [x] CRC-16·길이 검증과 parser 결과 구분, PC·펌웨어 규격 통일
 - [x] RX/handler 스레드·메시지 큐 분리, rx_frame_processor로 파서 소유·제출 처리 분리
 - [x] drain/discard 복구 정책과 큐 포화 드롭 집계 구현
-  - [ ] 부분 프레임 timeout: 조립 중단 시 parser만 초기화하고, 다음 정상 프레임 수신 복구
+  - [x] 부분 프레임 timeout 구현·host 검증: 바이트 처리 중단 시 parser 초기화·1회 집계·다음 정상 프레임 복구
+    - [ ] 실제 보드에서 부분 송신·중단·재송신 검증
   - [ ] 수신 오류 진단: CRC·길이·부분 프레임 timeout·링버퍼 overflow·큐 드롭 통계
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
@@ -214,7 +215,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [x] UART host C: 링버퍼·CRC/길이 오류·drain·큐 드롭·reset 회귀 시험
 - [x] 실제 GUI·보드 연결, 정상 측정·중지/재시작·timeout·오류 후 복귀·큐 burst 시험
 - [x] 역할·ID 정책, 배선·빌드·테스트 목록·로그·화면과 블로그 기록 정리
-  - [ ] 시간 제어 host 시험: 부분 프레임 timeout 경계·무수신·다음 정상 프레임·정상 분할 수신
+  - [x] 시간 제어 host 시험: 부분 프레임 timeout 경계·무수신·다음 정상 프레임·정상 분할 수신
   - [ ] 큐·동시성 시험: 포화 시 제어 순서, 오래된 측정, 통계 snapshot, TX 실패 후 복귀
   - [ ] 실보드 링버퍼 overflow/drain·UART overrun·USART6 TX 확인
   - [ ] 장시간·고부하·스택 여유·정량 손실 및 추적 정확도 평가
@@ -260,6 +261,9 @@ RX 루프는 새 바이트가 없어도 만료를 검사해야 합니다. 다만
 기존 host 모사의 고정 시각도 제어 가능한 시각으로 바꿔 경계값·복구 시험을 추가합니다.
 
 ## 검증 현황
+
+2026-11-03: 부분 프레임 timeout 회귀 6개를 추가해 UART host C는 19개입니다.
+이 기능의 실보드 검증은 아직 남아 있습니다.
 
 2026-11-01 분리본 기준 Python 74개 + subtest 9개, UART host C 13개를 통과했고
 펌웨어 빌드·플래시와 실제 GUI 연결·송신·중지·재시작을 확인했습니다.
