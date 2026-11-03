@@ -6,9 +6,13 @@
 #include "frame_parser.h"
 #include "frame_handler.h"
 
+#define FRAME_RX_TIMEOUT_MS 1000
+
 // Accessed only by the RX thread after initialization
 static struct frame_parser parser;
 static uint32_t frame_queue_drop_count;
+static int64_t last_byte_processed_ms;
+static uint32_t frame_timeout_count;
 
 static void process_parser_result(ParserResult result);
 static void submit_parsed_frame(void);
@@ -21,8 +25,25 @@ void rx_frame_processor_reset(void)
 
 void rx_frame_processor_feed(uint8_t byte)
 {
+    last_byte_processed_ms = k_uptime_get();
+
     ParserResult result = parser_feed(&parser, byte);
+
     process_parser_result(result);
+}
+
+void rx_frame_processor_check_timeout(int64_t now_ms)
+{
+    if (parser.state == WAIT_STX) {
+        return;
+    }
+    
+    if (now_ms - last_byte_processed_ms < FRAME_RX_TIMEOUT_MS) {
+        return;
+    }
+
+    rx_frame_processor_reset();
+    frame_timeout_count++;
 }
 
 static void process_parser_result(ParserResult result)

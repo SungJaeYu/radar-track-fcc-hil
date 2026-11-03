@@ -9,4 +9,7 @@ void rx_frame_processor_reset(void);
 // Feed one byte and submit a frame only after successful validation.
 void rx_frame_processor_feed(uint8_t byte);
 
+// Discard an imcomplete frame after the inactivity timeout.
+void rx_frame_processor_check_timeout(int64_t now_ms);
+
 #endif

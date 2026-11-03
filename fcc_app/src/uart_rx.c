@@ -136,6 +136,8 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
 
             rx_frame_processor_feed(c);
         }
+
+        rx_frame_processor_check_timeout(k_uptime_get());
     }
 }
 
