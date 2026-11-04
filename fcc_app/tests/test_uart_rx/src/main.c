@@ -63,8 +63,10 @@ static void reset_test(void)
     submitted = 0;
     submit_attempts = 0;
     submit_result = 0;
-    frame_queue_drop_count = 0;
-    frame_timeout_count = 0;
+    atomic_set(&queue_drops_count, 0);
+    atomic_set(&frame_timeout_count, 0);
+    atomic_set(&crc_error_count, 0);
+    atomic_set(&length_error_count, 0);
     last_byte_processed_ms = 0;
     test_now_ms = 100;
     memset(&last_frame, 0, sizeof(last_frame));
@@ -198,11 +200,11 @@ static void test_processor_copies_frame_and_reset_preserves_drops(void)
     assert(last_frame.type == TYPE_RADAR_MEAS && last_frame.payload_length == 10);
     assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
     assert(last_frame.received_at_ms == k_uptime_get());
-    assert(frame_queue_drop_count == 0);
+    assert(queue_drops_count == 0);
     memset(parser.payload, 0, sizeof(parser.payload));
-    frame_queue_drop_count = 3;
+    queue_drops_count = 3;
     rx_frame_processor_reset();
-    assert(frame_queue_drop_count == 3 && parser.state == WAIT_STX);
+    assert(queue_drops_count == 3 && parser.state == WAIT_STX);
     assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
 }
 
@@ -212,7 +214,7 @@ static void test_nonready_results_do_not_submit(void)
     process_parser_result(PARSER_INCOMPLETE);
     process_parser_result(PARSER_CRC_ERROR);
     process_parser_result(PARSER_LENGTH_ERROR);
-    assert(submit_attempts == 0 && frame_queue_drop_count == 0);
+    assert(submit_attempts == 0 && queue_drops_count == 0);
 }
 
 static void test_queue_full_counts_drop_and_recovers(void)
@@ -222,12 +224,12 @@ static void test_queue_full_counts_drop_and_recovers(void)
     for (size_t i = 0; i < sizeof(init_frame); ++i) {
         rx_frame_processor_feed(init_frame[i]);
     }
-    assert(submit_attempts == 1 && submitted == 0 && frame_queue_drop_count == 1);
+    assert(submit_attempts == 1 && submitted == 0 && queue_drops_count == 1);
     submit_result = 0;
     for (size_t i = 0; i < sizeof(radar_frame); ++i) {
         rx_frame_processor_feed(radar_frame[i]);
     }
-    assert(submit_attempts == 2 && submitted == 1 && frame_queue_drop_count == 1);
+    assert(submit_attempts == 2 && submitted == 1 && queue_drops_count == 1);
     assert(last_frame.type == TYPE_RADAR_MEAS);
 }
 
@@ -237,7 +239,7 @@ static void test_drain_queue_full_still_finishes_recovery(void)
     submit_result = -ENOMSG;
     receive_overflow(init_frame, sizeof(init_frame), 0);
     rx_recover_overflow();
-    assert(submit_attempts == 1 && submitted == 0 && frame_queue_drop_count == 1);
+    assert(submit_attempts == 1 && submitted == 0 && queue_drops_count == 1);
     assert_recovered();
 }
 
@@ -292,7 +294,7 @@ static void test_timeout_recovers_next_valid_frame(void)
     assert(last_frame.payload_length == 10);
     assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
     assert(last_frame.received_at_ms == test_now_ms);
-    assert(frame_timeout_count == 1 && frame_queue_drop_count == 0);
+    assert(frame_timeout_count == 1 && queue_drops_count == 0);
 }
 
 static void test_timeout_preserves_split_frames(void)
@@ -339,6 +341,41 @@ static void test_explicit_reset_cancels_partial_timeout(void)
     assert(submit_attempts == 0);
 }
 
+static void test_stats_snapshot_and_reset(void)
+{
+    reset_test();
+    struct rx_frame_stats snapshot;
+    rx_frame_processor_get_stats(&snapshot);
+    assert(snapshot.crc_errors == 0 && snapshot.length_errors == 0);
+    assert(snapshot.frame_timeouts == 0 && snapshot.queue_drops == 0);
+
+    uint8_t bad_crc[sizeof(radar_frame)];
+    memcpy(bad_crc, radar_frame, sizeof(bad_crc));
+    bad_crc[sizeof(bad_crc) - 1] ^= 1;
+    feed_bytes(bad_crc, sizeof(bad_crc));
+    const uint8_t bad_length[] = {0x7e, 0};
+    feed_bytes(bad_length, sizeof(bad_length));
+    feed_bytes(radar_frame, 7);
+    test_now_ms += FRAME_RX_TIMEOUT_MS;
+    rx_frame_processor_check_timeout(test_now_ms);
+    submit_result = -ENOMSG;
+    feed_bytes(radar_frame, sizeof(radar_frame));
+    rx_frame_processor_reset();
+
+    rx_frame_processor_get_stats(&snapshot);
+    assert(snapshot.crc_errors == 1 && snapshot.length_errors == 1);
+    assert(snapshot.frame_timeouts == 1 && snapshot.queue_drops == 1);
+    submit_result = 0;
+    feed_bytes(radar_frame, sizeof(radar_frame));
+    struct rx_frame_stats after;
+    rx_frame_processor_get_stats(&after);
+    assert(after.crc_errors == snapshot.crc_errors);
+    assert(after.length_errors == snapshot.length_errors);
+    assert(after.frame_timeouts == snapshot.frame_timeouts);
+    assert(after.queue_drops == snapshot.queue_drops);
+    assert(submitted == 1);
+}
+
 struct test_case {
     const char *p_name;
     void (*p_run)(void);
@@ -346,6 +383,7 @@ struct test_case {
 
 #define CASE(test) { #test, test }
 static const struct test_case cases[] = {
+    CASE(test_stats_snapshot_and_reset),
     CASE(test_timeout_boundary_for_every_partial_frame),
     CASE(test_timeout_ignores_idle_and_complete_frames),
     CASE(test_timeout_recovers_next_valid_frame),

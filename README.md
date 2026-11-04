@@ -82,10 +82,12 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-실제 수신·복구 코드와 모사 UART를 사용하는 19개 테스트입니다.
+실제 수신·복구 코드와 모사 UART를 사용하는 20개 테스트입니다.
 실행 조건과 검증 한계는 [UART 테스트 안내](fcc_app/tests/test_uart_rx/README.md)를 참고하세요.
 Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 필터·추적 정책은 [Tracking C 테스트](fcc_app/tests/test_kalman/README.md)로 별도 검증합니다.
+
+STATUS 처리 테스트 5개는 [STATUS 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
 
 ## 펌웨어 빌드·플래시
 
@@ -108,7 +110,8 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - 측정 payload는 big-endian `>IHi`: timestamp_ms(uint32), range_m(uint16), azimuth_sc(int32), 총 10바이트.
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
 - TYPE: INIT=1, RADAR_MEAS=2, STATUS=3, COMMAND=4, RESET=5.
-- INIT/RESET은 트랙을 초기화합니다. STATUS/COMMAND는 현재 로그만 출력합니다.
+- INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
+  STATUS 통계의 USART6 응답 프레임은 아직 구현하지 않았습니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
 
 ## RX 버퍼와 overflow 복구
@@ -168,7 +171,7 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 | 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리·부분 프레임 timeout | 스캔 단위 다중 측정 규격 |
 | 실행 구조 | RX 스레드 → 프레임 복사 큐 → handler 스레드, 큐 포화 시 드롭 집계 | TX 전용 처리·추적 결과 송신 |
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
-| 제어·상태 | INIT/RESET으로 추적 상태 초기화 | STATUS/COMMAND는 로그만 출력; BIT·Lock On 미구현 |
+| 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그 출력 | UART 응답·BIT·Lock On 미구현 |
 | 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
 | PC 시뮬레이터 | 측정·잡음 생성, PC 출력용 다중표적·미탐지·클러터 시나리오 | 실제 UART 모드는 단일표적·클러터 0으로 제한 |
 | GUI·평가 | 송신 제어, PC 합성값 그래프, 보드 콘솔 | 다중표적 GUI, 보드 추정값 그래프, 폐루프 RMSE·트랙 연속성 평가 |
@@ -189,7 +192,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [x] drain/discard 복구 정책과 큐 포화 드롭 집계 구현
   - [x] 부분 프레임 timeout 구현·host 검증: 바이트 처리 중단 시 parser 초기화·1회 집계·다음 정상 프레임 복구
     - [ ] 실제 보드에서 부분 송신·중단·재송신 검증
-  - [ ] 수신 오류 진단: CRC·길이·부분 프레임 timeout·링버퍼 overflow·큐 드롭 통계
+  - [x] RX 진단 카운터: CRC·길이·부분 프레임 timeout·큐 드롭, atomic 읽기·누적값 보존
+  - [ ] 링버퍼 overflow 횟수·손실 바이트 통계
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
   - [ ] 빌드 설정 정리: overflow 정책·timeout 등 조정 항목을 앱 Kconfig/prj.conf로 관리
@@ -216,7 +220,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [x] 실제 GUI·보드 연결, 정상 측정·중지/재시작·timeout·오류 후 복귀·큐 burst 시험
 - [x] 역할·ID 정책, 배선·빌드·테스트 목록·로그·화면과 블로그 기록 정리
   - [x] 시간 제어 host 시험: 부분 프레임 timeout 경계·무수신·다음 정상 프레임·정상 분할 수신
-  - [ ] 큐·동시성 시험: 포화 시 제어 순서, 오래된 측정, 통계 snapshot, TX 실패 후 복귀
+  - [x] 통계 조회·STATUS host 시험: 출력값, 반복 조회, 트랙·측정 timeout 보존
+  - [ ] 큐·동시성 시험: 포화 시 제어 순서, 오래된 측정, 실제 동시 조회, TX 실패 후 복귀
   - [ ] 실보드 링버퍼 overflow/drain·UART overrun·USART6 TX 확인
   - [ ] 장시간·고부하·스택 여유·정량 손실 및 추적 정확도 평가
 
@@ -230,8 +235,11 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 ### 6. 상태·제어·결과 송신
 
 - [ ] STATUS/BIT: 상태·오류·드롭 통계 규격과 응답
-  - [ ] 통계 소유권·동시 읽기·누적/초기화 규칙 정의; 상태 보고와 실제 자기진단 항목 구분
-- [ ] 추적 결과 송신과 PC 수신·그래프 비교; 독립 TX 스레드 필요성 검토
+  - [x] RX 카운터는 processor 소유, atomic으로 개별 조회; parser·INIT/RESET에서 누적값 보존
+  - [x] 처리 스레드의 STATUS 로그 출력; 전체 항목의 동일 시점 snapshot은 보장하지 않음
+  - [ ] UART 응답 규격과 실제 BIT 자기진단 항목 정의
+- [ ] TX 큐·전용 스레드, STATUS 응답과 추적 결과 송신, PC 수신·그래프 비교
+  - [x] `uart_tx.c/.h` 빈 파일 생성·CMake 등록 (송신 구현은 아직 없음)
   - [ ] 응답 프레임·CRC·명시적 단위·결과 시각과 TX 완료/실패 처리
   - [ ] TX 큐 포화 정책: 최신 추적 결과와 제어 응답의 보존·폐기 기준, 오류 집계
 - [ ] COMMAND/Lock On: 트랙 선택·해제·대상 소실 정책
@@ -245,22 +253,24 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 완료 기준 |
 | --- | --- | --- |
-| 1 | 부분 프레임 timeout + 해당 오류 카운터 | 불완전 프레임 송신 후 무수신 상태에서도 만료, 다음 정상 프레임 처리; 정상 분할 수신 보존 |
-| 2 | 수신 오류 통계·UART 오류 복구 | 오류별 구분·집계, 유실 후 정상 프레임 복귀; 통계 읽기 방식 정의 |
-| 3 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실이 조용히 지나가지 않고, reset 전 측정이 이후 상태를 잘못 갱신하지 않음 |
-| 4 | 최소 STATUS·추적 결과 TX와 PC 수신 | 실제 USART6 TX로 응답을 받고 보드 상태·추정값 표시; 송신 실패·포화 후 복귀 |
-| 5 | 다중표적 입력·track_manager·측정 연관 | 두 표적 독립 추적부터 교차·소실/재등장까지 검증; PC 정답 ID를 입력으로 사용하지 않음 |
-| 6 | COMMAND/Lock On·정량 평가·장시간 시험 | 선택·해제·대상 소실 정책, 정확도·연속성·부하 한계 확인 |
+| 1 | STATUS 응답 규격·TX 큐·TX 스레드 | 처리 스레드에서 응답을 복사 제출하고 USART6으로 CRC 프레임 송신 |
+| 2 | PC 응답 수신·추적 결과 송신 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
+| 3 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
+| 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
+| 5 | 다중표적 입력·track_manager·측정 연관 | 독립 추적부터 교차·소실/재등장까지 검증 |
+| 6 | COMMAND/Lock On·정량 평가·장시간 시험 | 선택·해제·소실 정책, 정확도·연속성·부하 한계 확인 |
 
-설정 분리는 timeout·복구 정책 작업에 필요한 항목부터 진행합니다. 새 스레드는 TX 실행 방식이
-정해질 때 검토하며, 부분 프레임 timeout만을 위한 스레드는 추가하지 않습니다.
-
-부분 프레임 timeout은 트랙 timeout과 별개이며 `rx_frame_processor`가 조립 상태를 관리합니다.
-RX 루프는 새 바이트가 없어도 만료를 검사해야 합니다. 다만 링버퍼에 정상 바이트가 남아 있을 때
-스케줄링 지연을 실제 통신 중단으로 오판하지 않도록, 시간 기준과 버퍼 배출 순서를 먼저 정의합니다.
-기존 host 모사의 고정 시각도 제어 가능한 시각으로 바꿔 경계값·복구 시험을 추가합니다.
+부분 프레임 timeout과 RX 기본 오류 통계·STATUS 로그는 구현했습니다.
+다음은 `처리 스레드 → 응답 복사 큐 → TX 스레드 → PC` 경로입니다.
+지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
+TX 파일은 빈 골격이며 큐·스레드·인코딩·송신 함수는 아직 없습니다.
+설정 분리와 부분 프레임 timeout의 실제 보드 검증도 남아 있습니다.
 
 ## 검증 현황
+
+2026-11-04: UART host 20개와 STATUS handler host 5개 통과, 펌웨어 빌드 통과.
+CMake 재구성 시 기존 보드 devicetree의 `0x90000000` 중복 unit-address 경고가 남아 있습니다.
+통계·STATUS 변경의 flash/실보드 시험은 수행하지 않았습니다.
 
 2026-11-03: 부분 프레임 timeout 회귀 6개를 추가해 UART host C는 19개입니다.
 이 기능의 실보드 검증은 아직 남아 있습니다.

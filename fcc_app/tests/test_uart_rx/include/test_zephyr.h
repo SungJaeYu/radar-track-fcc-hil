@@ -27,6 +27,8 @@ static int64_t k_uptime_get(void) { return test_now_ms; }
 typedef int atomic_t;
 #define ATOMIC_INIT(x) (x)
 static int atomic_get(const atomic_t *p) { return *p; }
+// This single-threaded mock returns the previous value, like Zephyr.
+static int atomic_inc(atomic_t *p_value) { return (*p_value)++; }
 static void atomic_set(atomic_t *p, int value) { *p = value; }
 static void atomic_clear(atomic_t *p) { assert(irq_locked); *p = 0; }
 static int printk(const char *format, ...) { (void)format; assert(!irq_locked); return 0; }

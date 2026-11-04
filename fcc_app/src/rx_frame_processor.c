@@ -1,6 +1,7 @@
 #include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
+#include <zephyr/sys/atomic.h>
 
 #include "rx_frame_processor.h"
 #include "frame_parser.h"
@@ -10,9 +11,12 @@
 
 // Accessed only by the RX thread after initialization
 static struct frame_parser parser;
-static uint32_t frame_queue_drop_count;
 static int64_t last_byte_processed_ms;
-static uint32_t frame_timeout_count;
+
+static atomic_t crc_error_count = ATOMIC_INIT(0);
+static atomic_t length_error_count = ATOMIC_INIT(0);
+static atomic_t frame_timeout_count = ATOMIC_INIT(0);
+static atomic_t queue_drops_count = ATOMIC_INIT(0);
 
 static void process_parser_result(ParserResult result);
 static void submit_parsed_frame(void);
@@ -43,7 +47,15 @@ void rx_frame_processor_check_timeout(int64_t now_ms)
     }
 
     rx_frame_processor_reset();
-    frame_timeout_count++;
+    atomic_inc(&frame_timeout_count);
+}
+
+void rx_frame_processor_get_stats(struct rx_frame_stats *p_stats)
+{
+    p_stats->crc_errors = atomic_get(&crc_error_count);
+    p_stats->length_errors = atomic_get(&length_error_count);
+    p_stats->frame_timeouts = atomic_get(&frame_timeout_count);
+    p_stats->queue_drops = atomic_get(&queue_drops_count);
 }
 
 static void process_parser_result(ParserResult result)
@@ -53,7 +65,11 @@ static void process_parser_result(ParserResult result)
             submit_parsed_frame();
             break;
         case PARSER_CRC_ERROR:
+            atomic_inc(&crc_error_count);
+            break;
         case PARSER_LENGTH_ERROR:
+            atomic_inc(&length_error_count);
+            break;
         case PARSER_INCOMPLETE:
         default:
             // Do nothing
@@ -74,10 +90,9 @@ static void submit_parsed_frame(void)
 
     if (ret != 0) {
         // Count the new frame dropped because the queue is full.
-        frame_queue_drop_count++;
-
-        if (frame_queue_drop_count == 1 || frame_queue_drop_count % 100 == 0) {
-            printk("Frame queue drops: %u\n", (unsigned int)frame_queue_drop_count);
+        atomic_inc(&queue_drops_count);
+        if (atomic_get(&queue_drops_count) == 1 || atomic_get(&queue_drops_count) % 100 == 0) {
+            printk("Frame queue drops: %u\n", (unsigned int)atomic_get(&queue_drops_count));
         }
     }
 }

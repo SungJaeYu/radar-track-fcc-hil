@@ -15,11 +15,12 @@
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 5 | offscreen Qt, serial 모사 |
 | CRC·펌웨어 상호운용 | `tests/test_crc_interop.py` | 18 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
-| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 19 | host C, Zephyr API 모사 |
+| STATUS 처리 | `fcc_app/tests/test_frame_handler` | 5 | host C, 통계 조회·printk·RTOS 모사 |
+| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 20 | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **74개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
-UART C는 각 함수를 CTest에 따로 등록하므로 19개로 표시됩니다.
+UART C는 각 함수를 CTest에 따로 등록하므로 20개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
@@ -114,6 +115,7 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 | `test_queue_full_counts_drop_and_recovers` | 큐 실패 집계와 다음 제출 재개 |
 | `test_drain_queue_full_still_finishes_recovery` | 큐 실패에도 drain 복구 완료 |
 | `test_ring_wraparound` | 초기화 없이 채우기·비우기 3회 반복; 인덱스 순환 후에도 바이트 순서와 full/empty 판정 유지 |
+| `test_stats_snapshot_and_reset` | CRC·길이 오류, timeout, queue drop 집계와 조회·reset 후 누적값 보존 |
 | `test_timeout_boundary_for_every_partial_frame` | 모든 불완전 프레임 분할 지점: 만료 직전·경계값·중복 집계 방지 |
 | `test_timeout_ignores_idle_and_complete_frames` | 대기 상태와 정상 프레임 완료 후 timeout 제외 |
 | `test_timeout_recovers_next_valid_frame` | 만료 후 다음 정상 프레임 내용·시각 보존 |
@@ -209,3 +211,21 @@ GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 
 2026-11-03: 부분 프레임 timeout host 사례 6개를 추가했습니다. 모사 uptime을 직접
 진행시키며 검사합니다. 이 변경의 실보드 timeout 검증은 아직 수행하지 않았습니다.
+
+
+## STATUS 처리 C 테스트
+
+실제 `frame_handler.c`와 추적 코드를 실행하고 통계 조회값과 `printk`를 모사합니다.
+실행 방법: [STATUS 테스트 안내](../fcc_app/tests/test_frame_handler/README.md).
+
+| 테스트 함수 | 검증 내용 |
+|---|---|
+| `test_status_zero` | 0으로 초기화된 네 통계값과 조회 1회 |
+| `test_status_snapshot` | 서로 다른 값·UINT32_MAX 출력, 반복 조회 시 최신값 반영·누적값 보존 |
+| `test_status_preserves_track` | 활성 트랙과 timeout 관리 상태를 변경하지 않음 |
+| `test_status_does_not_arm_timeout` | 첫 측정 전 STATUS로 timeout 감시가 시작되지 않음 |
+| `test_status_does_not_refresh_timeout` | STATUS 수신 후에도 마지막 측정 기준 1000 ms 경계에서 만료 |
+
+이 테스트는 프레임 파싱 이후의 처리 함수 경계에서 실행합니다.
+CRC·길이 오류 차단과 실제 통계 집계는 UART 테스트에서 별도로 검증합니다.
+스레드 스케줄링, atomic 동시성, 실제 UART 응답 송신은 검증하지 않습니다.

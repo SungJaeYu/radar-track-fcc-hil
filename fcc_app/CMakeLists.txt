@@ -15,4 +15,5 @@ target_sources(app PRIVATE
     src/angle_utils.c
     src/track.c
     src/rx_frame_processor.c
+    src/uart_tx.c
 )

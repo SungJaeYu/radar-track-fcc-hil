@@ -13,7 +13,7 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-19개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
+20개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
 `uart_rx_tests test_receives_after_recovery`처럼 이름을 넘기면 한 사례를 실행합니다.
 Release 빌드에서도 검증용 `assert`가 제거되지 않도록 `-UNDEBUG`를 적용합니다.
 
@@ -52,6 +52,7 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 17. 모든 분할 지점에서 제한 시간 이내의 정상 분할 수신을 보존하는지.
 18. 각 바이트가 제한 시간 안에 도착하면 전체 조립 시간이 길어도 유지하는지.
 19. 명시적 reset이 진행 중인 timeout을 취소하고 누적 카운터는 보존하는지.
+20. CRC·길이 오류·timeout·큐 드롭의 통계 조회와 reset 후 누적값 보존.
 
 현재 `RX_OVERFLOW_DRAIN_BUFFER` 설정의 동작을 검증합니다. 전체 폐기로 설정을 바꾸면
 정상 프레임을 보존해야 한다는 drain 검증은 실패합니다. 두 정책을 모두 자동 선택해 빌드하는 테스트는 아닙니다.

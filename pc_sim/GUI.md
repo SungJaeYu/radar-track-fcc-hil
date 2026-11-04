@@ -100,3 +100,6 @@ Qt 실행 흐름은 [공식 QThread 문서](https://doc.qt.io/qtforpython-6/PySi
 
 2026-11-01 최신 펌웨어로 GUI 연결·송신·중지 후 timeout·재시작·재연결·종료를 확인했습니다.
 [실제 화면과 결과](../docs/hardware-test-2026-11-01.md)를 참고하세요.
+
+펌웨어 STATUS는 현재 ST-Link 통계 로그 출력까지 구현되어 있습니다.
+GUI의 STATUS 요청 버튼과 USART6 응답 디코딩은 아직 없습니다.

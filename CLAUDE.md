@@ -11,8 +11,8 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - 보드: STM32F746G-DISCO, 보드 ID `stm32f746g_disco`.
 - west workspace: `~/zephyrproject`, Python venv: `~/zephyrproject/.venv`.
 - 작업 전 `source ~/zephyrproject/.venv/bin/activate`.
-- 빌드: `west build -p always -b stm32f746g_disco <app_path>`.
-- flash: `west flash --runner openocd` (openocd 러너 사용).
+- 빌드: `west build -d <repo>/build -b stm32f746g_disco <repo>/fcc_app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`.
+- flash: `west flash -d <repo>/build --runner openocd` (openocd 러너 사용).
 
 ## 현재 구조와 규격
 
@@ -24,7 +24,10 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - 프레임: `7E | LEN | TYPE | PAYLOAD | CRC_H | CRC_L`.
 - 측정 TYPE=2, payload `>IHi` 10바이트: uint32 ms, uint16 m, int32 semicircle.
 - 보드 `radar_message.c`가 semicircle을 rad로 변환합니다.
-- `uart_rx` 스레드가 파싱·handler·track 처리를 수행합니다.
+- RX 스레드는 `rx_frame_processor`로 파싱하고 완성 프레임을 큐에 복사합니다.
+- 별도 handler 스레드가 측정·추적·STATUS 처리를 수행합니다.
+- STATUS는 RX 오류 통계의 atomic 복사본을 로그로 출력합니다. UART 응답은 아직 없습니다.
+- `uart_tx.c/.h`는 빈 골격이며 CMake에만 등록되어 있습니다. TX 큐·스레드는 다음 구현 대상입니다.
 - RX 링버퍼는 256바이트, 실제 저장 용량은 255바이트입니다. 인덱스는 `uint8_t`이므로 더 큰 버퍼는 타입 변경이 필요합니다.
 - `uart_rx.h`의 `RX_OVERFLOW_POLICY` 기본값은 `RX_OVERFLOW_DRAIN_BUFFER`입니다. Kconfig는 아직 없습니다.
 - overflow 복구 중 새 입력은 버리고 저장된 바이트로 완성 가능한 프레임만 처리한 뒤 링·파서를 초기화합니다.
@@ -35,7 +38,8 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 ## 검증
 
 - `python -m pytest`: GUI 의존성 설치 시 74개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
-- [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 복구·링버퍼 9개 사례. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
+- [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain·링버퍼·부분 프레임 timeout·통계 20개 사례. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
+- [STATUS host 테스트](fcc_app/tests/test_frame_handler/README.md): 통계 출력·반복 조회·추적 상태와 timeout 보존 5개 사례.
 - [Tracking C 테스트](fcc_app/tests/test_kalman/README.md): 필터·게이팅·추적 정책 13개 사례.
 - 수동 초기화만 필요할 때: `python pc_sim/small_byte_test.py init --type 1 --port PORT`.
 - 송신: `python pc_sim/radar_sender.py --port PORT --count 20 --noise 0`.

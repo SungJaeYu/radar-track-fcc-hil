@@ -48,11 +48,13 @@ TYPE_INIT=1은 이전 트랙을 초기화합니다. payload 길이 0은 파서�
 
 `uart_callback()`은 인터럽트에서 바이트를 링버퍼에 넣고 `rx_sem`으로 수신 스레드를 깨웁니다.
 실제 데이터는 링버퍼에 있고 세마포어는 알림입니다.
-`rx_ready_sem`은 링버퍼·파서·handler 초기화가 끝나기 전 처리를 막습니다.
+`rx_ready_sem`은 링버퍼·파서 초기화가 끝나기 전 처리를 막습니다.
 
 `uart_rx_thread()`는 RX 알림 또는 50ms 대기 만료 후 실행됩니다.
-링버퍼가 비어 있어도 timeout을 검사하고, 바이트가 계속 들어올 때도 내부 루프에서 검사합니다.
-`parser_feed()`가 정상 체크섬의 프레임을 완성하면 `handle_frame()`이 처리합니다.
+IRQ 잠금 안에서는 overflow 확인과 한 바이트 pop만 수행합니다.
+잠금을 해제한 뒤 `rx_frame_processor_feed()`로 파싱하고, 정상 프레임을 handler 큐에 복사합니다.
+안쪽 배출 루프가 끝나면 부분 프레임 timeout을 검사합니다.
+별도 handler 스레드가 큐를 받아 `handle_frame()`을 호출하고 측정 timeout을 검사합니다.
 
 ### 버퍼와 overflow
 
@@ -61,8 +63,7 @@ head/tail은 `uint8_t`로 0..255를 표현합니다. 버퍼를 256보다 크게 
 
 ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overflow`를 설정한 뒤
 `rx_sem`으로 스레드에 알립니다. 플래그가 설정된 동안 ISR은 하드웨어 FIFO를 읽되 새 바이트는 저장하지 않습니다.
-일반 수신 루프는 IRQ 잠금 안에서 overflow 확인·한 바이트 pop·파싱을 수행하고,
-완성된 프레임의 handler는 잠금을 해제한 뒤 호출합니다.
+파싱과 큐 제출은 IRQ 잠금 밖에서 실행되며, 실제 측정 처리는 handler 스레드가 맡습니다.
 
 현재 헤더의 `RX_OVERFLOW_POLICY`는 `RX_OVERFLOW_DRAIN_BUFFER`입니다.
 복구는 IRQ를 허용한 상태에서 기존 파서와 버퍼로 완성할 수 있는 프레임을 처리합니다.
@@ -95,8 +96,21 @@ STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 Python 테스트는 프레임 바이트·단위 변환·송신 순서·시나리오 CLI와 GUI 모델을 검증합니다.
 GUI 의존성을 설치하면 offscreen Qt·모사 serial로 시작·중지·재시작·오류·포트 해제도 검사합니다.
 `fcc_app/tests/test_kalman`은 C 필터·게이팅·추적 정책 등의 별도 테스트입니다.
-[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서의 9개 사례를 검증합니다.
+[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계의 20개 사례를 검증합니다.
 UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
 이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
 현재 보드는 이진 트랙 응답을 송신하지 않으므로 PC의 폐루프 RMSE 계산은 아직 없습니다.
 구버전 LCD·다중 트랙 문서는 제거했으며 과거 기록은 Git 이력에서 확인할 수 있습니다.
+
+
+## 7. STATUS와 송신 준비
+
+`rx_frame_processor.c`가 CRC·길이 오류·부분 프레임 timeout·큐 드롭의 atomic
+카운터를 소유합니다. STATUS는 처리 스레드에서 지역 `stats`로 값을 복사해
+ST-Link 콘솔에 출력합니다. 개별 값은 안전하게 읽지만 전체 항목을 같은 순간에
+고정하지는 않습니다. 조회·parser reset·INIT/RESET은 누적 카운터를 지우지 않습니다.
+이 통계는 하드웨어 BIT 결과가 아니며 링버퍼 손실·UART 하드웨어 오류는 아직 집계하지 않습니다.
+
+`uart_tx.c/.h`는 빈 골격과 빌드 등록만 있습니다. 다음 단계는 STATUS 응답 규격,
+TX 큐·스레드, PC 응답 디코딩이며 현재 USART6 응답 프레임은 보내지 않습니다.
+STATUS host 테스트 5개는 출력값과 추적 상태·측정 timeout 보존을 검증합니다.

@@ -4,6 +4,7 @@
 #include "frame_handler.h"
 #include "radar_message.h"
 #include "gating.h"
+#include "rx_frame_processor.h"
 
 // Expire the track after 1000 ms without a decoded and validated radar measurement.
 #define RADAR_RX_TIMEOUT_MS 1000
@@ -84,11 +85,19 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
         break;
 
     case TYPE_RADAR_MEAS: {
+        printk("TYPE_MEAS\n");
         handle_radar_measurement(p_handler, p_frame);
         break;
     }
     case TYPE_STATUS:
         printk("TYPE_STATUS\n");
+        struct rx_frame_stats stats;
+        rx_frame_processor_get_stats(&stats);
+        printk("CRC: %u, length: %u, timeout: %u, queue drops: %u\n",
+            (unsigned int)stats.crc_errors,
+            (unsigned int)stats.length_errors,
+            (unsigned int)stats.frame_timeouts,
+            (unsigned int)stats.queue_drops);
         break;
 
     case TYPE_COMMAND:
