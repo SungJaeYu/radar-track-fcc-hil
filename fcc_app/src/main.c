@@ -17,6 +17,11 @@ int main(void)
         return -1;
     }
 
+    if (uart_tx_init() != 0) {
+        printk("UART TX init failed\n");
+        return -1;
+    }
+
     while (1) {
         printk("main alive\n");
         k_sleep(K_SECONDS(1));

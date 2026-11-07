@@ -202,5 +202,11 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
 
 int frame_handler_submit(const struct received_frame *p_frame)
 {
+    if (p_frame == NULL ||
+        p_frame->payload_length == 0 ||
+        p_frame->payload_length > MAX_PAYLOAD) {
+        return -EINVAL;
+    }
+    
     return k_msgq_put(&frame_queue, p_frame, K_NO_WAIT);
 }

@@ -4,6 +4,7 @@
 #include <zephyr/sys/atomic.h>
 
 #include <string.h>
+#include <errno.h>
 
 #include "uart_tx.h"
 
@@ -17,8 +18,6 @@ K_MSGQ_DEFINE(tx_queue, sizeof(struct send_frame), 8, 4);
 
 K_THREAD_DEFINE(uart_tx_tid, 1024, uart_tx_thread, NULL, NULL, NULL, 7, 0, 0);
 
-
-
 int uart_tx_init(void)
 {
     // Check UART device is ready
@@ -28,14 +27,18 @@ int uart_tx_init(void)
         return -1;
     }
 
-    //TODO: tx init
+    k_sem_give(&tx_ready_sem);
 
     return 0;
 }
 
-bool uart_tx_submit(void)
+int uart_tx_submit(const struct send_frame *p_frame)
 {
-    //TODO: tx submit
+    if (p_frame == NULL || p_frame->payload_length == 0 || p_frame->payload_length > MAX_PAYLOAD) {
+        return -EINVAL;
+    }
+
+    return k_msgq_put(&tx_queue, p_frame, K_NO_WAIT);
 }
 
 static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)

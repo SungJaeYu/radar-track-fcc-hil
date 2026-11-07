@@ -88,11 +88,13 @@ static void submit_parsed_frame(void)
 
     int ret = frame_handler_submit(&received);
 
-    if (ret != 0) {
+    if (ret == -ENOMSG) {
         // Count the new frame dropped because the queue is full.
         atomic_inc(&queue_drops_count);
         if (atomic_get(&queue_drops_count) == 1 || atomic_get(&queue_drops_count) % 100 == 0) {
             printk("Frame queue drops: %u\n", (unsigned int)atomic_get(&queue_drops_count));
         }
+    } else if (ret == -EINVAL) {
+        // TODO: Invalid Value
     }
 }
