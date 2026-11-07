@@ -6,21 +6,23 @@
 #include <zephyr/drivers/uart.h>
 
 #include "uart_rx.h"
+#include "uart_tx.h"
 
 int main(void)
 {
     // Boot Signal
     printk("=== FCC learning-rebuild boot ===\n");
     
+    if (uart_tx_init() != 0) {
+        printk("UART TX init failed\n");
+        return -1;
+    }
+    
     if (uart_rx_init() != 0) {
         printk("UART RX init failed\n");
         return -1;
     }
 
-    if (uart_tx_init() != 0) {
-        printk("UART TX init failed\n");
-        return -1;
-    }
 
     while (1) {
         printk("main alive\n");

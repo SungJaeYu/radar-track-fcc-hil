@@ -56,7 +56,7 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
         int ret = k_msgq_get(&tx_queue, &request, K_FOREVER);
 
         if (ret == 0) {
-            // Encode the frame and send it
+            // TODO: Encode the frame and send it
         }
     }
 }

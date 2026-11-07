@@ -95,6 +95,10 @@ static void submit_parsed_frame(void)
             printk("Frame queue drops: %u\n", (unsigned int)atomic_get(&queue_drops_count));
         }
     } else if (ret == -EINVAL) {
-        // TODO: Invalid Value
+        printk("Frame submit rejected: type=0x%02X, length=%u\n",
+           (unsigned int)received.type,
+           (unsigned int)received.payload_length);
+    } else if (ret != 0) {
+        printk("Frame submit failed: %d\n", ret);
     }
 }
