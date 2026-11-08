@@ -31,13 +31,14 @@ def parser_lib(tmp_path_factory):
     folder = tmp_path_factory.mktemp('crc-parser')
     wrapper = folder / 'wrapper.c'
     wrapper.write_text('''
-#include "frame_parser.c"
+#include "frame_parser.h"
+#include "crc16.h"
 static struct frame_parser parser;
 void reset_parser(void) { parser_init(&parser); }
 int feed_byte(unsigned char b) { return parser_feed(&parser, b); }
-int frame_type(void) { return parser.type; }
-int payload_size(void) { return parser.payload_length; }
-int payload_byte(int i) { return parser.payload[i]; }
+int frame_type(void) { return parser.frame.type; }
+int payload_size(void) { return parser.frame.payload_length; }
+int payload_byte(int i) { return parser.frame.payload[i]; }
 int crc_check_vector(void) {
     const unsigned char data[] = "123456789";
     uint16_t crc = 0xffff;
@@ -50,7 +51,9 @@ int crc_check_vector(void) {
     sdk = Path('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
     sdk_flags = ['-isysroot', str(sdk)] if sdk.exists() else []
     subprocess.run([str(compiler), *sdk_flags, '-std=c11', '-Wall', '-Wextra', '-Werror',
-                    '-shared', '-fPIC', '-I', str(src), str(wrapper), '-o', str(library)], check=True)
+                    '-shared', '-fPIC', '-I', str(src), str(wrapper),
+                    str(src / 'frame_parser.c'), str(src / 'protocol_frame.c'),
+                    str(src / 'crc16.c'), '-o', str(library)], check=True)
     lib = ctypes.CDLL(str(library))
     lib.reset_parser.restype = None
     lib.feed_byte.argtypes = [ctypes.c_ubyte]

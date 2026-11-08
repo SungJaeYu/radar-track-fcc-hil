@@ -90,7 +90,7 @@ static void test_dispatch_drains_complete_frame(void)
     receive_overflow(stream, sizeof(stream), RX_CAPACITY - sizeof(stream));
     rx_recover_overflow();
     assert(submitted == 1);
-    assert(last_frame.type == TYPE_INIT && last_frame.payload_length == 1);
+    assert(last_frame.frame.type == TYPE_INIT && last_frame.frame.payload_length == 1);
     assert_recovered();
 }
 
@@ -103,8 +103,8 @@ static void test_preserves_partial_parser_and_drops_new_input(void)
     inject_during_submit = true;
     rx_recover_overflow();
     assert(submitted == 1 && !inject_during_submit);
-    assert(last_frame.type == TYPE_RADAR_MEAS && last_frame.payload_length == 10);
-    assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
+    assert(last_frame.frame.type == TYPE_RADAR_MEAS && last_frame.frame.payload_length == 10);
+    assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert_recovered();
 }
 
@@ -135,7 +135,7 @@ static void test_drain_rejects_bad_length_then_handles_valid_frame(void)
     memcpy(stream + 2, init_frame, sizeof(init_frame));
     receive_overflow(stream, sizeof(stream), 0);
     rx_recover_overflow();
-    assert(submitted == 1 && last_frame.type == TYPE_INIT);
+    assert(submitted == 1 && last_frame.frame.type == TYPE_INIT);
     assert_recovered();
 }
 
@@ -148,7 +148,7 @@ static void test_receives_after_recovery(void)
     while (ring_pop(&rx_ring, &byte)) {
         rx_frame_processor_feed(byte);
     }
-    assert(submitted == 1 && last_frame.type == TYPE_INIT);
+    assert(submitted == 1 && last_frame.frame.type == TYPE_INIT);
 }
 
 static void test_empty_recovery(void)
@@ -197,15 +197,15 @@ static void test_processor_copies_frame_and_reset_preserves_drops(void)
         rx_frame_processor_feed(radar_frame[i]);
     }
     assert(submitted == 1 && submit_attempts == 1);
-    assert(last_frame.type == TYPE_RADAR_MEAS && last_frame.payload_length == 10);
-    assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
+    assert(last_frame.frame.type == TYPE_RADAR_MEAS && last_frame.frame.payload_length == 10);
+    assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert(last_frame.received_at_ms == k_uptime_get());
     assert(queue_drops_count == 0);
-    memset(parser.payload, 0, sizeof(parser.payload));
+    memset(parser.frame.payload, 0, sizeof(parser.frame.payload));
     queue_drops_count = 3;
     rx_frame_processor_reset();
     assert(queue_drops_count == 3 && parser.state == WAIT_STX);
-    assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
+    assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
 }
 
 static void test_nonready_results_do_not_submit(void)
@@ -230,7 +230,7 @@ static void test_queue_full_counts_drop_and_recovers(void)
         rx_frame_processor_feed(radar_frame[i]);
     }
     assert(submit_attempts == 2 && submitted == 1 && queue_drops_count == 1);
-    assert(last_frame.type == TYPE_RADAR_MEAS);
+    assert(last_frame.frame.type == TYPE_RADAR_MEAS);
 }
 
 static void test_drain_queue_full_still_finishes_recovery(void)
@@ -290,9 +290,9 @@ static void test_timeout_recovers_next_valid_frame(void)
     rx_frame_processor_check_timeout(test_now_ms);
     assert(frame_timeout_count == 1 && submit_attempts == 0);
     feed_bytes(radar_frame, sizeof(radar_frame));
-    assert(submitted == 1 && last_frame.type == TYPE_RADAR_MEAS);
-    assert(last_frame.payload_length == 10);
-    assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
+    assert(submitted == 1 && last_frame.frame.type == TYPE_RADAR_MEAS);
+    assert(last_frame.frame.payload_length == 10);
+    assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert(last_frame.received_at_ms == test_now_ms);
     assert(frame_timeout_count == 1 && queue_drops_count == 0);
 }
@@ -306,8 +306,8 @@ static void test_timeout_preserves_split_frames(void)
         rx_frame_processor_check_timeout(test_now_ms);
         feed_bytes(radar_frame + cut, sizeof(radar_frame) - cut);
         assert(submitted == 1 && frame_timeout_count == 0);
-        assert(last_frame.payload_length == 10);
-        assert(memcmp(last_frame.payload, radar_frame + 3, 10) == 0);
+        assert(last_frame.frame.payload_length == 10);
+        assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     }
 }
 
@@ -323,7 +323,7 @@ static void test_timeout_refreshes_on_each_byte(void)
         assert(frame_timeout_count == 0);
     }
     assert(test_now_ms - started_ms > FRAME_RX_TIMEOUT_MS);
-    assert(submitted == 1 && last_frame.type == TYPE_RADAR_MEAS);
+    assert(submitted == 1 && last_frame.frame.type == TYPE_RADAR_MEAS);
 }
 
 static void test_explicit_reset_cancels_partial_timeout(void)

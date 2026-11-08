@@ -80,11 +80,9 @@ static void process_parser_result(ParserResult result)
 static void submit_parsed_frame(void)
 {
     struct received_frame received = {
-        .type = parser.type,
-        .payload_length = parser.payload_length,
+        .frame = parser.frame,
         .received_at_ms = k_uptime_get(),
     };
-    memcpy(received.payload, parser.payload, parser.payload_length);
 
     int ret = frame_handler_submit(&received);
 
@@ -96,8 +94,8 @@ static void submit_parsed_frame(void)
         }
     } else if (ret == -EINVAL) {
         printk("Frame submit rejected: type=0x%02X, length=%u\n",
-           (unsigned int)received.type,
-           (unsigned int)received.payload_length);
+           (unsigned int)received.frame.type,
+           (unsigned int)received.frame.payload_length);
     } else if (ret != 0) {
         printk("Frame submit failed: %d\n", ret);
     }

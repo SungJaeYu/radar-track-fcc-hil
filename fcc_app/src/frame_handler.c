@@ -76,9 +76,9 @@ void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms
     printk("Radar measurement timeout: track cleared\n");
 }
 
-void handle_frame(struct frame_handler *p_handler, const struct received_frame *p_frame)
+void handle_frame(struct frame_handler *p_handler, const struct received_frame *p_r_frame)
 {
-    switch (p_frame->type) {
+    switch (p_r_frame->frame.type) {
     case TYPE_INIT:
         printk("TYPE_INIT\n");
         frame_handler_init(p_handler);
@@ -86,7 +86,7 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
 
     case TYPE_RADAR_MEAS: {
         printk("TYPE_MEAS\n");
-        handle_radar_measurement(p_handler, p_frame);
+        handle_radar_measurement(p_handler, p_r_frame);
         break;
     }
     case TYPE_STATUS:
@@ -109,18 +109,18 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
         frame_handler_reset(p_handler);
         break;
     default:
-        printk("Unknown frame type: 0x%02X\n", p_frame->type);
+        printk("Unknown frame type: 0x%02X\n", p_r_frame->frame.type);
         break;
     }
 }
 
-static void handle_radar_measurement(struct frame_handler *p_handler, const struct received_frame *p_frame)
+static void handle_radar_measurement(struct frame_handler *p_handler, const struct received_frame *p_r_frame)
 {
     struct radar_measurement rm;
 
     if (!decode_radar_measurement(
-            p_frame->payload,
-            p_frame->payload_length,
+            p_r_frame->frame.payload,
+            p_r_frame->frame.payload_length,
             &rm)) {
         printk("Invalid radar payload\n");
         return;
@@ -133,7 +133,7 @@ static void handle_radar_measurement(struct frame_handler *p_handler, const stru
 
     // Record received time for valid radar payloads, before timestamp/gate checks.
     // A later tracking rejection still counts as receiving a valid measurement payload.
-    p_handler->last_valid_rx_ms = p_frame->received_at_ms;
+    p_handler->last_valid_rx_ms = p_r_frame->received_at_ms;
     p_handler->timeout_armed = true;
 
     printk("range: %.2f\n", (double)rm.range_m);
@@ -202,11 +202,9 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
 
 int frame_handler_submit(const struct received_frame *p_frame)
 {
-    if (p_frame == NULL ||
-        p_frame->payload_length == 0 ||
-        p_frame->payload_length > MAX_PAYLOAD) {
+    if (p_frame == NULL || !protocol_frame_is_valid(&p_frame->frame)) {
         return -EINVAL;
     }
-    
+
     return k_msgq_put(&frame_queue, p_frame, K_NO_WAIT);
 }

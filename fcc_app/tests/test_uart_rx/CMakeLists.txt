@@ -5,6 +5,8 @@ enable_testing()
 add_executable(uart_rx_tests
     src/main.c
     ../../src/ring_buffer.c
+    ../../src/protocol_frame.c
+    ../../src/crc16.c
     ../../src/frame_parser.c
 )
 target_include_directories(uart_rx_tests PRIVATE include ../../src)

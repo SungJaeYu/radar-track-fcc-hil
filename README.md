@@ -197,6 +197,9 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
   - [ ] 빌드 설정 정리: overflow 정책·timeout 등 조정 항목을 앱 Kconfig/prj.conf로 관리
+- [ ] 공통 타입·인터페이스 정리
+  - [ ] RX/handler·TX의 공통 프레임 타입과 기본 인자 검증 분리; 수신 시각은 RX 전용 구조체에 유지하고 각 submit API·큐는 유지
+  - [ ] enum 타입명·열거자 접두사·대소문자 규칙을 정해 펌웨어 전반에 통일; 프로토콜 숫자 값은 유지하고 참조 코드·테스트·문서도 함께 갱신
 
 ### 2. 단일표적 추적
 

@@ -16,4 +16,6 @@ target_sources(app PRIVATE
     src/track.c
     src/rx_frame_processor.c
     src/uart_tx.c
+    src/protocol_frame.c
+    src/crc16.c
 )

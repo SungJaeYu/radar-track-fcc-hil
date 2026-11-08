@@ -3,12 +3,10 @@
 
 #include <stdbool.h>
 
-#include "frame_parser.h"
+#include "protocol_frame.h"
 
 struct send_frame {
-    FrameType type;
-    uint8_t payload_length;
-    uint8_t payload[MAX_PAYLOAD];
+    struct protocol_frame frame;
 };
 
 int uart_tx_init(void);

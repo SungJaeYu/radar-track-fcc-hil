@@ -43,7 +43,7 @@ static void reset_fixture(struct frame_handler *p_handler)
 static void request_status(struct frame_handler *p_handler)
 {
     const struct received_frame frame = {
-        .type = TYPE_STATUS, .payload_length = 1, .payload = {0},
+        .frame = {.type = TYPE_STATUS, .payload_length = 1, .payload = {0}},
         .received_at_ms = 900,
     };
     handle_frame(p_handler, &frame);

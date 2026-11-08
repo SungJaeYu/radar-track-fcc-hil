@@ -4,12 +4,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "frame_parser.h"
 #include "track.h"
+#include "protocol_frame.h"
 
 struct frame_handler {
     struct track track;
-
     // Board uptime (ms) when the last decoded and validated radar measurement was processed.
     int64_t last_valid_rx_ms; 
     // Set by a valid radar measurement; cleared by initialization or timeout reset.
@@ -17,9 +16,7 @@ struct frame_handler {
 };
 
 struct received_frame {
-    FrameType type;
-    uint8_t payload_length;
-    uint8_t payload[MAX_PAYLOAD];
+    struct protocol_frame frame;
     int64_t received_at_ms;
 };
 

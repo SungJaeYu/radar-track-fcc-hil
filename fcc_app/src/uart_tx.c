@@ -32,13 +32,13 @@ int uart_tx_init(void)
     return 0;
 }
 
-int uart_tx_submit(const struct send_frame *p_frame)
+int uart_tx_submit(const struct send_frame *p_s_frame)
 {
-    if (p_frame == NULL || p_frame->payload_length == 0 || p_frame->payload_length > MAX_PAYLOAD) {
+    if (p_s_frame == NULL || !protocol_frame_is_valid(&p_s_frame->frame)) {
         return -EINVAL;
     }
 
-    return k_msgq_put(&tx_queue, p_frame, K_NO_WAIT);
+    return k_msgq_put(&tx_queue, p_s_frame, K_NO_WAIT);
 }
 
 static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
@@ -57,6 +57,8 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
 
         if (ret == 0) {
             // TODO: Encode the frame and send it
+            
+            uint16_t crc = protocol_frame_crc(&request.frame);
         }
     }
 }
