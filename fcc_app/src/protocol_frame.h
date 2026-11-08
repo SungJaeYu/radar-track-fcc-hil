@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #define STX 0x7E
 
@@ -25,5 +26,7 @@ struct protocol_frame {
 bool protocol_frame_is_valid(const struct protocol_frame *p_frame);
 
 uint16_t protocol_frame_crc(const struct protocol_frame *p_frame);
+
+int protocol_frame_encode(const struct protocol_frame *p_frame, uint8_t *p_buffer, size_t capacity);
 
 #endif

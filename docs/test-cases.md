@@ -13,12 +13,13 @@
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
 | GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 5 | offscreen Qt, serial 모사 |
-| CRC·펌웨어 상호운용 | `tests/test_crc_interop.py` | 18 | Python + 실제 C 파서 host 컴파일 |
+| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 26 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
+| TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 5 | host C, 통계 조회·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 20 | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **74개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **82개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
 UART C는 각 함수를 CTest에 따로 등록하므로 20개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
@@ -239,3 +240,21 @@ UART·STATUS fixture를 `protocol_frame` 멤버 구조에 맞추고, 각 host �
 UART 20개·STATUS 5개·CRC 상호운용 18개가 통과했습니다.
 펌웨어 빌드는 통과했으며 미사용 TX `crc` 변수와 기존 devicetree 경고가 남습니다.
 TX 인코딩·실제 송신과 실보드 검증은 이번 검증 범위에 포함하지 않습니다.
+
+
+## TX와 인코더 회귀 테스트
+
+| 테스트 | 검증 내용 |
+|---|---|
+| `test_tx_init` | 장치 준비 실패 시 ready 미해제, 성공 시 해제 |
+| `test_tx_invalid_submit` | NULL·길이 0/33/255 요청이 큐에 들어가지 않음 |
+| `test_tx_queue_copy_fifo_full_and_recovery` | 원본 수정 후 복사본 유지, 8개 FIFO 순서, 포화 반환, 배출 후 새 요청 송신 |
+| `test_tx_encode_error_continues` | 잘못된 큐 항목 인코딩 실패 시 송신하지 않고 다음 정상 프레임 처리 |
+| `test_firmware_encoder_matches_python_and_parser` (3개) | 최소·최대 payload와 특수 바이트의 Python 바이트열 일치·파서 수용·출력 뒤 sentinel 보존 |
+| `test_encoder_rejects_invalid_length_without_writing` (3개) | 길이 0/33/255 거부, 출력 버퍼 불변 |
+| `test_encoder_rejects_null_arguments` | NULL 프레임·출력 포인터 거부 |
+| `test_encoder_capacity_boundary` | 용량 0·한 바이트 부족 거부, 정확한 최대 크기 허용 |
+
+TX host는 실제 `uart_tx.c` 워커를 동기 실행하고 UART 출력 바이트를 수집합니다.
+빈 큐에서 실제 대기할 지점에 테스트를 종료하며 RTOS 스케줄링·동시성·물리 송신은 검증하지 않습니다.
+STATUS에서 TX로 제출하는 호출부는 아직 연결되지 않았습니다.

@@ -8,7 +8,7 @@ typedef enum {
     RX_OVERFLOW_DISCARD_ALL,
     // Process frames that can be completed from buffered bytes, then discard the remainder.
     RX_OVERFLOW_DRAIN_BUFFER,
-} RXOverflowPolicy;
+} RxOverflowPolicy;
 
 // Build-time policy: select RX_OVERFLOW_DRAIN_BUFFER to test drain recovery.
 #define RX_OVERFLOW_POLICY RX_OVERFLOW_DRAIN_BUFFER

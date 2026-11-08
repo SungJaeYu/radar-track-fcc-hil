@@ -87,6 +87,8 @@ ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 필터·추적 정책은 [Tracking C 테스트](fcc_app/tests/test_kalman/README.md)로 별도 검증합니다.
 
+TX host 테스트 4개는 [TX 테스트 안내](fcc_app/tests/test_uart_tx/README.md)를 참고하세요.
+
 STATUS 처리 테스트 5개는 [STATUS 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
 
 ## 펌웨어 빌드·플래시
@@ -197,9 +199,12 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
   - [ ] 빌드 설정 정리: overflow 정책·timeout 등 조정 항목을 앱 Kconfig/prj.conf로 관리
-- [ ] 공통 타입·인터페이스 정리
+- [ ] 공통 타입·인터페이스 정리 — [코딩 스탠다드 초안](docs/coding-standard.md) 기준으로 이후 적용
   - [ ] RX/handler·TX의 공통 프레임 타입과 기본 인자 검증 분리; 수신 시각은 RX 전용 구조체에 유지하고 각 submit API·큐는 유지
   - [ ] enum 타입명·열거자 접두사·대소문자 규칙을 정해 펌웨어 전반에 통일; 프로토콜 숫자 값은 유지하고 참조 코드·테스트·문서도 함께 갱신
+  - [ ] 코딩 규칙 문서화·적용: 참조 포인터 `p_`·출력 포인터 `out_`와 선언/정의 인자명, 함수 중괄호·공백·줄바꿈, 직접 사용하는 헤더 include와 불필요 include 정리
+  - [ ] API 계약 통일: 음수 errno 반환과 Zephyr 오류 전달, CRC 함수의 유효 입력 전제, encode의 바이트 수/음수 오류 반환을 주석으로 명시
+  - [ ] 공통 규격 상수와 주석 정리: STX 중복 정의 제거, 프레임 추가 길이 상수화, 실제 IRQ 보호 범위에 맞는 주석 갱신
 
 ### 2. 단일표적 추적
 
@@ -242,7 +247,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] 처리 스레드의 STATUS 로그 출력; 전체 항목의 동일 시점 snapshot은 보장하지 않음
   - [ ] UART 응답 규격과 실제 BIT 자기진단 항목 정의
 - [ ] TX 큐·전용 스레드, STATUS 응답과 추적 결과 송신, PC 수신·그래프 비교
-  - [x] `uart_tx.c/.h` 빈 파일 생성·CMake 등록 (송신 구현은 아직 없음)
+  - [x] TX 초기화·복사 큐·스레드, 프레임 인코딩·CRC·polling 송신 구현과 host 검증
+  - [ ] STATUS payload 구성과 `uart_tx_submit()` 호출부 연결; 실제 보드 → PC 송신 확인
   - [ ] 응답 프레임·CRC·명시적 단위·결과 시각과 TX 완료/실패 처리
   - [ ] TX 큐 포화 정책: 최신 추적 결과와 제어 응답의 보존·폐기 기준, 오류 집계
 - [ ] COMMAND/Lock On: 트랙 선택·해제·대상 소실 정책
@@ -266,10 +272,13 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 부분 프레임 timeout과 RX 기본 오류 통계·STATUS 로그는 구현했습니다.
 다음은 `처리 스레드 → 응답 복사 큐 → TX 스레드 → PC` 경로입니다.
 지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
-TX 파일은 빈 골격이며 큐·스레드·인코딩·송신 함수는 아직 없습니다.
+TX 큐·스레드·인코딩·polling 송신은 구현했습니다. STATUS 제출 호출부와 PC 응답 처리는 아직 없습니다.
 설정 분리와 부분 프레임 timeout의 실제 보드 검증도 남아 있습니다.
 
 ## 검증 현황
+
+2026-11-08: RX 20개·STATUS 5개·TX 4개·CRC/인코더 상호운용 26개 통과.
+이번 펌웨어 증분 빌드는 경고 없이 통과했습니다. TX 실보드 시험은 아직입니다.
 
 2026-11-04: UART host 20개와 STATUS handler host 5개 통과, 펌웨어 빌드 통과.
 CMake 재구성 시 기존 보드 devicetree의 `0x90000000` 중복 unit-address 경고가 남아 있습니다.

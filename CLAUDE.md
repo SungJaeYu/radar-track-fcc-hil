@@ -27,7 +27,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - RX 스레드는 `rx_frame_processor`로 파싱하고 완성 프레임을 큐에 복사합니다.
 - 별도 handler 스레드가 측정·추적·STATUS 처리를 수행합니다.
 - STATUS는 RX 오류 통계의 atomic 복사본을 로그로 출력합니다. UART 응답은 아직 없습니다.
-- `uart_tx.c/.h`는 빈 골격이며 CMake에만 등록되어 있습니다. TX 큐·스레드는 다음 구현 대상입니다.
+- TX 초기화·복사 큐·워커·인코딩·polling 송신은 구현되어 있습니다. STATUS 제출과 PC 응답 수신은 아직 연결되지 않았습니다.
 - RX 링버퍼는 256바이트, 실제 저장 용량은 255바이트입니다. 인덱스는 `uint8_t`이므로 더 큰 버퍼는 타입 변경이 필요합니다.
 - `uart_rx.h`의 `RX_OVERFLOW_POLICY` 기본값은 `RX_OVERFLOW_DRAIN_BUFFER`입니다. Kconfig는 아직 없습니다.
 - overflow 복구 중 새 입력은 버리고 저장된 바이트로 완성 가능한 프레임만 처리한 뒤 링·파서를 초기화합니다.
@@ -37,9 +37,10 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 검증
 
-- `python -m pytest`: GUI 의존성 설치 시 74개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
+- `python -m pytest`: GUI 의존성 설치 시 82개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain·링버퍼·부분 프레임 timeout·통계 20개 사례. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [STATUS host 테스트](fcc_app/tests/test_frame_handler/README.md): 통계 출력·반복 조회·추적 상태와 timeout 보존 5개 사례.
+- [TX host 테스트](fcc_app/tests/test_uart_tx/README.md): 초기화·요청 검증·복사 큐·송신 순서·실패 후 복귀 4개 사례.
 - [Tracking C 테스트](fcc_app/tests/test_kalman/README.md): 필터·게이팅·추적 정책 13개 사례.
 - 수동 초기화만 필요할 때: `python pc_sim/small_byte_test.py init --type 1 --port PORT`.
 - 송신: `python pc_sim/radar_sender.py --port PORT --count 20 --noise 0`.
@@ -48,6 +49,8 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - Python/host 테스트, 펌웨어 빌드, flash, 실제 보드 HIL을 구분해서 보고합니다.
 
 ## 작업 원칙
+
+- [코딩 스탠다드 초안](docs/coding-standard.md): 참조 포인터 `p_`, 출력 `out_`, enum PascalCase와 타입명 기반 열거자 접두사, 함수 중괄호 다음 줄, 제어문 같은 줄·공백 한 칸. 음수 errno 반환으로 통일할 예정이며 기존 펌웨어를 임의로 일괄 수정하지 않습니다.
 
 - 작은 검증 사다리로 진행. 각 단계는 직전 단계 위에서 검증 가능해야 함.
   매 단계 끝에 "어떻게 보드에서 확인하는지"를 명시할 것.

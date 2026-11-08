@@ -12,8 +12,8 @@ struct ring_buffer {
     volatile uint8_t tail;
 };
 
-void ring_init(struct ring_buffer *rb);
-bool ring_push(struct ring_buffer *rb, uint8_t c);
-bool ring_pop(struct ring_buffer *rb, uint8_t *c);
+void ring_init(struct ring_buffer *p_rb);
+bool ring_push(struct ring_buffer *p_rb, uint8_t c);
+bool ring_pop(struct ring_buffer *p_rb, uint8_t *p_c);
 
 #endif

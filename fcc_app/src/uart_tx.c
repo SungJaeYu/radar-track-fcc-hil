@@ -56,9 +56,19 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
         int ret = k_msgq_get(&tx_queue, &request, K_FOREVER);
 
         if (ret == 0) {
-            // TODO: Encode the frame and send it
-            
-            uint16_t crc = protocol_frame_crc(&request.frame);
+            // Encode the frame and send it
+            uint8_t buffer[MAX_PAYLOAD + 5U];
+
+            int length = protocol_frame_encode(&request.frame, buffer, sizeof(buffer));
+
+            if (length < 0) {
+                printk("TX encode failed: %d\n", length);
+                continue;
+            }
+
+            for (int i = 0; i < length; ++i) {
+                uart_poll_out(p_uart, buffer[i]);
+            }
         }
     }
 }

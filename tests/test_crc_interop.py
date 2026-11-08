@@ -1,6 +1,7 @@
 """Cross-check Python frames against the actual firmware parser on the host."""
 import binascii
 import ctypes
+import errno
 from pathlib import Path
 import shutil
 import subprocess
@@ -33,6 +34,14 @@ def parser_lib(tmp_path_factory):
     wrapper.write_text('''
 #include "frame_parser.h"
 #include "crc16.h"
+#include <string.h>
+int encode_test(unsigned char type, const unsigned char *p_data,
+                unsigned char length, unsigned char *p_out, size_t capacity,
+                int null_frame) {
+    struct protocol_frame frame = {.type = type, .payload_length = length};
+    if (length <= MAX_PAYLOAD && p_data != NULL) memcpy(frame.payload, p_data, length);
+    return protocol_frame_encode(null_frame ? NULL : &frame, p_out, capacity);
+}
 static struct frame_parser parser;
 void reset_parser(void) { parser_init(&parser); }
 int feed_byte(unsigned char b) { return parser_feed(&parser, b); }
@@ -58,6 +67,9 @@ int crc_check_vector(void) {
     lib.reset_parser.restype = None
     lib.feed_byte.argtypes = [ctypes.c_ubyte]
     lib.payload_byte.argtypes = [ctypes.c_int]
+    lib.encode_test.argtypes = [ctypes.c_ubyte, ctypes.c_void_p, ctypes.c_ubyte,
+                                ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
+    lib.encode_test.restype = ctypes.c_int
     return lib
 
 
@@ -110,3 +122,40 @@ def test_plausible_corrupted_length_does_not_report_ready(parser_lib):
     assert 1 not in results
     assert 2 in results
     assert feed(parser_lib, build_init_frame())[-1] == 1
+
+
+@pytest.mark.parametrize('payload', [b'\0', bytes(range(32)), b'\x7e\xff\x00'])
+def test_firmware_encoder_matches_python_and_parser(parser_lib, payload):
+    output = (ctypes.c_ubyte * 40)(*([0xa5] * 40))
+    count = parser_lib.encode_test(3, payload, len(payload), output, len(output), 0)
+    expected = encode_frame(3, payload)
+    assert count == len(expected)
+    assert bytes(output[:count]) == expected
+    assert bytes(output[count:]) == bytes([0xa5] * (40 - count))
+    parser_lib.reset_parser()
+    assert feed(parser_lib, output[:count])[-1] == 1
+
+
+@pytest.mark.parametrize('length', [0, 33, 255])
+def test_encoder_rejects_invalid_length_without_writing(parser_lib, length):
+    output = (ctypes.c_ubyte * 37)(*([0xa5] * 37))
+    assert parser_lib.encode_test(3, None, length, output, 37, 0) == -errno.EINVAL
+    assert bytes(output) == bytes([0xa5] * 37)
+
+
+def test_encoder_rejects_null_arguments(parser_lib):
+    output = (ctypes.c_ubyte * 37)(*([0xa5] * 37))
+    assert parser_lib.encode_test(3, b'x', 1, output, 37, 1) == -errno.EINVAL
+    assert bytes(output) == bytes([0xa5] * 37)
+    assert parser_lib.encode_test(3, b'x', 1, None, 37, 0) == -errno.EINVAL
+
+
+def test_encoder_capacity_boundary(parser_lib):
+    payload = bytes(range(32))
+    output = (ctypes.c_ubyte * 38)(*([0xa5] * 38))
+    for capacity in (0, 36):
+        assert parser_lib.encode_test(3, payload, 32, output, capacity, 0) == -errno.ENOSPC
+        assert bytes(output) == bytes([0xa5] * 38)
+    assert parser_lib.encode_test(3, payload, 32, output, 37, 0) == 37
+    assert bytes(output[:37]) == encode_frame(3, payload)
+    assert output[37] == 0xa5

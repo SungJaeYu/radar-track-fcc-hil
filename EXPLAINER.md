@@ -111,6 +111,8 @@ ST-Link 콘솔에 출력합니다. 개별 값은 안전하게 읽지만 전체 �
 고정하지는 않습니다. 조회·parser reset·INIT/RESET은 누적 카운터를 지우지 않습니다.
 이 통계는 하드웨어 BIT 결과가 아니며 링버퍼 손실·UART 하드웨어 오류는 아직 집계하지 않습니다.
 
-`uart_tx.c/.h`는 빈 골격과 빌드 등록만 있습니다. 다음 단계는 STATUS 응답 규격,
-TX 큐·스레드, PC 응답 디코딩이며 현재 USART6 응답 프레임은 보내지 않습니다.
+`uart_tx.c/.h`는 초기화·TX 복사 큐·스레드와 polling 송신을 구현했습니다.
+`protocol_frame_encode()`가 STX·LEN·TYPE·payload·CRC 바이트열을 구성합니다.
+STATUS 제출 호출부는 아직 없으므로 현재 요청만으로 USART6 응답이 나가지는 않습니다.
+TX host 테스트 4개와 CRC/인코더 상호운용 26개를 통과했으며 실보드 송신은 미검증입니다.
 STATUS host 테스트 5개는 출력값과 추적 상태·측정 timeout 보존을 검증합니다.

@@ -1,24 +1,24 @@
 #include "ring_buffer.h"
 
-void ring_init(struct ring_buffer *rb) {
-    rb->head = 0;
-    rb->tail = 0;
+void ring_init(struct ring_buffer *p_rb) {
+    p_rb->head = 0;
+    p_rb->tail = 0;
 }
 
-bool ring_push(struct ring_buffer *rb, uint8_t c) {
-    if ((rb->head + 1) % BUFFER_SIZE == rb->tail) {
+bool ring_push(struct ring_buffer *p_rb, uint8_t c) {
+    if ((p_rb->head + 1) % BUFFER_SIZE == p_rb->tail) {
         return false;
     }
-    rb->data[rb->head] = c;
-    rb->head = (rb->head + 1) % BUFFER_SIZE;
+    p_rb->data[p_rb->head] = c;
+    p_rb->head = (p_rb->head + 1) % BUFFER_SIZE;
     return true;
 }
 
-bool ring_pop(struct ring_buffer *rb, uint8_t *c) {
-    if (rb->head == rb->tail) {
+bool ring_pop(struct ring_buffer *p_rb, uint8_t *p_c) {
+    if (p_rb->head == p_rb->tail) {
         return false;
     }
-    *c = rb->data[rb->tail];
-    rb->tail = (rb->tail + 1) % BUFFER_SIZE;
+    *p_c = p_rb->data[p_rb->tail];
+    p_rb->tail = (p_rb->tail + 1) % BUFFER_SIZE;
     return true;
 }
