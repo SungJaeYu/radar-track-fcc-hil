@@ -5,11 +5,13 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-// Wire layout: STX | LEN | TYPE | payload | CRC_H | CRC_L.
+// Wire layout: PROTOCOL_STX | LEN | TYPE | payload | CRC_H | CRC_L.
 // LEN counts payload bytes only (1..32); total wire size is LEN + 5 bytes.
-#define STX 0x7E
+#define PROTOCOL_STX 0x7E
 
-#define MAX_PAYLOAD 32
+#define PROTOCOL_MAX_PAYLOAD 32
+#define PROTOCOL_FRAME_OVERHEAD 5U
+#define PROTOCOL_MAX_FRAME_SIZE (PROTOCOL_MAX_PAYLOAD + PROTOCOL_FRAME_OVERHEAD)
 
 // Existing values remain wire-compatible. STATUS_REPORT is reserved for a future response.
 typedef enum {
@@ -27,23 +29,23 @@ typedef enum {
 struct protocol_frame {
     FrameType type;
     uint8_t payload_length;
-    uint8_t payload[MAX_PAYLOAD];
+    uint8_t payload[PROTOCOL_MAX_PAYLOAD];
 };
 
-// Return true for a non-NULL frame with a payload length in 1..MAX_PAYLOAD.
+// Return true for a non-NULL frame with a payload length in 1..PROTOCOL_MAX_PAYLOAD.
 // Does not validate TYPE support, payload semantics, or a received CRC.
 bool protocol_frame_is_valid(const struct protocol_frame *p_frame);
 
 // Require a non-NULL frame with a valid payload length and a one-byte TYPE.
-// Compute CRC over LEN, TYPE, and payload, excluding STX and the CRC bytes.
+// Compute CRC over LEN, TYPE, and payload, excluding PROTOCOL_STX and the CRC bytes.
 // No input validation is performed here.
 uint16_t protocol_frame_crc(const struct protocol_frame *p_frame);
 
-// Encode into p_buffer; capacity is the writable buffer size in bytes.
+// Encode into out_buffer; capacity is the writable buffer size in bytes.
 // Require a TYPE representable in one byte and non-overlapping input/output storage.
 // Return the encoded byte count on success; CRC is written high byte first.
 // Return -EINVAL for NULL pointers or invalid length, or -ENOSPC for insufficient capacity.
 // On these errors, leave the output buffer unchanged.
-int protocol_frame_encode(const struct protocol_frame *p_frame, uint8_t *p_buffer, size_t capacity);
+int protocol_frame_encode(const struct protocol_frame *p_frame, uint8_t *out_buffer, size_t capacity);
 
 #endif

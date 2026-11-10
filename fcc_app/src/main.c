@@ -1,10 +1,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 
-// for UART
-#include <zephyr/device.h>
-#include <zephyr/drivers/uart.h>
-
 #include "transport/uart_rx.h"
 #include "transport/uart_tx.h"
 
@@ -12,7 +8,7 @@ int main(void)
 {
     // Boot Signal
     printk("=== FCC learning-rebuild boot ===\n");
-    
+
     // Prepare the transmit path before enabling reception.
     // These init APIs return 0 on success and a negative errno on failure.
     int ret = uart_tx_init();
@@ -26,7 +22,6 @@ int main(void)
         printk("UART RX init failed %d\n", ret);
         return ret;
     }
-
 
     while (1) {
         printk("main alive\n");

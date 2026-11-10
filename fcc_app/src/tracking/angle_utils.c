@@ -2,20 +2,20 @@
 
 #define PI_F 3.14159265358979323846f
 
-float wrap_angle_rad(float angle)
+float wrap_angle_rad(float angle_rad)
 {
-    while (angle > PI_F) {
-        angle -= 2 * PI_F;
+    while (angle_rad > PI_F) {
+        angle_rad -= 2.0f * PI_F;
     }
 
-    while (angle <= -PI_F) {
-        angle += 2 * PI_F;
+    while (angle_rad <= -PI_F) {
+        angle_rad += 2.0f * PI_F;
     }
 
-    return angle;
+    return angle_rad;
 }
 
-float angle_diff_rad(float a, float b)
+float angle_diff_rad(float a_rad, float b_rad)
 {
-    return wrap_angle_rad(a - b);
+    return wrap_angle_rad(a_rad - b_rad);
 }

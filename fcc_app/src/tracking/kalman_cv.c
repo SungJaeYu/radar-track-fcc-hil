@@ -1,9 +1,10 @@
 #include "tracking/kalman_cv.h"
 
 #include <stdbool.h>
+
 #include "tracking/angle_utils.h"
 
-static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt, bool is_angle);
+static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s, bool is_angle);
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle);
 
 void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float initial_value_rate, float p00, float p01, float p10, float p11, float process_noise, float measurement_noise)
@@ -19,14 +20,14 @@ void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float in
     p_kf->measurement_noise = measurement_noise;
 }
 
-void kalman_cv_predict(struct kalman_cv_filter *p_kf, float dt)
+void kalman_cv_predict(struct kalman_cv_filter *p_kf, float dt_s)
 {
-    kalman_cv_predict_internal(p_kf, dt, false);
+    kalman_cv_predict_internal(p_kf, dt_s, false);
 }
 
-void kalman_cv_predict_angle(struct kalman_cv_filter *p_kf, float dt)
+void kalman_cv_predict_angle(struct kalman_cv_filter *p_kf, float dt_s)
 {
-    kalman_cv_predict_internal(p_kf, dt, true);
+    kalman_cv_predict_internal(p_kf, dt_s, true);
 }
 
 void kalman_cv_correct(struct kalman_cv_filter *p_kf, float value_measurement)
@@ -34,21 +35,21 @@ void kalman_cv_correct(struct kalman_cv_filter *p_kf, float value_measurement)
     kalman_cv_correct_internal(p_kf, value_measurement, false);
 }
 
-void kalman_cv_correct_angle(struct kalman_cv_filter *p_kf, float angle_measurement)
+void kalman_cv_correct_angle(struct kalman_cv_filter *p_kf, float angle_measurement_rad)
 {
-    kalman_cv_correct_internal(p_kf, angle_measurement, true);
+    kalman_cv_correct_internal(p_kf, angle_measurement_rad, true);
 }
 
-static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt, bool is_angle)
+static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s, bool is_angle)
 {
     // State Prediction
-    p_kf->estimate += p_kf->rate * dt;
+    p_kf->estimate += p_kf->rate * dt_s;
     if (is_angle) {
         p_kf->estimate = wrap_angle_rad(p_kf->estimate);
     }
 
     // Covariance Prediction
-    // Discrete acceleration variance q uses Q = q * [[dt^4/4, dt^3/2], [dt^3/2, dt^2]].
+    // Discrete acceleration variance q uses Q = q * [[dt_s^4/4, dt_s^3/2], [dt_s^3/2, dt_s^2]].
     // P' = F P F(T) + Q
     const float old_p00 = p_kf->p00;
     const float old_p01 = p_kf->p01;
@@ -56,30 +57,30 @@ static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt, 
     const float old_p11 = p_kf->p11;
     const float q = p_kf->process_noise;
 
-    p_kf->p00 = 
-        old_p00 + 
-        dt * old_p10 + 
-        dt * old_p01 + 
-        dt * dt * old_p11 +
-        q * (dt * dt * dt* dt) / 4.0f;
-    p_kf->p01 = 
-        old_p01 + 
-        dt * old_p11 +
-        q * (dt * dt * dt) / 2.0f;
-    p_kf->p10 = 
-        old_p10 + 
-        dt * old_p11 +
-        q * (dt * dt * dt) / 2.0f;
+    p_kf->p00 =
+        old_p00 +
+        dt_s * old_p10 +
+        dt_s * old_p01 +
+        dt_s * dt_s * old_p11 +
+        q * (dt_s * dt_s * dt_s * dt_s) / 4.0f;
+    p_kf->p01 =
+        old_p01 +
+        dt_s * old_p11 +
+        q * (dt_s * dt_s * dt_s) / 2.0f;
+    p_kf->p10 =
+        old_p10 +
+        dt_s * old_p11 +
+        q * (dt_s * dt_s * dt_s) / 2.0f;
     p_kf->p11 =
         old_p11 +
-        q * (dt * dt);
+        q * (dt_s * dt_s);
 }
 
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle)
 {
     // Residual
     float residual = value_measurement - p_kf->estimate;
-    
+
     if (is_angle) {
         residual = wrap_angle_rad(residual);
     }

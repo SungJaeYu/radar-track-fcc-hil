@@ -40,7 +40,7 @@ int encode_test(unsigned char type, const unsigned char *p_data,
                 unsigned char length, unsigned char *p_out, size_t capacity,
                 int null_frame) {
     struct protocol_frame frame = {.type = type, .payload_length = length};
-    if (length <= MAX_PAYLOAD && p_data != NULL) memcpy(frame.payload, p_data, length);
+    if (length <= PROTOCOL_MAX_PAYLOAD && p_data != NULL) memcpy(frame.payload, p_data, length);
     return protocol_frame_encode(null_frame ? NULL : &frame, p_out, capacity);
 }
 int frame_type_constant(int index) {

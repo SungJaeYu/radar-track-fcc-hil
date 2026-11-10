@@ -1,4 +1,5 @@
 #include "protocol/radar_message.h"
+
 #include <stddef.h>
 
 #define PI_F 3.14159265358979323846f
@@ -7,9 +8,9 @@
 bool decode_radar_measurement(
     const uint8_t *p_payload,
     uint8_t payload_length,
-    struct radar_measurement *p_measurement)
+    struct radar_measurement *out_measurement)
 {
-    if (p_payload == NULL || p_measurement == NULL) {
+    if (p_payload == NULL || out_measurement == NULL) {
         return false;
     }
 
@@ -35,11 +36,11 @@ bool decode_radar_measurement(
             (uint32_t)p_payload[9]
         );
 
-    p_measurement->timestamp_ms = timestamp_ms;
-    p_measurement->range_m = (float)range_m;
+    out_measurement->timestamp_ms = timestamp_ms;
+    out_measurement->range_m = (float)range_m;
 
     // Signed semicircle units use 2^31 units per pi radians.
-    p_measurement->azimuth_rad =
+    out_measurement->azimuth_rad =
         (float)azimuth_sc *
         (PI_F / SEMICIRCLE_SCALE);
 
@@ -49,7 +50,7 @@ bool decode_radar_measurement(
 bool validate_radar_measurement(
     const struct radar_measurement *p_measurement)
 {
-    if (p_measurement->range_m == 0) {
+    if (p_measurement->range_m == 0.0f) {
         return false;
     }
 

@@ -1,14 +1,15 @@
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 // Include the real implementation to exercise its private recovery functions.
 // Do not compile uart_rx.c separately into this test executable.
 #include "transport/uart_rx.c"
 #include "transport/rx_frame_processor.c"
 
 // Reserve one slot to distinguish a full ring from an empty ring.
-#define RX_CAPACITY (BUFFER_SIZE - 1U)
-_Static_assert(BUFFER_SIZE >= 9, "Overflow fixtures require at least eight usable slots");
-_Static_assert(BUFFER_SIZE <= UINT8_MAX + 1U, "Ring indices must represent every slot");
+#define RX_CAPACITY (RING_BUFFER_SIZE - 1U)
+_Static_assert(RING_BUFFER_SIZE >= 9, "Overflow fixtures require at least eight usable slots");
+_Static_assert(RING_BUFFER_SIZE <= UINT8_MAX + 1U, "Ring indices must represent every slot");
 
 static unsigned int submitted;
 static struct received_frame last_frame;
@@ -31,7 +32,7 @@ static void receive(const uint8_t *p_bytes, size_t size)
 // Pad with bytes ignored in PARSER_STATE_WAIT_STX and reject the byte after the usable capacity.
 static void receive_overflow(const uint8_t *p_bytes, size_t size, size_t offset)
 {
-    uint8_t stream[BUFFER_SIZE] = {0};
+    uint8_t stream[RING_BUFFER_SIZE] = {0};
     assert(offset + size <= RX_CAPACITY);
     memcpy(stream + offset, p_bytes, size);
     stream[RX_CAPACITY] = 0xaa;
@@ -162,11 +163,11 @@ static void test_empty_recovery(void)
 static void test_ring_overflow_preserves_buffer(void)
 {
     reset_test();
-    for (unsigned int i=0; i<BUFFER_SIZE-1; ++i) assert(ring_push(&rx_ring, i));
+    for (unsigned int i=0; i<RING_BUFFER_SIZE-1; ++i) assert(ring_push(&rx_ring, i));
     uint8_t head = rx_ring.head, tail = rx_ring.tail;
     assert(!ring_push(&rx_ring, 0xff));
     assert(rx_ring.head == head && rx_ring.tail == tail);
-    for (unsigned int i=0; i<BUFFER_SIZE-1; ++i) {
+    for (unsigned int i=0; i<RING_BUFFER_SIZE-1; ++i) {
         uint8_t byte; assert(ring_pop(&rx_ring, &byte)); assert(byte == i);
     }
 }
@@ -376,6 +377,29 @@ static void test_stats_snapshot_and_reset(void)
     assert(submitted == 1);
 }
 
+static void test_rx_init_errors(void)
+{
+    reset_test();
+    rx_ready_sem.count = 0;
+    test_callback_calls = 0;
+    test_rx_enable_calls = 0;
+    test_device_ready = false;
+    assert(uart_rx_init() == -ENODEV);
+    assert(test_callback_calls == 0 && test_rx_enable_calls == 0 && rx_ready_sem.count == 0);
+
+    test_device_ready = true;
+    const int errors[] = {-ENOSYS, -ENOTSUP};
+    for (size_t i = 0; i < sizeof(errors) / sizeof(errors[0]); ++i) {
+        test_callback_result = errors[i];
+        assert(uart_rx_init() == errors[i]);
+        assert(test_rx_enable_calls == 0 && rx_ready_sem.count == 0);
+    }
+
+    test_callback_result = 0;
+    assert(uart_rx_init() == 0);
+    assert(test_callback_calls == 3 && test_rx_enable_calls == 1 && rx_ready_sem.count == 1);
+}
+
 struct test_case {
     const char *p_name;
     void (*p_run)(void);
@@ -383,6 +407,7 @@ struct test_case {
 
 #define CASE(test) { #test, test }
 static const struct test_case cases[] = {
+    CASE(test_rx_init_errors),
     CASE(test_stats_snapshot_and_reset),
     CASE(test_timeout_boundary_for_every_partial_frame),
     CASE(test_timeout_ignores_idle_and_complete_frames),

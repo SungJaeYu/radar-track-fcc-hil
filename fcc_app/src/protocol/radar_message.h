@@ -20,7 +20,7 @@ struct radar_measurement {
 bool decode_radar_measurement(
     const uint8_t *p_payload,
     uint8_t payload_length,
-    struct radar_measurement *p_measurement);
+    struct radar_measurement *out_measurement);
 
 // Require a non-NULL decoded measurement. Return false for zero range or
 // azimuth outside [-pi, pi]. Does not check timestamp order, gating, or finiteness.

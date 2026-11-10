@@ -3,11 +3,10 @@
 
 // Normalize a practical, finite angle in radians into (-pi, pi].
 // Uses repeated subtraction/addition; not intended for arbitrarily large inputs.
-float wrap_angle_rad(float angle);
+float wrap_angle_rad(float angle_rad);
 
-// Return the normalized signed difference a - b in radians, in (-pi, pi].
+// Return the normalized signed difference a_rad - b_rad in radians, in (-pi, pi].
 // Inputs must satisfy the same assumptions as wrap_angle_rad().
-float angle_diff_rad(float a, float b);
-
+float angle_diff_rad(float a_rad, float b_rad);
 
 #endif

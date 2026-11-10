@@ -1,12 +1,11 @@
-#include <zephyr/kernel.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/uart.h>
-#include <zephyr/sys/atomic.h>
+#include "transport/uart_tx.h"
 
-#include <string.h>
 #include <errno.h>
 
-#include "transport/uart_tx.h"
+#include <zephyr/device.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
 
 static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 
@@ -33,13 +32,13 @@ int uart_tx_init(void)
     return 0;
 }
 
-int uart_tx_submit(const struct send_frame *p_s_frame)
+int uart_tx_submit(const struct send_frame *p_frame)
 {
-    if (p_s_frame == NULL || !protocol_frame_is_valid(&p_s_frame->frame)) {
+    if (p_frame == NULL || !protocol_frame_is_valid(&p_frame->frame)) {
         return -EINVAL;
     }
 
-    return k_msgq_put(&tx_queue, p_s_frame, K_NO_WAIT);
+    return k_msgq_put(&tx_queue, p_frame, K_NO_WAIT);
 }
 
 static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
@@ -54,13 +53,13 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
     k_sem_take(&tx_ready_sem, K_FOREVER);
 
     while (1) {
-        int ret = k_msgq_get(&tx_queue, &request, K_FOREVER);
+        const int ret = k_msgq_get(&tx_queue, &request, K_FOREVER);
 
         if (ret == 0) {
             // Encode one complete queued request; discard only this request on encoding failure.
-            uint8_t buffer[MAX_PAYLOAD + 5U];
+            uint8_t buffer[PROTOCOL_MAX_FRAME_SIZE];
 
-            int length = protocol_frame_encode(&request.frame, buffer, sizeof(buffer));
+            const int length = protocol_frame_encode(&request.frame, buffer, sizeof(buffer));
 
             if (length < 0) {
                 printk("TX encode failed: %d\n", length);

@@ -8,9 +8,9 @@
 // The current gates are 100 m and 10 degrees; angular error is wrapped.
 // This function does not update filters or track state.
 bool gating_check(
-    float measured_range,
-    float predicted_range,
-    float measured_azimuth,
-    float predicted_azimuth);
+    float measured_range_m,
+    float predicted_range_m,
+    float measured_azimuth_rad,
+    float predicted_azimuth_rad);
 
 #endif

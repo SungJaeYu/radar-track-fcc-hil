@@ -12,13 +12,13 @@ void track_init(struct track *p_track)
     p_track->last_measurement_time_ms = 0U;
 }
 
-void track_start(struct track *p_track, float initial_range, float initial_azimuth_rad, uint32_t timestamp_ms)
+void track_start(struct track *p_track, float initial_range_m, float initial_azimuth_rad, uint32_t timestamp_ms)
 {
     // Range tuning defaults: p00/R = 25 m^2, p11 = 10000 (m/s)^2,
     // q = 100 (m/s^2)^2; these are initial tuning values, not sensor calibration data.
     kalman_cv_init(
         &p_track->range_filter,
-        initial_range,      // initial_range
+        initial_range_m,      // initial_range_m
         0.0f,      // initial_range_rate
         25.0f,     // p00: range uncertainty
         0.0f,      // p01
@@ -75,30 +75,30 @@ bool track_predict(struct track *p_track, uint32_t timestamp_ms)
         return false;
     }
 
-    const float dt = (float)delta_ms / 1000.0f;
+    const float dt_s = (float)delta_ms / 1000.0f;
 
     kalman_cv_predict(
         &p_track->range_filter,
-        dt
+        dt_s
     );
 
     kalman_cv_predict_angle(
         &p_track->azimuth_filter,
-        dt
+        dt_s
     );
 
     p_track->last_measurement_time_ms = timestamp_ms;
-    
+
     return true;
 }
 
-void track_hit(struct track *p_track, float measured_range, float measured_azimuth_rad)
+void track_hit(struct track *p_track, float measured_range_m, float measured_azimuth_rad)
 {
     if (p_track->state == TRACK_STATE_EMPTY || p_track->state == TRACK_STATE_LOST) {
         return;
     }
 
-    kalman_cv_correct(&p_track->range_filter, measured_range);
+    kalman_cv_correct(&p_track->range_filter, measured_range_m);
     kalman_cv_correct_angle(&p_track->azimuth_filter, measured_azimuth_rad);
 
     if (p_track->hit_count < TRACK_CONFIRM_HITS) {
@@ -106,8 +106,7 @@ void track_hit(struct track *p_track, float measured_range, float measured_azimu
     }
     p_track->miss_count = 0U;
 
-    switch (p_track->state)
-    {
+    switch (p_track->state) {
     case TRACK_STATE_TENTATIVE:
         if (p_track->hit_count >= TRACK_CONFIRM_HITS) {
             p_track->state = TRACK_STATE_CONFIRMED;
@@ -142,7 +141,7 @@ void track_miss(struct track *p_track)
     if (p_track->state == TRACK_STATE_CONFIRMED) {
         p_track->state = TRACK_STATE_COASTING;
     }
-    
+
     if (p_track->miss_count >= TRACK_LOST_MISSES) {
         p_track->state = TRACK_STATE_LOST;
     }

@@ -21,7 +21,7 @@ static void test_tx_init(void)
 {
     reset_fixture();
     ready = false;
-    assert(uart_tx_init() != 0 && tx_ready_sem.count == 0);
+    assert(uart_tx_init() == -ENODEV && tx_ready_sem.count == 0);
     assert(strstr(log_output, "not ready") != NULL);
     ready = true;
     assert(uart_tx_init() == 0 && tx_ready_sem.count == 1);
@@ -32,7 +32,7 @@ static void test_tx_invalid_submit(void)
     reset_fixture();
     struct send_frame request = {.frame = {.type = FRAME_TYPE_STATUS_REQUEST}};
     assert(uart_tx_submit(NULL) == -EINVAL);
-    const uint8_t lengths[] = {0, MAX_PAYLOAD + 1, UINT8_MAX};
+    const uint8_t lengths[] = {0, PROTOCOL_MAX_PAYLOAD + 1, UINT8_MAX};
     for (size_t i = 0; i < sizeof(lengths); ++i) {
         request.frame.payload_length = lengths[i];
         assert(uart_tx_submit(&request) == -EINVAL);

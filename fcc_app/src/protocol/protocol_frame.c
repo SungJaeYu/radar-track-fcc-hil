@@ -1,18 +1,19 @@
-#include <stddef.h>
+#include "protocol/protocol_frame.h"
+
 #include <errno.h>
+#include <stddef.h>
 #include <string.h>
 
-#include "protocol/protocol_frame.h"
 #include "common/crc16.h"
 
 bool protocol_frame_is_valid(const struct protocol_frame *p_frame)
 {
-    return p_frame != NULL && p_frame->payload_length > 0 && p_frame->payload_length <= MAX_PAYLOAD;
+    return p_frame != NULL && p_frame->payload_length > 0 && p_frame->payload_length <= PROTOCOL_MAX_PAYLOAD;
 }
 
 uint16_t protocol_frame_crc(const struct protocol_frame *p_frame)
 {
-    uint16_t crc = INIT_CRC;
+    uint16_t crc = CRC16_INITIAL_VALUE;
 
     crc = crc16_update(crc, p_frame->payload_length);
     crc = crc16_update(crc, p_frame->type);
@@ -20,33 +21,33 @@ uint16_t protocol_frame_crc(const struct protocol_frame *p_frame)
     for (uint8_t i = 0; i < p_frame->payload_length; ++i) {
         crc = crc16_update(crc, p_frame->payload[i]);
     }
-    
+
     return crc;
 }
 
-int protocol_frame_encode(const struct protocol_frame *p_frame, uint8_t *p_buffer, size_t capacity)
+int protocol_frame_encode(const struct protocol_frame *p_frame, uint8_t *out_buffer, size_t capacity)
 {
-    if (!protocol_frame_is_valid(p_frame) || p_buffer == NULL) {
+    if (!protocol_frame_is_valid(p_frame) || out_buffer == NULL) {
         return -EINVAL;
     }
 
-    size_t length = p_frame->payload_length;
-    size_t frame_size = length + 5U;
+    const size_t length = p_frame->payload_length;
+    const size_t frame_size = length + PROTOCOL_FRAME_OVERHEAD;
 
     if (capacity < frame_size) {
         return -ENOSPC;
     }
 
-    p_buffer[0] = STX;
-    p_buffer[1] = p_frame->payload_length;
-    p_buffer[2] = (uint8_t)p_frame->type;
+    out_buffer[0] = PROTOCOL_STX;
+    out_buffer[1] = p_frame->payload_length;
+    out_buffer[2] = (uint8_t)p_frame->type;
 
-    memcpy(&p_buffer[3], p_frame->payload, length);
+    memcpy(&out_buffer[3], p_frame->payload, length);
 
-    uint16_t crc = protocol_frame_crc(p_frame);
+    const uint16_t crc = protocol_frame_crc(p_frame);
 
-    p_buffer[3 + length] = (uint8_t)(crc >> 8);
-    p_buffer[4 + length] = (uint8_t)crc;
+    out_buffer[3 + length] = (uint8_t)(crc >> 8);
+    out_buffer[4 + length] = (uint8_t)crc;
 
     return (int)frame_size;
 

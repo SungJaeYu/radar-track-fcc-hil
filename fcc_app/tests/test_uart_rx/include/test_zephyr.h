@@ -32,11 +32,14 @@ static int atomic_inc(atomic_t *p_value) { return (*p_value)++; }
 static void atomic_set(atomic_t *p, int value) { *p = value; }
 static void atomic_clear(atomic_t *p) { assert(irq_locked); *p = 0; }
 static int printk(const char *format, ...) { (void)format; assert(!irq_locked); return 0; }
-static bool device_is_ready(const struct device *dev) { (void)dev; return true; }
+static bool test_device_ready = true;
+static int test_callback_result;
+static unsigned int test_callback_calls, test_rx_enable_calls;
+static bool device_is_ready(const struct device *dev) { (void)dev; return test_device_ready; }
 static int uart_irq_callback_user_data_set(const struct device *dev,
     void (*callback)(const struct device *, void *), void *data)
-{ (void)dev; (void)callback; (void)data; return 0; }
-static void uart_irq_rx_enable(const struct device *dev) { (void)dev; }
+{ (void)dev; (void)callback; (void)data; test_callback_calls++; return test_callback_result; }
+static void uart_irq_rx_enable(const struct device *dev) { (void)dev; test_rx_enable_calls++; }
 static void uart_irq_update(const struct device *dev) { (void)dev; }
 static const uint8_t *fifo_bytes;
 static size_t fifo_size, fifo_position;

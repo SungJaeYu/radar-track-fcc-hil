@@ -1,8 +1,6 @@
 #ifndef UART_TX_H
 #define UART_TX_H
 
-#include <stdbool.h>
-
 #include "protocol/protocol_frame.h"
 
 // Queue-owned copy of a frame to encode and transmit; no caller buffer is retained.
@@ -11,6 +9,7 @@ struct send_frame {
 };
 
 // Check the UART device and release the TX thread; UART configuration is provided elsewhere.
+// Repeated calls only signal readiness; they do not clear pending requests.
 // Call during startup. Return 0 on success or -ENODEV if the device is not ready.
 int uart_tx_init(void);
 
@@ -20,7 +19,5 @@ int uart_tx_init(void);
 // Submission does not check device readiness; queued requests wait for successful TX init.
 // The caller may reuse the request after this call returns.
 int uart_tx_submit(const struct send_frame *p_frame);
-
-
 
 #endif

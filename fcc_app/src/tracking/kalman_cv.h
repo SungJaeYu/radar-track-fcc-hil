@@ -25,22 +25,22 @@ void kalman_cv_init(
     struct kalman_cv_filter *p_kf,
     float initial_value,
     float initial_value_rate,
-    float p00, float p01, 
+    float p00, float p01,
     float p10, float p11,
     float process_noise,
     float measurement_noise
 );
 
-// Predict a non-NULL initialized linear filter forward by dt seconds.
+// Predict a non-NULL initialized linear filter forward by dt_s seconds.
 // The caller validates the time interval before calling.
 void kalman_cv_predict(
     struct kalman_cv_filter *p_kf,
-    float dt);
+    float dt_s);
 
-// Predict an initialized angular filter using dt seconds; wrap the estimate to (-pi, pi].
+// Predict an initialized angular filter using dt_s seconds; wrap the estimate to (-pi, pi].
 void kalman_cv_predict_angle(
     struct kalman_cv_filter *p_kf,
-    float dt);
+    float dt_s);
 
 // Correct an initialized linear filter with a measurement in the state value unit.
 // Skip correction if innovation covariance is <= 1e-6; no status is returned.
@@ -52,6 +52,6 @@ void kalman_cv_correct(
 // Wrap the residual and updated estimate; the same covariance guard applies.
 void kalman_cv_correct_angle(
     struct kalman_cv_filter *p_kf,
-    float angle_measurement);
+    float angle_measurement_rad);
 
 #endif

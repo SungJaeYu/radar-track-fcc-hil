@@ -6,8 +6,6 @@
 
 #include "protocol/protocol_frame.h"
 
-#define STX 0x7E
-
 typedef enum {
     PARSER_STATE_WAIT_STX,
     PARSER_STATE_WAIT_LEN,
@@ -22,9 +20,9 @@ typedef enum {
     PARSER_RESULT_INCOMPLETE,
     // A complete frame passed CRC validation and may be copied by the caller.
     PARSER_RESULT_FRAME_READY,
-    // Reject the assembled frame and resume searching for STX.
+    // Reject the assembled frame and resume searching for PROTOCOL_STX.
     PARSER_RESULT_CRC_ERROR,
-    // Reject an out-of-range LEN and resume searching for STX.
+    // Reject an out-of-range LEN and resume searching for PROTOCOL_STX.
     PARSER_RESULT_LENGTH_ERROR,
 } ParserResult;
 
@@ -41,7 +39,7 @@ struct frame_parser {
 void parser_init(struct frame_parser *p_parser);
 // Feed one byte in stream order into an initialized, non-NULL parser.
 // Use parser.frame only on PARSER_RESULT_FRAME_READY and copy it before feeding more bytes.
-// Length/CRC errors discard that frame; later bytes are searched for a new STX.
+// Length/CRC errors discard that frame; later bytes are searched for a new PROTOCOL_STX.
 // Does not validate payload semantics or handle inactivity timeouts.
 ParserResult parser_feed(struct frame_parser *p_parser, uint8_t byte);
 

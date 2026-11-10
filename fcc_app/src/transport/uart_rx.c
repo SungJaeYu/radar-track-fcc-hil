@@ -1,16 +1,14 @@
-#include <zephyr/kernel.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/uart.h>
-#include <zephyr/sys/printk.h>
-#include <zephyr/sys/atomic.h>
+#include "transport/uart_rx.h"
 
-#include <string.h>
 #include <errno.h>
 
+#include <zephyr/device.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/atomic.h>
+#include <zephyr/sys/printk.h>
+
 #include "common/ring_buffer.h"
-#include "protocol/frame_parser.h"
-#include "transport/uart_rx.h"
-#include "application/frame_handler.h"
 #include "transport/rx_frame_processor.h"
 
 // Set UART device
@@ -37,7 +35,8 @@ static void rx_finish_recovery(void);
 
 K_THREAD_DEFINE(uart_rx_tid, 1024, uart_rx_thread, NULL, NULL, NULL, 5, 0, 0);
 
-int uart_rx_init(void) {
+int uart_rx_init(void)
+{
     // Check UART device is ready
     if (!device_is_ready(p_uart)) {
         // Error Handling
@@ -46,7 +45,7 @@ int uart_rx_init(void) {
     }
 
     // Set Callback Function
-    int ret = uart_irq_callback_user_data_set(p_uart, uart_callback, NULL);
+    const int ret = uart_irq_callback_user_data_set(p_uart, uart_callback, NULL);
     if (ret != 0) {
         // error
         printk("Failed to set UART callback\n");
@@ -68,7 +67,8 @@ int uart_rx_init(void) {
     return 0;
 }
 
-static void uart_callback(const struct device *p_dev, void *p_user_data) {
+static void uart_callback(const struct device *p_dev, void *p_user_data)
+{
     // Avoid Warning
     ARG_UNUSED(p_user_data);
 
@@ -81,7 +81,7 @@ static void uart_callback(const struct device *p_dev, void *p_user_data) {
         if (uart_irq_rx_ready(p_dev)) {
             uint8_t c;
             // UART FIFO Read
-            while(uart_fifo_read(p_dev, &c, 1) == 1) {
+            while (uart_fifo_read(p_dev, &c, 1) == 1) {
                 // Keep draining the hardware FIFO during recovery, but discard new bytes.
                 // Drain recovery requires the buffer to contain only bytes received before the first loss.
                 if (atomic_get(&rx_overflow) != 0) {
@@ -111,6 +111,7 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
     while (1) {
         // Wake on RX notification, or after 50 ms even when no data arrives.
         // This wait interval is separate from the measurement timeout threshold.
+        // A timeout is an expected wakeup; both wake reasons run the same drain/check path.
         k_sem_take(&rx_sem, K_MSEC(50));
 
         while (1) {
@@ -118,7 +119,7 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
 
             // Protect the overflow check and single-byte ring pop from the UART ISR.
             // Parsing and queue submission run after interrupts are restored.
-            unsigned int key = irq_lock();
+            const unsigned int key = irq_lock();
 
             if (atomic_get(&rx_overflow) != 0) {
                 // Allow interrupts during parsing, queue submission, and logging in drain recovery.
@@ -171,25 +172,25 @@ static void rx_recover_overflow(void)
 {
     // Call from the RX thread with interrupts enabled and the overflow flag set.
     switch (RX_OVERFLOW_POLICY) {
-        case RX_OVERFLOW_POLICY_DISCARD_ALL:
-            rx_recover_discard_all();
-            break;
-        case RX_OVERFLOW_POLICY_DRAIN_BUFFER:
-            rx_recover_drain_buffer();
-            break;
-        default:
-            // For an unknown policy, perform discard recovery before clearing the flag.
-            rx_recover_discard_all();
-            break;
+    case RX_OVERFLOW_POLICY_DISCARD_ALL:
+        rx_recover_discard_all();
+        break;
+    case RX_OVERFLOW_POLICY_DRAIN_BUFFER:
+        rx_recover_drain_buffer();
+        break;
+    default:
+        // For an unknown policy, perform discard recovery before clearing the flag.
+        rx_recover_discard_all();
+        break;
     }
 }
 
 static void rx_finish_recovery(void)
 {
     // Protect only the short recovery cleanup; do not log or run tracking here.
-    unsigned int key = irq_lock();
+    const unsigned int key = irq_lock();
 
-    // Clear the software buffer and partial frame, then resume searching for STX.
+    // Clear the software buffer and partial frame, then resume searching for PROTOCOL_STX.
     // This does not flush the hardware FIFO or guarantee alignment with the next frame.
     ring_init(&rx_ring);
     rx_frame_processor_reset();

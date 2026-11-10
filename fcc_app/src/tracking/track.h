@@ -39,7 +39,7 @@ void track_init(
 // and count this initial measurement as the first hit.
 void track_start(
     struct track *p_track,
-    float initial_range,
+    float initial_range_m,
     float initial_azimuth_rad,
     uint32_t timestamp_ms
 );
@@ -58,7 +58,7 @@ bool track_predict(
 // Clear misses; do nothing for EMPTY or LOST.
 void track_hit(
     struct track *p_track,
-    float measured_range,
+    float measured_range_m,
     float measured_azimuth_rad
 );
 
