@@ -57,8 +57,8 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 현재 `RX_OVERFLOW_POLICY_DRAIN_BUFFER` 설정의 동작을 검증합니다. 전체 폐기로 설정을 바꾸면
 정상 프레임을 보존해야 한다는 drain 검증은 실패합니다. 두 정책을 모두 자동 선택해 빌드하는 테스트는 아닙니다.
 
-현재 `BUFFER_SIZE=256`이며 실제 저장 용량은 255바이트입니다.
-fixture는 `BUFFER_SIZE - 1`에서 입력 길이와 프레임 절단 위치를 계산합니다.
+현재 `RING_BUFFER_SIZE=256`이며 실제 저장 용량은 255바이트입니다.
+fixture는 `RING_BUFFER_SIZE - 1`에서 입력 길이와 프레임 절단 위치를 계산합니다.
 WAIT_STX에서 무시되는 0으로 채운 뒤 용량 다음 바이트로 overflow를 발생시킵니다.
 부분 프레임 폐기 사례는 프레임 앞부분을 버퍼 끝에 배치하여 패딩으로 완성되지 않게 합니다.
 static assertion은 fixture의 최소 크기(9)와 현재 `uint8_t` 인덱스의 최대 크기(256)를 검사합니다.
@@ -82,3 +82,5 @@ static assertion은 fixture의 최소 크기(9)와 현재 `uint8_t` 인덱스의
 시각은 `test_now_ms`로 제어하며 실제 sleep을 사용하지 않습니다. timeout 검사는 실제
 processor 함수를 직접 호출합니다. RX 스레드의 50ms 스케줄링이나 ISR 도착 시각,
 검사 직전의 동시 수신은 이 host 시험의 검증 범위가 아닙니다.
+
+`test_rx_init_errors`는 장치 미준비와 callback 등록 오류 전달, 실패 시 IRQ/준비 신호 억제, 성공 초기화를 검증합니다. 현재 총 21개입니다.

@@ -38,7 +38,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 ## 검증
 
 - `python -m pytest`: GUI 의존성 설치 시 84개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
-- [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain·링버퍼·부분 프레임 timeout·통계 20개 사례. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
+- [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain·링버퍼·부분 프레임 timeout·통계·init 오류 21개 사례. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [STATUS host 테스트](fcc_app/tests/test_frame_handler/README.md): 통계 출력·반복 조회·추적 상태와 timeout 보존 5개 사례.
 - [TX host 테스트](fcc_app/tests/test_uart_tx/README.md): 초기화·요청 검증·복사 큐·송신 순서·실패 후 복귀 4개 사례.
 - [Tracking C 테스트](fcc_app/tests/test_kalman/README.md): 필터·게이팅·추적 정책 13개 사례.
@@ -50,7 +50,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 작업 원칙
 
-- [코딩 스탠다드 초안](docs/coding-standard.md): 참조 포인터 `p_`, 출력 `out_`, enum PascalCase와 타입명 기반 열거자 접두사, 함수 중괄호 다음 줄, 제어문 같은 줄·공백 한 칸. 음수 errno 반환으로 통일할 예정이며 기존 펌웨어를 임의로 일괄 수정하지 않습니다.
+- [코딩 스탠다드 초안](docs/coding-standard.md): 참조 포인터 `p_`, 출력 `out_`, enum PascalCase와 타입명 기반 열거자 접두사, 함수 중괄호 다음 줄, 제어문 같은 줄·공백 한 칸. 음수 errno 반환 규칙을 적용했으며 기존 펌웨어를 임의로 일괄 수정하지 않습니다.
 
 - 작은 검증 사다리로 진행. 각 단계는 직전 단계 위에서 검증 가능해야 함.
   매 단계 끝에 "어떻게 보드에서 확인하는지"를 명시할 것.

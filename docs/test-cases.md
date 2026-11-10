@@ -17,11 +17,11 @@
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 5 | host C, 통계 조회·printk·RTOS 모사 |
-| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 20 | host C, Zephyr API 모사 |
+| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 21 | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **84개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
-UART C는 각 함수를 CTest에 따로 등록하므로 20개로 표시됩니다.
+UART C는 각 함수를 CTest에 따로 등록하므로 21개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
@@ -283,3 +283,13 @@ STATUS에서 TX로 제출하는 호출부는 아직 연결되지 않았습니다
   실제 STATUS 응답 내용이나 처리 성공을 검증하는 테스트는 아님.
 - 최종 Python 84개 + subtest 9개, RX 20개, STATUS 5개, TX 4개,
   Tracking CTest 1 suite 통과. STM32 펌웨어 빌드 통과. flash/실보드 시험 미실시.
+
+
+## 2026-11-10 assert 제외 코딩 규칙 적용
+
+- 출력 포인터·인자명·단위·const·서식·헤더 의존성·공통 상수를 정리.
+- RX `test_rx_init_errors`: 미준비 -ENODEV, callback -ENOSYS/-ENOTSUP 전달,
+  실패 시 RX IRQ/준비 신호 억제, 성공 후 활성화 검증. RX 총 21개.
+- TX init 테스트는 미준비 시 정확한 -ENODEV를 확인하도록 보강.
+- STATUS 5개, TX 4개, Tracking 1 suite, Python 84개 + subtest 9개 검증.
+- 펌웨어 빌드와 공개 헤더 단독 컴파일 통과. 펌웨어 assert·빌드 설정은 추가/변경하지 않음. flash·실보드 시험 미실시.
