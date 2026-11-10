@@ -2,8 +2,8 @@
 #include <errno.h>
 // Include the real implementation to exercise its private recovery functions.
 // Do not compile uart_rx.c separately into this test executable.
-#include "uart_rx.c"
-#include "rx_frame_processor.c"
+#include "transport/uart_rx.c"
+#include "transport/rx_frame_processor.c"
 
 // Reserve one slot to distinguish a full ring from an empty ring.
 #define RX_CAPACITY (BUFFER_SIZE - 1U)

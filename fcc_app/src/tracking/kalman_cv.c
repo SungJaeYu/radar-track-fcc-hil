@@ -1,7 +1,7 @@
-#include "kalman_cv.h"
+#include "tracking/kalman_cv.h"
 
 #include <stdbool.h>
-#include "angle_utils.h"
+#include "tracking/angle_utils.h"
 
 static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt, bool is_angle);
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle);

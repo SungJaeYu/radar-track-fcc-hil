@@ -19,10 +19,10 @@ else()
 endif()
 
 target_sources(${TEST_TARGET} PRIVATE
-    ../../src/kalman_cv.c
-    ../../src/angle_utils.c
-    ../../src/gating.c
-    ../../src/track.c
-    ../../src/radar_message.c
+    ../../src/tracking/kalman_cv.c
+    ../../src/tracking/angle_utils.c
+    ../../src/tracking/gating.c
+    ../../src/tracking/track.c
+    ../../src/protocol/radar_message.c
 )
 target_include_directories(${TEST_TARGET} PRIVATE ../../src)

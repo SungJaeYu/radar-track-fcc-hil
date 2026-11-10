@@ -118,7 +118,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 
 ## RX 버퍼와 overflow 복구
 
-`fcc_app/src/ring_buffer.h`의 `BUFFER_SIZE`는 **256바이트**, 실제 저장 용량은 **255바이트**입니다.
+`fcc_app/src/common/ring_buffer.h`의 `BUFFER_SIZE`는 **256바이트**, 실제 저장 용량은 **255바이트**입니다.
 빈 상태와 가득 찬 상태를 구분하기 위해 한 칸을 비웁니다. `uint8_t` 인덱스는 0..255를
 표현하므로 현재 크기에 맞지만, 256보다 크게 늘릴 때는 인덱스 타입도 변경해야 합니다.
 
@@ -142,17 +142,18 @@ INIT/RESET도 큐 포화 시 드롭될 수 있습니다.
 
 ```text
 fcc_app/src/
-    uart_rx.c          UART 인터럽트·링버퍼·수신 스레드
-    rx_frame_processor.c  파서 소유·큐 제출·드롭 집계
-    frame_parser.c     CRC-16 프레임 파서
-    frame_handler.c    메시지 큐·처리 스레드·수신 timeout
-    radar_message.c    10바이트 해석·semicircle → rad
-    track.c            단일 트랙 상태·시간·hit/miss
-    kalman_cv.c        거리·방위각 등속 칼만 필터
-    gating.c           예측과 측정의 게이트 검사
+    main.c            초기화·진입점
+    transport/        uart_rx, uart_tx, rx_frame_processor
+    protocol/         frame_parser, protocol_frame, radar_message
+    application/      frame_handler: 메시지 처리·추적 실행
+    tracking/         track, kalman_cv, gating, angle_utils
+    common/           crc16, ring_buffer
 fcc_app/tests/
-    test_uart_rx/      UART drain·링버퍼 host 회귀 테스트
+    test_uart_rx/      UART drain·링버퍼·부분 프레임 timeout
+    test_frame_handler/ STATUS 통계·추적 상태 보존
+    test_uart_tx/      TX 큐·인코딩·송신 순서
     test_kalman/       필터·게이팅·추적 C 회귀 테스트
+tools/vscode/         로컬 VS Code 설정 예제
 pc_sim/
     gui.py             데스크톱 화면·실시간 그래프
     gui_worker.py      시리얼 소유·송신·콘솔 작업 스레드

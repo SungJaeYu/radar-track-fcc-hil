@@ -1,10 +1,10 @@
 #include <zephyr/sys/printk.h>
 #include <zephyr/kernel.h>
 
-#include "frame_handler.h"
-#include "radar_message.h"
-#include "gating.h"
-#include "rx_frame_processor.h"
+#include "application/frame_handler.h"
+#include "protocol/radar_message.h"
+#include "tracking/gating.h"
+#include "transport/rx_frame_processor.h"
 
 // Expire the track after 1000 ms without a decoded and validated radar measurement.
 #define RADAR_RX_TIMEOUT_MS 1000

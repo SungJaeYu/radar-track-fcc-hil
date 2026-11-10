@@ -4,7 +4,7 @@
 #include <string.h>
 
 // Include the real handler to keep its private thread function compiled as well.
-#include "frame_handler.c"
+#include "application/frame_handler.c"
 
 static char output[2048];
 static size_t output_size;

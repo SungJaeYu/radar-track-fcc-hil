@@ -5,8 +5,8 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/uart.h>
 
-#include "uart_rx.h"
-#include "uart_tx.h"
+#include "transport/uart_rx.h"
+#include "transport/uart_tx.h"
 
 int main(void)
 {

@@ -1,4 +1,4 @@
-#include "crc16.h"
+#include "common/crc16.h"
 
 uint16_t crc16_update(uint16_t crc, const uint8_t byte)
 {

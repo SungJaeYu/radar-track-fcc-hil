@@ -1,4 +1,4 @@
-#include "radar_message.h"
+#include "protocol/radar_message.h"
 #include <stddef.h>
 
 #define PI_F 3.14159265358979323846f

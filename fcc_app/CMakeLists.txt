@@ -5,17 +5,20 @@ project(fcc_app)
 
 target_sources(app PRIVATE
     src/main.c
-    src/uart_rx.c
-    src/frame_parser.c
-    src/ring_buffer.c
-    src/frame_handler.c
-    src/radar_message.c
-    src/kalman_cv.c
-    src/gating.c
-    src/angle_utils.c
-    src/track.c
-    src/rx_frame_processor.c
-    src/uart_tx.c
-    src/protocol_frame.c
-    src/crc16.c
+    src/transport/uart_rx.c
+    src/protocol/frame_parser.c
+    src/common/ring_buffer.c
+    src/application/frame_handler.c
+    src/protocol/radar_message.c
+    src/tracking/kalman_cv.c
+    src/tracking/gating.c
+    src/tracking/angle_utils.c
+    src/tracking/track.c
+    src/transport/rx_frame_processor.c
+    src/transport/uart_tx.c
+    src/protocol/protocol_frame.c
+    src/common/crc16.c
 )
+
+# Resolve module-qualified includes from the application source root.
+target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

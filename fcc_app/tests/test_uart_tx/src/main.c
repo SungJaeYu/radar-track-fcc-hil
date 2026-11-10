@@ -1,5 +1,5 @@
-#include "uart_tx.c"
-#include "frame_parser.h"
+#include "transport/uart_tx.c"
+#include "protocol/frame_parser.h"
 
 static void reset_fixture(void)
 {

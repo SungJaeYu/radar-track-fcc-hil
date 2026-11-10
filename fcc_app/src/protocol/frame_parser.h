@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "protocol_frame.h"
+#include "protocol/protocol_frame.h"
 
 #define STX 0x7E
 

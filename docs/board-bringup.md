@@ -83,14 +83,16 @@ VS Code의 로컬 기본 작업 `Zephyr: Build firmware`와 IntelliSense는 모�
 UART 테스트는 실제 `uart_rx.c`를 직접 포함하므로 테스트에 펌웨어용 기본
 includePath가 적용되면 `cmsis_core.h` 등의 가짜 include 오류가 생길 수 있습니다.
 
-로컬 `.vscode/c_cpp_properties.json`의 `compileCommands`에는 다음 세 경로를
+로컬 `.vscode/c_cpp_properties.json`의 `compileCommands`에는 다음 다섯 경로를
 순서대로 연결합니다. 펌웨어를 먼저 두어 공통 소스의 기본 분석을 유지합니다.
 
 ```json
 "compileCommands": [
   "${workspaceFolder}/build/compile_commands.json",
   "${workspaceFolder}/build_uart_rx/compile_commands.json",
-  "${workspaceFolder}/build_frame_handler/compile_commands.json"
+  "${workspaceFolder}/build_frame_handler/compile_commands.json",
+  "${workspaceFolder}/build_uart_tx/compile_commands.json",
+  "${workspaceFolder}/build_tracking/compile_commands.json"
 ]
 ```
 
@@ -106,7 +108,11 @@ includePath가 적용되면 `cmsis_core.h` 등의 가짜 include 오류가 생�
 - 파일 매핑이 이전 설정에 남으면 `C/C++: Reset IntelliSense Database`로
   재분석합니다. 오류 표시를 끄거나 시스템 헤더 전체를 재귀 추가하지 않습니다.
 
-`build*`와 `.vscode`는 Git 제외 대상이므로 새 체크아웃에서는 구성이 필요합니다.
+`build*`와 `.vscode`는 Git 제외 대상입니다. 새 체크아웃에서는
+[VS Code 설정 예제](../tools/vscode/README.md)를 `.vscode/`에 복사한 뒤 firmware 빌드와
+UART/STATUS/TX/Tracking host configure 작업을 실행합니다.
+모듈 include는 `"protocol/frame_parser.h"`처럼 src 기준으로 작성하고,
+CMake가 `fcc_app/src`를 include root로 전달합니다. 하위 폴더를 각각 includePath에 나열하지 않습니다.
 실제 컴파일 실패는 IntelliSense 설정으로 해결하지 않고 별도로 확인합니다.
 
 

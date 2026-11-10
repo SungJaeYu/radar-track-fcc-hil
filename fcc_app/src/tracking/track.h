@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "kalman_cv.h"
+#include "tracking/kalman_cv.h"
 
 typedef enum {
     TRACK_EMPTY,

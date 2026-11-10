@@ -258,3 +258,17 @@ TX 인코딩·실제 송신과 실보드 검증은 이번 검증 범위에 포�
 TX host는 실제 `uart_tx.c` 워커를 동기 실행하고 UART 출력 바이트를 수집합니다.
 빈 큐에서 실제 대기할 지점에 테스트를 종료하며 RTOS 스케줄링·동시성·물리 송신은 검증하지 않습니다.
 STATUS에서 TX로 제출하는 호출부는 아직 연결되지 않았습니다.
+
+## 2026-11-10 폴더 분리 검증
+
+`fcc_app/src`를 transport/protocol/application/tracking/common으로 분리했습니다.
+함수 본문·타입·프로토콜 값은 유지하고 include, CMake 소스, Python C 래퍼 경로만 조정했습니다.
+
+- 이동 전후 동일 검증 통과: RX 20, STATUS 5, TX 4, Tracking CTest 1 suite(내부 13 사례).
+- Python 전체: `82 passed, 9 subtests passed` (이동 전후).
+- STM32F746G-DISCO 펌웨어 빌드 성공. 재구성 시 Device Tree의
+  `memory-placeholder@90000000`/`memory@90000000` 주소 중복 경고가 출력됨.
+- firmware와 네 host suite의 compile database를 갱신하고 소스 파일 존재·src include root 확인.
+- 로컬 VS Code 설정을 갱신하고 `tools/vscode/`에 같은 설정의 예제를 저장.
+  JSON·경로 검증을 수행했으며 VS Code 화면의 진단 표시는 별도 확인하지 않음.
+- flash·실보드 UART/GUI HIL은 이번 폴더 분리 작업에서 수행하지 않음.

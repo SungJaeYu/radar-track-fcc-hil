@@ -6,11 +6,11 @@
 
 #include <string.h>
 
-#include "ring_buffer.h"
-#include "frame_parser.h"
-#include "uart_rx.h"
-#include "frame_handler.h"
-#include "rx_frame_processor.h"
+#include "common/ring_buffer.h"
+#include "protocol/frame_parser.h"
+#include "transport/uart_rx.h"
+#include "application/frame_handler.h"
+#include "transport/rx_frame_processor.h"
 
 // Set UART device
 static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));

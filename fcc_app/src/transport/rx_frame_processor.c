@@ -3,9 +3,9 @@
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/atomic.h>
 
-#include "rx_frame_processor.h"
-#include "frame_parser.h"
-#include "frame_handler.h"
+#include "transport/rx_frame_processor.h"
+#include "protocol/frame_parser.h"
+#include "application/frame_handler.h"
 
 #define FRAME_RX_TIMEOUT_MS 1000
 

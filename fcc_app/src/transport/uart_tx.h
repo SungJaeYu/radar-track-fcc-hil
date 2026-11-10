@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "protocol_frame.h"
+#include "protocol/protocol_frame.h"
 
 struct send_frame {
     struct protocol_frame frame;

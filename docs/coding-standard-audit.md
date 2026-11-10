@@ -2,7 +2,9 @@
 
 2026-11-08 기준 `fcc_app/src`의 C·헤더 27개를 [코딩 스탠다드](coding-standard.md)와 비교한 수정 목록입니다.
 펌웨어는 수정하지 않았습니다. 테스트 소스·Python/GUI 전체의 스타일 검토는 이 목록의 범위가 아닙니다.
-아래 위치는 파일명과 함수/심볼 기준입니다. 단순 표기 정리와 계약·동작 변경을 분리해서 적용합니다.
+2026-11-10 폴더 분리 후에도 아래 위치는 파일명과 함수/심볼 기준입니다.
+현재 소속은 transport(UART·RX processor), protocol(parser·frame·message),
+application(handler), tracking(track·filter·gating·angle), common(CRC·ring)입니다. 단순 표기 정리와 계약·동작 변경을 분리해서 적용합니다.
 
 ## 1. 오류 반환·직접 의존성 — 우선 적용
 

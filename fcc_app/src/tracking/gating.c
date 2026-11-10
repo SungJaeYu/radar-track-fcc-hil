@@ -1,5 +1,5 @@
-#include "gating.h"
-#include "angle_utils.h"
+#include "tracking/gating.h"
+#include "tracking/angle_utils.h"
 
 #include <math.h>
 

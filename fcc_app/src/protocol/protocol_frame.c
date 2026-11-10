@@ -2,8 +2,8 @@
 #include <errno.h>
 #include <string.h>
 
-#include "protocol_frame.h"
-#include "crc16.h"
+#include "protocol/protocol_frame.h"
+#include "common/crc16.h"
 
 bool protocol_frame_is_valid(const struct protocol_frame *p_frame)
 {

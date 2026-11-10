@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20.0)
 project(test_uart_tx C)
 enable_testing()
-add_executable(uart_tx_tests src/main.c ../../src/protocol_frame.c
-    ../../src/crc16.c ../../src/frame_parser.c)
+add_executable(uart_tx_tests src/main.c ../../src/protocol/protocol_frame.c
+    ../../src/common/crc16.c ../../src/protocol/frame_parser.c)
 target_include_directories(uart_tx_tests PRIVATE include ../../src)
 target_compile_features(uart_tx_tests PRIVATE c_std_11)
 target_compile_options(uart_tx_tests PRIVATE -Wall -Wextra -Werror -UNDEBUG)

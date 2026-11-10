@@ -1,4 +1,4 @@
-#include "ring_buffer.h"
+#include "common/ring_buffer.h"
 
 void ring_init(struct ring_buffer *p_rb) {
     p_rb->head = 0;

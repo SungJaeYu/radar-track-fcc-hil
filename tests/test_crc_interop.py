@@ -32,8 +32,8 @@ def parser_lib(tmp_path_factory):
     folder = tmp_path_factory.mktemp('crc-parser')
     wrapper = folder / 'wrapper.c'
     wrapper.write_text('''
-#include "frame_parser.h"
-#include "crc16.h"
+#include "protocol/frame_parser.h"
+#include "common/crc16.h"
 #include <string.h>
 int encode_test(unsigned char type, const unsigned char *p_data,
                 unsigned char length, unsigned char *p_out, size_t capacity,
@@ -61,8 +61,8 @@ int crc_check_vector(void) {
     sdk_flags = ['-isysroot', str(sdk)] if sdk.exists() else []
     subprocess.run([str(compiler), *sdk_flags, '-std=c11', '-Wall', '-Wextra', '-Werror',
                     '-shared', '-fPIC', '-I', str(src), str(wrapper),
-                    str(src / 'frame_parser.c'), str(src / 'protocol_frame.c'),
-                    str(src / 'crc16.c'), '-o', str(library)], check=True)
+                    str(src / 'protocol/frame_parser.c'), str(src / 'protocol/protocol_frame.c'),
+                    str(src / 'common/crc16.c'), '-o', str(library)], check=True)
     lib = ctypes.CDLL(str(library))
     lib.reset_parser.restype = None
     lib.feed_byte.argtypes = [ctypes.c_ubyte]

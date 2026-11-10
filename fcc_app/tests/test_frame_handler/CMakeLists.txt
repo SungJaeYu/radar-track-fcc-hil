@@ -3,9 +3,9 @@ project(test_frame_handler C)
 enable_testing()
 
 add_executable(frame_handler_tests src/main.c
-    ../../src/track.c ../../src/kalman_cv.c ../../src/angle_utils.c
-    ../../src/gating.c ../../src/radar_message.c
-    ../../src/protocol_frame.c ../../src/crc16.c)
+    ../../src/tracking/track.c ../../src/tracking/kalman_cv.c ../../src/tracking/angle_utils.c
+    ../../src/tracking/gating.c ../../src/protocol/radar_message.c
+    ../../src/protocol/protocol_frame.c ../../src/common/crc16.c)
 target_include_directories(frame_handler_tests PRIVATE include ../../src)
 target_compile_features(frame_handler_tests PRIVATE c_std_11)
 target_compile_options(frame_handler_tests PRIVATE -Wall -Wextra -Werror -UNDEBUG)

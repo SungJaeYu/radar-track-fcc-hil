@@ -1,4 +1,4 @@
-#include "frame_parser.h"
+#include "protocol/frame_parser.h"
 
 static bool frame_crc_is_valid(const struct frame_parser *p_parser);
 

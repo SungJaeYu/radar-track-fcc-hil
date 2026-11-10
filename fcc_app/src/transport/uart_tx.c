@@ -6,7 +6,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "uart_tx.h"
+#include "transport/uart_tx.h"
 
 static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 

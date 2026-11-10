@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "track.h"
-#include "protocol_frame.h"
+#include "tracking/track.h"
+#include "protocol/protocol_frame.h"
 
 struct frame_handler {
     struct track track;

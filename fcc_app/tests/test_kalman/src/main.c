@@ -2,11 +2,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "angle_utils.h"
-#include "gating.h"
-#include "kalman_cv.h"
-#include "radar_message.h"
-#include "track.h"
+#include "tracking/angle_utils.h"
+#include "tracking/gating.h"
+#include "tracking/kalman_cv.h"
+#include "protocol/radar_message.h"
+#include "tracking/track.h"
 
 #ifdef TRACK_TEST_HOST
 #include <stdio.h>
