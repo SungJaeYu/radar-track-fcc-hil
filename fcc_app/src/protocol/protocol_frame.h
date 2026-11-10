@@ -11,12 +11,15 @@
 
 #define MAX_PAYLOAD 32
 
+// Existing values remain wire-compatible. STATUS_REPORT is reserved for a future response.
 typedef enum {
-    FRAME_TYPE_INIT       = 0x01,
-    FRAME_TYPE_RADAR_MEAS = 0x02,
-    FRAME_TYPE_STATUS     = 0x03,
-    FRAME_TYPE_COMMAND    = 0x04,
-    FRAME_TYPE_RESET      = 0x05,
+    FRAME_TYPE_INIT           = 0x01,
+    FRAME_TYPE_MEAS_REPORT    = 0x02,
+    FRAME_TYPE_STATUS_REQUEST = 0x03,
+    FRAME_TYPE_COMMAND        = 0x04,
+    FRAME_TYPE_RESET          = 0x05,
+    // Payload format and response transmission are not implemented yet.
+    FRAME_TYPE_STATUS_REPORT  = 0x06,
 } FrameType;
 
 // In-memory frame representation, not a packed wire structure.

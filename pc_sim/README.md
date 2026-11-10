@@ -124,3 +124,20 @@ python pc_sim/small_byte_test.py status --type 3 --port PORT
 payload 내용은 현재 무시되며 길이는 1..32바이트여야 합니다.
 보드는 ST-Link 콘솔에 CRC·길이 오류·부분 프레임 timeout·큐 드롭 누적값을 출력합니다.
 USART6의 STATUS 응답 프레임·PC 디코더는 아직 없으므로 송신 성공을 응답 수신으로 해석하지 않습니다.
+
+## TYPE 요청·보고 구분
+
+| 값 | 공통 상수 | 역할 |
+| --- | --- | --- |
+| 0x01 | `FRAME_TYPE_INIT` | FCC 추적 초기화 |
+| 0x02 | `FRAME_TYPE_MEAS_REPORT` | 레이더 시뮬레이터 → FCC 측정 보고 |
+| 0x03 | `FRAME_TYPE_STATUS_REQUEST` | PC 진단 도구 → FCC 상태 조회 |
+| 0x04 | `FRAME_TYPE_COMMAND` | 명령 예약, 동작 미구현 |
+| 0x05 | `FRAME_TYPE_RESET` | FCC 추적 리셋 |
+| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고 예약, payload·송수신 처리 미구현 |
+
+기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
+`protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는
+추가하지 않습니다. STATUS_REQUEST는 여전히 콘솔 통계 출력만 수행합니다.
+기존 보드 로그 `TYPE_MEAS`/`TYPE_STATUS`는 유지하며, STATUS_REPORT 응답을 뜻하지 않습니다.
+`small_byte_test.py`의 선택지는 구현된 수신 경로 1~5로 유지합니다.

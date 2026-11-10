@@ -30,7 +30,7 @@
 ```
 
 LEN은 payload 길이 1..32바이트이고 CRC 범위는 LEN·TYPE·payload입니다.
-FRAME_TYPE_RADAR_MEAS=2의 payload는 `>IHi` 10바이트입니다.
+FRAME_TYPE_MEAS_REPORT=2의 payload는 `>IHi` 10바이트입니다.
 
 | 필드 | 크기 | 의미 |
 |---|---|---|

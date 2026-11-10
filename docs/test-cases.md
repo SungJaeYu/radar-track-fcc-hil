@@ -13,13 +13,13 @@
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
 | GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 5 | offscreen Qt, serial 모사 |
-| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 26 | Python + 실제 C 파서 host 컴파일 |
+| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 28 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 5 | host C, 통계 조회·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 20 | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **82개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **84개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
 UART C는 각 함수를 CTest에 따로 등록하므로 20개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
@@ -272,3 +272,14 @@ STATUS에서 TX로 제출하는 호출부는 아직 연결되지 않았습니다
 - 로컬 VS Code 설정을 갱신하고 `tools/vscode/`에 같은 설정의 예제를 저장.
   JSON·경로 검증을 수행했으며 VS Code 화면의 진단 표시는 별도 확인하지 않음.
 - flash·실보드 UART/GUI HIL은 이번 폴더 분리 작업에서 수행하지 않음.
+
+
+## 2026-11-10 enum 및 요청·보고 TYPE 정리
+
+- enum 접두사 통일 후 MEAS_REPORT(0x02), STATUS_REQUEST(0x03)로 의미를 명시.
+- STATUS_REPORT(0x06)는 예약 정의만 추가. 응답 payload·송신·GUI 수신 구현은 별도 작업.
+- `test_frame_type_values_match_firmware`: C/Python의 여섯 TYPE 상수 값 일치 검증.
+- `test_reserved_status_report_framing`: 임시 payload로 예약 TYPE의 framing/CRC 파싱만 검증.
+  실제 STATUS 응답 내용이나 처리 성공을 검증하는 테스트는 아님.
+- 최종 Python 84개 + subtest 9개, RX 20개, STATUS 5개, TX 4개,
+  Tracking CTest 1 suite 통과. STM32 펌웨어 빌드 통과. flash/실보드 시험 미실시.

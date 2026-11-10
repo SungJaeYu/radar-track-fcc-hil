@@ -3,8 +3,13 @@ import math
 import struct
 
 STX = 0x7E
-TYPE_INIT = 0x01
-TYPE_RADAR_MEAS = 0x02
+FRAME_TYPE_INIT = 0x01
+FRAME_TYPE_MEAS_REPORT = 0x02
+FRAME_TYPE_STATUS_REQUEST = 0x03
+FRAME_TYPE_COMMAND = 0x04
+FRAME_TYPE_RESET = 0x05
+# Reserved: STATUS_REPORT payload and receive handling are not implemented yet.
+FRAME_TYPE_STATUS_REPORT = 0x06
 
 
 def crc16(data):
@@ -27,7 +32,7 @@ def encode_frame(frame_type, payload):
 
 def build_init_frame():
     """새 측정 시퀀스 시작. 현재 파서는 빈 payload를 거부하므로 1바이트를 넣는다."""
-    return encode_frame(TYPE_INIT, b"\x00")
+    return encode_frame(FRAME_TYPE_INIT, b"\x00")
 
 
 def build_radar_frame(timestamp_ms, range_m, azimuth_sc):
@@ -39,7 +44,7 @@ def build_radar_frame(timestamp_ms, range_m, azimuth_sc):
         azimuth_sc
     )
 
-    return encode_frame(TYPE_RADAR_MEAS, payload)
+    return encode_frame(FRAME_TYPE_MEAS_REPORT, payload)
 
 
 def build_radar_frame_from_radians(timestamp_ms, range_m, azimuth_rad):

@@ -167,6 +167,10 @@ pc_sim/
 tests/                Python 프로토콜·송신기·시나리오 테스트
 ```
 
+측정 TYPE은 `FRAME_TYPE_MEAS_REPORT`(0x02), 상태 요청은 `FRAME_TYPE_STATUS_REQUEST`(0x03)입니다.
+`FRAME_TYPE_STATUS_REPORT`(0x06)는 응답용 예약 값이며 아직 송신하지 않습니다.
+[전체 TYPE 정의와 PC 역할](pc_sim/README.md)을 참고하세요.
+
 ## 구현 범위
 
 | 영역 | 구현된 기능 | 미구현·제한 |
@@ -278,6 +282,8 @@ TX 큐·스레드·인코딩·polling 송신은 구현했습니다. STATUS 제�
 설정 분리와 부분 프레임 timeout의 실제 보드 검증도 남아 있습니다.
 
 ## 검증 현황
+
+2026-11-10: enum·TYPE 정리 후 Python 84개 + subtest 9개, RX/STATUS/TX/Tracking host 테스트와 펌웨어 빌드 통과. STATUS_REPORT는 예약 정의이며 실보드 재시험은 하지 않았습니다.
 
 2026-11-08: RX 20개·STATUS 5개·TX 4개·CRC/인코더 상호운용 26개 통과.
 이번 펌웨어 증분 빌드는 경고 없이 통과했습니다. TX 실보드 시험은 아직입니다.

@@ -103,7 +103,7 @@ static void test_preserves_partial_parser_and_drops_new_input(void)
     inject_during_submit = true;
     rx_recover_overflow();
     assert(submitted == 1 && !inject_during_submit);
-    assert(last_frame.frame.type == FRAME_TYPE_RADAR_MEAS && last_frame.frame.payload_length == 10);
+    assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT && last_frame.frame.payload_length == 10);
     assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert_recovered();
 }
@@ -197,7 +197,7 @@ static void test_processor_copies_frame_and_reset_preserves_drops(void)
         rx_frame_processor_feed(radar_frame[i]);
     }
     assert(submitted == 1 && submit_attempts == 1);
-    assert(last_frame.frame.type == FRAME_TYPE_RADAR_MEAS && last_frame.frame.payload_length == 10);
+    assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT && last_frame.frame.payload_length == 10);
     assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert(last_frame.received_at_ms == k_uptime_get());
     assert(queue_drops_count == 0);
@@ -230,7 +230,7 @@ static void test_queue_full_counts_drop_and_recovers(void)
         rx_frame_processor_feed(radar_frame[i]);
     }
     assert(submit_attempts == 2 && submitted == 1 && queue_drops_count == 1);
-    assert(last_frame.frame.type == FRAME_TYPE_RADAR_MEAS);
+    assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT);
 }
 
 static void test_drain_queue_full_still_finishes_recovery(void)
@@ -290,7 +290,7 @@ static void test_timeout_recovers_next_valid_frame(void)
     rx_frame_processor_check_timeout(test_now_ms);
     assert(frame_timeout_count == 1 && submit_attempts == 0);
     feed_bytes(radar_frame, sizeof(radar_frame));
-    assert(submitted == 1 && last_frame.frame.type == FRAME_TYPE_RADAR_MEAS);
+    assert(submitted == 1 && last_frame.frame.type == FRAME_TYPE_MEAS_REPORT);
     assert(last_frame.frame.payload_length == 10);
     assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert(last_frame.received_at_ms == test_now_ms);
@@ -323,7 +323,7 @@ static void test_timeout_refreshes_on_each_byte(void)
         assert(frame_timeout_count == 0);
     }
     assert(test_now_ms - started_ms > FRAME_RX_TIMEOUT_MS);
-    assert(submitted == 1 && last_frame.frame.type == FRAME_TYPE_RADAR_MEAS);
+    assert(submitted == 1 && last_frame.frame.type == FRAME_TYPE_MEAS_REPORT);
 }
 
 static void test_explicit_reset_cancels_partial_timeout(void)

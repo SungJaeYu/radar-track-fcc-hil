@@ -103,3 +103,5 @@ Qt 실행 흐름은 [공식 QThread 문서](https://doc.qt.io/qtforpython-6/PySi
 
 펌웨어 STATUS는 현재 ST-Link 통계 로그 출력까지 구현되어 있습니다.
 GUI의 STATUS 요청 버튼과 USART6 응답 디코딩은 아직 없습니다.
+
+측정 생성은 `FRAME_TYPE_MEAS_REPORT`(0x02)를 사용합니다. `FRAME_TYPE_STATUS_REPORT`(0x06)는 예약 값이며 GUI 응답 처리는 아직 없습니다.

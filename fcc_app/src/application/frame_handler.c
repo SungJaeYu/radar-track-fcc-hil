@@ -86,13 +86,13 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
         frame_handler_init(p_handler);
         break;
 
-    case FRAME_TYPE_RADAR_MEAS: {
+    case FRAME_TYPE_MEAS_REPORT: {
         printk("TYPE_MEAS\n");
         handle_radar_measurement(p_handler, p_r_frame);
         break;
     }
     // Diagnostics are currently console-only; no UART status response is submitted.
-    case FRAME_TYPE_STATUS:
+    case FRAME_TYPE_STATUS_REQUEST:
         printk("TYPE_STATUS\n");
         struct rx_frame_stats stats;
         rx_frame_processor_get_stats(&stats);

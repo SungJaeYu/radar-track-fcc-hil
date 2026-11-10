@@ -7,6 +7,7 @@ import shutil
 import subprocess
 
 import pytest
+from pc_sim import protocol
 from pc_sim.protocol import crc16, encode_frame, build_init_frame, build_radar_frame
 
 
@@ -41,6 +42,12 @@ int encode_test(unsigned char type, const unsigned char *p_data,
     struct protocol_frame frame = {.type = type, .payload_length = length};
     if (length <= MAX_PAYLOAD && p_data != NULL) memcpy(frame.payload, p_data, length);
     return protocol_frame_encode(null_frame ? NULL : &frame, p_out, capacity);
+}
+int frame_type_constant(int index) {
+    const int types[] = {FRAME_TYPE_INIT, FRAME_TYPE_MEAS_REPORT,
+        FRAME_TYPE_STATUS_REQUEST, FRAME_TYPE_COMMAND, FRAME_TYPE_RESET,
+        FRAME_TYPE_STATUS_REPORT};
+    return types[index];
 }
 static struct frame_parser parser;
 void reset_parser(void) { parser_init(&parser); }
@@ -159,3 +166,20 @@ def test_encoder_capacity_boundary(parser_lib):
     assert parser_lib.encode_test(3, payload, 32, output, 37, 0) == 37
     assert bytes(output[:37]) == encode_frame(3, payload)
     assert output[37] == 0xa5
+
+
+def test_frame_type_values_match_firmware(parser_lib):
+    names = ('FRAME_TYPE_INIT', 'FRAME_TYPE_MEAS_REPORT', 'FRAME_TYPE_STATUS_REQUEST',
+             'FRAME_TYPE_COMMAND', 'FRAME_TYPE_RESET', 'FRAME_TYPE_STATUS_REPORT')
+    parser_lib.frame_type_constant.argtypes = [ctypes.c_int]
+    parser_lib.frame_type_constant.restype = ctypes.c_int
+    for index, name in enumerate(names):
+        assert parser_lib.frame_type_constant(index) == getattr(protocol, name) == index + 1
+
+
+def test_reserved_status_report_framing(parser_lib):
+    # Synthetic payload only: no STATUS_REPORT payload schema is defined yet.
+    frame = encode_frame(protocol.FRAME_TYPE_STATUS_REPORT, b'\x00')
+    parser_lib.reset_parser()
+    assert feed(parser_lib, frame)[-1] == 1
+    assert parser_lib.frame_type() == protocol.FRAME_TYPE_STATUS_REPORT

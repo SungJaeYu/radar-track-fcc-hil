@@ -30,7 +30,7 @@ static void test_tx_init(void)
 static void test_tx_invalid_submit(void)
 {
     reset_fixture();
-    struct send_frame request = {.frame = {.type = FRAME_TYPE_STATUS}};
+    struct send_frame request = {.frame = {.type = FRAME_TYPE_STATUS_REQUEST}};
     assert(uart_tx_submit(NULL) == -EINVAL);
     const uint8_t lengths[] = {0, MAX_PAYLOAD + 1, UINT8_MAX};
     for (size_t i = 0; i < sizeof(lengths); ++i) {
@@ -45,7 +45,7 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
     reset_fixture();
     assert(uart_tx_init() == 0);
     struct send_frame request = {
-        .frame = {.type = FRAME_TYPE_STATUS, .payload_length = 1},
+        .frame = {.type = FRAME_TYPE_STATUS_REQUEST, .payload_length = 1},
     };
     for (unsigned i = 0; i < 8; ++i) {
         request.frame.payload[0] = (uint8_t)i;
@@ -61,7 +61,7 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
     for (size_t i = 0; i < sent_count; ++i) {
         ParserResult result = parser_feed(&parser, sent[i]);
         if (result == PARSER_RESULT_FRAME_READY) {
-            assert(parser.frame.type == FRAME_TYPE_STATUS && parser.frame.payload_length == 1);
+            assert(parser.frame.type == FRAME_TYPE_STATUS_REQUEST && parser.frame.payload_length == 1);
             assert(parser.frame.payload[0] == frames++);
         } else {
             assert(result == PARSER_RESULT_INCOMPLETE);

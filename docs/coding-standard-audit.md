@@ -39,7 +39,7 @@ application(handler), tracking(track·filter·gating·angle), common(CRC·ring)�
 enum 타입 `FrameType`, `ParserState`, `ParserResult`, `TrackState`, `RxOverflowPolicy`는 이미 PascalCase입니다.
 2026-11-10 열거자 접두사 적용 완료. 아래 화살표 왼쪽 이름은 변경 이력이며 숫자 값·로그 문자열은 유지했습니다.
 
-- [x] `protocol_frame.h`: `TYPE_*` → `FRAME_TYPE_*` (예: `FRAME_TYPE_RADAR_MEAS`). 숫자 0x01~0x05 보존.
+- [x] `protocol_frame.h`: `TYPE_*` → `FRAME_TYPE_*` (예: `FRAME_TYPE_MEAS_REPORT`). 숫자 0x01~0x05 보존.
 - [x] `frame_parser.h`: `WAIT_*`, `READ_PAYLOAD` → `PARSER_STATE_WAIT_*`, `PARSER_STATE_READ_PAYLOAD`.
 - [x] `frame_parser.h`: `PARSER_*` 결과 → `PARSER_RESULT_*`.
 - [x] `track.h`: `TRACK_*` 상태 → `TRACK_STATE_*`. `TRACK_CONFIRM_HITS` 같은 설정 상수는 별개.
