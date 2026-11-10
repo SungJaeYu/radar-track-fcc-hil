@@ -12,11 +12,11 @@
 #define MAX_PAYLOAD 32
 
 typedef enum {
-    TYPE_INIT       = 0x01,
-    TYPE_RADAR_MEAS = 0x02,
-    TYPE_STATUS     = 0x03,
-    TYPE_COMMAND    = 0x04,
-    TYPE_RESET      = 0x05,
+    FRAME_TYPE_INIT       = 0x01,
+    FRAME_TYPE_RADAR_MEAS = 0x02,
+    FRAME_TYPE_STATUS     = 0x03,
+    FRAME_TYPE_COMMAND    = 0x04,
+    FRAME_TYPE_RESET      = 0x05,
 } FrameType;
 
 // In-memory frame representation, not a packed wire structure.

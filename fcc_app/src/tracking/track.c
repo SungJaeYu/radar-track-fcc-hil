@@ -6,7 +6,7 @@
 
 void track_init(struct track *p_track)
 {
-    p_track->state = TRACK_EMPTY;
+    p_track->state = TRACK_STATE_EMPTY;
     p_track->hit_count = 0U;
     p_track->miss_count = 0U;
     p_track->last_measurement_time_ms = 0U;
@@ -40,7 +40,7 @@ void track_start(struct track *p_track, float initial_range, float initial_azimu
         0.00121847f      // R: measurement noise variance: std dev = 2 deg, R = (2 * PI / 180)^2 [rad^2]
     );
 
-    p_track->state = TRACK_TENTATIVE;
+    p_track->state = TRACK_STATE_TENTATIVE;
     p_track->hit_count = 1U;
     p_track->miss_count = 0U;
 
@@ -49,13 +49,13 @@ void track_start(struct track *p_track, float initial_range, float initial_azimu
 
 bool track_predict(struct track *p_track, uint32_t timestamp_ms)
 {
-    if (p_track->state == TRACK_EMPTY) {
+    if (p_track->state == TRACK_STATE_EMPTY) {
         return false;
     }
 
     // Discard a lost track before checking its old timestamp.
     // The caller starts a new track on the next measurement.
-    if (p_track->state == TRACK_LOST) {
+    if (p_track->state == TRACK_STATE_LOST) {
         track_init(p_track);
         return false;
     }
@@ -94,7 +94,7 @@ bool track_predict(struct track *p_track, uint32_t timestamp_ms)
 
 void track_hit(struct track *p_track, float measured_range, float measured_azimuth_rad)
 {
-    if (p_track->state == TRACK_EMPTY || p_track->state == TRACK_LOST) {
+    if (p_track->state == TRACK_STATE_EMPTY || p_track->state == TRACK_STATE_LOST) {
         return;
     }
 
@@ -108,15 +108,15 @@ void track_hit(struct track *p_track, float measured_range, float measured_azimu
 
     switch (p_track->state)
     {
-    case TRACK_TENTATIVE:
+    case TRACK_STATE_TENTATIVE:
         if (p_track->hit_count >= TRACK_CONFIRM_HITS) {
-            p_track->state = TRACK_CONFIRMED;
+            p_track->state = TRACK_STATE_CONFIRMED;
         }
         break;
-    case TRACK_CONFIRMED:
+    case TRACK_STATE_CONFIRMED:
         break;
-    case TRACK_COASTING:
-        p_track->state = TRACK_CONFIRMED;
+    case TRACK_STATE_COASTING:
+        p_track->state = TRACK_STATE_CONFIRMED;
         break;
     default:
         break;
@@ -125,11 +125,11 @@ void track_hit(struct track *p_track, float measured_range, float measured_azimu
 
 void track_miss(struct track *p_track)
 {
-    if (p_track->state == TRACK_EMPTY || p_track->state == TRACK_LOST) {
+    if (p_track->state == TRACK_STATE_EMPTY || p_track->state == TRACK_STATE_LOST) {
         return;
     }
 
-    if (p_track->state == TRACK_TENTATIVE) {
+    if (p_track->state == TRACK_STATE_TENTATIVE) {
         track_init(p_track);
         return;
     }
@@ -139,11 +139,11 @@ void track_miss(struct track *p_track)
         p_track->miss_count++;
     }
 
-    if (p_track->state == TRACK_CONFIRMED) {
-        p_track->state = TRACK_COASTING;
+    if (p_track->state == TRACK_STATE_CONFIRMED) {
+        p_track->state = TRACK_STATE_COASTING;
     }
     
     if (p_track->miss_count >= TRACK_LOST_MISSES) {
-        p_track->state = TRACK_LOST;
+        p_track->state = TRACK_STATE_LOST;
     }
 }

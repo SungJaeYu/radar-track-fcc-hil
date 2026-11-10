@@ -43,7 +43,7 @@ static void reset_fixture(struct frame_handler *p_handler)
 static void request_status(struct frame_handler *p_handler)
 {
     const struct received_frame frame = {
-        .frame = {.type = TYPE_STATUS, .payload_length = 1, .payload = {0}},
+        .frame = {.type = FRAME_TYPE_STATUS, .payload_length = 1, .payload = {0}},
         .received_at_ms = 900,
     };
     handle_frame(p_handler, &frame);
@@ -108,7 +108,7 @@ static void test_status_does_not_refresh_timeout(void)
     frame_handler_check_timeout(&handler, 1099);
     assert(handler.timeout_armed);
     frame_handler_check_timeout(&handler, 1100);
-    assert(!handler.timeout_armed && handler.track.state == TRACK_EMPTY);
+    assert(!handler.timeout_armed && handler.track.state == TRACK_STATE_EMPTY);
     assert(strstr(output, "Radar measurement timeout: track cleared\n") != NULL);
 }
 

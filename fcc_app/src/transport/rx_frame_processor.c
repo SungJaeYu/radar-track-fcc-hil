@@ -25,7 +25,7 @@ static void submit_parsed_frame(void);
 
 void rx_frame_processor_reset(void)
 {
-    // WAIT_STX disables timeout checks until another byte updates the processing time.
+    // PARSER_STATE_WAIT_STX disables timeout checks until another byte updates the processing time.
     // Preserve cumulative diagnostics and do not treat this as a UART FIFO reset.
     parser_init(&parser);
 }
@@ -41,7 +41,7 @@ void rx_frame_processor_feed(uint8_t byte)
 
 void rx_frame_processor_check_timeout(int64_t now_ms)
 {
-    if (parser.state == WAIT_STX) {
+    if (parser.state == PARSER_STATE_WAIT_STX) {
         return;
     }
     
@@ -64,16 +64,16 @@ void rx_frame_processor_get_stats(struct rx_frame_stats *p_stats)
 static void process_parser_result(ParserResult result)
 {
     switch(result) {
-        case PARSER_FRAME_READY:
+        case PARSER_RESULT_FRAME_READY:
             submit_parsed_frame();
             break;
-        case PARSER_CRC_ERROR:
+        case PARSER_RESULT_CRC_ERROR:
             atomic_inc(&crc_error_count);
             break;
-        case PARSER_LENGTH_ERROR:
+        case PARSER_RESULT_LENGTH_ERROR:
             atomic_inc(&length_error_count);
             break;
-        case PARSER_INCOMPLETE:
+        case PARSER_RESULT_INCOMPLETE:
         default:
             // Do nothing
             break;

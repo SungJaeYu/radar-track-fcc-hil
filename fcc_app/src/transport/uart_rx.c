@@ -171,10 +171,10 @@ static void rx_recover_overflow(void)
 {
     // Call from the RX thread with interrupts enabled and the overflow flag set.
     switch (RX_OVERFLOW_POLICY) {
-        case RX_OVERFLOW_DISCARD_ALL:
+        case RX_OVERFLOW_POLICY_DISCARD_ALL:
             rx_recover_discard_all();
             break;
-        case RX_OVERFLOW_DRAIN_BUFFER:
+        case RX_OVERFLOW_POLICY_DRAIN_BUFFER:
             rx_recover_drain_buffer();
             break;
         default:

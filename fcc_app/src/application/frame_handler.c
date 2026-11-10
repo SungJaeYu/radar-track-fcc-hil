@@ -81,18 +81,18 @@ void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms
 void handle_frame(struct frame_handler *p_handler, const struct received_frame *p_r_frame)
 {
     switch (p_r_frame->frame.type) {
-    case TYPE_INIT:
+    case FRAME_TYPE_INIT:
         printk("TYPE_INIT\n");
         frame_handler_init(p_handler);
         break;
 
-    case TYPE_RADAR_MEAS: {
+    case FRAME_TYPE_RADAR_MEAS: {
         printk("TYPE_MEAS\n");
         handle_radar_measurement(p_handler, p_r_frame);
         break;
     }
     // Diagnostics are currently console-only; no UART status response is submitted.
-    case TYPE_STATUS:
+    case FRAME_TYPE_STATUS:
         printk("TYPE_STATUS\n");
         struct rx_frame_stats stats;
         rx_frame_processor_get_stats(&stats);
@@ -104,11 +104,11 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
         break;
 
     // Placeholder: no command payload interpretation or control action yet.
-    case TYPE_COMMAND:
+    case FRAME_TYPE_COMMAND:
         printk("TYPE_COMMAND\n");
         break;
 
-    case TYPE_RESET:
+    case FRAME_TYPE_RESET:
         printk("TYPE RESET\n");
         frame_handler_reset(p_handler);
         break;
@@ -149,7 +149,7 @@ static void handle_radar_measurement(struct frame_handler *p_handler, const stru
 
 static void update_track_from_measurement(struct track *p_track, const struct radar_measurement *p_measurement)
 {
-    if (p_track->state == TRACK_EMPTY) {            
+    if (p_track->state == TRACK_STATE_EMPTY) {
         track_start(p_track, (float)p_measurement->range_m, (float)p_measurement->azimuth_rad, p_measurement->timestamp_ms);
         
         printk("Filters initialized at range: %.2f\n", (double)p_measurement->range_m);

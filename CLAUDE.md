@@ -29,7 +29,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - STATUS는 RX 오류 통계의 atomic 복사본을 로그로 출력합니다. UART 응답은 아직 없습니다.
 - TX 초기화·복사 큐·워커·인코딩·polling 송신은 구현되어 있습니다. STATUS 제출과 PC 응답 수신은 아직 연결되지 않았습니다.
 - RX 링버퍼는 256바이트, 실제 저장 용량은 255바이트입니다. 인덱스는 `uint8_t`이므로 더 큰 버퍼는 타입 변경이 필요합니다.
-- `uart_rx.h`의 `RX_OVERFLOW_POLICY` 기본값은 `RX_OVERFLOW_DRAIN_BUFFER`입니다. Kconfig는 아직 없습니다.
+- `uart_rx.h`의 `RX_OVERFLOW_POLICY` 기본값은 `RX_OVERFLOW_POLICY_DRAIN_BUFFER`입니다. Kconfig는 아직 없습니다.
 - overflow 복구 중 새 입력은 버리고 저장된 바이트로 완성 가능한 프레임만 처리한 뒤 링·파서를 초기화합니다.
 - 단일 트랙, CV Kalman, 게이팅, hit/miss 상태 전이, 정상 측정 수신 timeout이 있습니다.
 - 다중표적 데이터 연관·이진 트랙 응답·LCD는 현재 실행 경로에 없습니다.

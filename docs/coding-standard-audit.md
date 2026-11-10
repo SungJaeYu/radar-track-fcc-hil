@@ -37,12 +37,13 @@ application(handler), tracking(track·filter·gating·angle), common(CRC·ring)�
 ### enum과 상수
 
 enum 타입 `FrameType`, `ParserState`, `ParserResult`, `TrackState`, `RxOverflowPolicy`는 이미 PascalCase입니다.
+2026-11-10 열거자 접두사 적용 완료. 아래 화살표 왼쪽 이름은 변경 이력이며 숫자 값·로그 문자열은 유지했습니다.
 
-- [ ] `protocol_frame.h`: `TYPE_*` → `FRAME_TYPE_*` (예: `FRAME_TYPE_RADAR_MEAS`). 숫자 0x01~0x05 보존.
-- [ ] `frame_parser.h`: `WAIT_*`, `READ_PAYLOAD` → `PARSER_STATE_WAIT_*`, `PARSER_STATE_READ_PAYLOAD`.
-- [ ] `frame_parser.h`: `PARSER_*` 결과 → `PARSER_RESULT_*`.
-- [ ] `track.h`: `TRACK_*` 상태 → `TRACK_STATE_*`. `TRACK_CONFIRM_HITS` 같은 설정 상수는 별개.
-- [ ] `uart_rx.h`: `RX_OVERFLOW_DISCARD_ALL/DRAIN_BUFFER` → `RX_OVERFLOW_POLICY_DISCARD_ALL/DRAIN_BUFFER`.
+- [x] `protocol_frame.h`: `TYPE_*` → `FRAME_TYPE_*` (예: `FRAME_TYPE_RADAR_MEAS`). 숫자 0x01~0x05 보존.
+- [x] `frame_parser.h`: `WAIT_*`, `READ_PAYLOAD` → `PARSER_STATE_WAIT_*`, `PARSER_STATE_READ_PAYLOAD`.
+- [x] `frame_parser.h`: `PARSER_*` 결과 → `PARSER_RESULT_*`.
+- [x] `track.h`: `TRACK_*` 상태 → `TRACK_STATE_*`. `TRACK_CONFIRM_HITS` 같은 설정 상수는 별개.
+- [x] `uart_rx.h`: `RX_OVERFLOW_DISCARD_ALL/DRAIN_BUFFER` → `RX_OVERFLOW_POLICY_DISCARD_ALL/DRAIN_BUFFER`.
   선택 매크로 `RX_OVERFLOW_POLICY`와 enum 값의 역할을 구분.
 - [ ] `STX`, `MAX_PAYLOAD`, `BUFFER_SIZE`, `INIT_CRC`에 모듈 접두사 적용 권장:
   `PROTOCOL_STX`, `PROTOCOL_MAX_PAYLOAD`, `RING_BUFFER_SIZE`, `CRC16_INITIAL_VALUE`.
@@ -108,7 +109,7 @@ enum 타입 `FrameType`, `ParserState`, `ParserResult`, `TrackState`, `RxOverflo
   실제 값은 RX processor가 프레임 완성·제출 시 기록한 uptime이며 ISR 바이트 도착 시각도 아님.
   `received_frame.received_at_ms`에도 같은 기준 명시.
 - [ ] `rx_frame_processor.h` timeout 주석에 마지막 byte 처리 시각 기준 1000ms, `>=` 만료,
-  WAIT_STX 제외 조건을 설명. reset이 last_byte_processed_ms를 지우지 않는 이유도 명시.
+  PARSER_STATE_WAIT_STX 제외 조건을 설명. reset이 last_byte_processed_ms를 지우지 않는 이유도 명시.
 - [ ] `gating.c/.h`: measured/predicted range·range_error는 `_m`, azimuth·azimuth_error는 `_rad`.
   `angle_utils.c/.h`: angle/a/b에 `_rad`; `track.c/.h`: initial_range/measured_range에 `_m`, dt에 `_s`.
   `frame_handler.c`: predicted/filtered range·azimuth 지역변수에도 단위 표시.

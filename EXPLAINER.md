@@ -30,7 +30,7 @@
 ```
 
 LEN은 payload 길이 1..32바이트이고 CRC 범위는 LEN·TYPE·payload입니다.
-TYPE_RADAR_MEAS=2의 payload는 `>IHi` 10바이트입니다.
+FRAME_TYPE_RADAR_MEAS=2의 payload는 `>IHi` 10바이트입니다.
 
 | 필드 | 크기 | 의미 |
 |---|---|---|
@@ -39,7 +39,7 @@ TYPE_RADAR_MEAS=2의 payload는 `>IHi` 10바이트입니다.
 | azimuth_sc | 4바이트 | signed int32 semicircle |
 
 보드 변환식은 `azimuth_rad = azimuth_sc × π / 2³¹`입니다.
-TYPE_INIT=1은 이전 트랙을 초기화합니다. payload 길이 0은 파서가 거부하므로
+FRAME_TYPE_INIT=1은 이전 트랙을 초기화합니다. payload 길이 0은 파서가 거부하므로
 수동 INIT에도 문자열 등 최소 1바이트를 넣습니다.
 두 연속 송신기는 매 실행 시 `7e 01 01 00 c8 9d` INIT 프레임을 한 번 보낸 뒤 측정을 시작합니다.
 자동 INIT의 payload는 더미 바이트 `0x00`입니다. 출력 전용 모드에서도 INIT이 먼저 표시됩니다.
@@ -65,10 +65,10 @@ ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overfl
 `rx_sem`으로 스레드에 알립니다. 플래그가 설정된 동안 ISR은 하드웨어 FIFO를 읽되 새 바이트는 저장하지 않습니다.
 파싱과 큐 제출은 IRQ 잠금 밖에서 실행되며, 실제 측정 처리는 handler 스레드가 맡습니다.
 
-현재 헤더의 `RX_OVERFLOW_POLICY`는 `RX_OVERFLOW_DRAIN_BUFFER`입니다.
+현재 헤더의 `RX_OVERFLOW_POLICY`는 `RX_OVERFLOW_POLICY_DRAIN_BUFFER`입니다.
 복구는 IRQ를 허용한 상태에서 기존 파서와 버퍼로 완성할 수 있는 프레임을 처리합니다.
 마지막에 짧게 IRQ를 잠그고 링버퍼·부분 프레임을 초기화한 뒤 overflow를 해제합니다.
-`RX_OVERFLOW_DISCARD_ALL`을 선택하면 drain 없이 바로 초기화합니다. Kconfig 선택은 아직 없습니다.
+`RX_OVERFLOW_POLICY_DISCARD_ALL`을 선택하면 drain 없이 바로 초기화합니다. Kconfig 선택은 아직 없습니다.
 복구 중 새 입력은 손실되며, 초기화는 하드웨어 FIFO를 비우거나 다음 프레임 경계 정렬을 보장하지 않습니다.
 
 ## 4. 측정과 추적

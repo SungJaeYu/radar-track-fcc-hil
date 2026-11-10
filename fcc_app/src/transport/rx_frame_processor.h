@@ -13,7 +13,7 @@ void rx_frame_processor_reset(void);
 void rx_frame_processor_feed(uint8_t byte);
 
 // Use board uptime in ms. Discard a partial frame after >= 1000 ms since the last
-// byte was processed here (not its hardware arrival). Idle WAIT_STX is not monitored.
+// byte was processed here (not its hardware arrival). Idle PARSER_STATE_WAIT_STX is not monitored.
 void rx_frame_processor_check_timeout(int64_t now_ms);
 
 

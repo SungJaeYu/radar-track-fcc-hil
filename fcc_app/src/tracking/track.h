@@ -9,11 +9,11 @@
 // EMPTY: no active track; TENTATIVE: awaiting confirmation; CONFIRMED: established.
 // COASTING: predicting after a gate miss; LOST: miss limit reached, awaiting reset.
 typedef enum {
-    TRACK_EMPTY,
-    TRACK_TENTATIVE,
-    TRACK_CONFIRMED,
-    TRACK_COASTING,
-    TRACK_LOST
+    TRACK_STATE_EMPTY,
+    TRACK_STATE_TENTATIVE,
+    TRACK_STATE_CONFIRMED,
+    TRACK_STATE_COASTING,
+    TRACK_STATE_LOST
 } TrackState;
 
 struct track {

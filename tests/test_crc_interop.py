@@ -96,14 +96,14 @@ def test_corrupted_frame_rejected_then_next_frame_accepted(parser_lib, offset):
     parser_lib.reset_parser()
     frame = bytearray(build_radar_frame(100, 1000, -1073741824))
     frame[offset] ^= 1
-    assert feed(parser_lib, frame)[-1] == 2  # PARSER_CRC_ERROR
+    assert feed(parser_lib, frame)[-1] == 2  # PARSER_RESULT_CRC_ERROR
     assert feed(parser_lib, build_init_frame())[-1] == 1
 
 
 @pytest.mark.parametrize('length', [0, 33, 255])
 def test_invalid_length_rejected_then_next_frame_accepted(parser_lib, length):
     parser_lib.reset_parser()
-    assert feed(parser_lib, bytes([0x7e, length])) == [0, 3]  # PARSER_LENGTH_ERROR
+    assert feed(parser_lib, bytes([0x7e, length])) == [0, 3]  # PARSER_RESULT_LENGTH_ERROR
     assert feed(parser_lib, build_init_frame())[-1] == 1
 
 

@@ -54,7 +54,7 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 19. 명시적 reset이 진행 중인 timeout을 취소하고 누적 카운터는 보존하는지.
 20. CRC·길이 오류·timeout·큐 드롭의 통계 조회와 reset 후 누적값 보존.
 
-현재 `RX_OVERFLOW_DRAIN_BUFFER` 설정의 동작을 검증합니다. 전체 폐기로 설정을 바꾸면
+현재 `RX_OVERFLOW_POLICY_DRAIN_BUFFER` 설정의 동작을 검증합니다. 전체 폐기로 설정을 바꾸면
 정상 프레임을 보존해야 한다는 drain 검증은 실패합니다. 두 정책을 모두 자동 선택해 빌드하는 테스트는 아닙니다.
 
 현재 `BUFFER_SIZE=256`이며 실제 저장 용량은 255바이트입니다.
@@ -64,7 +64,7 @@ WAIT_STX에서 무시되는 0으로 채운 뒤 용량 다음 바이트로 overfl
 static assertion은 fixture의 최소 크기(9)와 현재 `uint8_t` 인덱스의 최대 크기(256)를 검사합니다.
 인덱스 타입을 바꾸면 이 상한 검사도 함께 갱신해야 합니다.
 
-모든 fixture는 CRC-16 기준이며 결과 비교는 `PARSER_FRAME_READY`를 명시합니다.
+모든 fixture는 CRC-16 기준이며 결과 비교는 `PARSER_RESULT_FRAME_READY`를 명시합니다.
 
 ## 실제 코드와 모사의 경계
 

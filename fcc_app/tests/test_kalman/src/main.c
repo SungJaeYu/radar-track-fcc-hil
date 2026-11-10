@@ -162,10 +162,10 @@ TEST(test_long_gap_and_restart)
     struct track t = new_track(100);
     CHECK(track_predict(&t, 1100));
     t = new_track(100);
-    CHECK(!track_predict(&t, 1101)); CHECK(t.state == TRACK_EMPTY);
+    CHECK(!track_predict(&t, 1101)); CHECK(t.state == TRACK_STATE_EMPTY);
     CHECK(t.hit_count == 0 && t.miss_count == 0);
     track_start(&t, 2000, RAD(-30), 1200);
-    CHECK(t.state == TRACK_TENTATIVE && t.hit_count == 1);
+    CHECK(t.state == TRACK_STATE_TENTATIVE && t.hit_count == 1);
     NEAR(t.range_filter.estimate, 2000); NEAR(t.range_filter.rate, 0);
     NEAR(t.azimuth_filter.estimate, RAD(-30));
 }
@@ -173,14 +173,14 @@ TEST(test_long_gap_and_restart)
 TEST(test_confirmation_coasting_and_loss)
 {
     struct track t = new_track(0);
-    hit(&t, 100); CHECK(t.state == TRACK_TENTATIVE);
-    hit(&t, 200); CHECK(t.state == TRACK_CONFIRMED);
+    hit(&t, 100); CHECK(t.state == TRACK_STATE_TENTATIVE);
+    hit(&t, 200); CHECK(t.state == TRACK_STATE_CONFIRMED);
     CHECK(track_predict(&t, 300)); track_miss(&t);
-    CHECK(t.state == TRACK_COASTING && t.hit_count == 0 && t.miss_count == 1);
-    hit(&t, 400); CHECK(t.state == TRACK_CONFIRMED && t.miss_count == 0);
+    CHECK(t.state == TRACK_STATE_COASTING && t.hit_count == 0 && t.miss_count == 1);
+    hit(&t, 400); CHECK(t.state == TRACK_STATE_CONFIRMED && t.miss_count == 0);
     for (unsigned i = 1; i <= 5; ++i) {
         CHECK(track_predict(&t, 400 + i * 100)); track_miss(&t);
-        CHECK(t.state == (i < 5 ? TRACK_COASTING : TRACK_LOST));
+        CHECK(t.state == (i < 5 ? TRACK_STATE_COASTING : TRACK_STATE_LOST));
     }
 }
 
@@ -188,7 +188,7 @@ TEST(test_tentative_miss_and_inactive_calls)
 {
     struct track t = new_track(0);
     track_miss(&t);
-    CHECK(t.state == TRACK_EMPTY && t.hit_count == 0 && t.miss_count == 0);
+    CHECK(t.state == TRACK_STATE_EMPTY && t.hit_count == 0 && t.miss_count == 0);
     unsigned char before[sizeof t];
     memcpy(before, &t, sizeof t);
     track_hit(&t, 500, 0); track_miss(&t);
@@ -204,15 +204,15 @@ TEST(test_lost_restarts_for_any_timestamp)
         for (unsigned n = 1; n <= 5; ++n) {
             CHECK(track_predict(&t, 400 + n * 100)); track_miss(&t);
         }
-        CHECK(t.state == TRACK_LOST);
+        CHECK(t.state == TRACK_STATE_LOST);
         unsigned char before[sizeof t];
         memcpy(before, &t, sizeof t);
         track_hit(&t, 500, 0); track_miss(&t);
         CHECK(memcmp(before, &t, sizeof t) == 0);
         CHECK(!track_predict(&t, timestamps[i]));
-        CHECK(t.state == TRACK_EMPTY && t.hit_count == 0 && t.miss_count == 0);
+        CHECK(t.state == TRACK_STATE_EMPTY && t.hit_count == 0 && t.miss_count == 0);
         track_start(&t, 500, 0, timestamps[i] + 100);
-        CHECK(t.state == TRACK_TENTATIVE && t.hit_count == 1);
+        CHECK(t.state == TRACK_STATE_TENTATIVE && t.hit_count == 1);
         NEAR(t.range_filter.estimate, 500); NEAR(t.range_filter.rate, 0);
     }
 }
