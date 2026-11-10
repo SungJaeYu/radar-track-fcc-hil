@@ -16,6 +16,7 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
 
 K_THREAD_DEFINE(frame_handler_tid, 2048, frame_handler_thread, NULL, NULL, NULL, 6, 0, 0);
 
+// Requests are copied into this queue; only the handler thread updates its track.
 K_MSGQ_DEFINE(frame_queue, sizeof(struct received_frame), 8, 4);
 
 void frame_handler_init(struct frame_handler *p_handler) 
@@ -40,10 +41,11 @@ static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3)
     frame_handler_init(&handler);
 
     while (1) {
+        // Wake periodically even without a frame so the no-measurement timeout can expire.
         int ret = k_msgq_get(&frame_queue, &frame, K_MSEC(50));
 
         if (ret == 0) {
-            // Process the recieved frame here.
+            // Process the received frame in the track owner thread.
             handle_frame(&handler, &frame);
         }
 
@@ -89,6 +91,7 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
         handle_radar_measurement(p_handler, p_r_frame);
         break;
     }
+    // Diagnostics are currently console-only; no UART status response is submitted.
     case TYPE_STATUS:
         printk("TYPE_STATUS\n");
         struct rx_frame_stats stats;
@@ -100,6 +103,7 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
             (unsigned int)stats.queue_drops);
         break;
 
+    // Placeholder: no command payload interpretation or control action yet.
     case TYPE_COMMAND:
         printk("TYPE_COMMAND\n");
         break;
@@ -152,6 +156,8 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
         printk("Filters initialized at azimuth: %.2f\n", (double)p_measurement->azimuth_rad);
     } else {
 
+        // Prediction may clear a lost/stale track. A later measurement starts it anew;
+        // this measurement is not reused for startup after prediction returns false.
         if(!track_predict(p_track, p_measurement->timestamp_ms)) {
             printk("Invalid measurement interval\n");
             return;

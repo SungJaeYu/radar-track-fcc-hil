@@ -1,6 +1,10 @@
 #ifndef UART_RX_H
 #define UART_RX_H
 
+// Initialize the RX ring and parser, enable UART RX interrupts, and release the RX thread.
+// Call once during startup; concurrent reinitialization is not supported.
+// Return 0 on success, -ENODEV if the device is not ready, or the negative errno
+// returned by callback registration. Initialization failure does not release the RX thread.
 int uart_rx_init(void);
 
 typedef enum {

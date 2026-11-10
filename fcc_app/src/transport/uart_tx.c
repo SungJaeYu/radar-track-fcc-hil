@@ -14,6 +14,7 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3);
 
 K_SEM_DEFINE(tx_ready_sem, 0, 1);
 
+// The queue stores complete request copies; the TX thread alone emits their bytes.
 K_MSGQ_DEFINE(tx_queue, sizeof(struct send_frame), 8, 4);
 
 K_THREAD_DEFINE(uart_tx_tid, 1024, uart_tx_thread, NULL, NULL, NULL, 7, 0, 0);
@@ -24,7 +25,7 @@ int uart_tx_init(void)
     if (!device_is_ready(p_uart)) {
         // Error Handling
         printk("USART6 is not ready\n");
-        return -1;
+        return -ENODEV;
     }
 
     k_sem_give(&tx_ready_sem);
@@ -56,7 +57,7 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
         int ret = k_msgq_get(&tx_queue, &request, K_FOREVER);
 
         if (ret == 0) {
-            // Encode the frame and send it
+            // Encode one complete queued request; discard only this request on encoding failure.
             uint8_t buffer[MAX_PAYLOAD + 5U];
 
             int length = protocol_frame_encode(&request.frame, buffer, sizeof(buffer));
@@ -66,6 +67,8 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
                 continue;
             }
 
+            // Polling can wait for UART readiness and provides no peer acknowledgment.
+            // Keep all frame bytes in this owner thread to preserve request order.
             for (int i = 0; i < length; ++i) {
                 uart_poll_out(p_uart, buffer[i]);
             }

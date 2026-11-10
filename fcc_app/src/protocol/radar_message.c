@@ -38,6 +38,7 @@ bool decode_radar_measurement(
     p_measurement->timestamp_ms = timestamp_ms;
     p_measurement->range_m = (float)range_m;
 
+    // Signed semicircle units use 2^31 units per pi radians.
     p_measurement->azimuth_rad =
         (float)azimuth_sc *
         (PI_F / SEMICIRCLE_SCALE);

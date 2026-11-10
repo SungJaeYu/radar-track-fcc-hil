@@ -13,6 +13,7 @@
 static struct frame_parser parser;
 static int64_t last_byte_processed_ms;
 
+// RX updates counters; the handler reads them independently through the stats API.
 static atomic_t crc_error_count = ATOMIC_INIT(0);
 static atomic_t length_error_count = ATOMIC_INIT(0);
 static atomic_t frame_timeout_count = ATOMIC_INIT(0);
@@ -24,6 +25,8 @@ static void submit_parsed_frame(void);
 
 void rx_frame_processor_reset(void)
 {
+    // WAIT_STX disables timeout checks until another byte updates the processing time.
+    // Preserve cumulative diagnostics and do not treat this as a UART FIFO reset.
     parser_init(&parser);
 }
 
@@ -79,6 +82,8 @@ static void process_parser_result(ParserResult result)
 
 static void submit_parsed_frame(void)
 {
+    // Copy the completed parser frame before the next feed can overwrite it.
+    // This timestamp marks completion/submission, not physical byte arrival.
     struct received_frame received = {
         .frame = parser.frame,
         .received_at_ms = k_uptime_get(),
@@ -89,6 +94,7 @@ static void submit_parsed_frame(void)
     if (ret == -ENOMSG) {
         // Count the new frame dropped because the queue is full.
         atomic_inc(&queue_drops_count);
+        // Report the first drop and every hundredth drop to limit repetitive output.
         if (atomic_get(&queue_drops_count) == 1 || atomic_get(&queue_drops_count) % 100 == 0) {
             printk("Frame queue drops: %u\n", (unsigned int)atomic_get(&queue_drops_count));
         }

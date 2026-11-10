@@ -29,6 +29,7 @@ ParserResult parser_feed(struct frame_parser *p_parser, uint8_t byte) {
         p_parser->frame.type = byte;
         p_parser->state = READ_PAYLOAD;
         break;
+    // STX inside payload is ordinary data; framing is controlled by the validated LEN.
     case READ_PAYLOAD:
         p_parser->frame.payload[p_parser->payload_index++] = byte;
         if (p_parser->payload_index == p_parser->frame.payload_length) {
@@ -45,6 +46,7 @@ ParserResult parser_feed(struct frame_parser *p_parser, uint8_t byte) {
 
         const bool valid = frame_crc_is_valid(p_parser);
 
+        // Reset assembly control for the next frame but retain this frame for the caller.
         p_parser->state = WAIT_STX;
         p_parser->payload_index = 0;
 

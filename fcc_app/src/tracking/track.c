@@ -14,6 +14,8 @@ void track_init(struct track *p_track)
 
 void track_start(struct track *p_track, float initial_range, float initial_azimuth_rad, uint32_t timestamp_ms)
 {
+    // Range tuning defaults: p00/R = 25 m^2, p11 = 10000 (m/s)^2,
+    // q = 100 (m/s^2)^2; these are initial tuning values, not sensor calibration data.
     kalman_cv_init(
         &p_track->range_filter,
         initial_range,      // initial_range
@@ -51,7 +53,7 @@ bool track_predict(struct track *p_track, uint32_t timestamp_ms)
         return false;
     }
 
-    // Discard a lost track before checking ists old timestamp.
+    // Discard a lost track before checking its old timestamp.
     // The caller starts a new track on the next measurement.
     if (p_track->state == TRACK_LOST) {
         track_init(p_track);

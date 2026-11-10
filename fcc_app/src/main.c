@@ -13,14 +13,18 @@ int main(void)
     // Boot Signal
     printk("=== FCC learning-rebuild boot ===\n");
     
-    if (uart_tx_init() != 0) {
-        printk("UART TX init failed\n");
-        return -1;
+    // Prepare the transmit path before enabling reception.
+    // These init APIs return 0 on success and a negative errno on failure.
+    int ret = uart_tx_init();
+    if (ret != 0) {
+        printk("UART TX init failed %d\n", ret);
+        return ret;
     }
-    
-    if (uart_rx_init() != 0) {
-        printk("UART RX init failed\n");
-        return -1;
+
+    ret = uart_rx_init();
+    if (ret != 0) {
+        printk("UART RX init failed %d\n", ret);
+        return ret;
     }
 
 

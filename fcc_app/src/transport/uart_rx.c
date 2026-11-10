@@ -5,6 +5,7 @@
 #include <zephyr/sys/atomic.h>
 
 #include <string.h>
+#include <errno.h>
 
 #include "common/ring_buffer.h"
 #include "protocol/frame_parser.h"
@@ -22,7 +23,8 @@ static atomic_t rx_overflow = ATOMIC_INIT(0);
 
 // Notify the RX thread of buffered data or overflow; actual bytes remain in rx_ring.
 K_SEM_DEFINE(rx_sem, 0, 1);
-// Keep the RX thread waiting until the ring, parser, and handler are initialized.
+// Keep the RX thread waiting until the ring and parser are initialized.
+// The handler initializes its own state in its processing thread.
 K_SEM_DEFINE(rx_ready_sem, 0, 1);
 
 static void uart_callback(const struct device *p_dev, void *p_user_data);
@@ -40,14 +42,15 @@ int uart_rx_init(void) {
     if (!device_is_ready(p_uart)) {
         // Error Handling
         printk("USART6 is not ready\n");
-        return -1;
+        return -ENODEV;
     }
 
     // Set Callback Function
-    if(uart_irq_callback_user_data_set(p_uart, uart_callback, NULL) != 0) {
+    int ret = uart_irq_callback_user_data_set(p_uart, uart_callback, NULL);
+    if (ret != 0) {
         // error
         printk("Failed to set UART callback\n");
-        return -1;
+        return ret;
     }
 
     ring_init(&rx_ring);
@@ -58,6 +61,7 @@ int uart_rx_init(void) {
     // Enable RX Interrupt
     uart_irq_rx_enable(p_uart);
 
+    // Bytes may already be buffered by the ISR; the initialized ring retains them.
     // Signal that RX initialization is completed
     k_sem_give(&rx_ready_sem);
 
@@ -68,7 +72,7 @@ static void uart_callback(const struct device *p_dev, void *p_user_data) {
     // Avoid Warning
     ARG_UNUSED(p_user_data);
 
-    // UART Iterrupt Update
+    // Refresh interrupt status before querying pending/ready flags.
     uart_irq_update(p_dev);
 
     // UART Interrupt is pending
@@ -112,11 +116,12 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
         while (1) {
             uint8_t c;
 
-            // Prevent the UART ISR from interrupting the overflow check and single-byte parsing.
+            // Protect the overflow check and single-byte ring pop from the UART ISR.
+            // Parsing and queue submission run after interrupts are restored.
             unsigned int key = irq_lock();
 
             if (atomic_get(&rx_overflow) != 0) {
-                // Allow interrupts during tracking and logging in drain recovery.
+                // Allow interrupts during parsing, queue submission, and logging in drain recovery.
                 // The flag remains set, so the ISR still cannot write to the ring buffer.
                 irq_unlock(key);
 

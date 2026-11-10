@@ -6,6 +6,7 @@ void ring_init(struct ring_buffer *p_rb) {
 }
 
 bool ring_push(struct ring_buffer *p_rb, uint8_t c) {
+    // Reserving one slot prevents a full ring from appearing empty (head == tail).
     if ((p_rb->head + 1) % BUFFER_SIZE == p_rb->tail) {
         return false;
     }

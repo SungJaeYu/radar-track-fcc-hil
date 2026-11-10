@@ -48,6 +48,7 @@ static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt, 
     }
 
     // Covariance Prediction
+    // Discrete acceleration variance q uses Q = q * [[dt^4/4, dt^3/2], [dt^3/2, dt^2]].
     // P' = F P F(T) + Q
     const float old_p00 = p_kf->p00;
     const float old_p01 = p_kf->p01;
@@ -86,6 +87,7 @@ static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float valu
     // Innovation covariance
     const float s = p_kf->p00 + p_kf->measurement_noise;
 
+    // Avoid division by a near-zero/nonpositive innovation covariance; keep the prior state.
     if (s <= 1e-6f) {
         return;
     }
