@@ -327,3 +327,37 @@ CTL-002의 정상/잘못된 측정 payload 경유 감시 시작·갱신, RX-004�
 예: 부분 프레임 timeout을 바꾸면 REQ-RX-003 → SPEC-TIME →
 `FRAME_RX_TIMEOUT_MS` → `test_timeout_boundary_for_every_partial_frame` 및 분할/복귀 사례 →
 실보드 부분 송신·중단 시험까지 영향 범위를 추적한다. 측정 무수신 timeout을 자동으로 함께 바꾸지 않는다.
+
+
+### FUT-001 partial implementation: STATUS payload decoding
+
+[decode_status_payload](../pc_sim/protocol.py) decodes the 16-byte SPEC-STATUS payload
+into four named uint32 counters; invalid lengths raise ValueError.
+The caller must validate frame TYPE and CRC first.
+Tests in [test_protocol.py](../tests/test_protocol.py): `test_decode_status_payload`,
+`test_decode_status_payload_zero`, `test_decode_status_payload_invalid_length` (0/15/17).
+2026-11-12: all 5 new cases passed; full Python suite 89 passed and 9 subtests passed.
+FUT-001 remains incomplete: stream reception, TYPE/CRC validation and CLI/GUI integration are pending.
+
+
+### FUT-001 부분 구현 추적: PC 프레임 조립
+
+[FrameParser](../pc_sim/frame_parser.py)는 SPEC-WIRE에 따라 분할·연속 입력을 조립하고 LEN·CRC를 검증한다.
+TYPE은 그대로 반환하며 STATUS_REPORT 여부와 payload 유효성 검사는 호출자의 책임이다.
+[파서 테스트 10개 함수·16개 사례](../tests/test_frame_parser.py)는 정상·모든 INIT 분할 위치·연속 프레임·
+CRC/LEN 오류 후 복귀·STX 포함 payload·최대 길이·reset과 통계 보존을 검증한다.
+함수별 검증 조건은 [테스트 목록](test-cases.md)의 PC 수신 프레임 파서 절에 연결한다.
+2026-11-12 작업본: 파서 16개, 전체 Python 105개와 subtest 9개 통과.
+이 결과는 위의 payload-only 단계 이후 추가된 증거다. FUT-001 전체 완료는 아니며
+serial 읽기·응답 대기시간·STATUS TYPE 확인·CLI/GUI 연결과 FUT-002 실보드 왕복은 남아 있다.
+
+
+### FUT-001 부분 구현 추적: STATUS CLI
+
+[status_client.py](../pc_sim/status_client.py)의 `request_status()`는 단독 소유 포트에서 기존 입력을
+비우고 STATUS_REQUEST를 한 번 전송한다. monotonic deadline 내에 CRC·TYPE·16바이트 payload가
+유효한 응답을 해석한다. 프레임 오류·다른 TYPE·잘못된 STATUS는 건너뛰고 대기를 연장하지 않는다.
+포트 열기·입력 버퍼 정리 시간은 대기 예산 밖이다. request ID가 없어 지연된 이전 응답 식별은 보장하지 않는다.
+`main()`은 포트 수명·출력·종료 코드(성공 0, 통신 실패 1, 인자 오류 2)를 담당한다.
+[CLI 21개 테스트](../tests/test_status_client.py)는 SPEC-WIRE/STATUS와 위 deadline·오류 계약을 검증한다.
+이 단계는 이전의 CLI 미구현 상태를 대체한다. GUI 연결 및 FUT-002 실보드 왕복은 남아 있다.

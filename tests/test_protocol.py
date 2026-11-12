@@ -42,3 +42,38 @@ def test_scenario_rejects_unrepresentable_ranges(distance):
 def test_scenario_rejects_nonfinite_angles(angle):
     with pytest.raises(ValueError):
         protocol.build_radar_frame_from_radians(0, 100, angle)
+
+
+def test_decode_status_payload():
+    payload = bytes.fromhex(
+        "00 00 00 01"
+        "00 00 00 17"
+        "00 00 01 c8"
+        "ff ff ff ff"
+    )
+
+    stats = protocol.decode_status_payload(payload)
+
+    assert stats == {
+        "crc_errors": 1,
+        "length_errors": 23,
+        "frame_timeouts": 456,
+        "queue_drops": 4294967295,
+    }
+
+
+def test_decode_status_payload_zero():
+    stats = protocol.decode_status_payload(bytes(16))
+
+    assert stats == {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+    }
+
+
+@pytest.mark.parametrize("length", [0, 15, 17])
+def test_decode_status_payload_invalid_length(length):
+    with pytest.raises(ValueError, match="STATUS_REPORT payload must be exactly 16 bytes"):
+        protocol.decode_status_payload(bytes(length))

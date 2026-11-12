@@ -8,7 +8,7 @@ FRAME_TYPE_MEAS_REPORT = 0x02
 FRAME_TYPE_STATUS_REQUEST = 0x03
 FRAME_TYPE_COMMAND = 0x04
 FRAME_TYPE_RESET = 0x05
-# Reserved: STATUS_REPORT payload and receive handling are not implemented yet.
+# Firmware diagnostic response decoded by the PC STATUS client.
 FRAME_TYPE_STATUS_REPORT = 0x06
 
 
@@ -59,3 +59,21 @@ def build_radar_frame_from_radians(timestamp_ms, range_m, azimuth_rad):
     semicircle = round(wrapped * (2**31 / math.pi))
     semicircle = (semicircle + 2**31) % 2**32 - 2**31
     return build_radar_frame(timestamp_ms, distance, semicircle)
+
+
+def decode_status_payload(payload):
+    """Decode a 16-byte payload into four named big-endian uint32 counters.
+
+    The caller validates frame TYPE and CRC before passing the payload.
+    Raise ValueError for an incorrect payload length.
+    """
+    if len(payload) != 16:
+        raise ValueError("STATUS_REPORT payload must be exactly 16 bytes")
+    crc_errors, length_errors, frame_timeouts, queue_drops = struct.unpack(">IIII", payload)
+
+    return {
+        "crc_errors": crc_errors,
+        "length_errors": length_errors,
+        "frame_timeouts": frame_timeouts,
+        "queue_drops": queue_drops,
+    }

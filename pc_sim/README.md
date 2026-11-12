@@ -117,14 +117,29 @@ overflow 시 기본 drain 정책은 저장된 데이터로 완성 가능한 프�
 
 ## STATUS 진단 요청
 
+저장소 루트에서 실행합니다. GUI·송신기를 중지해 데이터 포트를 단독으로 사용합니다.
+보드 TX(PC6) → USB-UART RXD 연결도 필요합니다.
+
 ```sh
-python pc_sim/small_byte_test.py status --type 3 --port PORT
+python -m pc_sim.status_client --port PORT --timeout 2
 ```
 
-payload 내용은 현재 무시되며 길이는 1..32바이트여야 합니다.
-보드는 ST-Link 콘솔에 CRC·길이 오류·부분 프레임 timeout·큐 드롭 누적값을 출력합니다.
-펌웨어는 USART6 STATUS 응답을 TX 큐에 제출하지만 PC 디코더는 아직 없습니다.
-요청 송신 성공이나 콘솔 출력만으로 응답 수신 성공을 판정하지 않습니다.
+기본 baud는 115200이며 `--baud`로 지정할 수 있습니다. 요청 payload는 `00`입니다.
+이 명령은 INIT/RESET을 보내지 않으며, 정상 응답을 받으면 CRC errors, Length errors,
+Frame timeouts, Queue drops 네 항목을 출력합니다.
+
+- 송신 직전 기존 수신 버퍼를 비운 뒤 한 번 요청합니다. 포트는 독점 사용해야 합니다.
+- 프레임을 분할·연속 조립하고 CRC/LEN 오류, 다른 TYPE, 길이가 잘못된 STATUS는 건너뜁니다.
+- `--timeout`은 입력 버퍼 정리 후 요청 쓰기부터 응답 처리까지의 전체 대기 예산입니다.
+  포트 열기·버퍼 정리 시간은 제외하며 OS 지연을 포함한 엄격한 실시간 보장은 아닙니다.
+  반복 입력으로 종료 시각을 연장하지 않고 각 read/write에도 timeout을 설정합니다.
+- 성공은 종료 코드 0, 응답 timeout·시리얼 오류는 1, 인자 오류는 2입니다.
+- 포트는 종료 시 닫습니다. 프로토콜에 요청 ID가 없어 늦게 도착한 이전 응답과 완전한 구분은 불가능합니다.
+- parser 자체에는 바이트 간 timeout이 없습니다. 이 CLI는 거래 전체 timeout으로 대기를 종료합니다.
+- STATUS는 오류 통계이며 실제 BIT 결과는 아닙니다. 실보드 왕복은 아직 검증하지 않았습니다.
+
+기존 `python pc_sim/small_byte_test.py status --type 3 --port PORT`는 요청만 보내는 도구입니다.
+GUI STATUS 버튼·응답 표시는 아직 없습니다.
 
 ## TYPE 요청·보고 구분
 
@@ -135,7 +150,7 @@ payload 내용은 현재 무시되며 길이는 1..32바이트여야 합니다.
 | 0x03 | `FRAME_TYPE_STATUS_REQUEST` | PC 진단 도구 → FCC 상태 조회 |
 | 0x04 | `FRAME_TYPE_COMMAND` | 명령 예약, 동작 미구현 |
 | 0x05 | `FRAME_TYPE_RESET` | FCC 추적 리셋 |
-| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 16바이트 payload; PC 수신 처리 미구현 |
+| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 16바이트 payload; CLI 수신 구현, GUI 미구현 |
 
 기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
 `protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는

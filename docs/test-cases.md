@@ -10,7 +10,9 @@
 | 구분 | 위치 | 케이스 수 | 실행 환경 |
 |---|---|---:|---|
 | 수동 송신기·INIT/RESET | `tests/test_hil_protocol.py` | 6 | Python, serial 모사 |
-| 프로토콜·단위 변환 | `tests/test_protocol.py` | 18 | Python |
+| PC STATUS CLI | `tests/test_status_client.py` | 21 | Python, serial·monotonic clock 모사 |
+| PC 수신 프레임 파서 | `tests/test_frame_parser.py` | 16 | Python, serial I/O 없음 |
+| 프로토콜·단위 변환 | `tests/test_protocol.py` | 23 | Python |
 | 연속 측정 송신기 | `tests/test_radar_sender.py` | 5 + 내부 subtest 9 | Python, serial·sleep 모사 |
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
 | GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
@@ -21,7 +23,7 @@
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 10 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 21 | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **84개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **126개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
 UART C는 각 함수를 CTest에 따로 등록하므로 21개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
@@ -307,3 +309,53 @@ STATUS에서 TX로 제출하는 호출부는 아직 연결되지 않았습니다
 STATUS host 10개와 펌웨어 빌드 통과. 펌웨어 수정 없이 테스트 CMake에 실제 STATUS
 인코더·프레임 파서를 연결하고 TX 제출 모사·인코딩 실패 주입을 추가했습니다.
 실보드·PC 응답 수신은 검증하지 않았으며 이전 날짜의 미구현 기록은 당시 상태입니다.
+
+
+### PC STATUS payload decoder (2026-11-12)
+
+- `test_decode_status_payload`: fixed bytes decode to 1, 23, 456, UINT32_MAX.
+- `test_decode_status_payload_zero`: all four counters are zero.
+- `test_decode_status_payload_invalid_length`: lengths 0, 15, 17 raise ValueError with a diagnostic message.
+- New cases: 5 passed. Full Python suite: 89 passed, 9 subtests passed.
+- Payload decoding only; serial reception, frame assembly, TYPE/CRC validation and board round-trip remain pending.
+
+
+## Python: PC 수신 프레임 파서
+
+소스: [test_frame_parser.py](../tests/test_frame_parser.py).
+요구사항: FUT-001의 PC 수신 조립 부분, SPEC-WIRE의 프레임·CRC 규격.
+
+| 테스트 함수 | 사례 수 | 검증 내용 |
+| --- | --- | --- |
+| `test_complete_frame` | 1 | 고정 INIT bytes → 불변 payload의 프레임, STX 대기 복귀, 빈 입력 |
+| `test_byte_by_byte` | 1 | CRC 하위 바이트 전까지 반환 없음, 마지막 바이트에서 완성 |
+| `test_split_frame` | 5 | INIT의 모든 분할 위치, 중간 빈 입력에도 조립 상태 보존 |
+| `test_consecutive_frames` | 1 | 고정 INIT·STATUS를 한 번에 처리, 순서·반환 데이터 수명 보존 |
+| `test_noise_before_frame` | 1 | STX 없는 선행 잡음 무시 |
+| `test_stx_inside_payload` | 1 | payload의 STX를 일반 데이터로 처리 |
+| `test_bad_crc_then_valid_frame` | 1 | CRC 오류 폐기·1회 집계·정상 복귀 |
+| `test_bad_length_then_valid_frame` | 3 | LEN 0·33·255 거부·집계·정상 복귀 |
+| `test_maximum_payload` | 1 | 32바이트 payload 보존 |
+| `test_reset_discards_partial_frame_and_preserves_counters` | 1 | 부분 프레임 폐기, 통계 보존, 이전 CRC 꼬리 무시, 정상 복귀 |
+
+2026-11-12: 파서 16개 통과, 전체 Python 105개 및 subtest 9개 통과.
+이 테스트는 실제 serial 읽기·수신 시간 제한·STATUS TYPE별 유효성·CLI/GUI·보드 왕복을 검증하지 않는다.
+
+
+## Python: STATUS 요청·응답 CLI
+
+소스: [test_status_client.py](../tests/test_status_client.py). FUT-001의 CLI 수신에 연결한다.
+
+| 함수 | 사례 수 | 검증 |
+| --- | --- | --- |
+| `test_status_response` | 2 | 정상·한 바이트 분할 응답, 요청 1회, timeout 설정 복원 |
+| `test_skips_errors_and_other_types` | 1 | CRC/LEN 오류·다른 TYPE·잘못된 STATUS payload 뒤 정상 복귀 |
+| `test_total_deadline_is_not_extended` | 3 | 무응답·부분 응답·지속 잡음에서도 전체 deadline 유지 |
+| `test_late_response_is_rejected` | 1 | deadline 경계 응답 거부 |
+| `test_io_failures_restore_timeouts` | 3 | 짧은 쓰기·쓰기 실패·읽기 실패 전달과 설정 복원 |
+| `test_invalid_timeout_does_not_touch_port` | 4 | 0·음수·NaN·무한대 거부 |
+| `test_cli_output_and_port_cleanup` | 2 | 성공/timeout 출력·종료 코드·포트 정리 |
+| `test_cli_open_failure` | 1 | 포트 열기 실패 진단 |
+| `test_cli_invalid_arguments` | 4 | 잘못된 CLI 인자는 포트를 열기 전에 거부 |
+
+2026-11-12: CLI 21개, 전체 Python 126개와 subtest 9개 통과. 모사 시각으로 실행하며 실제 보드·OS serial timeout 정밀도를 검증하지 않는다.
