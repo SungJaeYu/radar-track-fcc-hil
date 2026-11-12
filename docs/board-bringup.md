@@ -4,7 +4,7 @@
 과거 LCD 구현 문서와 달리 현재 소스에는 LCD 표시나 이진 트랙 응답 경로가 없습니다.
 
 STATUS 요청에는 handler → TX 복사 큐 → TX 스레드 → USART6 응답 경로도 있습니다.
-PC 응답 디코더·CLI·GUI는 구현했습니다. STATUS 실보드 수신 검증은 사용자 요청으로 연기했습니다.
+PC 응답 디코더·CLI·GUI는 구현했습니다. STATUS 기본 실보드 왕복은 `2aa57d9`에서 확인했습니다.
 
 ## 배선과 통신 설정
 
@@ -91,7 +91,7 @@ python -m pc_sim.run_sim --port /dev/ttyUSB0 --duration 10 --noise 0 --azimuth-n
 Python 테스트, UART/Tracking host C 테스트, 펌웨어 빌드, flash, 실제 보드 로그를 별도 결과로 남깁니다.
 통합 도구의 테스트 통과만으로 새 보드 HIL까지 통과했다고 기록하지 않습니다.
 
-최신 결과: [2026-11-01 GUI·보드 검증](hardware-test-2026-11-01.md).
+최신 결과: [2026-11-12 STATUS CLI·GUI 검증](hardware-test-2026-11-12-status.md). 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
 
 VS Code의 로컬 기본 작업 `Zephyr: Build firmware`와 IntelliSense는 모두
 `<repo>/build`를 사용합니다. 새 C 파일을 CMake에 등록한 뒤 빌드하면
@@ -137,7 +137,7 @@ CMake가 `fcc_app/src`를 include root로 전달합니다. 하위 폴더를 각�
 실제 컴파일 실패는 IntelliSense 설정으로 해결하지 않고 별도로 확인합니다.
 
 
-### STATUS 통계 확인 (실보드 검증 예정)
+### STATUS 통계 확인 (기본 왕복 검증 완료, 재현 절차)
 
 ```sh
 python -m pc_sim.status_client --port /dev/ttyUSB0 --timeout 2
@@ -152,7 +152,7 @@ CLI는 응답 TYPE·길이·CRC를 검사한 뒤 네 통계를 출력합니다.
 GUI·다른 송신기를 닫아 포트를 단독 사용하고 PC6 TX → 어댑터 RXD 배선도 확인합니다.
 정상 조회·반복 조회·오류 주입 후 통계 증가·추적 중 조회를 확인하고 로그와 펌웨어 버전을 남깁니다.
 GUI 시험은 CLI 종료 후 STATUS 탭에서 별도로 수행합니다.
-이 절차의 최신 펌웨어 실보드 검증은 아직 수행하지 않았습니다.
+`2aa57d9`에서 이 기본 절차를 수행했습니다. 상세 범위와 로그는 아래 시험 기록을 참고합니다.
 
 
 ## 최신 STATUS 실보드 결과

@@ -102,7 +102,7 @@ Qt 실행 흐름은 [공식 QThread 문서](https://doc.qt.io/qtforpython-6/PySi
 [실제 화면과 결과](../docs/hardware-test-2026-11-01.md)를 참고하세요.
 
 펌웨어 STATUS는 ST-Link 통계 로그 출력과 USART6 STATUS_REPORT 제출까지 구현되어 있습니다.
-GUI의 STATUS 탭에서 수동 조회와 USART6 응답 디코딩을 제공합니다. 실보드 왕복은 미검증입니다.
+GUI의 STATUS 탭에서 수동 조회와 USART6 응답 디코딩을 제공합니다. [2026-11-12 실보드 시험](../docs/hardware-test-2026-11-12-status.md)에서 통계 표시·측정 병행·송신 중지 후 조회를 확인했습니다.
 
 측정 생성은 `FRAME_TYPE_MEAS_REPORT`(0x02)를 사용합니다. `FRAME_TYPE_STATUS_REPORT`(0x06)는 펌웨어에서 송신하며 GUI에서 응답 통계를 표시합니다.
 

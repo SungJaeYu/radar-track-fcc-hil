@@ -136,7 +136,7 @@ Frame timeouts, Queue drops 네 항목을 출력합니다.
 - 성공은 종료 코드 0, 응답 timeout·시리얼 오류는 1, 인자 오류는 2입니다.
 - 포트는 종료 시 닫습니다. 프로토콜에 요청 ID가 없어 늦게 도착한 이전 응답과 완전한 구분은 불가능합니다.
 - parser 자체에는 바이트 간 timeout이 없습니다. 이 CLI는 거래 전체 timeout으로 대기를 종료합니다.
-- STATUS는 오류 통계이며 실제 BIT 결과는 아닙니다. 실보드 왕복은 아직 검증하지 않았습니다.
+- STATUS는 오류 통계이며 실제 BIT 결과는 아닙니다. [실보드 CLI·GUI 왕복](../docs/hardware-test-2026-11-12-status.md)을 확인했습니다.
 
 기존 `python pc_sim/small_byte_test.py status --type 3 --port PORT`는 요청만 보내는 도구입니다.
 GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 CLI가 같은 포트를 열지 않도록 합니다.
@@ -150,7 +150,7 @@ GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 C
 | 0x03 | `FRAME_TYPE_STATUS_REQUEST` | PC 진단 도구 → FCC 상태 조회 |
 | 0x04 | `FRAME_TYPE_COMMAND` | 명령 예약, 동작 미구현 |
 | 0x05 | `FRAME_TYPE_RESET` | FCC 추적 리셋 |
-| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 16바이트 payload; CLI·GUI 수신 구현; 실보드 왕복 미검증 |
+| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 16바이트 payload; CLI·GUI 수신 구현; 실보드 기본 왕복 확인 |
 
 기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
 `protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는

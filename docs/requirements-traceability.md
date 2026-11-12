@@ -8,7 +8,7 @@
 
 기능 기준: handler 보강 `658f2e6`, GUI STATUS `ed1f0bf`.
 Python 130개 + subtest 9개와 handler host 17개 통과. RX 21·TX 4·Tracking 13은 기존 검증 기록이다.
-PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료. 실보드 왕복은 연기했다.
+PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료. 실보드 기본 왕복도 `2aa57d9`에서 확인했다.
 아래 단계별 구현 기록은 당시 상태이며 현재 판단은 이 요약과 요구사항 기준표를 우선한다.
 
 ## 읽는 방법과 범위
@@ -53,11 +53,11 @@ PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료
 | REQ-CTL-001 | INIT/RESET은 트랙과 측정 timeout 감시를 초기화하되 RX 누적 통계는 보존해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_frame / frame_handler_reset` | [Python](#tests-python)  [test_frame_handler](#tests-test_frame_handler) | 구현; 명령 경유 초기화·모사 통계 응답 보존 host 검증. 실제 RX 카운터 통합 시험은 남음 |
 | REQ-CTL-002 | 첫 유효 측정 이후 1000ms 동안 유효 측정이 없으면 트랙을 한 번 초기화해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `frame_handler_check_timeout` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상/무효 측정·gate/timestamp 거부·경계·1회 만료 host 검증 완료 |
 | REQ-STA-001 | RX 오류 네 항목을 누적 집계하고 조회·파서 reset으로 초기화하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `rx_frame_processor_get_stats` | [test_uart_rx](#tests-test_uart_rx) | 구현; 개별 atomic 조회 host 검증. 동시 snapshot 보장은 요구하지 않음 |
-| REQ-STA-002 | STATUS 요청당 네 통계를 담은 16바이트 응답을 한 번 제출하고 트랙·측정 timeout은 변경하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_status_request` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상·반복 조회·인코딩·상태 보존 host 검증. UART 왕복 미검증 |
+| REQ-STA-002 | STATUS 요청당 네 통계를 담은 16바이트 응답을 한 번 제출하고 트랙·측정 timeout은 변경하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_status_request` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상·반복 조회·인코딩·상태 보존 host 검증. `2aa57d9` CLI·GUI 기본 왕복 확인 |
 | REQ-STA-003 | STATUS 인코딩·제출 실패를 기록하고 즉시 재시도하지 않으며 이후 요청을 처리할 수 있어야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_status_request` | [test_frame_handler](#tests-test_frame_handler) | 구현; 오류 주입·다음 요청 복귀 host 검증 |
 | REQ-STA-004 | 입력된 STATUS_REPORT에는 응답을 생성하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_frame` | [test_frame_handler](#tests-test_frame_handler) | 구현; 반향 응답 방지 host 검증 |
 | REQ-TX-001 | 유효 요청을 큐에 복사하고 FIFO 순서로 송신하며 포화·잘못된 요청은 errno로 반환해야 한다. | [SPEC-TX](#spec-tx) | [uart_tx.c](../fcc_app/src/transport/uart_tx.c) · `uart_tx_submit / uart_tx_thread` | [test_uart_tx](#tests-test_uart_tx) | 구현; 모사 큐·바이트 순서·복사 검증. 실제 큐 동시성 미검증 |
-| REQ-TX-002 | 장치 초기화 성공 후 송신을 시작하고 인코딩 실패 요청만 버린 뒤 다음 요청을 처리해야 한다. | [SPEC-TX](#spec-tx) | [uart_tx.c](../fcc_app/src/transport/uart_tx.c) · `uart_tx_init / uart_tx_thread` | [test_uart_tx](#tests-test_uart_tx) | 구현; host 검증. 실제 대기·UART 전달·송신 완료 통지 미검증 |
+| REQ-TX-002 | 장치 초기화 성공 후 송신을 시작하고 인코딩 실패 요청만 버린 뒤 다음 요청을 처리해야 한다. | [SPEC-TX](#spec-tx) | [uart_tx.c](../fcc_app/src/transport/uart_tx.c) · `uart_tx_init / uart_tx_thread` | [test_uart_tx](#tests-test_uart_tx) | 구현; host 검증. 기본 UART 전달 확인. 대기 경합·송신 완료 통지·부하 검증은 별도 |
 | REQ-PC-001 | 송신 도구는 공통 wire 규격을 사용하고 연속 송신 시작마다 INIT을 보내야 한다. | [SPEC-PC](#spec-pc) | [protocol.py](../pc_sim/protocol.py) · `encode_frame` | [Python](#tests-python) | 구현; Python 송신·상호운용 시험 연결 |
 | REQ-PC-002 | UART 시나리오는 단일표적으로 제한하고 지원하지 않는 다중 측정 설정을 거부해야 한다. | [SPEC-PC](#spec-pc) | [run_sim.py](../pc_sim/run_sim.py) · `UART scenario validation` | [Python](#tests-python) | 구현; Python 시나리오 시험 연결 |
 | REQ-GUI-001 | GUI는 설정 접근·시작/중지/재시작·포트 정리를 제공하고 PC 합성값과 보드 결과를 구분해야 한다. | [SPEC-PC](#spec-pc) | [gui.py](../pc_sim/gui.py) · `GUI / worker lifecycle` | [Python](#tests-python) | 구현; Qt·모사 serial 시험, 이전 보드 GUI 기록. 보드 추정값 표시는 미구현 |
@@ -183,7 +183,7 @@ STATUS_REQUEST는 공통 LEN 1..32만 요구하며 현재 payload 내용은 무�
 TX worker는 초기화 준비 신호 이후 FIFO 순서로 인코딩·polling 송신한다.
 인코딩 실패는 해당 요청만 폐기하고 다음 요청을 진행한다.
 submit 성공은 큐 접수 성공이며 송신 완료·PC 수신·ACK 성공을 뜻하지 않는다.
-현재 UART polling API는 peer 수신 성공을 반환하지 않으며, PC 파서·STATUS CLI·GUI가 응답을 검증·해석한다. 실보드 전달은 미검증이다.
+현재 UART polling API는 peer 수신 성공을 반환하지 않으며, PC 파서·STATUS CLI·GUI가 응답을 검증·해석한다. 실보드 기본 전달은 `2aa57d9`에서 확인했다.
 
 <a id="spec-pc"></a>
 ### SPEC-PC — 시뮬레이터와 GUI
@@ -310,7 +310,7 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 | ID | 목표 / 완료 기준 | 선행 설계·검증 |
 | --- | --- | --- |
 | FUT-001 | PC가 STATUS 응답의 TYPE·길이·CRC를 검증하고 네 통계를 표시한다 | 파서·CLI·GUI 수동 조회 구현 및 host 검증 완료. 물리 왕복은 FUT-002 |
-| FUT-002 | 현재 STATUS 응답을 실제 USART6에서 수신해 host 기대값과 일치함을 확인한다 | REQ-STA-002/TX-001의 보드 검증. 요청/응답 bytes와 펌웨어 revision 기록 |
+| FUT-002 | 현재 STATUS 응답을 실제 USART6에서 수신해 host 기대값과 일치함을 확인한다 | 완료: `2aa57d9` CLI·GUI 왕복·오류 통계·추적 병행. [증거](hardware-test-2026-11-12-status.md) |
 | FUT-003 | 보드 추적 결과를 PC로 보내 정답과 비교한다 | 결과 TYPE·단위·timestamp·송신 주기·TX 포화 정책, 정확도 목표 TBD |
 | FUT-004 | 링 overflow·손실·UART 오류를 구분해 집계·복구한다 | 하드웨어 오류 API와 유실량 정의; 실제 overflow/overrun 재현 |
 | FUT-005 | 제어 요청과 오래된 측정의 큐 처리 정책을 정의한다 | INIT/RESET 우선순위·reset 이전 대기 데이터·최대 허용 지연 TBD |
@@ -318,7 +318,7 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 | FUT-007 | COMMAND/Lock On과 BIT를 제공한다 | 명령 payload·선택/해제·소실 동작·자기진단 항목과 합격 기준 TBD |
 | FUT-008 | 설정·자원·지연을 반복 검증 가능한 기준으로 관리한다 | Kconfig 분리, 두 overflow 정책 시험, 스택·처리량·장시간·최대 지연 목표 TBD |
 
-FUT-001은 host 범위 완료, FUT-002는 연기했다. CTL-002 측정 경유 검증은 완료했다.
+FUT-001은 구현·host 검증 완료, FUT-002 기본 실보드 왕복도 완료했다. CTL-002 측정 경유 검증은 완료했다.
 남은 host 공백은 CTL-001의 실제 RX 카운터와 명령 처리 통합, RX-004의 실제 큐 경계와 다른 errno 처리다.
 이 목록은 현재 커버리지 공백이며 지금 모두 충족했다고 표시하지 않는다.
 
@@ -370,7 +370,7 @@ serial 읽기·응답 대기시간·STATUS TYPE 확인·CLI/GUI 연결과 FUT-00
 이 단계는 이전의 CLI 미구현 상태를 대체한다. GUI 연결 및 FUT-002 실보드 왕복은 남아 있다.
 
 
-### FUT-001 GUI 수동 STATUS 조회 구현
+### 과거 단계 기록 — FUT-001 GUI 수동 STATUS 조회 구현
 
 [gui_worker.py](../pc_sim/gui_worker.py)의 `request_status()`는 명령 큐로 요청하고 기존 worker가
 단독 소유 데이터 포트에서 프레임을 송수신한다. 응답 대기는 2초, 중복 요청은 거부하며 timeout은
@@ -397,7 +397,7 @@ FUT-001의 CLI·GUI 수동 조회 경로는 구현됐으며 FUT-002 실보드 �
 
 신규 7개를 포함해 handler host 17개 통과. 기존 CTL-002의 측정 경유 검증 공백을 보강했다.
 CTL-001은 명령 경유 트랙 초기화와 모사 통계 응답 보존을 확인했으며 실제 processor atomic
-카운터와 handler를 함께 실행하는 통합 검증은 여전히 남아 있다. RTOS 동시성·실보드는 제외한다.
+카운터와 handler를 함께 실행하는 host 통합 검증은 남아 있다. 이후 실보드 시험에서는 INIT/RESET 후 실제 카운터 보존을 관측했다. 모든 RTOS 경쟁 조건을 검증한 것은 아니다.
 
 
 ## 최신 STATUS 실보드 결과

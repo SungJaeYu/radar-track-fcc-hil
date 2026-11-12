@@ -61,7 +61,7 @@ python -m pytest
 
 전체 Python·C 테스트의 케이스와 검증 범위는 [테스트 케이스 목록](docs/test-cases.md)에 정리했습니다.
 요구사항별 규격·구현·테스트·검증 공백은 [요구사항 추적표](docs/requirements-traceability.md)에서 확인합니다.
-STATUS 요청·응답 CLI: `python -m pc_sim.status_client --port PORT --timeout 2` — [사용법](pc_sim/README.md#status-진단-요청). 모사 테스트 완료, 실제 보드 왕복은 미검증입니다.
+STATUS 요청·응답 CLI: `python -m pc_sim.status_client --port PORT --timeout 2` — [사용법](pc_sim/README.md#status-진단-요청). 모사 테스트와 `2aa57d9` 실보드 기본 왕복을 확인했습니다.
 
 ## 데스크톱 GUI
 
@@ -115,7 +115,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
 - TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6.
 - INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
-  STATUS 통계는 16바이트 STATUS_REPORT로 TX 큐에 제출합니다. PC CLI 수신과 GUI 표시까지 구현했으며 실보드 응답 검증은 남아 있습니다.
+  STATUS 통계는 16바이트 STATUS_REPORT로 TX 큐에 제출합니다. PC CLI 수신과 GUI 표시까지 구현했으며 실보드 기본 응답까지 확인했습니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
 
 ## RX 버퍼와 overflow 복구
@@ -135,7 +135,7 @@ CRC 규격은 **CRC-16/IBM-3740 (CCITT-FALSE)**입니다. poly=`0x1021`, init=`0
 refin/refout=false, xorout=`0x0000`이며 `123456789`의 기준값은 `0x29B1`입니다.
 규격 이름과 매개변수는 [Zephyr CRC 문서](https://docs.zephyrproject.org/latest/doxygen/html/group__crc.html)와 일치합니다.
 STX와 CRC 자체는 계산에서 제외합니다. 측정 프레임은 총 15바이트, INIT은 6바이트입니다.
-Python 송신기·GUI와 보드 펌웨어를 함께 갱신해야 합니다. 최신 실보드·GUI 시험 결과는 [검증 기록](docs/hardware-test-2026-11-01.md)을 참고하세요.
+Python 송신기·GUI와 보드 펌웨어를 함께 갱신해야 합니다. 최신 실보드·GUI 시험 결과는 [검증 기록](docs/hardware-test-2026-11-12-status.md)을 참고하세요.
 
 정상 프레임은 깊이 8의 큐에 복사합니다. 큐가 가득 차면 새 프레임을 버리고 누적 드롭을 집계합니다.
 INIT/RESET도 큐 포화 시 드롭될 수 있습니다.
@@ -182,7 +182,7 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 | 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리·부분 프레임 timeout | 스캔 단위 다중 측정 규격 |
 | 실행 구조 | RX → 복사 큐 → handler → TX 복사 큐 → TX 스레드, RX 큐 포화 시 드롭 집계 | 추적 결과 송신·실제 큐 동시성 검증 |
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
-| 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출, PC CLI 수신 | 실보드 TX 검증·BIT·Lock On 미완료 |
+| 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출, PC CLI 수신 | TX 부하·장애 검증·BIT·Lock On 미완료 |
 | 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
 | PC 시뮬레이터 | 측정·잡음 생성, PC 출력용 다중표적·미탐지·클러터 시나리오 | 실제 UART 모드는 단일표적·클러터 0으로 제한 |
 | GUI·평가 | 송신 제어, PC 합성값 그래프, 보드 콘솔 | 다중표적 GUI, 보드 추정값 그래프, 폐루프 RMSE·트랙 연속성 평가 |
@@ -202,7 +202,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [x] RX/handler 스레드·메시지 큐 분리, rx_frame_processor로 파서 소유·제출 처리 분리
 - [x] drain/discard 복구 정책과 큐 포화 드롭 집계 구현
   - [x] 부분 프레임 timeout 구현·host 검증: 바이트 처리 중단 시 parser 초기화·1회 집계·다음 정상 프레임 복구
-    - [ ] 실제 보드에서 부분 송신·중단·재송신 검증
+    - [x] 실제 보드 부분 송신 중단 후 timeout 집계·정상 STATUS 복귀 (`2aa57d9`)
   - [x] RX 진단 카운터: CRC·길이·부분 프레임 timeout·큐 드롭, atomic 읽기·누적값 보존
   - [ ] 링버퍼 overflow 횟수·손실 바이트 통계
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
@@ -240,7 +240,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] 시간 제어 host 시험: 부분 프레임 timeout 경계·무수신·다음 정상 프레임·정상 분할 수신
   - [x] 통계 조회·STATUS host 시험: 출력값, 반복 조회, 트랙·측정 timeout 보존
   - [ ] 큐·동시성 시험: 포화 시 제어 순서, 오래된 측정, 실제 동시 조회, TX 실패 후 복귀
-  - [ ] 실보드 링버퍼 overflow/drain·UART overrun·USART6 TX 확인
+  - [ ] 실보드 링버퍼 overflow/drain·UART overrun·TX 포화/부하 확인
   - [ ] 장시간·고부하·스택 여유·정량 손실 및 추적 정확도 평가
 
 ### 5. 다중표적 추적 확장
@@ -276,7 +276,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 완료 기준 |
 | --- | --- | --- |
-| 1 | STATUS 실보드 왕복 검증 | 실제 USART6 응답 TYPE·길이·CRC·통계값 확인 |
+| 1 | Kconfig 설정 분리·복구 정책별 host 시험 | 기본값 보존, drain/discard 각각 빌드·검증 |
 | 2 | 추적 결과 송신·GUI 비교 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
 | 3 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
 | 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
@@ -286,8 +286,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 부분 프레임 timeout과 RX 기본 오류 통계·STATUS 로그는 구현했습니다.
 `처리 스레드 → 응답 복사 큐 → TX 스레드`까지 STATUS 응답 경로를 구현했습니다.
 지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
-PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회도 구현했습니다. 실제 USART6 송수신 검증은 남아 있습니다.
-설정 분리와 부분 프레임 timeout의 실제 보드 검증도 남아 있습니다.
+PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회도 구현했습니다. 실제 STATUS CLI·GUI 송수신도 확인했습니다.
+다음은 설정 분리와 두 overflow 정책의 host 검증입니다. 강제 링 overflow·UART 오류·TX 부하는 남아 있습니다.
 
 ## 검증 현황
 
@@ -298,7 +298,7 @@ INIT/RESET 통계 보존, 추적 중 조회·무수신 timeout 확인 완료.
 최신 host 결과: GUI STATUS 포함 Python **130개 + subtest 9개**, handler **17개** 통과.
 handler 보강 커밋은 `658f2e6`, GUI STATUS 커밋은 `ed1f0bf`입니다.
 RX 21·TX 4·Tracking 13은 기존 검증을 유지하며, 이번 문서 갱신에서 재실행하지 않았습니다.
-실보드 시험은 사용자 요청으로 연기했습니다. 아래는 버전별 과거 실행 기록입니다.
+아래는 버전별 과거 실행 기록이며 당시 미검증·실패 상태를 그대로 보존합니다.
 
 2026-11-12 (`0e84bdd`): PC 프레임 파서·STATUS CLI 포함 Python 126개 + subtest 9개 통과.
 최신 펌웨어 빌드 성공; 기존 devicetree 중복 unit-address 경고 유지.

@@ -118,7 +118,7 @@ STATUS_REPORT를 TX 큐에 복사 제출합니다. 순서는 CRC 오류·길이 
 timeout·큐 드롭입니다. 인코딩·큐 제출 실패는 오류 코드와 함께 로그로 남깁니다.
 `frame_parser.py`가 PC 수신 프레임을 조립·검증하고 `decode_status_payload()`가 통계를 해석합니다.
 `status_client.py`는 CLI 왕복을, GUI의 STATUS 탭은 기존 worker를 통한 수동 조회를 제공합니다.
-둘 다 host 모사 시험을 통과했으며 실제 보드 왕복은 사용자 요청으로 연기했습니다.
-TX host 테스트 4개와 CRC/인코더 상호운용 28개를 통과했으며 실보드 송신은 미검증입니다.
+둘 다 host 모사 시험을 통과했으며 [2026-11-12 실보드 시험](docs/hardware-test-2026-11-12-status.md)에서 CLI·GUI STATUS 왕복도 확인했습니다.
+TX host 테스트 4개와 CRC/인코더 상호운용 28개를 통과했으며 실보드 STATUS 송신도 확인했습니다. TX 포화·최대 부하는 별도 검증 대상입니다.
 handler host 테스트 17개는 STATUS 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향을 검증합니다.
 통계 snapshot은 모사하며 실제 RX atomic 카운터와 handler 명령의 통합 시험은 남아 있습니다.

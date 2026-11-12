@@ -27,7 +27,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - RX 스레드는 `rx_frame_processor`로 파싱하고 완성 프레임을 큐에 복사합니다.
 - 별도 handler 스레드가 측정·추적·STATUS 처리를 수행합니다.
 - STATUS는 RX 오류 통계의 atomic 복사본을 로그로 출력합니다. 16바이트 STATUS_REPORT를 TX 큐에 복사 제출합니다.
-- TX 초기화·복사 큐·워커·인코딩·polling 송신은 구현되어 있습니다. STATUS 제출까지 연결했으며 PC 파서·STATUS CLI·GUI 수동 조회까지 구현했으며 실보드 TX 검증은 사용자 요청으로 연기했습니다.
+- TX 초기화·복사 큐·워커·인코딩·polling 송신은 구현되어 있습니다. STATUS 제출까지 연결했으며 PC 파서·STATUS CLI·GUI 수동 조회까지 구현했으며 `2aa57d9`에서 STATUS CLI·GUI 실보드 왕복도 확인했습니다. 강제 overflow·UART 오류·부하 시험은 남아 있습니다.
 - RX 링버퍼는 256바이트, 실제 저장 용량은 255바이트입니다. 인덱스는 `uint8_t`이므로 더 큰 버퍼는 타입 변경이 필요합니다.
 - `uart_rx.h`의 `RX_OVERFLOW_POLICY` 기본값은 `RX_OVERFLOW_POLICY_DRAIN_BUFFER`입니다. Kconfig는 아직 없습니다.
 - overflow 복구 중 새 입력은 버리고 저장된 바이트로 완성 가능한 프레임만 처리한 뒤 링·파서를 초기화합니다.
