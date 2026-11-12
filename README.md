@@ -115,7 +115,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
 - TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6.
 - INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
-  STATUS 통계는 16바이트 STATUS_REPORT로 TX 큐에 제출합니다. PC CLI 수신은 구현했으며 GUI 표시까지 구현했으며 실보드 응답 검증은 남아 있습니다.
+  STATUS 통계는 16바이트 STATUS_REPORT로 TX 큐에 제출합니다. PC CLI 수신과 GUI 표시까지 구현했으며 실보드 응답 검증은 남아 있습니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
 
 ## RX 버퍼와 overflow 복구
@@ -152,13 +152,15 @@ fcc_app/src/
     common/           crc16, ring_buffer
 fcc_app/tests/
     test_uart_rx/      UART drain·링버퍼·부분 프레임 timeout
-    test_frame_handler/ STATUS 통계·추적 상태 보존
+    test_frame_handler/ STATUS·INIT/RESET·측정 timeout
     test_uart_tx/      TX 큐·인코딩·송신 순서
     test_kalman/       필터·게이팅·추적 C 회귀 테스트
 tools/vscode/         로컬 VS Code 설정 예제
 pc_sim/
     gui.py             데스크톱 화면·실시간 그래프
-    gui_worker.py      시리얼 소유·송신·콘솔 작업 스레드
+    gui_worker.py      시리얼 소유·송수신·콘솔 작업 스레드
+    frame_parser.py    PC 수신 프레임 조립·CRC 검증
+    status_client.py   STATUS 요청·응답 CLI
     gui_model.py       GUI 설정·단일표적 측정 생성
     protocol.py        유일한 프레임 생성·단위 변환
     radar_sender.py    간단한 거리 변화 측정 송신
@@ -288,6 +290,11 @@ PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회�
 설정 분리와 부분 프레임 timeout의 실제 보드 검증도 남아 있습니다.
 
 ## 검증 현황
+
+최신 host 결과: GUI STATUS 포함 Python **130개 + subtest 9개**, handler **17개** 통과.
+handler 보강 커밋은 `658f2e6`, GUI STATUS 커밋은 `ed1f0bf`입니다.
+RX 21·TX 4·Tracking 13은 기존 검증을 유지하며, 이번 문서 갱신에서 재실행하지 않았습니다.
+실보드 시험은 사용자 요청으로 연기했습니다. 아래는 버전별 과거 실행 기록입니다.
 
 2026-11-12 (`0e84bdd`): PC 프레임 파서·STATUS CLI 포함 Python 126개 + subtest 9개 통과.
 최신 펌웨어 빌드 성공; 기존 devicetree 중복 unit-address 경고 유지.

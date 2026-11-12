@@ -4,7 +4,7 @@
 과거 LCD 구현 문서와 달리 현재 소스에는 LCD 표시나 이진 트랙 응답 경로가 없습니다.
 
 STATUS 요청에는 handler → TX 복사 큐 → TX 스레드 → USART6 응답 경로도 있습니다.
-PC 응답 디코더와 STATUS 실보드 수신 검증은 아직 남아 있습니다.
+PC 응답 디코더·CLI·GUI는 구현했습니다. STATUS 실보드 수신 검증은 사용자 요청으로 연기했습니다.
 
 ## 배선과 통신 설정
 
@@ -140,7 +140,7 @@ CMake가 `fcc_app/src`를 include root로 전달합니다. 하위 폴더를 각�
 ### STATUS 통계 확인 (실보드 검증 예정)
 
 ```sh
-python pc_sim/small_byte_test.py status --type 3 --port /dev/ttyUSB0
+python -m pc_sim.status_client --port /dev/ttyUSB0 --timeout 2
 ```
 
 현재 STATUS payload는 사용하지 않지만 프레임의 LEN은 1..32여야 합니다.
@@ -148,6 +148,8 @@ ST-Link 콘솔에서 `TYPE_STATUS`와 CRC·length·timeout·queue drops 누적�
 CRC 오류·잘못된 길이·부분 프레임 중단을 주입한 뒤 재조회하고, INIT/RESET 후에도
 누적값이 유지되는지 확인합니다. STATUS만 보내도 측정 무수신 timeout은 계속 동작해야 합니다.
 펌웨어는 통계를 16바이트 STATUS_REPORT로 구성해 TX 큐에 복사 제출합니다.
-위 CLI는 요청 송신만 하므로 콘솔 확인과 USART6 응답 수신 검증은 별개입니다.
-이 절차는 아직 보드에서 실행하지 않았습니다. PC 디코더 구현 후 응답 TYPE·길이·CRC와
-네 통계값을 실제 수신해 확인해야 합니다.
+CLI는 응답 TYPE·길이·CRC를 검사한 뒤 네 통계를 출력합니다.
+GUI·다른 송신기를 닫아 포트를 단독 사용하고 PC6 TX → 어댑터 RXD 배선도 확인합니다.
+정상 조회·반복 조회·오류 주입 후 통계 증가·추적 중 조회를 확인하고 로그와 펌웨어 버전을 남깁니다.
+GUI 시험은 CLI 종료 후 STATUS 탭에서 별도로 수행합니다.
+이 절차의 최신 펌웨어 실보드 검증은 아직 수행하지 않았습니다.

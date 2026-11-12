@@ -17,7 +17,7 @@
 ### 데스크톱 GUI
 
 `python -m pc_sim.gui`는 기존 CLI와 함께 사용하는 PySide6/pyqtgraph 앱입니다.
-`gui_model.py`는 단일표적 설정·측정 생성, `gui_worker.py`는 작업 스레드에서 포트 소유·송신·콘솔 읽기를 담당합니다.
+`gui_model.py`는 단일표적 설정·측정 생성, `gui_worker.py`는 작업 스레드에서 포트 소유·송신·STATUS 수신·콘솔 읽기를 담당합니다.
 `gui.py`는 signal로 전달된 데이터를 화면에 표시합니다. 미리보기는 시리얼 포트를 열지 않습니다.
 송신을 중지해도 콘솔 연결은 유지하며, 재시작할 때 INIT을 먼저 보냅니다.
 그래프는 합성 실제값·PC 측정값이며 보드 추정값은 아직 그래프로 반환하지 않습니다.
@@ -116,6 +116,9 @@ ST-Link 콘솔에 출력합니다. 개별 값은 안전하게 읽지만 전체 �
 STATUS 처리부는 네 통계값을 big-endian uint32 순서로 인코딩한 16바이트
 STATUS_REPORT를 TX 큐에 복사 제출합니다. 순서는 CRC 오류·길이 오류·부분 프레임
 timeout·큐 드롭입니다. 인코딩·큐 제출 실패는 오류 코드와 함께 로그로 남깁니다.
-PC 응답 디코더와 GUI 표시는 아직 없습니다.
+`frame_parser.py`가 PC 수신 프레임을 조립·검증하고 `decode_status_payload()`가 통계를 해석합니다.
+`status_client.py`는 CLI 왕복을, GUI의 STATUS 탭은 기존 worker를 통한 수동 조회를 제공합니다.
+둘 다 host 모사 시험을 통과했으며 실제 보드 왕복은 사용자 요청으로 연기했습니다.
 TX host 테스트 4개와 CRC/인코더 상호운용 28개를 통과했으며 실보드 송신은 미검증입니다.
-STATUS host 테스트 10개는 출력값·응답 인코딩·제출 실패와 추적 상태·측정 timeout 보존을 검증합니다.
+handler host 테스트 17개는 STATUS 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향을 검증합니다.
+통계 snapshot은 모사하며 실제 RX atomic 카운터와 handler 명령의 통합 시험은 남아 있습니다.
