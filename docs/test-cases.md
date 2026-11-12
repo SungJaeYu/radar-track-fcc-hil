@@ -16,7 +16,7 @@
 | CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 28 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
-| STATUS 처리 | `fcc_app/tests/test_frame_handler` | 5 | host C, 통계 조회·printk·RTOS 모사 |
+| STATUS 처리 | `fcc_app/tests/test_frame_handler` | 10 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 21 | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **84개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
@@ -216,16 +216,21 @@ GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 
 ## STATUS 처리 C 테스트
 
-실제 `frame_handler.c`와 추적 코드를 실행하고 통계 조회값과 `printk`를 모사합니다.
+실제 handler·STATUS 인코더·프레임 인코더/파서·추적 코드를 실행하고 통계 조회값, TX 제출 결과와 `printk`를 모사합니다.
 실행 방법: [STATUS 테스트 안내](../fcc_app/tests/test_frame_handler/README.md).
 
 | 테스트 함수 | 검증 내용 |
 |---|---|
-| `test_status_zero` | 0으로 초기화된 네 통계값과 조회 1회 |
+| `test_status_zero` | 0인 네 통계값, 조회 1회, 16바이트 STATUS_REPORT 제출 1회 |
 | `test_status_snapshot` | 서로 다른 값·UINT32_MAX 출력, 반복 조회 시 최신값 반영·누적값 보존 |
 | `test_status_preserves_track` | 활성 트랙과 timeout 관리 상태를 변경하지 않음 |
 | `test_status_does_not_arm_timeout` | 첫 측정 전 STATUS로 timeout 감시가 시작되지 않음 |
 | `test_status_does_not_refresh_timeout` | STATUS 수신 후에도 마지막 측정 기준 1000 ms 경계에서 만료 |
+| `test_status_encode_wire` | big-endian 필드 순서·경계값·독립 CRC 기준 프레임·출력 경계·실제 파서 수용 |
+| `test_status_encode_invalid_arguments` | NULL 조합의 -EINVAL와 실패 시 출력 보존 |
+| `test_status_submit_failure_and_recovery` | -ENOMSG/-EINVAL/-EIO 로그·상태 보존·재시도 없이 다음 요청 복귀 |
+| `test_status_encode_failure_does_not_submit` | 오류 주입 시 TX 제출 차단·다음 요청 복귀 |
+| `test_incoming_status_report_is_ignored` | 응답 TYPE 수신 시 추가 응답 없음·상태 보존·default fallthrough 없음 |
 
 이 테스트는 프레임 파싱 이후의 처리 함수 경계에서 실행합니다.
 CRC·길이 오류 차단과 실제 통계 집계는 UART 테스트에서 별도로 검증합니다.
@@ -293,3 +298,10 @@ STATUS에서 TX로 제출하는 호출부는 아직 연결되지 않았습니다
 - TX init 테스트는 미준비 시 정확한 -ENODEV를 확인하도록 보강.
 - STATUS 5개, TX 4개, Tracking 1 suite, Python 84개 + subtest 9개 검증.
 - 펌웨어 빌드와 공개 헤더 단독 컴파일 통과. 펌웨어 assert·빌드 설정은 추가/변경하지 않음. flash·실보드 시험 미실시.
+
+
+## 2026-11-12 STATUS_REPORT 검토·테스트
+
+STATUS host 10개와 펌웨어 빌드 통과. 펌웨어 수정 없이 테스트 CMake에 실제 STATUS
+인코더·프레임 파서를 연결하고 TX 제출 모사·인코딩 실패 주입을 추가했습니다.
+실보드·PC 응답 수신은 검증하지 않았으며 이전 날짜의 미구현 기록은 당시 상태입니다.

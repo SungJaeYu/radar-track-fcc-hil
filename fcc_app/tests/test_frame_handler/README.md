@@ -9,15 +9,32 @@ cmake --build build_frame_handler
 ctest --test-dir build_frame_handler --output-on-failure
 ```
 
-Five cases exercise the real handler and tracking code: zero counters, distinct
-counter values including UINT32_MAX and repeated reads, unchanged active track,
-no timeout before the first measurement, and no timeout refresh from STATUS.
+Ten cases exercise the real handler, status payload encoder, protocol encoder,
+parser, and tracking code:
 
-The fixture captures printk output and supplies a stats snapshot. Real counter
-updates and parser CRC/length rejection are covered by `test_uart_rx`. The RTOS
-stubs do not schedule threads or exercise the queue. These tests do not validate
-atomic concurrency, UART TX, or board behavior. STATUS currently prints a log;
-it does not send a response frame to the PC.
+- Zero counters and one response submission per request.
+- Distinct counter values, UINT32_MAX, and fresh values on repeated requests.
+- Active track preservation and unchanged timeout arming/refresh behavior.
+- Exact 16-byte big-endian payload and a fixed 21-byte frame/CRC reference,
+  independently calculated with Python binascii; parsing the resulting frame.
+- NULL input/output rejection with -EINVAL and unchanged output on failure.
+- TX submission errors (-ENOMSG, -EINVAL, -EIO), no immediate retry, preserved
+  track/counters, and successful submission on the next request.
+- Injected encoder failure prevents TX submission; the next request recovers.
+- An incoming STATUS_REPORT is ignored without replying or falling into default.
+
+The fixture captures printk and copies requests at the uart_tx_submit boundary.
+It supplies diagnostic snapshots and submission results; the encoder wrapper
+only injects the otherwise unreachable failure for valid local pointers.
+Successful calls and direct encoder tests use the actual production encoder.
+
+These tests do not schedule RTOS threads or exercise the actual TX queue/UART.
+Real counter updates are covered by test_uart_rx, while queue and byte emission
+are covered separately by test_uart_tx. Board concurrency, physical delivery,
+and PC/GUI decoding remain outside this suite.
+
+2026-11-12: all ten cases and the firmware build passed. No flash or board test
+was performed. Firmware source was reviewed, not modified by the test update.
 
 The local VS Code task `Host: Configure STATUS tests` generates this test's own
 compile database. The test must use host headers, not the firmware's Zephyr paths.
