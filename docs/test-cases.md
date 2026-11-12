@@ -16,14 +16,14 @@
 | 연속 측정 송신기 | `tests/test_radar_sender.py` | 5 + 내부 subtest 9 | Python, serial·sleep 모사 |
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
 | GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
-| GUI 화면·통신 작업부 | `tests/test_gui.py` | 5 | offscreen Qt, serial 모사 |
+| GUI 화면·통신 작업부 | `tests/test_gui.py` | 9 | offscreen Qt, serial 모사 |
 | CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 28 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 10 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 21 | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **126개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **130개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
 UART C는 각 함수를 CTest에 따로 등록하므로 21개로 표시됩니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
@@ -359,3 +359,15 @@ STATUS host 10개와 펌웨어 빌드 통과. 펌웨어 수정 없이 테스트 
 | `test_cli_invalid_arguments` | 4 | 잘못된 CLI 인자는 포트를 열기 전에 거부 |
 
 2026-11-12: CLI 21개, 전체 Python 126개와 subtest 9개 통과. 모사 시각으로 실행하며 실제 보드·OS serial timeout 정밀도를 검증하지 않는다.
+
+
+## GUI STATUS 조회 회귀
+
+[tests/test_gui.py](../tests/test_gui.py)에 다음 네 사례를 추가했습니다.
+
+- `test_gui_status_success_timeout_and_retry_during_measurements`: 분할 응답·값/시각 표시, 중복 클릭 방지, timeout 후 이전 값 유지·재조회, 측정 송신 지속.
+- `test_gui_disconnect_cancels_status`: 조회 중 연결 해제, 대기 상태 해제·버튼 비활성화·포트 정리.
+- `test_worker_status_skips_invalid_frames_and_rejects_duplicates`: CRC/LEN 오류·다른 TYPE·잘못된 STATUS 뒤 정상 복귀, worker 중복 요청 방지.
+- `test_preview_rejects_status_request`: 미리보기 요청 거부.
+
+Qt offscreen과 가짜 serial로 실행합니다. 실보드 응답·IRQ 동시성 검증은 아닙니다.

@@ -4,15 +4,22 @@ import codecs
 import queue
 import random
 import time
+from threading import Event
 
 from PySide6.QtCore import QThread, Signal
 import serial
 
 from .gui_model import make_sample
-from .protocol import build_init_frame
+from .frame_parser import FrameParser
+from .protocol import (build_init_frame, encode_frame, decode_status_payload,
+                       FRAME_TYPE_STATUS_REQUEST, FRAME_TYPE_STATUS_REPORT)
 
 
 class SessionWorker(QThread):
+    status_received = Signal(object)
+    status_failed = Signal(str)
+    STATUS_TIMEOUT_S = 2.0
+
     connected = Signal()
     sample = Signal(object)
     console = Signal(str)
@@ -26,12 +33,21 @@ class SessionWorker(QThread):
         self.console_port = console_port
         self.serial_factory = serial_factory or serial.Serial
         self.commands = queue.Queue()
+        self.status_pending = Event()
 
     def start_simulation(self, settings):
         self.commands.put(('start', settings))
 
     def stop_simulation(self):
         self.commands.put(('stop', None))
+
+    def request_status(self):
+        # Called by the GUI thread; all serial I/O stays in run().
+        if not self.data_port or self.status_pending.is_set():
+            return False
+        self.status_pending.set()
+        self.commands.put(('status', None))
+        return True
 
     def run(self):
         try:
@@ -51,6 +67,9 @@ class SessionWorker(QThread):
         except Exception as error:
             self.error.emit(str(error))
         finally:
+            if self.status_pending.is_set():
+                self.status_pending.clear()
+                self.status_failed.emit('연결 종료로 STATUS 조회가 취소되었습니다.')
             self.running_changed.emit(False)
 
     @staticmethod
@@ -61,13 +80,20 @@ class SessionWorker(QThread):
 
     def _loop(self, data, console):
         settings = None
+        parser = FrameParser()
+        status_deadline = None
         decoder = codecs.getincrementaldecoder('utf-8')(errors='replace')
         while not self.isInterruptionRequested():
             try:
                 command, value = self.commands.get_nowait()
             except queue.Empty:
                 command = None
-            if command == 'stop':
+            if command == 'status':
+                # Reset assembly only; never flush the shared serial input buffer.
+                parser.reset()
+                status_deadline = time.monotonic() + self.STATUS_TIMEOUT_S
+                self._write(data, encode_frame(FRAME_TYPE_STATUS_REQUEST, b"\x00"))
+            elif command == 'stop':
                 settings = None
                 self.running_changed.emit(False)
                 self.event.emit('송신 중지 · 콘솔 모니터는 유지됩니다.')
@@ -79,6 +105,25 @@ class SessionWorker(QThread):
                 rng = random.Random(settings.seed)
                 started = next_sample = time.monotonic()
                 self.running_changed.emit(True)
+
+            # Nonblocking bounded reads keep simulation pacing and stop commands responsive.
+            if data is not None:
+                raw = data.read(min(data.in_waiting, 4096))
+                if status_deadline is not None and time.monotonic() >= status_deadline:
+                    status_deadline = None
+                    parser.reset()
+                    self.status_pending.clear()
+                    self.status_failed.emit('STATUS 응답 시간 초과')
+                for frame in parser.feed(raw):
+                    if status_deadline is None or frame.frame_type != FRAME_TYPE_STATUS_REPORT:
+                        continue
+                    try:
+                        stats = decode_status_payload(frame.payload)
+                    except ValueError:
+                        continue
+                    status_deadline = None
+                    self.status_pending.clear()
+                    self.status_received.emit(stats)
 
             if console is not None:
                 raw = console.read(min(console.in_waiting, 4096))

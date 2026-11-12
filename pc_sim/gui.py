@@ -1,6 +1,7 @@
 """Desktop HIL console. Launch with python -m pc_sim.gui."""
 from collections import deque
 import math
+from datetime import datetime
 import sys
 
 from PySide6.QtCore import Qt, QTimer
@@ -43,6 +44,7 @@ class MainWindow(QMainWindow):
         self.worker = None
         self.closing = False
         self.connected = False
+        self.status_pending = False
         self.samples = deque(maxlen=2000)
         self.sample_count = 0
         self.setWindowTitle('Radar Lab · HIL Console')
@@ -144,6 +146,34 @@ class MainWindow(QMainWindow):
         note.setWordWrap(True)
         note.setObjectName('subtitle')
         controls.addWidget(note)
+        _, status_layout = tab_page('STATUS')
+        self.status_button = QPushButton('STATUS 조회')
+        self.status_button.clicked.connect(self.request_status)
+        status_layout.addWidget(self.status_button)
+        self.status_message = QLabel('보드 연결 후 조회할 수 있습니다.')
+        self.status_message.setWordWrap(True)
+        status_layout.addWidget(self.status_message)
+        status_form = QFormLayout()
+        self.status_values = {}
+        for key, label in (
+            ('crc_errors', 'CRC 오류'),
+            ('length_errors', '길이 오류'),
+            ('frame_timeouts', '부분 프레임 timeout'),
+            ('queue_drops', 'RX 큐 드롭'),
+        ):
+            value = QLabel('—')
+            value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            self.status_values[key] = value
+            status_form.addRow(label, value)
+        status_layout.addLayout(status_form)
+        self.status_updated = QLabel('마지막 성공 조회: —')
+        self.status_updated.setWordWrap(True)
+        status_layout.addWidget(self.status_updated)
+        note = QLabel('보드 RX 누적 통계입니다. BIT 결과가 아니며, 조회 실패 시 이전 값을 유지합니다.')
+        note.setWordWrap(True)
+        status_layout.addWidget(note)
+        status_layout.addStretch()
+
         self.start_button = QPushButton('▶  시작')
         self.start_button.setObjectName('primary')
         self.start_button.clicked.connect(self.start_simulation)
@@ -233,6 +263,7 @@ class MainWindow(QMainWindow):
         self.connect_button.setEnabled(not busy or self.connected)
         self.start_button.setEnabled(self.connected)
         self.stop_button.setEnabled(False)
+        self.status_button.setEnabled(self.connected and board and not self.status_pending)
 
     def toggle_connection(self):
         if self.worker is not None:
@@ -248,6 +279,8 @@ class MainWindow(QMainWindow):
             self.show_error('데이터와 콘솔에 같은 포트를 사용할 수 없습니다.')
             return
         self.worker = SessionWorker(data, console, self)
+        self.worker.status_received.connect(self.on_status_received)
+        self.worker.status_failed.connect(self.on_status_failed)
         self.worker.connected.connect(self.on_connected)
         self.worker.sample.connect(self.on_sample)
         self.worker.console.connect(self.append_console)
@@ -264,10 +297,38 @@ class MainWindow(QMainWindow):
         board = self.mode.currentIndex() == 1
         self.connection_label.setText('보드 포트 연결됨' if board else '미리보기 준비됨 · UART 사용 안 함')
         self.event_text.appendPlainText(self.connection_label.text())
+        self.status_pending = False
+        for value in self.status_values.values():
+            value.setText('—')
+        self.status_updated.setText('마지막 성공 조회: —')
+        self.status_message.setText('조회 대기' if board else '미리보기에서는 조회할 수 없습니다.')
         self.console_text.clear()
         if not self.worker.console_port:
             self.console_text.setPlainText('콘솔 포트가 연결되지 않았습니다.\n보드 수신·추적 결과를 확인하려면 ST-Link 콘솔을 선택하세요.\n')
         self.update_controls()
+
+    def request_status(self):
+        if not self.connected or self.worker is None or self.status_pending:
+            return
+        if self.worker.request_status():
+            self.status_pending = True
+            self.status_button.setEnabled(False)
+            self.status_message.setText('응답 대기 중…')
+
+    def on_status_received(self, stats):
+        if not self.connected:
+            return
+        self.status_pending = False
+        for key, value in stats.items():
+            self.status_values[key].setText(str(value))
+        self.status_updated.setText('마지막 성공 조회: ' + datetime.now().strftime('%H:%M:%S'))
+        self.status_message.setText('조회 성공')
+        self.status_button.setEnabled(True)
+
+    def on_status_failed(self, message):
+        self.status_pending = False
+        self.status_message.setText(message)
+        self.status_button.setEnabled(self.connected and self.mode.currentIndex() == 1)
 
     def start_simulation(self):
         if not self.connected:
@@ -333,6 +394,7 @@ class MainWindow(QMainWindow):
         self.connect_button.setEnabled(False)
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(False)
+        self.status_button.setEnabled(False)
         self.connection_label.setText('연결 해제 중…')
         self.worker.requestInterruption()
 
@@ -340,6 +402,8 @@ class MainWindow(QMainWindow):
         self.worker.deleteLater()
         self.worker = None
         self.connected = False
+        self.status_pending = False
+        self.status_message.setText('연결 해제 · 표시된 값은 이전 조회 결과입니다.')
         self.connection_label.setText('연결되지 않음')
         self.settings_form.setEnabled(True)
         self.update_controls()

@@ -115,7 +115,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
 - TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6.
 - INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
-  STATUS 통계는 16바이트 STATUS_REPORT로 TX 큐에 제출합니다. PC CLI 수신은 구현했으며 GUI 표시와 실보드 응답 검증은 남아 있습니다.
+  STATUS 통계는 16바이트 STATUS_REPORT로 TX 큐에 제출합니다. PC CLI 수신은 구현했으며 GUI 표시까지 구현했으며 실보드 응답 검증은 남아 있습니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
 
 ## RX 버퍼와 overflow 복구
@@ -180,7 +180,7 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 | 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리·부분 프레임 timeout | 스캔 단위 다중 측정 규격 |
 | 실행 구조 | RX → 복사 큐 → handler → TX 복사 큐 → TX 스레드, RX 큐 포화 시 드롭 집계 | 추적 결과 송신·실제 큐 동시성 검증 |
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
-| 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출, PC CLI 수신 | GUI·실보드 TX 검증·BIT·Lock On 미완료 |
+| 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출, PC CLI 수신 | 실보드 TX 검증·BIT·Lock On 미완료 |
 | 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
 | PC 시뮬레이터 | 측정·잡음 생성, PC 출력용 다중표적·미탐지·클러터 시나리오 | 실제 UART 모드는 단일표적·클러터 0으로 제한 |
 | GUI·평가 | 송신 제어, PC 합성값 그래프, 보드 콘솔 | 다중표적 GUI, 보드 추정값 그래프, 폐루프 RMSE·트랙 연속성 평가 |
@@ -259,7 +259,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] TX 초기화·복사 큐·스레드, 프레임 인코딩·CRC·polling 송신 구현과 host 검증
   - [x] STATUS payload 구성과 `uart_tx_submit()` 호출부 연결, host 오류 경로 검증
   - [x] PC STATUS CLI 수신·표시와 오류·deadline 모사 테스트
-  - [ ] GUI STATUS 표시와 실제 보드 → PC 송신 확인
+  - [x] GUI STATUS 수동 조회·통계·성공 시각, 중복 방지·timeout·연결 해제 모사 테스트
+  - [ ] 실제 보드 → PC STATUS 송신 확인
   - [ ] 응답 프레임·CRC·명시적 단위·결과 시각과 TX 완료/실패 처리
   - [ ] TX 큐 포화 정책: 최신 추적 결과와 제어 응답의 보존·폐기 기준, 오류 집계
 - [ ] COMMAND/Lock On: 트랙 선택·해제·대상 소실 정책
@@ -274,7 +275,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 | 순서 | 작업 | 완료 기준 |
 | --- | --- | --- |
 | 1 | STATUS 실보드 왕복 검증 | 실제 USART6 응답 TYPE·길이·CRC·통계값 확인 |
-| 2 | GUI STATUS 표시·추적 결과 송신 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
+| 2 | 추적 결과 송신·GUI 비교 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
 | 3 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
 | 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
 | 5 | 다중표적 입력·track_manager·측정 연관 | 독립 추적부터 교차·소실/재등장까지 검증 |
@@ -283,7 +284,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 부분 프레임 timeout과 RX 기본 오류 통계·STATUS 로그는 구현했습니다.
 `처리 스레드 → 응답 복사 큐 → TX 스레드`까지 STATUS 응답 경로를 구현했습니다.
 지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
-PC 응답 파서·payload 해석·CLI는 구현했습니다. 다음은 실제 USART6 송수신 검증과 GUI 표시입니다.
+PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회도 구현했습니다. 실제 USART6 송수신 검증은 남아 있습니다.
 설정 분리와 부분 프레임 timeout의 실제 보드 검증도 남아 있습니다.
 
 ## 검증 현황

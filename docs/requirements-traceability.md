@@ -361,3 +361,14 @@ serial 읽기·응답 대기시간·STATUS TYPE 확인·CLI/GUI 연결과 FUT-00
 `main()`은 포트 수명·출력·종료 코드(성공 0, 통신 실패 1, 인자 오류 2)를 담당한다.
 [CLI 21개 테스트](../tests/test_status_client.py)는 SPEC-WIRE/STATUS와 위 deadline·오류 계약을 검증한다.
 이 단계는 이전의 CLI 미구현 상태를 대체한다. GUI 연결 및 FUT-002 실보드 왕복은 남아 있다.
+
+
+### FUT-001 GUI 수동 STATUS 조회 구현
+
+[gui_worker.py](../pc_sim/gui_worker.py)의 `request_status()`는 명령 큐로 요청하고 기존 worker가
+단독 소유 데이터 포트에서 프레임을 송수신한다. 응답 대기는 2초, 중복 요청은 거부하며 timeout은
+측정 송신을 멈추지 않는다. 전체 파싱과 TYPE/16바이트 검증 후 Qt signal로 통계를 전달한다.
+[gui.py](../pc_sim/gui.py)는 통계·성공 시각·대기/실패를 표시하고 연결 해제 시 요청을 취소한다.
+실패 시 이전 값을 유지하고 새 연결에서는 지운다. 자동 조회와 request ID 상관관계는 제공하지 않는다.
+[test_gui.py](../tests/test_gui.py)의 네 STATUS 사례는 REQ-GUI-001 및 FUT-001의 UI·worker 연결을 검증한다.
+FUT-001의 CLI·GUI 수동 조회 경로는 구현됐으며 FUT-002 실보드 왕복은 사용자 요청으로 연기했다.

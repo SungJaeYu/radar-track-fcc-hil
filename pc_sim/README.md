@@ -139,7 +139,7 @@ Frame timeouts, Queue drops 네 항목을 출력합니다.
 - STATUS는 오류 통계이며 실제 BIT 결과는 아닙니다. 실보드 왕복은 아직 검증하지 않았습니다.
 
 기존 `python pc_sim/small_byte_test.py status --type 3 --port PORT`는 요청만 보내는 도구입니다.
-GUI STATUS 버튼·응답 표시는 아직 없습니다.
+GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 CLI가 같은 포트를 열지 않도록 합니다.
 
 ## TYPE 요청·보고 구분
 
@@ -150,7 +150,7 @@ GUI STATUS 버튼·응답 표시는 아직 없습니다.
 | 0x03 | `FRAME_TYPE_STATUS_REQUEST` | PC 진단 도구 → FCC 상태 조회 |
 | 0x04 | `FRAME_TYPE_COMMAND` | 명령 예약, 동작 미구현 |
 | 0x05 | `FRAME_TYPE_RESET` | FCC 추적 리셋 |
-| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 16바이트 payload; CLI 수신 구현, GUI 미구현 |
+| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 16바이트 payload; CLI·GUI 수신 구현; 실보드 왕복 미검증 |
 
 기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
 `protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는

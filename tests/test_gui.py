@@ -165,3 +165,135 @@ def test_gui_settings_remain_accessible_in_short_window(app):
         assert window.stop_button.mapTo(window, QPoint(0, 0)).y() + window.stop_button.height() <= window.height()
     finally:
         window.close()
+
+
+class StatusSerial(FakeSerial):
+    def __init__(self, reply=True):
+        super().__init__()
+        self.reply = reply
+        self.buffer = bytearray()
+
+    def write(self, frame):
+        from pc_sim.protocol import FRAME_TYPE_STATUS_REQUEST
+        result = super().write(frame)
+        if frame[2] == FRAME_TYPE_STATUS_REQUEST and self.reply:
+            # Fixed wire reference; read() deliberately fragments this response.
+            self.buffer.extend(bytes.fromhex(
+                '7e 10 06 12 34 56 78 80 00 00 00 00 00 00 01 ff ff ff ff eb 11'))
+            self.in_waiting = len(self.buffer)
+        return result
+
+    def read(self, size):
+        count = min(size, 3)
+        raw = bytes(self.buffer[:count])
+        del self.buffer[:count]
+        self.in_waiting = len(self.buffer)
+        return raw
+
+
+def test_gui_status_success_timeout_and_retry_during_measurements(app, monkeypatch):
+    from pc_sim import gui
+    port = StatusSerial()
+
+    def make_worker(data, console, parent):
+        worker = SessionWorker(data, console, parent, serial_factory=lambda *a, **kw: port)
+        worker.STATUS_TIMEOUT_S = 0.15
+        return worker
+
+    monkeypatch.setattr(gui, 'SessionWorker', make_worker)
+    window = MainWindow()
+    window.show()
+    try:
+        assert not window.status_button.isEnabled()
+        window.mode.setCurrentIndex(1)
+        window.data_port.addItem('fake', 'fake')
+        window.data_port.setCurrentIndex(window.data_port.count() - 1)
+        window.connect_button.click()
+        wait_for(app, lambda: window.connected)
+        window.start_button.click()
+        wait_for(app, lambda: window.sample_count >= 1)
+
+        window.request_status()
+        window.request_status()
+        assert not window.status_button.isEnabled()
+        wait_for(app, lambda: window.status_message.text() == '조회 성공')
+        assert window.status_values['crc_errors'].text() == '305419896'
+        assert window.status_values['queue_drops'].text() == '4294967295'
+        assert window.status_updated.text() != '마지막 성공 조회: —'
+        assert sum(frame[2] == 3 for frame in port.writes) == 1
+        assert window.stop_button.isEnabled()
+
+        port.reply = False
+        count = window.sample_count
+        window.request_status()
+        wait_for(app, lambda: '시간 초과' in window.status_message.text())
+        wait_for(app, lambda: window.sample_count > count)
+        assert window.status_values['crc_errors'].text() == '305419896'
+        assert window.status_button.isEnabled()
+        port.reply = True
+        window.request_status()
+        wait_for(app, lambda: window.status_message.text() == '조회 성공')
+        assert sum(frame[2] == 3 for frame in port.writes) == 3
+    finally:
+        window.close()
+        wait_for(app, lambda: window.worker is None)
+    assert port.closed
+
+
+def test_gui_disconnect_cancels_status(app, monkeypatch):
+    from pc_sim import gui
+    port = StatusSerial(reply=False)
+    monkeypatch.setattr(gui, 'SessionWorker', lambda data, console, parent:
+        SessionWorker(data, console, parent, serial_factory=lambda *a, **kw: port))
+    window = MainWindow()
+    try:
+        window.mode.setCurrentIndex(1)
+        window.data_port.addItem('fake', 'fake')
+        window.data_port.setCurrentIndex(window.data_port.count() - 1)
+        window.connect_button.click()
+        wait_for(app, lambda: window.connected)
+        window.request_status()
+        wait_for(app, lambda: bool(port.writes))
+        window.disconnect()
+        wait_for(app, lambda: window.worker is None)
+        assert not window.status_pending
+        assert not window.status_button.isEnabled()
+        assert port.closed
+    finally:
+        window.close()
+        wait_for(app, lambda: window.worker is None)
+
+
+def test_worker_status_skips_invalid_frames_and_rejects_duplicates(app):
+    from pc_sim.protocol import encode_frame
+    port = StatusSerial(reply=False)
+    worker = SessionWorker('fake', serial_factory=lambda *a, **kw: port)
+    reports = []
+    worker.status_received.connect(reports.append)
+    assert worker.request_status()
+    assert not worker.request_status()
+    worker.start()
+    try:
+        wait_for(app, lambda: bool(port.writes))
+        valid = bytes.fromhex(
+            '7e 10 06 12 34 56 78 80 00 00 00 00 00 00 01 ff ff ff ff eb 11')
+        corrupt = bytearray(valid)
+        corrupt[-1] ^= 1
+        port.buffer.extend(b'\x7e\x00' + bytes(corrupt) + encode_frame(1, b'\x00')
+                           + encode_frame(6, b'\x00') + valid)
+        port.in_waiting = len(port.buffer)
+        wait_for(app, lambda: bool(reports))
+        assert reports == [{'crc_errors': 0x12345678, 'length_errors': 0x80000000,
+                            'frame_timeouts': 1, 'queue_drops': 0xffffffff}]
+        assert not worker.status_pending.is_set()
+        assert len(port.writes) == 1
+    finally:
+        worker.requestInterruption()
+        assert worker.wait(2000)
+    assert port.closed
+
+
+def test_preview_rejects_status_request(app):
+    worker = SessionWorker()
+    assert not worker.request_status()
+    assert worker.commands.empty()
