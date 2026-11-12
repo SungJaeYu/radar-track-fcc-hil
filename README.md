@@ -262,7 +262,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] STATUS payload 구성과 `uart_tx_submit()` 호출부 연결, host 오류 경로 검증
   - [x] PC STATUS CLI 수신·표시와 오류·deadline 모사 테스트
   - [x] GUI STATUS 수동 조회·통계·성공 시각, 중복 방지·timeout·연결 해제 모사 테스트
-  - [ ] 실제 보드 → PC STATUS 송신 확인
+  - [x] 실제 보드 → PC STATUS 송신 확인 — `2aa57d9`, CLI·GUI 및 오류 주입 시험
   - [ ] 응답 프레임·CRC·명시적 단위·결과 시각과 TX 완료/실패 처리
   - [ ] TX 큐 포화 정책: 최신 추적 결과와 제어 응답의 보존·폐기 기준, 오류 집계
 - [ ] COMMAND/Lock On: 트랙 선택·해제·대상 소실 정책
@@ -290,6 +290,10 @@ PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회�
 설정 분리와 부분 프레임 timeout의 실제 보드 검증도 남아 있습니다.
 
 ## 검증 현황
+
+2026-11-12 최신 실보드: `2aa57d9` 빌드·플래시 후 STATUS CLI·GUI 왕복, 오류 통계 증가,
+INIT/RESET 통계 보존, 추적 중 조회·무수신 timeout 확인 완료.
+[실보드 결과와 원시 로그](docs/hardware-test-2026-11-12-status.md).
 
 최신 host 결과: GUI STATUS 포함 Python **130개 + subtest 9개**, handler **17개** 통과.
 handler 보강 커밋은 `658f2e6`, GUI STATUS 커밋은 `ed1f0bf`입니다.

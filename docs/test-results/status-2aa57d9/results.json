@@ -1,0 +1,33 @@
+{
+  "no_timeout_before_first_measurement": true,
+  "repeated_status_unchanged": true,
+  "crc_error_increment": true,
+  "length_error_increment": true,
+  "partial_timeout_increment": true,
+  "reset_preserves_counters": true,
+  "init_preserves_counters": true,
+  "status_during_tracking_2": true,
+  "status_during_tracking_5": true,
+  "status_during_tracking_8": true,
+  "tracking_initializes_once": true,
+  "tracking_accepts_nine_updates": true,
+  "no_timeout_while_measuring": true,
+  "status_does_not_refresh_measurement_timeout": true,
+  "measurement_timeout_is_one_shot": true,
+  "final_status_available": true,
+  "initial_stats": {
+    "crc_errors": 0,
+    "length_errors": 0,
+    "frame_timeouts": 0,
+    "queue_drops": 0
+  },
+  "final_stats": {
+    "crc_errors": 1,
+    "length_errors": 2,
+    "frame_timeouts": 1,
+    "queue_drops": 0
+  },
+  "revision": "2aa57d9",
+  "recorded_at": "2026-11-12T22:15:30.647287+09:00",
+  "firmware_hex_sha256": "2200003281125846f9797218a0bd9c125c1aa305038f0161bb6e608a3a51b9a7"
+}

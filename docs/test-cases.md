@@ -388,3 +388,11 @@ Qt offscreen과 가짜 serial로 실행합니다. 실보드 응답·IRQ 동시�
 | `test_timestamp_rejection_refreshes_receive_timeout` | 중복·역행 timestamp는 트랙을 유지하지만 수신 시각 갱신 |
 
 handler 17개 모두 통과. INIT/RESET 통계는 모사 snapshot 응답 보존 검증이며 실제 RX 카운터 통합 검증은 아니다. 펌웨어 수정·flash·실보드 시험은 하지 않았다.
+
+
+## 최신 STATUS 실보드 결과
+
+`2aa57d9`에서 CLI·GUI STATUS 왕복, CRC/LEN/부분 프레임 timeout 통계 증가,
+INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.
+[2026-11-12 시험 결과·원시 로그](hardware-test-2026-11-12-status.md)를 참고합니다.
+이 기록은 이전 STATUS 실보드 미검증/연기 상태를 대체합니다. 강제 링 overflow·UART overrun·부하 시험은 남아 있습니다.

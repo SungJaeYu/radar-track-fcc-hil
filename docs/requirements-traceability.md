@@ -398,3 +398,11 @@ FUT-001의 CLI·GUI 수동 조회 경로는 구현됐으며 FUT-002 실보드 �
 신규 7개를 포함해 handler host 17개 통과. 기존 CTL-002의 측정 경유 검증 공백을 보강했다.
 CTL-001은 명령 경유 트랙 초기화와 모사 통계 응답 보존을 확인했으며 실제 processor atomic
 카운터와 handler를 함께 실행하는 통합 검증은 여전히 남아 있다. RTOS 동시성·실보드는 제외한다.
+
+
+## 최신 STATUS 실보드 결과
+
+`2aa57d9`에서 CLI·GUI STATUS 왕복, CRC/LEN/부분 프레임 timeout 통계 증가,
+INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.
+[2026-11-12 시험 결과·원시 로그](hardware-test-2026-11-12-status.md)를 참고합니다.
+이 기록은 이전 STATUS 실보드 미검증/연기 상태를 대체합니다. 강제 링 overflow·UART overrun·부하 시험은 남아 있습니다.

@@ -1,0 +1,146 @@
+TYPE_INIT
+main alive
+TYPE_STATUS
+CRC: 0, length: 0, timeout: 0, queue drops: 0
+TYPE_STATUS
+CRC: 0, length: 0, timeout: 0, queue drops: 0
+TYPE_STATUS
+CRC: 0, length: 0, timeout: 0, queue drops: 0
+TYPE_STATUS
+CRC: 0, length: 0, timeout: 0, queue drops: 0
+TYPE_STATUS
+CRC: 1, length: 0, timeout: 0, queue drops: 0
+main alive
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 0, queue drops: 0
+main alive
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE RESET
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_INIT
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+main alive
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+main alive
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+Radar measurement timeout: track cleared
+main alive
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+main alive
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0

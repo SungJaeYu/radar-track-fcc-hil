@@ -1,0 +1,11 @@
+{
+  "actual_board_stats": {
+    "crc_errors": 1,
+    "length_errors": 2,
+    "frame_timeouts": 1,
+    "queue_drops": 0
+  },
+  "status_during_measurements": true,
+  "status_after_stop": true,
+  "connection_closed": true
+}
