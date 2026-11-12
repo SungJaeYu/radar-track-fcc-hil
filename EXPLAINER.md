@@ -1,7 +1,7 @@
 # 현재 코드 흐름 설명
 
 이 문서는 현재 단일 트랙 학습 구현을 설명합니다. 실행 명령은 [pc_sim 안내](pc_sim/README.md),
-배선은 [HIL-wiring](docs/HIL-wiring.md)를 참고하세요.
+배선은 [배선·보드 검증](docs/board-bringup.md)를 참고하세요.
 
 ## 1. PC 측정 생성
 
@@ -96,14 +96,14 @@ STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 Python 테스트는 프레임 바이트·단위 변환·송신 순서·시나리오 CLI와 GUI 모델을 검증합니다.
 GUI 의존성을 설치하면 offscreen Qt·모사 serial로 시작·중지·재시작·오류·포트 해제도 검사합니다.
 `fcc_app/tests/test_kalman`은 C 필터·게이팅·추적 정책 등의 별도 테스트입니다.
-[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계의 20개 사례를 검증합니다.
+[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계의 21개 사례를 검증합니다.
 UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
 이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
 현재 보드는 이진 트랙 응답을 송신하지 않으므로 PC의 폐루프 RMSE 계산은 아직 없습니다.
 구버전 LCD·다중 트랙 문서는 제거했으며 과거 기록은 Git 이력에서 확인할 수 있습니다.
 
 
-## 7. STATUS와 송신 준비
+## 7. STATUS 응답 송신
 
 `rx_frame_processor.c`가 CRC·길이 오류·부분 프레임 timeout·큐 드롭의 atomic
 카운터를 소유합니다. STATUS는 처리 스레드에서 지역 `stats`로 값을 복사해
@@ -113,6 +113,9 @@ ST-Link 콘솔에 출력합니다. 개별 값은 안전하게 읽지만 전체 �
 
 `uart_tx.c/.h`는 초기화·TX 복사 큐·스레드와 polling 송신을 구현했습니다.
 `protocol_frame_encode()`가 STX·LEN·TYPE·payload·CRC 바이트열을 구성합니다.
-STATUS 제출 호출부는 아직 없으므로 현재 요청만으로 USART6 응답이 나가지는 않습니다.
-TX host 테스트 4개와 CRC/인코더 상호운용 26개를 통과했으며 실보드 송신은 미검증입니다.
-STATUS host 테스트 5개는 출력값과 추적 상태·측정 timeout 보존을 검증합니다.
+STATUS 처리부는 네 통계값을 big-endian uint32 순서로 인코딩한 16바이트
+STATUS_REPORT를 TX 큐에 복사 제출합니다. 순서는 CRC 오류·길이 오류·부분 프레임
+timeout·큐 드롭입니다. 인코딩·큐 제출 실패는 오류 코드와 함께 로그로 남깁니다.
+PC 응답 디코더와 GUI 표시는 아직 없습니다.
+TX host 테스트 4개와 CRC/인코더 상호운용 28개를 통과했으며 실보드 송신은 미검증입니다.
+STATUS host 테스트 10개는 출력값·응답 인코딩·제출 실패와 추적 상태·측정 timeout 보존을 검증합니다.

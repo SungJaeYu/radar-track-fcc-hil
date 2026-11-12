@@ -1,7 +1,27 @@
-# 현재 학습 펌웨어 보드 검증
+# 현재 학습 펌웨어 배선·보드 검증
 
 현재 실행 경로는 USART6 수신 → rx_frame_processor → 메시지 큐 → handler 스레드 → ST-Link 로그입니다.
 과거 LCD 구현 문서와 달리 현재 소스에는 LCD 표시나 이진 트랙 응답 경로가 없습니다.
+
+STATUS 요청에는 handler → TX 복사 큐 → TX 스레드 → USART6 응답 경로도 있습니다.
+PC 응답 디코더와 STATUS 실보드 수신 검증은 아직 남아 있습니다.
+
+## 배선과 통신 설정
+
+기준은 `fcc_app/boards/stm32f746g_disco.overlay`입니다.
+**USART6 TX=PC6, RX=PC7, 115200 baud, 8N1, 흐름제어 없음**을 사용합니다.
+3.3V USB-UART 어댑터를 사용하고 보드의 실제 핀 위치를 확인합니다.
+
+| USB-UART | STM32 핀 | 역할 |
+| --- | --- | --- |
+| TXD | PC7 / USART6_RX | PC 측정·제어 요청 입력 |
+| RXD | PC6 / USART6_TX | STATUS_REPORT 출력; 이진 트랙 결과는 미구현 |
+| GND | GND | 공통 접지 |
+| VCC / 5V / 3V3 | 연결하지 않음 | 보드와 어댑터는 각자 USB로 급전 |
+
+TX→RX, RX←TX로 교차 연결합니다. 핀 변경 시 overlay도 함께 변경합니다.
+ST-Link USB는 flash와 Zephyr 콘솔 로그에 사용하며 데이터용 USB-UART와 구분합니다.
+프레임·TYPE·payload 규격은 [PC 도구 문서](../pc_sim/README.md)를 참고합니다.
 
 ## 1. 빌드·플래시
 
@@ -17,7 +37,7 @@ west flash -d <repo>/build --runner openocd
 ## 2. 포트와 콘솔
 
 - ST-Link VCP: 부팅·측정·추적 로그. `=== FCC learning-rebuild boot ===` 확인.
-- 외부 USB-UART: USART6 측정 입력. [배선](HIL-wiring.md) 참조.
+- 외부 USB-UART: USART6 측정·제어 입력과 STATUS 응답 출력. 위 배선 참조.
 - 하나의 데이터 포트를 송신기와 모니터가 동시에 열지 않도록 합니다.
 - Linux 예: 콘솔 `/dev/ttyACM0`, 데이터 `/dev/ttyUSB0`.
   macOS는 각각 `cu.usbmodem...`, `cu.usbserial...` 등의 실제 장치명을 확인합니다.
@@ -30,7 +50,7 @@ west flash -d <repo>/build --runner openocd
 python pc_sim/radar_sender.py --port /dev/ttyUSB0 --count 20 --hz 10 --noise 0
 ```
 
-- 콘솔에서 `FRAME_TYPE_INIT`과 최초 `Filters initialized` 로그 확인.
+- 콘솔에서 `TYPE_INIT`과 최초 `Filters initialized` 로그 확인.
 - 이어지는 예측·측정 처리 로그 확인. 거리와 각도 단위를 구분합니다.
 - PC 송신 출력은 보드 수신 증거가 아닙니다.
 - 송신 중단 후 약 1초가 지나면 timeout 로그가 한 번 나오고 트랙이 초기화되어야 합니다.
@@ -61,6 +81,7 @@ python -m pc_sim.run_sim --port /dev/ttyUSB0 --duration 10 --noise 0 --azimuth-n
 4. 부하를 낮추고 새 정상 프레임의 처리가 재개되는지 확인합니다. 필요하면 INIT을 보내 추적 상태를 다시 시작합니다.
 5. 송신 중단 후 timeout도 별도로 확인합니다. 첫 정상 측정 전에는 감시하지 않습니다.
 
+소프트웨어 링버퍼 크기는 하드웨어 FIFO 크기와 다릅니다. drain 복구 중 새 입력은 버립니다.
 복구 로그만으로 무손실 수신이나 다음 프레임의 즉시 처리를 판정하지 않습니다.
 현재 손실 바이트·overflow 횟수 카운터가 없으므로 정확한 손실량은 이 로그로 계산할 수 없습니다.
 하드웨어 UART overrun은 소프트웨어 링버퍼 overflow와 별도 확인 대상입니다.
@@ -123,7 +144,10 @@ python pc_sim/small_byte_test.py status --type 3 --port /dev/ttyUSB0
 ```
 
 현재 STATUS payload는 사용하지 않지만 프레임의 LEN은 1..32여야 합니다.
-ST-Link 콘솔에서 `FRAME_TYPE_STATUS`와 CRC·length·timeout·queue drops 누적값을 확인합니다.
+ST-Link 콘솔에서 `TYPE_STATUS`와 CRC·length·timeout·queue drops 누적값을 확인합니다.
 CRC 오류·잘못된 길이·부분 프레임 중단을 주입한 뒤 재조회하고, INIT/RESET 후에도
 누적값이 유지되는지 확인합니다. STATUS만 보내도 측정 무수신 timeout은 계속 동작해야 합니다.
-이 절차는 아직 보드에서 실행하지 않았으며, USART6 응답 수신 시험이 아닙니다.
+펌웨어는 통계를 16바이트 STATUS_REPORT로 구성해 TX 큐에 복사 제출합니다.
+위 CLI는 요청 송신만 하므로 콘솔 확인과 USART6 응답 수신 검증은 별개입니다.
+이 절차는 아직 보드에서 실행하지 않았습니다. PC 디코더 구현 후 응답 TYPE·길이·CRC와
+네 통계값을 실제 수신해 확인해야 합니다.

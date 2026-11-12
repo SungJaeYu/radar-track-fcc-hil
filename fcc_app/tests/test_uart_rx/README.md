@@ -13,7 +13,7 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-20개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
+21개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
 `uart_rx_tests test_receives_after_recovery`처럼 이름을 넘기면 한 사례를 실행합니다.
 Release 빌드에서도 검증용 `assert`가 제거되지 않도록 `-UNDEBUG`를 적용합니다.
 
