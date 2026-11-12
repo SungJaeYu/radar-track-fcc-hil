@@ -18,6 +18,7 @@ target_sources(app PRIVATE
     src/transport/uart_tx.c
     src/protocol/protocol_frame.c
     src/common/crc16.c
+    src/protocol/status_message.c
 )
 
 # Resolve module-qualified includes from the application source root.

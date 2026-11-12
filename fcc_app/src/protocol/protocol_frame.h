@@ -13,14 +13,13 @@
 #define PROTOCOL_FRAME_OVERHEAD 5U
 #define PROTOCOL_MAX_FRAME_SIZE (PROTOCOL_MAX_PAYLOAD + PROTOCOL_FRAME_OVERHEAD)
 
-// Existing values remain wire-compatible. STATUS_REPORT is reserved for a future response.
+// Existing values remain wire-compatible.
 typedef enum {
     FRAME_TYPE_INIT           = 0x01,
     FRAME_TYPE_MEAS_REPORT    = 0x02,
     FRAME_TYPE_STATUS_REQUEST = 0x03,
     FRAME_TYPE_COMMAND        = 0x04,
     FRAME_TYPE_RESET          = 0x05,
-    // Payload format and response transmission are not implemented yet.
     FRAME_TYPE_STATUS_REPORT  = 0x06,
 } FrameType;
 

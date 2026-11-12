@@ -6,8 +6,10 @@
 #include <zephyr/sys/printk.h>
 
 #include "protocol/radar_message.h"
+#include "protocol/status_message.h"
 #include "tracking/gating.h"
 #include "transport/rx_frame_processor.h"
+#include "transport/uart_tx.h"
 
 // Expire the track after 1000 ms without a decoded and validated radar measurement.
 #define RADAR_RX_TIMEOUT_MS 1000
@@ -16,6 +18,7 @@ static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3);
 
 static void handle_radar_measurement(struct frame_handler *p_handler, const struct received_frame *p_frame);
 static void update_track_from_measurement(struct track *p_track, const struct radar_measurement *p_measurement);
+static void handle_status_request(void);
 
 K_THREAD_DEFINE(frame_handler_tid, 2048, frame_handler_thread, NULL, NULL, NULL, 6, 0, 0);
 
@@ -93,16 +96,10 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
         handle_radar_measurement(p_handler, p_frame);
         break;
     }
-    // Diagnostics are currently console-only; no UART status response is submitted.
+    // Queue a STATUS_REPORT containing the current RX diagnostic counters.
     case FRAME_TYPE_STATUS_REQUEST: {
         printk("TYPE_STATUS\n");
-        struct rx_frame_stats stats;
-        rx_frame_processor_get_stats(&stats);
-        printk("CRC: %u, length: %u, timeout: %u, queue drops: %u\n",
-            (unsigned int)stats.crc_errors,
-            (unsigned int)stats.length_errors,
-            (unsigned int)stats.frame_timeouts,
-            (unsigned int)stats.queue_drops);
+        handle_status_request();
         break;
     }
 
@@ -114,6 +111,10 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
     case FRAME_TYPE_RESET:
         printk("TYPE RESET\n");
         frame_handler_reset(p_handler);
+        break;
+
+    case FRAME_TYPE_STATUS_REPORT:
+        printk("Unexpected STATUS_REPORT received\n");
         break;
     default:
         printk("Unknown frame type: 0x%02X\n", p_frame->frame.type);
@@ -215,4 +216,28 @@ int frame_handler_submit(const struct received_frame *p_frame)
     }
 
     return k_msgq_put(&frame_queue, p_frame, K_NO_WAIT);
+}
+
+static void handle_status_request(void)
+{
+    struct rx_frame_stats stats;
+    rx_frame_processor_get_stats(&stats);
+
+    printk("CRC: %u, length: %u, timeout: %u, queue drops: %u\n",
+        (unsigned int)stats.crc_errors,
+        (unsigned int)stats.length_errors,
+        (unsigned int)stats.frame_timeouts,
+        (unsigned int)stats.queue_drops);
+
+    struct send_frame request;
+    int ret = status_message_encode(&stats, &request.frame);
+    if (ret != 0) {
+        printk("STATUS encode failed: %d\n", ret);
+        return;
+    }
+    ret = uart_tx_submit(&request);
+    if (ret != 0) {
+        printk("STATUS submit failed: %d\n", ret);
+        return;
+    }
 }

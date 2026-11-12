@@ -35,7 +35,7 @@ void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms
 
 // Process a non-NULL, assembled frame against a non-NULL handler in its owner context.
 // The RX path has already checked length and CRC; measurement decoding/gating happen here.
-// STATUS currently prints diagnostics only; COMMAND has no operational implementation.
+// STATUS_REQUEST queues a STATUS_REPORT; COMMAND is not implementation.
 void handle_frame(struct frame_handler *p_handler, const struct received_frame *p_frame);
 
 // Copy a received frame and its timestamp into the eight-entry queue without waiting.
