@@ -1,4 +1,4 @@
-# STATUS handler host tests
+# Frame handler host tests
 
 Run without a board or Zephyr installation:
 
@@ -9,7 +9,7 @@ cmake --build build_frame_handler
 ctest --test-dir build_frame_handler --output-on-failure
 ```
 
-Ten cases exercise the real handler, status payload encoder, protocol encoder,
+Seventeen cases exercise the real handler, status payload encoder, protocol encoder,
 parser, and tracking code:
 
 - Zero counters and one response submission per request.
@@ -52,3 +52,13 @@ validation was performed.
 `frame_handler_tests test_name`으로 한 사례만 선택할 수 있습니다.
 각 성공은 `PASS: test_name`으로 출력하며 잘못된 이름은 종료 코드 2를 반환합니다.
 실행기는 `../common/test_runner.h`를 공유합니다. 모사 환경과 검증 범위는 각 suite가 유지합니다.
+
+
+## Measurement and control coverage
+
+Seven additional cases enter through handle_frame(), using distinct sender and board
+receive timestamps. They check INIT/RESET, first valid measurement arming, refresh,
+exact timeout boundaries, one-shot expiry, invalid payload rejection, and receive
+refresh after gate/timestamp rejection. No production firmware source was changed.
+Control cases compare STATUS payloads before/after reset using supplied snapshots;
+real RX atomic counters and handler commands are not integrated in this fixture.

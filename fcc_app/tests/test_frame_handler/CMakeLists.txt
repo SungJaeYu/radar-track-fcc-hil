@@ -12,7 +12,15 @@ target_compile_features(frame_handler_tests PRIVATE c_std_11)
 target_compile_options(frame_handler_tests PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 target_link_libraries(frame_handler_tests PRIVATE m)
 
-foreach(test_name IN ITEMS test_status_zero test_status_snapshot
+foreach(test_name IN ITEMS
+        test_init_command_resets_tracking
+        test_reset_command_resets_tracking
+        test_valid_measurements_arm_refresh_and_expire
+        test_invalid_measurements_do_not_arm_timeout
+        test_invalid_measurements_do_not_refresh_timeout
+        test_gate_rejection_refreshes_receive_timeout
+        test_timestamp_rejection_refreshes_receive_timeout
+        test_status_zero test_status_snapshot
         test_status_preserves_track test_status_does_not_arm_timeout
         test_status_does_not_refresh_timeout
         test_status_encode_wire

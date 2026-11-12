@@ -91,7 +91,7 @@ Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 
 TX host 테스트 4개는 [TX 테스트 안내](fcc_app/tests/test_uart_tx/README.md)를 참고하세요.
 
-STATUS 처리 테스트 10개는 [STATUS 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
+STATUS·명령·측정 처리 테스트 17개는 [STATUS 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
 
 ## 펌웨어 빌드·플래시
 

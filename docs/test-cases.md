@@ -20,7 +20,7 @@
 | CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 28 | Python + 실제 C 파서 host 컴파일 |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
-| STATUS 처리 | `fcc_app/tests/test_frame_handler` | 10 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
+| STATUS 처리 | `fcc_app/tests/test_frame_handler` | 17 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 21 | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **130개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
@@ -371,3 +371,18 @@ STATUS host 10개와 펌웨어 빌드 통과. 펌웨어 수정 없이 테스트 
 - `test_preview_rejects_status_request`: 미리보기 요청 거부.
 
 Qt offscreen과 가짜 serial로 실행합니다. 실보드 응답·IRQ 동시성 검증은 아닙니다.
+
+
+## Handler 명령·측정 경유 timeout 회귀
+
+| 함수 | 검증 |
+| --- | --- |
+| `test_init_command_resets_tracking` | INIT으로 트랙·감시 초기화, 새 측정 재감시, 모사 통계 STATUS 보존 |
+| `test_reset_command_resets_tracking` | RESET으로 트랙·감시 초기화, 새 측정 재감시, 모사 통계 STATUS 보존 |
+| `test_valid_measurements_arm_refresh_and_expire` | 첫 유효 측정 감시 시작·갱신·1000ms 경계·1회 초기화 |
+| `test_invalid_measurements_do_not_arm_timeout` | 길이 오류·거리 0이 감시를 시작하지 않음 |
+| `test_invalid_measurements_do_not_refresh_timeout` | 잘못된 길이·거리 0이 기존 트랙·수신 시각을 변경하지 않음 |
+| `test_gate_rejection_refreshes_receive_timeout` | CONFIRMED에서 gate 거부는 COASTING으로 전이하고 수신 시각 갱신 |
+| `test_timestamp_rejection_refreshes_receive_timeout` | 중복·역행 timestamp는 트랙을 유지하지만 수신 시각 갱신 |
+
+handler 17개 모두 통과. INIT/RESET 통계는 모사 snapshot 응답 보존 검증이며 실제 RX 카운터 통합 검증은 아니다. 펌웨어 수정·flash·실보드 시험은 하지 않았다.

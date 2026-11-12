@@ -372,3 +372,22 @@ serial 읽기·응답 대기시간·STATUS TYPE 확인·CLI/GUI 연결과 FUT-00
 실패 시 이전 값을 유지하고 새 연결에서는 지운다. 자동 조회와 request ID 상관관계는 제공하지 않는다.
 [test_gui.py](../tests/test_gui.py)의 네 STATUS 사례는 REQ-GUI-001 및 FUT-001의 UI·worker 연결을 검증한다.
 FUT-001의 CLI·GUI 수동 조회 경로는 구현됐으며 FUT-002 실보드 왕복은 사용자 요청으로 연기했다.
+
+
+### Handler 명령·측정 경유 검증 보강
+
+소스: [handler 테스트](../fcc_app/tests/test_frame_handler/src/main.c).
+
+| 테스트 함수 | 요구사항 | 검증 |
+| --- | --- | --- |
+| `test_init_command_resets_tracking` | REQ-CTL-001 | INIT으로 트랙·감시 초기화, 새 측정 재감시, 모사 통계 STATUS 보존 |
+| `test_reset_command_resets_tracking` | REQ-CTL-001 | RESET으로 트랙·감시 초기화, 새 측정 재감시, 모사 통계 STATUS 보존 |
+| `test_valid_measurements_arm_refresh_and_expire` | REQ-CTL-002 | 첫 유효 측정 감시 시작·갱신·1000ms 경계·1회 초기화 |
+| `test_invalid_measurements_do_not_arm_timeout` | REQ-CTL-002, REQ-MEA-001 | 길이 오류·거리 0이 감시를 시작하지 않음 |
+| `test_invalid_measurements_do_not_refresh_timeout` | REQ-CTL-002, REQ-MEA-001 | 잘못된 길이·거리 0이 기존 트랙·수신 시각을 변경하지 않음 |
+| `test_gate_rejection_refreshes_receive_timeout` | REQ-CTL-002, REQ-TRK-002 | CONFIRMED에서 gate 거부는 COASTING으로 전이하고 수신 시각 갱신 |
+| `test_timestamp_rejection_refreshes_receive_timeout` | REQ-CTL-002, REQ-TRK-003 | 중복·역행 timestamp는 트랙을 유지하지만 수신 시각 갱신 |
+
+신규 7개를 포함해 handler host 17개 통과. 기존 CTL-002의 측정 경유 검증 공백을 보강했다.
+CTL-001은 명령 경유 트랙 초기화와 모사 통계 응답 보존을 확인했으며 실제 processor atomic
+카운터와 handler를 함께 실행하는 통합 검증은 여전히 남아 있다. RTOS 동시성·실보드는 제외한다.

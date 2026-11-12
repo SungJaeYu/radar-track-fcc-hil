@@ -267,7 +267,188 @@ static void test_incoming_status_report_is_ignored(void)
     assert(memcmp(before, &handler, sizeof(handler)) == 0);
 }
 
+// Keep sender timestamps distinct from board receive times in timeout tests.
+static struct received_frame measurement(uint32_t timestamp_ms, uint16_t range_m,
+                                         int64_t received_at_ms)
+{
+    struct received_frame frame = {
+        .frame = {.type = FRAME_TYPE_MEAS_REPORT, .payload_length = 10},
+        .received_at_ms = received_at_ms,
+    };
+    frame.frame.payload[0] = (uint8_t)(timestamp_ms >> 24);
+    frame.frame.payload[1] = (uint8_t)(timestamp_ms >> 16);
+    frame.frame.payload[2] = (uint8_t)(timestamp_ms >> 8);
+    frame.frame.payload[3] = (uint8_t)timestamp_ms;
+    frame.frame.payload[4] = (uint8_t)(range_m >> 8);
+    frame.frame.payload[5] = (uint8_t)range_m;
+    // The remaining four zero bytes encode an azimuth of zero radians.
+    return frame;
+}
+
+static void check_control_reset(FrameType type)
+{
+    struct frame_handler handler;
+    reset_test(&handler);
+    struct received_frame frame = measurement(100, 1000, 5000);
+    handle_frame(&handler, &frame);
+    assert(handler.timeout_armed && handler.track.state == TRACK_STATE_TENTATIVE);
+    source_stats = (struct rx_frame_stats){1, 2, 3, 4};
+    request_status(&handler);
+    const struct protocol_frame before = submitted_frame.frame;
+
+    frame.frame.type = type;
+    frame.frame.payload_length = 1;
+    handle_frame(&handler, &frame);
+
+    assert(handler.track.state == TRACK_STATE_EMPTY);
+    assert(handler.track.hit_count == 0 && handler.track.miss_count == 0);
+    assert(!handler.timeout_armed && handler.last_valid_rx_ms == 0);
+    frame_handler_check_timeout(&handler, 20000);
+    assert(strstr(output, "Radar measurement timeout") == NULL);
+    request_status(&handler);
+    assert(submitted_frame.frame.payload_length == before.payload_length);
+    assert(memcmp(submitted_frame.frame.payload, before.payload, before.payload_length) == 0);
+    assert(stats_reads == 2 && submit_calls == 2);
+
+    // A new valid measurement rearms monitoring after either command.
+    frame = measurement(0, 2000, 30000);
+    handle_frame(&handler, &frame);
+    assert(handler.timeout_armed && handler.last_valid_rx_ms == 30000);
+    assert(handler.track.state == TRACK_STATE_TENTATIVE);
+}
+
+static void test_init_command_resets_tracking(void)
+{
+    check_control_reset(FRAME_TYPE_INIT);
+}
+
+static void test_reset_command_resets_tracking(void)
+{
+    check_control_reset(FRAME_TYPE_RESET);
+}
+
+static void test_valid_measurements_arm_refresh_and_expire(void)
+{
+    struct frame_handler handler;
+    reset_test(&handler);
+    frame_handler_check_timeout(&handler, 4000);
+    assert(!handler.timeout_armed);
+    assert(strstr(output, "Radar measurement timeout") == NULL);
+
+    struct received_frame frame = measurement(100, 1000, 5000);
+    handle_frame(&handler, &frame);
+    assert(handler.timeout_armed && handler.last_valid_rx_ms == 5000);
+    assert(handler.track.state == TRACK_STATE_TENTATIVE);
+    frame = measurement(200, 1000, 5500);
+    handle_frame(&handler, &frame);
+    assert(handler.last_valid_rx_ms == 5500);
+    assert(handler.track.hit_count == 2);
+    frame_handler_check_timeout(&handler, 6000);
+    assert(handler.timeout_armed);
+    frame_handler_check_timeout(&handler, 6499);
+    assert(handler.timeout_armed);
+    frame_handler_check_timeout(&handler, 6500);
+    assert(!handler.timeout_armed && handler.track.state == TRACK_STATE_EMPTY);
+    assert(strstr(output, "Radar measurement timeout: track cleared\n") != NULL);
+    const size_t log_size = output_size;
+    frame_handler_check_timeout(&handler, 9000);
+    assert(output_size == log_size);
+}
+
+static void test_invalid_measurements_do_not_arm_timeout(void)
+{
+    // Cover decode failure and a decoded but invalid zero range separately.
+    for (int invalid_length = 0; invalid_length < 2; ++invalid_length) {
+        struct frame_handler handler;
+        reset_test(&handler);
+        struct received_frame frame = measurement(100, invalid_length ? 1000 : 0, 5000);
+        if (invalid_length) {
+            frame.frame.payload_length = 9;
+        }
+        handle_frame(&handler, &frame);
+        assert(strstr(output, invalid_length ? "Invalid radar payload"
+                                             : "Invalid radar measurement") != NULL);
+        assert(!handler.timeout_armed && handler.last_valid_rx_ms == 0);
+        assert(handler.track.state == TRACK_STATE_EMPTY);
+        frame_handler_check_timeout(&handler, 10000);
+        assert(strstr(output, "Radar measurement timeout") == NULL);
+    }
+}
+
+static void test_invalid_measurements_do_not_refresh_timeout(void)
+{
+    for (int invalid_length = 0; invalid_length < 2; ++invalid_length) {
+        struct frame_handler handler;
+        reset_test(&handler);
+        struct received_frame frame = measurement(100, 1000, 5000);
+        handle_frame(&handler, &frame);
+        unsigned char before[sizeof(handler.track)];
+        memcpy(before, &handler.track, sizeof(before));
+        frame = measurement(200, invalid_length ? 1000 : 0, 5900);
+        if (invalid_length) {
+            frame.frame.payload_length = 11;
+        }
+        handle_frame(&handler, &frame);
+        assert(handler.last_valid_rx_ms == 5000 && handler.timeout_armed);
+        assert(memcmp(before, &handler.track, sizeof(before)) == 0);
+        frame_handler_check_timeout(&handler, 5999);
+        assert(handler.timeout_armed);
+        frame_handler_check_timeout(&handler, 6000);
+        assert(!handler.timeout_armed && handler.track.state == TRACK_STATE_EMPTY);
+    }
+}
+
+static void test_gate_rejection_refreshes_receive_timeout(void)
+{
+    struct frame_handler handler;
+    reset_test(&handler);
+    for (uint32_t i = 0; i < 3; ++i) {
+        struct received_frame frame = measurement(100 + i * 100, 1000, 5000 + i * 100);
+        handle_frame(&handler, &frame);
+    }
+    assert(handler.track.state == TRACK_STATE_CONFIRMED);
+    struct received_frame frame = measurement(400, 2000, 5900);
+    handle_frame(&handler, &frame);
+    assert(strstr(output, "Measurement rejected by gate") != NULL);
+    assert(handler.track.state == TRACK_STATE_COASTING && handler.track.miss_count == 1);
+    assert(handler.timeout_armed && handler.last_valid_rx_ms == 5900);
+    frame_handler_check_timeout(&handler, 6899);
+    assert(handler.timeout_armed);
+    frame_handler_check_timeout(&handler, 6900);
+    assert(!handler.timeout_armed && handler.track.state == TRACK_STATE_EMPTY);
+}
+
+static void test_timestamp_rejection_refreshes_receive_timeout(void)
+{
+    const uint32_t timestamps[] = {100, 99};
+    for (size_t i = 0; i < sizeof(timestamps) / sizeof(timestamps[0]); ++i) {
+        struct frame_handler handler;
+        reset_test(&handler);
+        struct received_frame frame = measurement(100, 1000, 5000);
+        handle_frame(&handler, &frame);
+        unsigned char before[sizeof(handler.track)];
+        memcpy(before, &handler.track, sizeof(before));
+        frame = measurement(timestamps[i], 1000, 5900);
+        handle_frame(&handler, &frame);
+        assert(strstr(output, "Invalid measurement interval") != NULL);
+        assert(memcmp(before, &handler.track, sizeof(before)) == 0);
+        assert(handler.timeout_armed && handler.last_valid_rx_ms == 5900);
+        frame_handler_check_timeout(&handler, 6899);
+        assert(handler.timeout_armed);
+        frame_handler_check_timeout(&handler, 6900);
+        assert(!handler.timeout_armed);
+    }
+}
+
 static const struct test_case cases[] = {
+    TEST_CASE(test_init_command_resets_tracking),
+    TEST_CASE(test_reset_command_resets_tracking),
+    TEST_CASE(test_valid_measurements_arm_refresh_and_expire),
+    TEST_CASE(test_invalid_measurements_do_not_arm_timeout),
+    TEST_CASE(test_invalid_measurements_do_not_refresh_timeout),
+    TEST_CASE(test_gate_rejection_refreshes_receive_timeout),
+    TEST_CASE(test_timestamp_rejection_refreshes_receive_timeout),
+
     TEST_CASE(test_status_encode_wire),
     TEST_CASE(test_status_encode_invalid_arguments),
     TEST_CASE(test_status_submit_failure_and_recovery),
