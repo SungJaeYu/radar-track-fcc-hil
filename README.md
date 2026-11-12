@@ -91,7 +91,7 @@ Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 
 TX host 테스트 4개는 [TX 테스트 안내](fcc_app/tests/test_uart_tx/README.md)를 참고하세요.
 
-STATUS 처리 테스트 5개는 [STATUS 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
+STATUS 처리 테스트 10개는 [STATUS 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
 
 ## 펌웨어 빌드·플래시
 
@@ -113,7 +113,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - LEN은 payload 길이이며 1..32바이트. CRC는 LEN·TYPE·payload를 포함하며 상위 바이트부터 전송합니다.
 - 측정 payload는 big-endian `>IHi`: timestamp_ms(uint32), range_m(uint16), azimuth_sc(int32), 총 10바이트.
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
-- TYPE: INIT=1, RADAR_MEAS=2, STATUS=3, COMMAND=4, RESET=5.
+- TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6.
 - INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
   STATUS 통계는 16바이트 STATUS_REPORT로 TX 큐에 제출합니다. PC CLI 수신은 구현했으며 GUI 표시와 실보드 응답 검증은 남아 있습니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
@@ -180,7 +180,7 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 | 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리·부분 프레임 timeout | 스캔 단위 다중 측정 규격 |
 | 실행 구조 | RX → 복사 큐 → handler → TX 복사 큐 → TX 스레드, RX 큐 포화 시 드롭 집계 | 추적 결과 송신·실제 큐 동시성 검증 |
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
-| 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출 | PC CLI 수신 구현; GUI·실보드 TX 검증·BIT·Lock On 미완료 |
+| 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출, PC CLI 수신 | GUI·실보드 TX 검증·BIT·Lock On 미완료 |
 | 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
 | PC 시뮬레이터 | 측정·잡음 생성, PC 출력용 다중표적·미탐지·클러터 시나리오 | 실제 UART 모드는 단일표적·클러터 0으로 제한 |
 | GUI·평가 | 송신 제어, PC 합성값 그래프, 보드 콘솔 | 다중표적 GUI, 보드 추정값 그래프, 폐루프 RMSE·트랙 연속성 평가 |
@@ -273,8 +273,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 완료 기준 |
 | --- | --- | --- |
-| 1 | PC STATUS 응답 수신·실보드 TX 검증 | 실제 USART6 응답 TYPE·길이·CRC·통계값 확인 |
-| 2 | PC 응답 수신·추적 결과 송신 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
+| 1 | STATUS 실보드 왕복 검증 | 실제 USART6 응답 TYPE·길이·CRC·통계값 확인 |
+| 2 | GUI STATUS 표시·추적 결과 송신 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
 | 3 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
 | 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
 | 5 | 다중표적 입력·track_manager·측정 연관 | 독립 추적부터 교차·소실/재등장까지 검증 |
@@ -287,6 +287,11 @@ PC 응답 파서·payload 해석·CLI는 구현했습니다. 다음은 실제 US
 설정 분리와 부분 프레임 timeout의 실제 보드 검증도 남아 있습니다.
 
 ## 검증 현황
+
+2026-11-12 (`0e84bdd`): PC 프레임 파서·STATUS CLI 포함 Python 126개 + subtest 9개 통과.
+최신 펌웨어 빌드 성공; 기존 devicetree 중복 unit-address 경고 유지.
+ST-Link·USB-UART가 감지되지 않아 flash는 OpenOCD `Error: open failed`로 실패했으며,
+STATUS 실보드 왕복은 미검증입니다. 아래 날짜별 기록은 당시 버전의 결과입니다.
 
 2026-11-10: assert 제외 코딩 규칙 적용 완료. RX 21개·STATUS 5개·TX 4개·Tracking suite, Python 84개 + subtest 9개, 공개 헤더 단독 컴파일과 펌웨어 빌드 통과.
 
