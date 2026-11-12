@@ -22,3 +22,11 @@ handling and physical STATUS delivery remain unverified.
 
 2026-11-08: all four cases passed. Firmware incremental build passed without
 warnings. No board flash or HIL was performed.
+
+
+## 공통 host 실행 형식
+
+`uart_tx_tests`를 인자 없이 실행하면 전체 사례를 실행합니다.
+`uart_tx_tests test_name`으로 한 사례만 선택할 수 있습니다.
+각 성공은 `PASS: test_name`으로 출력하며 잘못된 이름은 종료 코드 2를 반환합니다.
+실행기는 `../common/test_runner.h`를 공유합니다. 모사 환경과 검증 범위는 각 suite가 유지합니다.

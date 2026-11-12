@@ -84,3 +84,11 @@ processor 함수를 직접 호출합니다. RX 스레드의 50ms 스케줄링이
 검사 직전의 동시 수신은 이 host 시험의 검증 범위가 아닙니다.
 
 `test_rx_init_errors`는 장치 미준비와 callback 등록 오류 전달, 실패 시 IRQ/준비 신호 억제, 성공 초기화를 검증합니다. 현재 총 21개입니다.
+
+
+## 공통 host 실행 형식
+
+`uart_rx_tests`를 인자 없이 실행하면 전체 사례를 실행합니다.
+`uart_rx_tests test_name`으로 한 사례만 선택할 수 있습니다.
+각 성공은 `PASS: test_name`으로 출력하며 잘못된 이름은 종료 코드 2를 반환합니다.
+실행기는 `../common/test_runner.h`를 공유합니다. 모사 환경과 검증 범위는 각 suite가 유지합니다.

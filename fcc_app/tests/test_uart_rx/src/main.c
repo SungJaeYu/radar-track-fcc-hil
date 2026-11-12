@@ -1,3 +1,5 @@
+#include "../../common/test_runner.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -17,14 +19,15 @@ static int submit_result;
 static unsigned int submit_attempts;
 static bool inject_during_submit;
 static const uint8_t init_frame[] = {0x7e, 0x1, 0x1, 0x0, 0xc8, 0x9d};
-static const uint8_t radar_frame[] = {
-    0x7e, 0xa, 0x2, 0x0, 0x0, 0x0, 0x64, 0x3, 0xe8, 0xc0, 0x0, 0x0, 0x0, 0xf, 0xb1
-};
+static const uint8_t radar_frame[] = {0x7e, 0xa,  0x2, 0x0, 0x0, 0x0, 0x64, 0x3,
+                                      0xe8, 0xc0, 0x0, 0x0, 0x0, 0xf, 0xb1};
 
 static void receive(const uint8_t *p_bytes, size_t size)
 {
     assert(!irq_locked);
-    fifo_bytes = p_bytes; fifo_size = size; fifo_position = 0;
+    p_fifo_bytes = p_bytes;
+    fifo_size = size;
+    fifo_position = 0;
     uart_callback(&test_device, NULL);
     assert(fifo_position == size);
 }
@@ -44,7 +47,9 @@ int frame_handler_submit(const struct received_frame *p_frame)
 {
     assert(!irq_locked);
     submit_attempts++;
-    if (submit_result != 0) return submit_result;
+    if (submit_result != 0) {
+        return submit_result;
+    }
     submitted++;
     last_frame = *p_frame;
     if (inject_during_submit) {
@@ -72,7 +77,8 @@ static void reset_test(void)
     test_now_ms = 100;
     memset(&last_frame, 0, sizeof(last_frame));
     inject_during_submit = false;
-    ring_init(&rx_ring); rx_frame_processor_reset();
+    ring_init(&rx_ring);
+    rx_frame_processor_reset();
 }
 
 static void assert_recovered(void)
@@ -98,13 +104,16 @@ static void test_dispatch_drains_complete_frame(void)
 static void test_preserves_partial_parser_and_drops_new_input(void)
 {
     reset_test();
-    for (size_t i = 0; i < 7; ++i) rx_frame_processor_feed(radar_frame[i]);
+    for (size_t i = 0; i < 7; ++i) {
+        rx_frame_processor_feed(radar_frame[i]);
+    }
     assert(submit_attempts == 0);
     receive_overflow(radar_frame + 7, sizeof(radar_frame) - 7, 0);
     inject_during_submit = true;
     rx_recover_overflow();
     assert(submitted == 1 && !inject_during_submit);
-    assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT && last_frame.frame.payload_length == 10);
+    assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT &&
+           last_frame.frame.payload_length == 10);
     assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert_recovered();
 }
@@ -122,7 +131,7 @@ static void test_discards_incomplete_frame(void)
 static void test_rejects_bad_crc(void)
 {
     reset_test();
-    const uint8_t stream[] = {0x7e,1,1,0,0xff,0xff};
+    const uint8_t stream[] = {0x7e, 1, 1, 0, 0xff, 0xff};
     receive_overflow(stream, sizeof(stream), 0);
     rx_recover_overflow();
     assert(submitted == 0);
@@ -154,7 +163,8 @@ static void test_receives_after_recovery(void)
 
 static void test_empty_recovery(void)
 {
-    reset_test(); atomic_set(&rx_overflow, 1);
+    reset_test();
+    atomic_set(&rx_overflow, 1);
     rx_recover_overflow();
     assert(submitted == 0);
     assert_recovered();
@@ -163,12 +173,16 @@ static void test_empty_recovery(void)
 static void test_ring_overflow_preserves_buffer(void)
 {
     reset_test();
-    for (unsigned int i=0; i<RING_BUFFER_SIZE-1; ++i) assert(ring_push(&rx_ring, i));
+    for (unsigned int i = 0; i < RING_BUFFER_SIZE - 1; ++i) {
+        assert(ring_push(&rx_ring, i));
+    }
     uint8_t head = rx_ring.head, tail = rx_ring.tail;
     assert(!ring_push(&rx_ring, 0xff));
     assert(rx_ring.head == head && rx_ring.tail == tail);
-    for (unsigned int i=0; i<RING_BUFFER_SIZE-1; ++i) {
-        uint8_t byte; assert(ring_pop(&rx_ring, &byte)); assert(byte == i);
+    for (unsigned int i = 0; i < RING_BUFFER_SIZE - 1; ++i) {
+        uint8_t byte;
+        assert(ring_pop(&rx_ring, &byte));
+        assert(byte == i);
     }
 }
 
@@ -198,7 +212,8 @@ static void test_processor_copies_frame_and_reset_preserves_drops(void)
         rx_frame_processor_feed(radar_frame[i]);
     }
     assert(submitted == 1 && submit_attempts == 1);
-    assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT && last_frame.frame.payload_length == 10);
+    assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT &&
+           last_frame.frame.payload_length == 10);
     assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert(last_frame.received_at_ms == k_uptime_get());
     assert(queue_drops_count == 0);
@@ -246,7 +261,9 @@ static void test_drain_queue_full_still_finishes_recovery(void)
 
 static void feed_bytes(const uint8_t *p_bytes, size_t size)
 {
-    for (size_t i = 0; i < size; ++i) rx_frame_processor_feed(p_bytes[i]);
+    for (size_t i = 0; i < size; ++i) {
+        rx_frame_processor_feed(p_bytes[i]);
+    }
 }
 
 static void test_timeout_boundary_for_every_partial_frame(void)
@@ -400,53 +417,35 @@ static void test_rx_init_errors(void)
     assert(test_callback_calls == 3 && test_rx_enable_calls == 1 && rx_ready_sem.count == 1);
 }
 
-struct test_case {
-    const char *p_name;
-    void (*p_run)(void);
-};
-
-#define CASE(test) { #test, test }
 static const struct test_case cases[] = {
-    CASE(test_rx_init_errors),
-    CASE(test_stats_snapshot_and_reset),
-    CASE(test_timeout_boundary_for_every_partial_frame),
-    CASE(test_timeout_ignores_idle_and_complete_frames),
-    CASE(test_timeout_recovers_next_valid_frame),
-    CASE(test_timeout_preserves_split_frames),
-    CASE(test_timeout_refreshes_on_each_byte),
-    CASE(test_explicit_reset_cancels_partial_timeout),
+    TEST_CASE(test_rx_init_errors),
+    TEST_CASE(test_stats_snapshot_and_reset),
+    TEST_CASE(test_timeout_boundary_for_every_partial_frame),
+    TEST_CASE(test_timeout_ignores_idle_and_complete_frames),
+    TEST_CASE(test_timeout_recovers_next_valid_frame),
+    TEST_CASE(test_timeout_preserves_split_frames),
+    TEST_CASE(test_timeout_refreshes_on_each_byte),
+    TEST_CASE(test_explicit_reset_cancels_partial_timeout),
 
-    CASE(test_processor_copies_frame_and_reset_preserves_drops),
-    CASE(test_nonready_results_do_not_submit),
-    CASE(test_queue_full_counts_drop_and_recovers),
-    CASE(test_drain_queue_full_still_finishes_recovery),
+    TEST_CASE(test_processor_copies_frame_and_reset_preserves_drops),
+    TEST_CASE(test_nonready_results_do_not_submit),
+    TEST_CASE(test_queue_full_counts_drop_and_recovers),
+    TEST_CASE(test_drain_queue_full_still_finishes_recovery),
 
-    CASE(test_dispatch_drains_complete_frame),
-    CASE(test_preserves_partial_parser_and_drops_new_input),
-    CASE(test_discards_incomplete_frame),
-    CASE(test_rejects_bad_crc),
-    CASE(test_drain_rejects_bad_length_then_handles_valid_frame),
-    CASE(test_receives_after_recovery),
-    CASE(test_empty_recovery),
-    CASE(test_ring_overflow_preserves_buffer),
-    CASE(test_ring_wraparound),
+    TEST_CASE(test_dispatch_drains_complete_frame),
+    TEST_CASE(test_preserves_partial_parser_and_drops_new_input),
+    TEST_CASE(test_discards_incomplete_frame),
+    TEST_CASE(test_rejects_bad_crc),
+    TEST_CASE(test_drain_rejects_bad_length_then_handles_valid_frame),
+    TEST_CASE(test_receives_after_recovery),
+    TEST_CASE(test_empty_recovery),
+    TEST_CASE(test_ring_overflow_preserves_buffer),
+    TEST_CASE(test_ring_wraparound),
 };
 
 int main(int argc, char **p_argv)
 {
-    // The infinite RX thread is compiled but not scheduled by this host harness.
+    // The worker is compiled but is not scheduled by the host test.
     (void)uart_rx_thread;
-    bool matched = false;
-    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
-        if (argc == 1 || (argc == 2 && strcmp(p_argv[1], cases[i].p_name) == 0)) {
-            cases[i].p_run();
-            printf("PASS: %s\n", cases[i].p_name);
-            matched = true;
-        }
-    }
-    if (!matched) {
-        fprintf(stderr, "Usage: %s [test_name]\n", p_argv[0]);
-        return 2;
-    }
-    return 0;
+    return run_tests(argc, p_argv, cases, sizeof(cases) / sizeof(cases[0]));
 }

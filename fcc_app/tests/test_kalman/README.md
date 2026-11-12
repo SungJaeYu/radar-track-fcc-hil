@@ -36,3 +36,11 @@ west build -d /tmp/radar-track-ztest -t run
 
 동일한 테스트 본문을 Zephyr Ztest로 등록합니다. macOS 호스트 테스트 통과와
 Zephyr native_sim 또는 STM32 보드 실행 결과는 별도로 구분해야 합니다.
+
+
+## 공통 host 실행 형식
+
+`track_tests`를 인자 없이 실행하면 전체 사례를 실행합니다.
+`track_tests test_name`으로 한 사례만 선택할 수 있습니다.
+각 성공은 `PASS: test_name`으로 출력하며 잘못된 이름은 종료 코드 2를 반환합니다.
+실행기는 `../common/test_runner.h`를 공유합니다. 모사 환경과 검증 범위는 각 suite가 유지합니다.

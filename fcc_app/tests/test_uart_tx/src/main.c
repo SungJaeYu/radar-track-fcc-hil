@@ -1,7 +1,9 @@
+#include "../../common/test_runner.h"
+
 #include "transport/uart_tx.c"
 #include "protocol/frame_parser.h"
 
-static void reset_fixture(void)
+static void reset_test(void)
 {
     ready = true;
     tx_ready_sem.count = 0;
@@ -14,12 +16,14 @@ static void reset_fixture(void)
 static void run_worker(void)
 {
     assert(tx_ready_sem.count == 1);
-    if (setjmp(worker_exit) == 0) uart_tx_thread(NULL, NULL, NULL);
+    if (setjmp(worker_exit) == 0) {
+        uart_tx_thread(NULL, NULL, NULL);
+    }
 }
 
 static void test_tx_init(void)
 {
-    reset_fixture();
+    reset_test();
     ready = false;
     assert(uart_tx_init() == -ENODEV && tx_ready_sem.count == 0);
     assert(strstr(log_output, "not ready") != NULL);
@@ -29,7 +33,7 @@ static void test_tx_init(void)
 
 static void test_tx_invalid_submit(void)
 {
-    reset_fixture();
+    reset_test();
     struct send_frame request = {.frame = {.type = FRAME_TYPE_STATUS_REQUEST}};
     assert(uart_tx_submit(NULL) == -EINVAL);
     const uint8_t lengths[] = {0, PROTOCOL_MAX_PAYLOAD + 1, UINT8_MAX};
@@ -42,7 +46,7 @@ static void test_tx_invalid_submit(void)
 
 static void test_tx_queue_copy_fifo_full_and_recovery(void)
 {
-    reset_fixture();
+    reset_test();
     assert(uart_tx_init() == 0);
     struct send_frame request = {
         .frame = {.type = FRAME_TYPE_STATUS_REQUEST, .payload_length = 1},
@@ -61,7 +65,8 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
     for (size_t i = 0; i < sent_count; ++i) {
         ParserResult result = parser_feed(&parser, sent[i]);
         if (result == PARSER_RESULT_FRAME_READY) {
-            assert(parser.frame.type == FRAME_TYPE_STATUS_REQUEST && parser.frame.payload_length == 1);
+            assert(parser.frame.type == FRAME_TYPE_STATUS_REQUEST &&
+                   parser.frame.payload_length == 1);
             assert(parser.frame.payload[0] == frames++);
         } else {
             assert(result == PARSER_RESULT_INCOMPLETE);
@@ -79,7 +84,7 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
 
 static void test_tx_encode_error_continues(void)
 {
-    reset_fixture();
+    reset_test();
     assert(uart_tx_init() == 0);
     struct send_frame request = {.frame = {.type = FRAME_TYPE_INIT, .payload_length = 0}};
     // Bypass submit validation solely to exercise the worker's defensive path.
@@ -92,13 +97,14 @@ static void test_tx_encode_error_continues(void)
     assert(sent_count == sizeof(expected) && memcmp(sent, expected, sizeof(expected)) == 0);
 }
 
+static const struct test_case cases[] = {
+    TEST_CASE(test_tx_init),
+    TEST_CASE(test_tx_invalid_submit),
+    TEST_CASE(test_tx_queue_copy_fifo_full_and_recovery),
+    TEST_CASE(test_tx_encode_error_continues),
+};
+
 int main(int argc, char **p_argv)
 {
-    assert(argc == 2);
-#define RUN(test) if (strcmp(p_argv[1], #test) == 0) { test(); return 0; }
-    RUN(test_tx_init)
-    RUN(test_tx_invalid_submit)
-    RUN(test_tx_queue_copy_fifo_full_and_recovery)
-    RUN(test_tx_encode_error_continues)
-    return 2;
+    return run_tests(argc, p_argv, cases, sizeof(cases) / sizeof(cases[0]));
 }

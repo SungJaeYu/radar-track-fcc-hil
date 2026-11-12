@@ -44,3 +44,11 @@ build also passed with the empty TX module registered. CMake regeneration
 reported the existing board devicetree duplicate unit-address warning at
 0x90000000; no new C compiler warnings occurred. No flash or hardware
 validation was performed.
+
+
+## 공통 host 실행 형식
+
+`frame_handler_tests`를 인자 없이 실행하면 전체 사례를 실행합니다.
+`frame_handler_tests test_name`으로 한 사례만 선택할 수 있습니다.
+각 성공은 `PASS: test_name`으로 출력하며 잘못된 이름은 종료 코드 2를 반환합니다.
+실행기는 `../common/test_runner.h`를 공유합니다. 모사 환경과 검증 범위는 각 suite가 유지합니다.

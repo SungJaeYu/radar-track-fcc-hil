@@ -1,3 +1,5 @@
+#include "../../common/test_runner.h"
+
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -8,7 +10,8 @@
 
 // Only the handler call is wrapped for failure injection; successful calls use
 // the real encoder linked separately. No production source is changed.
-static int test_status_encode(const struct rx_frame_stats *p_stats, struct protocol_frame *out_frame);
+static int test_status_encode(const struct rx_frame_stats *p_stats,
+                              struct protocol_frame *out_frame);
 #define status_message_encode test_status_encode
 #include "application/frame_handler.c"
 #undef status_message_encode
@@ -22,7 +25,8 @@ static unsigned int submit_calls;
 static int submit_result;
 static int encode_result;
 
-static int test_status_encode(const struct rx_frame_stats *p_stats, struct protocol_frame *out_frame)
+static int test_status_encode(const struct rx_frame_stats *p_stats,
+                              struct protocol_frame *out_frame)
 {
     if (encode_result != 0) {
         return encode_result;
@@ -44,8 +48,7 @@ int printk(const char *p_format, ...)
 {
     va_list args;
     va_start(args, p_format);
-    int count = vsnprintf(output + output_size, sizeof(output) - output_size,
-                          p_format, args);
+    int count = vsnprintf(output + output_size, sizeof(output) - output_size, p_format, args);
     va_end(args);
     assert(count >= 0 && (size_t)count < sizeof(output) - output_size);
     output_size += (size_t)count;
@@ -60,7 +63,7 @@ void rx_frame_processor_get_stats(struct rx_frame_stats *out_stats)
     *out_stats = source_stats;
 }
 
-static void reset_fixture(struct frame_handler *p_handler)
+static void reset_test(struct frame_handler *p_handler)
 {
     memset(output, 0, sizeof(output));
     output_size = stats_reads = 0;
@@ -84,7 +87,7 @@ static void request_status(struct frame_handler *p_handler)
 static void test_status_zero(void)
 {
     struct frame_handler handler;
-    reset_fixture(&handler);
+    reset_test(&handler);
     request_status(&handler);
     assert(stats_reads == 1 && submit_calls == 1);
     assert(submitted_frame.frame.type == FRAME_TYPE_STATUS_REPORT);
@@ -97,19 +100,19 @@ static void test_status_zero(void)
 static void test_status_snapshot(void)
 {
     struct frame_handler handler;
-    reset_fixture(&handler);
+    reset_test(&handler);
     source_stats = (struct rx_frame_stats){1, 23, 456, UINT32_MAX};
     request_status(&handler);
-    assert(strcmp(output, "TYPE_STATUS\nCRC: 1, length: 23, timeout: 456, queue drops: 4294967295\n") == 0);
+    assert(strcmp(output,
+                  "TYPE_STATUS\nCRC: 1, length: 23, timeout: 456, queue drops: 4294967295\n") == 0);
     source_stats.crc_errors = 2;
     output_size = 0;
     request_status(&handler);
     assert(stats_reads == 2 && submit_calls == 2);
-    const uint8_t expected[] = {
-        0, 0, 0, 2, 0, 0, 0, 23, 0, 0, 1, 0xc8, 0xff, 0xff, 0xff, 0xff
-    };
+    const uint8_t expected[] = {0, 0, 0, 2, 0, 0, 0, 23, 0, 0, 1, 0xc8, 0xff, 0xff, 0xff, 0xff};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
-    assert(strcmp(output, "TYPE_STATUS\nCRC: 2, length: 23, timeout: 456, queue drops: 4294967295\n") == 0);
+    assert(strcmp(output,
+                  "TYPE_STATUS\nCRC: 2, length: 23, timeout: 456, queue drops: 4294967295\n") == 0);
     assert(source_stats.length_errors == 23 && source_stats.frame_timeouts == 456);
     assert(source_stats.queue_drops == UINT32_MAX);
 }
@@ -117,7 +120,7 @@ static void test_status_snapshot(void)
 static void test_status_preserves_track(void)
 {
     struct frame_handler handler;
-    reset_fixture(&handler);
+    reset_test(&handler);
     track_start(&handler.track, 1000.0f, 0.25f, 100);
     handler.timeout_armed = true;
     handler.last_valid_rx_ms = 100;
@@ -130,7 +133,7 @@ static void test_status_preserves_track(void)
 static void test_status_does_not_arm_timeout(void)
 {
     struct frame_handler handler;
-    reset_fixture(&handler);
+    reset_test(&handler);
     request_status(&handler);
     assert(!handler.timeout_armed && handler.last_valid_rx_ms == 0);
     frame_handler_check_timeout(&handler, 10000);
@@ -140,7 +143,7 @@ static void test_status_does_not_arm_timeout(void)
 static void test_status_does_not_refresh_timeout(void)
 {
     struct frame_handler handler;
-    reset_fixture(&handler);
+    reset_test(&handler);
     track_start(&handler.track, 1000.0f, 0.25f, 100);
     handler.timeout_armed = true;
     handler.last_valid_rx_ms = 100;
@@ -152,7 +155,6 @@ static void test_status_does_not_refresh_timeout(void)
     assert(strstr(output, "Radar measurement timeout: track cleared\n") != NULL);
 }
 
-
 static void test_status_encode_wire(void)
 {
     const struct rx_frame_stats stats = {0x12345678U, 0x80000000U, 1U, UINT32_MAX};
@@ -161,7 +163,8 @@ static void test_status_encode_wire(void)
     assert(status_message_encode(&stats, &frame) == 0);
     assert(frame.type == FRAME_TYPE_STATUS_REPORT && frame.payload_length == 16);
     // Independently calculated with Python binascii.crc_hqx(body, 0xffff).
-    const uint8_t expected[] = {0x7e, 0x10, 0x06, 0x12, 0x34, 0x56, 0x78, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xeb, 0x11};
+    const uint8_t expected[] = {0x7e, 0x10, 0x06, 0x12, 0x34, 0x56, 0x78, 0x80, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xeb, 0x11};
     uint8_t wire[sizeof(expected) + 1];
     memset(wire, 0xa5, sizeof(wire));
     assert(protocol_frame_encode(&frame, wire, sizeof(wire)) == (int)sizeof(expected));
@@ -177,8 +180,8 @@ static void test_status_encode_wire(void)
     parser_init(&parser);
     for (size_t i = 0; i < sizeof(expected); ++i) {
         const ParserResult result = parser_feed(&parser, wire[i]);
-        assert(result == (i + 1 == sizeof(expected)
-            ? PARSER_RESULT_FRAME_READY : PARSER_RESULT_INCOMPLETE));
+        assert(result ==
+               (i + 1 == sizeof(expected) ? PARSER_RESULT_FRAME_READY : PARSER_RESULT_INCOMPLETE));
     }
     assert(parser.frame.type == FRAME_TYPE_STATUS_REPORT);
     assert(parser.frame.payload_length == 16);
@@ -203,7 +206,7 @@ static void test_status_submit_failure_and_recovery(void)
     const int errors[] = {-ENOMSG, -EINVAL, -EIO};
     for (size_t i = 0; i < sizeof(errors) / sizeof(errors[0]); ++i) {
         struct frame_handler handler;
-        reset_fixture(&handler);
+        reset_test(&handler);
         track_start(&handler.track, 1000.0f, 0.25f, 100);
         handler.timeout_armed = true;
         handler.last_valid_rx_ms = 100;
@@ -232,7 +235,7 @@ static void test_status_submit_failure_and_recovery(void)
 static void test_status_encode_failure_does_not_submit(void)
 {
     struct frame_handler handler;
-    reset_fixture(&handler);
+    reset_test(&handler);
     unsigned char before[sizeof(handler)];
     memcpy(before, &handler, sizeof(handler));
     encode_result = -EINVAL;
@@ -251,7 +254,7 @@ static void test_status_encode_failure_does_not_submit(void)
 static void test_incoming_status_report_is_ignored(void)
 {
     struct frame_handler handler;
-    reset_fixture(&handler);
+    reset_test(&handler);
     unsigned char before[sizeof(handler)];
     memcpy(before, &handler, sizeof(handler));
     const struct received_frame frame = {
@@ -264,21 +267,22 @@ static void test_incoming_status_report_is_ignored(void)
     assert(memcmp(before, &handler, sizeof(handler)) == 0);
 }
 
+static const struct test_case cases[] = {
+    TEST_CASE(test_status_encode_wire),
+    TEST_CASE(test_status_encode_invalid_arguments),
+    TEST_CASE(test_status_submit_failure_and_recovery),
+    TEST_CASE(test_status_encode_failure_does_not_submit),
+    TEST_CASE(test_incoming_status_report_is_ignored),
+    TEST_CASE(test_status_zero),
+    TEST_CASE(test_status_snapshot),
+    TEST_CASE(test_status_preserves_track),
+    TEST_CASE(test_status_does_not_arm_timeout),
+    TEST_CASE(test_status_does_not_refresh_timeout),
+};
+
 int main(int argc, char **p_argv)
 {
+    // The worker is compiled but is not scheduled by the host test.
     (void)frame_handler_thread;
-    assert(argc == 2);
-#define RUN(test) if (strcmp(p_argv[1], #test) == 0) { test(); return 0; }
-    RUN(test_status_encode_wire)
-    RUN(test_status_encode_invalid_arguments)
-    RUN(test_status_submit_failure_and_recovery)
-    RUN(test_status_encode_failure_does_not_submit)
-    RUN(test_incoming_status_report_is_ignored)
-    RUN(test_status_zero)
-    RUN(test_status_snapshot)
-    RUN(test_status_preserves_track)
-    RUN(test_status_does_not_arm_timeout)
-    RUN(test_status_does_not_refresh_timeout)
-    fprintf(stderr, "Unknown test: %s\n", p_argv[1]);
-    return 2;
+    return run_tests(argc, p_argv, cases, sizeof(cases) / sizeof(cases[0]));
 }

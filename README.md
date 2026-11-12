@@ -60,6 +60,7 @@ python -m pytest
 다중표적·클러터 시나리오는 현재 단일 트랙 펌웨어의 제약 때문에 PC 출력 모드에서만 허용합니다.
 
 전체 Python·C 테스트의 케이스와 검증 범위는 [테스트 케이스 목록](docs/test-cases.md)에 정리했습니다.
+요구사항별 규격·구현·테스트·검증 공백은 [요구사항 추적표](docs/requirements-traceability.md)에서 확인합니다.
 
 ## 데스크톱 GUI
 
@@ -176,7 +177,7 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 | 영역 | 구현된 기능 | 미구현·제한 |
 | --- | --- | --- |
 | 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리·부분 프레임 timeout | 스캔 단위 다중 측정 규격 |
-| 실행 구조 | RX 스레드 → 프레임 복사 큐 → handler 스레드, 큐 포화 시 드롭 집계 | TX 전용 처리·추적 결과 송신 |
+| 실행 구조 | RX → 복사 큐 → handler → TX 복사 큐 → TX 스레드, RX 큐 포화 시 드롭 집계 | 추적 결과 송신·실제 큐 동시성 검증 |
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
 | 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출 | PC 응답 수신·실보드 TX 검증·BIT·Lock On 미완료 |
 | 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
