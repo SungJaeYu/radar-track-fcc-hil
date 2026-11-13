@@ -1,9 +1,13 @@
 mainmenu "Radar tracking firmware"
 
+# Zephyr platform, board, driver, and kernel configuration definitions.
+# The build command selects the board; its defconfig supplies board defaults.
 source "Kconfig.zephyr"
 
+# Application tuning options; select values in prj.conf.
 menu "Radar application settings"
 
+# RX buffer recovery policy.
 choice RADAR_RX_OVERFLOW_POLICY
     prompt "RX overflow recovery policy"
     default RADAR_RX_OVERFLOW_DRAIN
@@ -20,5 +24,23 @@ config RADAR_RX_OVERFLOW_DISCARD
         Discard all buffered bytes and reset partial frame assembly.
 
 endchoice
+
+# Independent timeout limits, expressed in milliseconds.
+config RADAR_FRAME_RX_TIMEOUT_MS
+    int "Partial frame timeout (ms)"
+    range 1 60000
+    default 1000
+    help
+        Reset an incomplete frame when no further byte is processed
+        within this interval. Idle parsers are not monitored.
+
+config RADAR_MEASUREMENT_TIMEOUT_MS
+    int "Radar measurement timeout (ms)"
+    range 1 60000
+    default 1000
+    help
+        Clear the track when no decoded and validated measurement
+        is received within this interval. Monitoring starts only
+        after the first valid measurement.
 
 endmenu

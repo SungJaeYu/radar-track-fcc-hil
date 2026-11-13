@@ -99,3 +99,10 @@ processor 함수를 직접 호출합니다. RX 스레드의 50ms 스케줄링이
 `uart_rx_tests test_name`으로 한 사례만 선택할 수 있습니다.
 각 성공은 `PASS: test_name`으로 출력하며 잘못된 이름은 종료 코드 2를 반환합니다.
 실행기는 `../common/test_runner.h`를 공유합니다. 모사 환경과 검증 범위는 각 suite가 유지합니다.
+
+## Timeout configuration
+
+Host CMake cache variable `RADAR_FRAME_RX_TIMEOUT_MS` defaults to 1000 ms and supplies
+`CONFIG_RADAR_FRAME_RX_TIMEOUT_MS` to the tested source. Use a separate build directory
+and add `-DRADAR_FRAME_RX_TIMEOUT_MS=1375` to the configure command to test a non-default value.
+Host configuration is independent of Zephyr prj.conf.

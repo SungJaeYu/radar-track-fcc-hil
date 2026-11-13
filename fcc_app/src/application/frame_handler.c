@@ -11,9 +11,6 @@
 #include "transport/rx_frame_processor.h"
 #include "transport/uart_tx.h"
 
-// Expire the track after 1000 ms without a decoded and validated radar measurement.
-#define RADAR_RX_TIMEOUT_MS 1000
-
 static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3);
 
 static void handle_radar_measurement(struct frame_handler *p_handler, const struct received_frame *p_frame);
@@ -74,7 +71,7 @@ void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms
     // Both times use board uptime in ms, not the sender's measurement timestamp.
     const int64_t elapsed_ms = now_ms - p_handler->last_valid_rx_ms;
 
-    if (elapsed_ms < RADAR_RX_TIMEOUT_MS) {
+    if (elapsed_ms < CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS) {
         return;
     }
 

@@ -9,8 +9,6 @@
 #include "application/frame_handler.h"
 #include "protocol/frame_parser.h"
 
-#define FRAME_RX_TIMEOUT_MS 1000
-
 // Accessed only by the RX thread after initialization
 static struct frame_parser parser;
 static int64_t last_byte_processed_ms;
@@ -46,7 +44,7 @@ void rx_frame_processor_check_timeout(int64_t now_ms)
         return;
     }
 
-    if (now_ms - last_byte_processed_ms < FRAME_RX_TIMEOUT_MS) {
+    if (now_ms - last_byte_processed_ms < CONFIG_RADAR_FRAME_RX_TIMEOUT_MS) {
         return;
     }
 

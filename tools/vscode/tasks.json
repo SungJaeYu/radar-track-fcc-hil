@@ -99,6 +99,19 @@
       ],
       "problemMatcher": [],
       "detail": "Refresh Tracking host test compile commands."
+    },
+    {
+      "label": "Project: Refresh IntelliSense",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Zephyr: Build firmware",
+        "Host: Configure UART tests",
+        "Host: Configure STATUS tests",
+        "Host: Configure TX tests",
+        "Host: Configure Tracking tests"
+      ],
+      "problemMatcher": [],
+      "detail": "Regenerate Kconfig headers and firmware/host compile databases after configuration changes."
     }
   ]
 }

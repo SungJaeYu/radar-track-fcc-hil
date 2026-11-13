@@ -23,3 +23,17 @@ fallback includePath만으로 Zephyr 생성 헤더·매크로를 모두 해석�
 
 CMake/Ninja가 PATH에 없거나 Xcode 설치 위치·Zephyr workspace가 다르면 tasks.json의 경로를 조정합니다.
 추가 소스는 CMake에 등록하고 다시 빌드하세요. compile database는 생성물이며 커밋하지 않습니다.
+
+## Kconfig 변경 후 CONFIG 매크로 오류
+
+`CONFIG_...`는 Zephyr 구성 단계가 생성하는
+`build/zephyr/include/generated/zephyr/autoconf.h`에 정의됩니다.
+compile_commands.json의 `-imacros` 옵션으로 적용되므로 Kconfig/prj.conf 변경 후에는 다시 빌드해야 합니다.
+
+`Tasks: Run Task` → `Project: Refresh IntelliSense`를 실행하면 펌웨어 빌드와 네 host 테스트 구성을 순서대로 갱신합니다.
+오류가 남으면 `C/C++: Reset IntelliSense Database`를 실행하고 파일을 다시 여세요.
+`C/C++: Log Diagnostics`에서 해당 소스의 compile database 연결도 확인하세요.
+
+host 테스트는 Kconfig를 실행하지 않으므로 해당 CMake target에서 CONFIG 값을 전달합니다.
+전역 `defines`에 값을 복사하거나 생성된 autoconf.h를 직접 수정하지 마세요.
+실제 빌드와 에디터가 서로 다른 값을 사용하게 될 수 있습니다.

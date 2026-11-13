@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.20.0)
 project(test_uart_rx C)
 enable_testing()
 
+# Host tests do not run Kconfig; allow independent timeout boundary testing.
+set(RADAR_FRAME_RX_TIMEOUT_MS 1000 CACHE STRING "Timeout under test in milliseconds")
+
 # Host builds do not run Zephyr Kconfig. Define exactly one policy per target.
 function(add_rx_target target policy)
     add_executable(${target}
@@ -13,7 +16,8 @@ function(add_rx_target target policy)
     )
     target_include_directories(${target} PRIVATE include ../../src)
     target_compile_features(${target} PRIVATE c_std_11)
-    target_compile_definitions(${target} PRIVATE ${policy}=1)
+    target_compile_definitions(${target} PRIVATE ${policy}=1
+        CONFIG_RADAR_FRAME_RX_TIMEOUT_MS=${RADAR_FRAME_RX_TIMEOUT_MS})
     # Keep assertions active in Release builds too.
     target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 endfunction()

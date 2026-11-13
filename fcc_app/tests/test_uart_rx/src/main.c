@@ -284,14 +284,14 @@ static void test_timeout_boundary_for_every_partial_frame(void)
         feed_bytes(radar_frame, cut);
         ParserState pending_state = parser.state;
         assert(pending_state != PARSER_STATE_WAIT_STX);
-        test_now_ms += FRAME_RX_TIMEOUT_MS - 1;
+        test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS - 1;
         rx_frame_processor_check_timeout(test_now_ms);
         assert(parser.state == pending_state && frame_timeout_count == 0);
         test_now_ms++;
         rx_frame_processor_check_timeout(test_now_ms);
         assert(parser.state == PARSER_STATE_WAIT_STX && parser.payload_index == 0);
         assert(frame_timeout_count == 1 && submit_attempts == 0);
-        test_now_ms += FRAME_RX_TIMEOUT_MS * 2;
+        test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS * 2;
         rx_frame_processor_check_timeout(test_now_ms);
         assert(frame_timeout_count == 1);
     }
@@ -300,12 +300,12 @@ static void test_timeout_boundary_for_every_partial_frame(void)
 static void test_timeout_ignores_idle_and_complete_frames(void)
 {
     reset_test();
-    test_now_ms += FRAME_RX_TIMEOUT_MS * 2;
+    test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS * 2;
     rx_frame_processor_check_timeout(test_now_ms);
     assert(frame_timeout_count == 0);
     feed_bytes(radar_frame, sizeof(radar_frame));
     assert(submitted == 1);
-    test_now_ms += FRAME_RX_TIMEOUT_MS * 2;
+    test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS * 2;
     rx_frame_processor_check_timeout(test_now_ms);
     assert(frame_timeout_count == 0 && submitted == 1);
 }
@@ -314,7 +314,7 @@ static void test_timeout_recovers_next_valid_frame(void)
 {
     reset_test();
     feed_bytes(radar_frame, 7);
-    test_now_ms += FRAME_RX_TIMEOUT_MS;
+    test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS;
     rx_frame_processor_check_timeout(test_now_ms);
     assert(frame_timeout_count == 1 && submit_attempts == 0);
     feed_bytes(radar_frame, sizeof(radar_frame));
@@ -330,7 +330,7 @@ static void test_timeout_preserves_split_frames(void)
     for (size_t cut = 1; cut < sizeof(radar_frame); ++cut) {
         reset_test();
         feed_bytes(radar_frame, cut);
-        test_now_ms += FRAME_RX_TIMEOUT_MS - 1;
+        test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS - 1;
         rx_frame_processor_check_timeout(test_now_ms);
         feed_bytes(radar_frame + cut, sizeof(radar_frame) - cut);
         assert(submitted == 1 && frame_timeout_count == 0);
@@ -346,11 +346,11 @@ static void test_timeout_refreshes_on_each_byte(void)
     // Total assembly exceeds the threshold, but each gap stays below it.
     for (size_t i = 0; i < sizeof(radar_frame); ++i) {
         rx_frame_processor_feed(radar_frame[i]);
-        test_now_ms += FRAME_RX_TIMEOUT_MS - 1;
+        test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS - 1;
         rx_frame_processor_check_timeout(test_now_ms);
         assert(frame_timeout_count == 0);
     }
-    assert(test_now_ms - started_ms > FRAME_RX_TIMEOUT_MS);
+    assert(test_now_ms - started_ms > CONFIG_RADAR_FRAME_RX_TIMEOUT_MS);
     assert(submitted == 1 && last_frame.frame.type == FRAME_TYPE_MEAS_REPORT);
 }
 
@@ -358,12 +358,12 @@ static void test_explicit_reset_cancels_partial_timeout(void)
 {
     reset_test();
     feed_bytes(radar_frame, 7);
-    test_now_ms += FRAME_RX_TIMEOUT_MS;
+    test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS;
     rx_frame_processor_check_timeout(test_now_ms);
     assert(frame_timeout_count == 1);
     feed_bytes(radar_frame, 7);
     rx_frame_processor_reset();
-    test_now_ms += FRAME_RX_TIMEOUT_MS;
+    test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS;
     rx_frame_processor_check_timeout(test_now_ms);
     assert(frame_timeout_count == 1 && parser.state == PARSER_STATE_WAIT_STX);
     assert(submit_attempts == 0);
@@ -384,7 +384,7 @@ static void test_stats_snapshot_and_reset(void)
     const uint8_t bad_length[] = {0x7e, 0};
     feed_bytes(bad_length, sizeof(bad_length));
     feed_bytes(radar_frame, 7);
-    test_now_ms += FRAME_RX_TIMEOUT_MS;
+    test_now_ms += CONFIG_RADAR_FRAME_RX_TIMEOUT_MS;
     rx_frame_processor_check_timeout(test_now_ms);
     submit_result = -ENOMSG;
     feed_bytes(radar_frame, sizeof(radar_frame));

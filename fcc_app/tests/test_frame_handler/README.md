@@ -62,3 +62,10 @@ exact timeout boundaries, one-shot expiry, invalid payload rejection, and receiv
 refresh after gate/timestamp rejection. No production firmware source was changed.
 Control cases compare STATUS payloads before/after reset using supplied snapshots;
 real RX atomic counters and handler commands are not integrated in this fixture.
+
+## Timeout configuration
+
+Host CMake cache variable `RADAR_MEASUREMENT_TIMEOUT_MS` defaults to 1000 ms and supplies
+`CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS` to the tested source. Use a separate build directory
+and add `-DRADAR_MEASUREMENT_TIMEOUT_MS=2300` to the configure command to test a non-default value.
+Host configuration is independent of Zephyr prj.conf.
