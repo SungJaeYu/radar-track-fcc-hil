@@ -208,7 +208,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [ ] 링버퍼 overflow 횟수·손실 바이트 통계
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
-  - [ ] 빌드 설정 정리: overflow 정책·timeout 등 조정 항목을 앱 Kconfig/prj.conf로 관리
+  - [x] overflow 정책 Kconfig 분리: DRAIN·DISCARD host 검증 및 두 펌웨어 실보드 UART 회귀
+  - [ ] timeout 설정 분리: 부분 프레임·측정 무수신 제한을 앱 Kconfig/prj.conf로 관리
 - [ ] 공통 타입·인터페이스 정리 — [코딩 스탠다드 초안](docs/coding-standard.md) 기준으로 이후 적용 — [파일별 수정 목록](docs/coding-standard-audit.md)
   - [ ] RX/handler·TX의 공통 프레임 타입과 기본 인자 검증 분리; 수신 시각은 RX 전용 구조체에 유지하고 각 submit API·큐는 유지
   - [x] enum 타입 PascalCase·타입명 기반 열거자 접두사 통일; 숫자 값과 로그 문자열 유지, 참조 코드·테스트·문서 갱신
@@ -277,7 +278,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 완료 기준 |
 | --- | --- | --- |
-| 1 | Kconfig 설정 분리·복구 정책별 host 시험 | 기본값 보존, drain/discard 각각 빌드·검증 |
+| 1 | 두 timeout의 Kconfig 설정 분리 | 기본 1000ms 유지, 양수 범위·단위 명시, 기본값/변경값 경계 시험 |
 | 2 | 추적 결과 송신·GUI 비교 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
 | 3 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
 | 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
@@ -288,17 +289,20 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 `처리 스레드 → 응답 복사 큐 → TX 스레드`까지 STATUS 응답 경로를 구현했습니다.
 지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
 PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회도 구현했습니다. 실제 STATUS CLI·GUI 송수신도 확인했습니다.
-다음은 설정 분리와 두 overflow 정책의 host 검증입니다. 강제 링 overflow·UART 오류·TX 부하는 남아 있습니다.
+overflow 정책 설정 분리와 두 정책의 host 검증은 완료했습니다. 다음은 부분 프레임·측정 무수신 timeout의 Kconfig 분리입니다. 강제 링 overflow·UART 오류·TX 부하는 남아 있습니다.
 
 ## 검증 현황
 
-2026-11-12 최신 실보드: `2aa57d9` 빌드·플래시 후 STATUS CLI·GUI 왕복, 오류 통계 증가,
+2026-11-12 GUI 실보드: `2aa57d9` 빌드·플래시 후 STATUS CLI·GUI 왕복, 오류 통계 증가,
 INIT/RESET 통계 보존, 추적 중 조회·무수신 timeout 확인 완료.
 [실보드 결과와 원시 로그](docs/hardware-test-2026-11-12-status.md).
 
 최신 host 결과: GUI STATUS 포함 Python **130개 + subtest 9개**, handler **17개** 통과.
 handler 보강 커밋은 `658f2e6`, GUI STATUS 커밋은 `ed1f0bf`입니다.
-RX 21·TX 4·Tracking 13은 기존 검증을 유지하며, 이번 문서 갱신에서 재실행하지 않았습니다.
+2026-11-14: RX drain 21·discard 18, handler 17·TX 4·Tracking 13 통과(총 73회 함수 실행).
+두 정책의 펌웨어 빌드·플래시와 UART 회귀 16개 조건씩 통과했고 기본 DRAIN으로 복원했습니다.
+[최신 실보드 결과·원시 로그](docs/hardware-test-2026-11-14-kconfig.md). 강제 링 overflow는 미검증입니다.
+Python·GUI 시험은 11월 12일 결과이며 이번 Kconfig 변경에서 재실행하지 않았습니다.
 아래는 버전별 과거 실행 기록이며 당시 미검증·실패 상태를 그대로 보존합니다.
 
 2026-11-12 (`0e84bdd`): PC 프레임 파서·STATUS CLI 포함 Python 126개 + subtest 9개 통과.

@@ -68,7 +68,7 @@ ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overfl
 현재 헤더의 `RX_OVERFLOW_POLICY`는 `RX_OVERFLOW_POLICY_DRAIN_BUFFER`입니다.
 복구는 IRQ를 허용한 상태에서 기존 파서와 버퍼로 완성할 수 있는 프레임을 처리합니다.
 마지막에 짧게 IRQ를 잠그고 링버퍼·부분 프레임을 초기화한 뒤 overflow를 해제합니다.
-`RX_OVERFLOW_POLICY_DISCARD_ALL`을 선택하면 drain 없이 바로 초기화합니다. Kconfig 선택은 아직 없습니다.
+`RX_OVERFLOW_POLICY_DISCARD_ALL`을 선택하면 drain 없이 바로 초기화합니다. `fcc_app/Kconfig` choice와 `prj.conf`로 선택하며 기본값은 DRAIN입니다.
 복구 중 새 입력은 손실되며, 초기화는 하드웨어 FIFO를 비우거나 다음 프레임 경계 정렬을 보장하지 않습니다.
 
 ## 4. 측정과 추적
@@ -96,7 +96,7 @@ STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 Python 테스트는 프레임 바이트·단위 변환·송신 순서·시나리오 CLI와 GUI 모델을 검증합니다.
 GUI 의존성을 설치하면 offscreen Qt·모사 serial로 시작·중지·재시작·오류·포트 해제도 검사합니다.
 `fcc_app/tests/test_kalman`은 C 필터·게이팅·추적 정책 등의 별도 테스트입니다.
-[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계의 21개 사례를 검증합니다.
+[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계를 drain 21·discard 18, 총 39회 실행으로 검증합니다.
 UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
 이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
 현재 보드는 이진 트랙 응답을 송신하지 않으므로 PC의 폐루프 RMSE 계산은 아직 없습니다.
@@ -122,3 +122,11 @@ timeout·큐 드롭입니다. 인코딩·큐 제출 실패는 오류 코드와 �
 TX host 테스트 4개와 CRC/인코더 상호운용 28개를 통과했으며 실보드 STATUS 송신도 확인했습니다. TX 포화·최대 부하는 별도 검증 대상입니다.
 handler host 테스트 17개는 STATUS 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향을 검증합니다.
 통계 snapshot은 모사하며 실제 RX atomic 카운터와 handler 명령의 통합 시험은 남아 있습니다.
+
+
+## 2026-11-14 Kconfig 실보드 회귀
+
+`1e956c5`의 DRAIN·DISCARD 펌웨어를 각각 플래시하고 UART·STATUS·오류 처리 16개 조건씩 통과했습니다.
+기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
+[결과와 원시 로그](docs/hardware-test-2026-11-14-kconfig.md).
+강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.

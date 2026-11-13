@@ -131,7 +131,7 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 | `test_explicit_reset_cancels_partial_timeout` | 명시적 reset 이후 만료 취소와 누적 카운터 보존 |
 
 현재 BUFFER_SIZE=256, 실제 용량=255이며 fixture는 버퍼 크기에서 입력 길이를 계산합니다.
-현재 선택된 **drain 정책**을 검증하므로 discard-all 정책으로 변경하면 일부 기대값이 맞지 않습니다.
+DRAIN·DISCARD를 별도 실행 파일로 컴파일합니다. 공통 16개와 정책별 전용 사례를 실행합니다.
 실제 ISR·복구·링버퍼·파서를 사용하지만 UART FIFO, IRQ, atomic, 시간, frame_handler_submit은 모사합니다.
 무한 RX 스레드는 실행하지 않으며 실제 동시성·스케줄링과 트랙 무수신 timeout은 검증하지 않습니다.
 부분 프레임 timeout은 제어 가능한 모사 시각으로 실제 processor 함수를 검사합니다.
@@ -205,13 +205,11 @@ Zephyr Ztest 실행법은 [Tracking 안내](../fcc_app/tests/test_kalman/README.
 GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 [결과와 검증 한계](hardware-test-2026-11-01.md)를 참고하세요.
 
-아래 항목은 현재 자동 테스트 또는 해당 smoke 시험에서 확인하지 않았습니다.
+현재 남은 검증 항목은 다음과 같습니다. 이후 STATUS·정책별 host 검증으로 완료한 항목은 제외했습니다.
 
 - 실제 보드에서 강제 overflow 후 정상 수신 복귀, 손실량·IRQ 타이밍.
-- USART6 TX(PC6)의 보드 → PC 송신 경로.
-- 첫 정상 측정 전 timeout 비활성, INIT/RESET 직후 timeout 해제의 독립적인 자동 회귀 검사.
 - 실제 RX 스레드 스케줄링과 UART 하드웨어 overrun.
-- discard-all 정책의 전용 회귀 테스트와 파서 전체 상태·오류 조합.
+- 파서 전체 상태·오류 조합의 추가 검증.
 - 장시간 운전, 부하별 수신률, 추적 결과 반환을 통한 폐루프 오차 측정.
 
 추가 보드 시험은 [보드 검증 절차](board-bringup.md)를 따릅니다.
@@ -407,3 +405,8 @@ RX drain 21개·discard 18개 모두 통과. 기존 공통 16개는 양쪽 정�
 STM32F746G-DISCO 펌웨어도 DRAIN(`build`)·DISCARD(`build_discard`) 각각 빌드에 성공했고,
 각 빌드의 `.config`에서 선택한 정책만 활성화된 것을 확인했습니다.
 flash·실보드 강제 overflow는 수행하지 않았습니다.
+
+후속 실보드 검증: 두 정책을 각각 플래시하고 UART 회귀 16개 조건씩 통과했습니다.
+기본 DRAIN으로 복원 후 STATUS 응답까지 확인했습니다.
+[2026-11-14 결과와 로그](hardware-test-2026-11-14-kconfig.md)를 참고합니다.
+강제 링 overflow의 정책별 동작은 실보드 미검증 상태입니다.

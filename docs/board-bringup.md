@@ -161,3 +161,11 @@ GUI 시험은 CLI 종료 후 STATUS 탭에서 별도로 수행합니다.
 INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.
 [2026-11-12 시험 결과·원시 로그](hardware-test-2026-11-12-status.md)를 참고합니다.
 이 기록은 이전 STATUS 실보드 미검증/연기 상태를 대체합니다. 강제 링 overflow·UART overrun·부하 시험은 남아 있습니다.
+
+
+## 2026-11-14 Kconfig 실보드 회귀
+
+`1e956c5`의 DRAIN·DISCARD 펌웨어를 각각 플래시하고 UART·STATUS·오류 처리 16개 조건씩 통과했습니다.
+기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
+[결과와 원시 로그](hardware-test-2026-11-14-kconfig.md).
+강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.

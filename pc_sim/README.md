@@ -160,3 +160,11 @@ big-endian uint32 네 개(`>IIII`, 총 16바이트)를 담습니다.
 개별 카운터는 atomic 조회하지만 네 항목 전체의 동일 시점 snapshot은 보장하지 않습니다.
 기존 보드 로그 `TYPE_MEAS`/`TYPE_STATUS`는 유지하며, STATUS_REPORT 응답을 뜻하지 않습니다.
 `small_byte_test.py`의 선택지는 구현된 수신 경로 1~5로 유지합니다.
+
+
+## 2026-11-14 Kconfig 실보드 회귀
+
+`1e956c5`의 DRAIN·DISCARD 펌웨어를 각각 플래시하고 UART·STATUS·오류 처리 16개 조건씩 통과했습니다.
+기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
+[결과와 원시 로그](../docs/hardware-test-2026-11-14-kconfig.md).
+강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.
