@@ -41,7 +41,7 @@ PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료
 | REQ-PRO-002 | CRC-16/IBM-3740으로 오류를 검출하고 CRC·길이 오류 프레임을 처리 큐에 제출하지 않아야 한다. | [SPEC-WIRE](#spec-wire) | [protocol_frame.c](../fcc_app/src/protocol/protocol_frame.c) · `protocol_frame_crc` | [test_uart_rx](#tests-test_uart_rx) / [test_frame_handler](#tests-test_frame_handler) / [Python](#tests-python) | 구현; 변조·길이·정상 프레임 복귀 시험 |
 | REQ-PRO-003 | 인코더는 정확한 바이트 수를 반환하고 잘못된 인자·용량 부족 시 출력 버퍼를 유지해야 한다. | [SPEC-WIRE](#spec-wire) | [protocol_frame.c](../fcc_app/src/protocol/protocol_frame.c) · `protocol_frame_encode` | [Python](#tests-python) | 구현; NULL·길이·용량 경계 시험 |
 | REQ-RX-001 | 링버퍼는 FIFO 순서·순환을 유지하고 full 상태의 push가 기존 데이터를 훼손하지 않아야 한다. | [SPEC-RX](#spec-rx) | [ring_buffer.c](../fcc_app/src/common/ring_buffer.c) · `ring_push / ring_pop` | [test_uart_rx](#tests-test_uart_rx) | 구현; host 검증, 실제 IRQ 경쟁은 제외 |
-| REQ-RX-002 | overflow 시 새 바이트를 버리고 선택한 복구 정책 실행 후 정상 수신을 재개해야 한다. | [SPEC-RX](#spec-rx) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `rx_recover_overflow` | [test_uart_rx](#tests-test_uart_rx) | 구현; drain host 검증. discard 자동 시험·실보드 overflow 미검증 |
+| REQ-RX-002 | overflow 시 새 바이트를 버리고 선택한 복구 정책 실행 후 정상 수신을 재개해야 한다. | [SPEC-RX](#spec-rx) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `rx_recover_overflow` | [test_uart_rx](#tests-test_uart_rx) | 구현; drain host 검증. drain 21·discard 18 host 통과. 실보드 강제 overflow 미검증 |
 | REQ-RX-003 | 미완성 프레임의 바이트 처리가 1000ms 중단되면 조립 상태를 지우고 timeout을 한 번 집계해야 한다. | [SPEC-TIME](#spec-time) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `rx_frame_processor_check_timeout` | [test_uart_rx](#tests-test_uart_rx) | 구현; 모든 중단 위치·경계·복귀 host 검증. 보드 대기 |
 | REQ-RX-004 | 완성 프레임과 완료 시각을 복사 제출하고 큐 포화 시 새 프레임 드롭을 집계해야 한다. | [SPEC-EXEC](#spec-exec) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `submit_parsed_frame` | [test_uart_rx](#tests-test_uart_rx) | 구현; 제출 모사 검증. 실제 handler 큐 포화·동시성 추가 필요 |
 | REQ-RX-005 | 초기화 실패는 errno를 전달하고 RX 활성화·준비 신호를 내지 않아야 한다. | [SPEC-EXEC](#spec-exec) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_init` | [test_uart_rx](#tests-test_uart_rx) | 구현; 장치 미준비·callback 실패·성공 host 검증 |
@@ -103,8 +103,8 @@ payload는 정확히 10바이트이며 정답 ID를 포함하지 않는다. NULL
   복구가 끝날 때까지 ISR은 하드웨어 FIFO를 읽되 새 입력을 링에 넣지 않는다.
 - 기본 정책 DRAIN_BUFFER: 기존 parser 상태와 이미 저장된 바이트로 완성할 수 있는
   프레임을 처리하고, 남은 불완전 프레임·링 상태·overflow 플래그를 정리한다.
-- DISCARD_ALL: 기존 버퍼와 부분 프레임을 모두 폐기한다. 선택은 현재 헤더 매크로이며
-  Kconfig 옵션은 아니다. 현재 자동 사례는 drain 기대값으로 구성되어 있다.
+- DISCARD_ALL: 기존 버퍼와 부분 프레임을 모두 폐기한다. 선택은 Kconfig choice와 prj.conf로 지정하며 `uart_rx.c`에서 enum 정책으로 매핑한다.
+  host 테스트는 별도 compile definition으로 drain·discard를 각각 컴파일한다.
 - 파싱·큐 제출·로그는 IRQ 잠금 밖에서 수행한다. host의 lock 표시는 실제 IRQ 경쟁 증명이 아니다.
 
 <a id="spec-exec"></a>
@@ -406,3 +406,11 @@ CTL-001은 명령 경유 트랙 초기화와 모사 통계 응답 보존을 확�
 INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.
 [2026-11-12 시험 결과·원시 로그](hardware-test-2026-11-12-status.md)를 참고합니다.
 이 기록은 이전 STATUS 실보드 미검증/연기 상태를 대체합니다. 강제 링 overflow·UART overrun·부하 시험은 남아 있습니다.
+
+
+### 2026-11-14 REQ-RX-002 / FUT-008 정책별 host 검증
+
+[RX 테스트](../fcc_app/tests/test_uart_rx/README.md)는 drain 21·discard 18, 총 39회 실행한다.
+`test_discard_drops_complete_frame_and_recovers`와 `test_discard_drops_completable_partial_frame`를
+REQ-RX-002에 연결한다. 공통 16개는 두 정책 모두에서 검사한다.
+Overflow 정책 Kconfig 분리는 구현됐으며 timeout 설정 분리·실보드 강제 overflow·자원 검증은 남아 있다.

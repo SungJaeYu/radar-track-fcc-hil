@@ -90,6 +90,7 @@ static void assert_recovered(void)
     assert(parser.state == PARSER_STATE_WAIT_STX && parser.payload_index == 0);
 }
 
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
 static void test_dispatch_drains_complete_frame(void)
 {
     reset_test();
@@ -100,7 +101,9 @@ static void test_dispatch_drains_complete_frame(void)
     assert(last_frame.frame.type == FRAME_TYPE_INIT && last_frame.frame.payload_length == 1);
     assert_recovered();
 }
+#endif
 
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
 static void test_preserves_partial_parser_and_drops_new_input(void)
 {
     reset_test();
@@ -117,6 +120,7 @@ static void test_preserves_partial_parser_and_drops_new_input(void)
     assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
     assert_recovered();
 }
+#endif
 
 static void test_discards_incomplete_frame(void)
 {
@@ -128,6 +132,7 @@ static void test_discards_incomplete_frame(void)
     assert_recovered();
 }
 
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
 static void test_rejects_bad_crc(void)
 {
     reset_test();
@@ -137,7 +142,9 @@ static void test_rejects_bad_crc(void)
     assert(submitted == 0);
     assert_recovered();
 }
+#endif
 
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
 static void test_drain_rejects_bad_length_then_handles_valid_frame(void)
 {
     reset_test();
@@ -148,6 +155,7 @@ static void test_drain_rejects_bad_length_then_handles_valid_frame(void)
     assert(submitted == 1 && last_frame.frame.type == FRAME_TYPE_INIT);
     assert_recovered();
 }
+#endif
 
 static void test_receives_after_recovery(void)
 {
@@ -249,6 +257,7 @@ static void test_queue_full_counts_drop_and_recovers(void)
     assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT);
 }
 
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
 static void test_drain_queue_full_still_finishes_recovery(void)
 {
     reset_test();
@@ -258,6 +267,7 @@ static void test_drain_queue_full_still_finishes_recovery(void)
     assert(submit_attempts == 1 && submitted == 0 && queue_drops_count == 1);
     assert_recovered();
 }
+#endif
 
 static void feed_bytes(const uint8_t *p_bytes, size_t size)
 {
@@ -417,7 +427,61 @@ static void test_rx_init_errors(void)
     assert(test_callback_calls == 3 && test_rx_enable_calls == 1 && rx_ready_sem.count == 1);
 }
 
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DISCARD)
+static void test_discard_drops_complete_frame_and_recovers(void)
+{
+    reset_test();
+    receive_overflow(init_frame, sizeof(init_frame), 0);
+    // New ISR input must be ignored while overflow recovery is pending.
+    const uint8_t head = rx_ring.head;
+    const uint8_t tail = rx_ring.tail;
+    receive(init_frame, sizeof(init_frame));
+    assert(rx_ring.head == head && rx_ring.tail == tail);
+    queue_drops_count = 3;
+    crc_error_count = 4;
+    length_error_count = 5;
+    frame_timeout_count = 6;
+
+    rx_recover_overflow();
+
+    assert(submit_attempts == 0 && submitted == 0);
+    assert(queue_drops_count == 3 && crc_error_count == 4);
+    assert(length_error_count == 5 && frame_timeout_count == 6);
+    assert_recovered();
+    receive(init_frame, sizeof(init_frame));
+    uint8_t byte;
+    while (ring_pop(&rx_ring, &byte)) {
+        rx_frame_processor_feed(byte);
+    }
+    assert(submitted == 1 && last_frame.frame.type == FRAME_TYPE_INIT);
+}
+
+static void test_discard_drops_completable_partial_frame(void)
+{
+    reset_test();
+    for (size_t i = 0; i < 7; ++i) {
+        rx_frame_processor_feed(radar_frame[i]);
+    }
+    receive_overflow(radar_frame + 7, sizeof(radar_frame) - 7, 0);
+
+    rx_recover_overflow();
+
+    assert(submit_attempts == 0 && submitted == 0);
+    assert_recovered();
+    // Discarded fragments must not contribute to the next frame.
+    for (size_t i = 0; i < sizeof(radar_frame); ++i) {
+        rx_frame_processor_feed(radar_frame[i]);
+    }
+    assert(submitted == 1 && last_frame.frame.type == FRAME_TYPE_MEAS_REPORT);
+    assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
+}
+#endif
+
 static const struct test_case cases[] = {
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DISCARD)
+    TEST_CASE(test_discard_drops_complete_frame_and_recovers),
+    TEST_CASE(test_discard_drops_completable_partial_frame),
+#endif
     TEST_CASE(test_rx_init_errors),
     TEST_CASE(test_stats_snapshot_and_reset),
     TEST_CASE(test_timeout_boundary_for_every_partial_frame),
@@ -430,13 +494,23 @@ static const struct test_case cases[] = {
     TEST_CASE(test_processor_copies_frame_and_reset_preserves_drops),
     TEST_CASE(test_nonready_results_do_not_submit),
     TEST_CASE(test_queue_full_counts_drop_and_recovers),
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
     TEST_CASE(test_drain_queue_full_still_finishes_recovery),
+#endif
 
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
     TEST_CASE(test_dispatch_drains_complete_frame),
+#endif
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
     TEST_CASE(test_preserves_partial_parser_and_drops_new_input),
+#endif
     TEST_CASE(test_discards_incomplete_frame),
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
     TEST_CASE(test_rejects_bad_crc),
+#endif
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
     TEST_CASE(test_drain_rejects_bad_length_then_handles_valid_frame),
+#endif
     TEST_CASE(test_receives_after_recovery),
     TEST_CASE(test_empty_recovery),
     TEST_CASE(test_ring_overflow_preserves_buffer),

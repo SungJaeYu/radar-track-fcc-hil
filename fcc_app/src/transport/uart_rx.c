@@ -11,6 +11,14 @@
 #include "common/ring_buffer.h"
 #include "transport/rx_frame_processor.h"
 
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
+#define RX_OVERFLOW_POLICY RX_OVERFLOW_POLICY_DRAIN_BUFFER
+#elif defined(CONFIG_RADAR_RX_OVERFLOW_DISCARD)
+#define RX_OVERFLOW_POLICY RX_OVERFLOW_POLICY_DISCARD_ALL
+#else
+#error "Select an RX overflow recovery policy"
+#endif
+
 // Set UART device
 static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 

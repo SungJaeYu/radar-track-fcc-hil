@@ -14,7 +14,4 @@ typedef enum {
     RX_OVERFLOW_POLICY_DRAIN_BUFFER,
 } RxOverflowPolicy;
 
-// Build-time policy: select RX_OVERFLOW_POLICY_DRAIN_BUFFER to test drain recovery.
-#define RX_OVERFLOW_POLICY RX_OVERFLOW_POLICY_DRAIN_BUFFER
-
 #endif

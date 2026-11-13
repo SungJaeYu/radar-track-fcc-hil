@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 130개 + subtest 9개, C host 55개(RX 21·handler 17·TX 4·Tracking 13)입니다.
+현재 합계는 Python 130개 + subtest 9개, C host 73회 실행(RX drain 21·discard 18·handler 17·TX 4·Tracking 13)입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -23,11 +23,11 @@
 | 필터·추적 | `fcc_app/tests/test_kalman` | 13 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 17 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
-| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 21 | host C, Zephyr API 모사 |
+| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 39 (drain 21 + discard 18) | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **130개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 13개 함수를 실행합니다.
-UART C는 각 함수를 CTest에 따로 등록하므로 21개로 표시됩니다.
+UART C는 정책별 실행을 CTest에 따로 등록하므로 39개로 표시됩니다. 공통 사례 16개는 두 번 실행합니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
@@ -396,3 +396,14 @@ handler 17개 모두 통과. INIT/RESET 통계는 모사 snapshot 응답 보존 
 INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.
 [2026-11-12 시험 결과·원시 로그](hardware-test-2026-11-12-status.md)를 참고합니다.
 이 기록은 이전 STATUS 실보드 미검증/연기 상태를 대체합니다. 강제 링 overflow·UART overrun·부하 시험은 남아 있습니다.
+
+
+## 2026-11-14 overflow Kconfig host 설정
+
+RX drain 21개·discard 18개 모두 통과. 기존 공통 16개는 양쪽 정책으로 컴파일해 실행합니다.
+신규 discard 사례 `test_discard_drops_complete_frame_and_recovers`,
+`test_discard_drops_completable_partial_frame`는 정상/부분 프레임 폐기·통계 보존·수신 복귀를 확인합니다.
+사용자가 작성한 펌웨어 Kconfig는 수정하지 않고 테스트 설정과 문서를 변경했습니다.
+STM32F746G-DISCO 펌웨어도 DRAIN(`build`)·DISCARD(`build_discard`) 각각 빌드에 성공했고,
+각 빌드의 `.config`에서 선택한 정책만 활성화된 것을 확인했습니다.
+flash·실보드 강제 overflow는 수행하지 않았습니다.

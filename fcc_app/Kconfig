@@ -1,0 +1,24 @@
+mainmenu "Radar tracking firmware"
+
+source "Kconfig.zephyr"
+
+menu "Radar application settings"
+
+choice RADAR_RX_OVERFLOW_POLICY
+    prompt "RX overflow recovery policy"
+    default RADAR_RX_OVERFLOW_DRAIN
+
+config RADAR_RX_OVERFLOW_DRAIN
+    bool "Drain buffered frames"
+    help
+        Process frames that can be completed from buffered bytes,
+        then discard any remaining partial frame.
+
+config RADAR_RX_OVERFLOW_DISCARD
+    bool "Discard all buffered data"
+    help
+        Discard all buffered bytes and reset partial frame assembly.
+
+endchoice
+
+endmenu

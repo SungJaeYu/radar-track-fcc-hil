@@ -1,4 +1,4 @@
-# UART drain 복구 host 회귀 테스트
+# UART overflow 정책별 host 회귀 테스트
 
 실제 `uart_rx.c`의 ISR·복구 함수, `rx_frame_processor.c`와 `ring_buffer.c`, `frame_parser.c`를 컴파일합니다.
 임시 `/private/tmp` 테스트를 저장소로 옮긴 것으로, 테스트는 외부 임시 파일에 의존하지 않습니다.
@@ -13,7 +13,8 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-21개 사례를 CTest에 각각 등록했습니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 전체를,
+drain 21개와 discard 18개, 총 39개 실행을 CTest에 등록했습니다.
+공통 16개 사례를 양쪽에서 실행하고 drain 전용 5개·discard 전용 2개를 추가합니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 drain 21개를, `uart_rx_discard_tests`는 discard 18개를 실행합니다.
 `uart_rx_tests test_receives_after_recovery`처럼 이름을 넘기면 한 사례를 실행합니다.
 Release 빌드에서도 검증용 `assert`가 제거되지 않도록 `-UNDEBUG`를 적용합니다.
 
@@ -54,8 +55,14 @@ cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests \
 19. 명시적 reset이 진행 중인 timeout을 취소하고 누적 카운터는 보존하는지.
 20. CRC·길이 오류·timeout·큐 드롭의 통계 조회와 reset 후 누적값 보존.
 
-현재 `RX_OVERFLOW_POLICY_DRAIN_BUFFER` 설정의 동작을 검증합니다. 전체 폐기로 설정을 바꾸면
-정상 프레임을 보존해야 한다는 drain 검증은 실패합니다. 두 정책을 모두 자동 선택해 빌드하는 테스트는 아닙니다.
+CMake가 `uart_rx_tests`에는 `CONFIG_RADAR_RX_OVERFLOW_DRAIN=1`,
+`uart_rx_discard_tests`에는 `CONFIG_RADAR_RX_OVERFLOW_DISCARD=1`을 각각 전달합니다.
+host 빌드는 Zephyr Kconfig를 실행하지 않으며 두 실행 파일은 별도 정책으로 컴파일됩니다.
+기존 drain 실행 파일·테스트 이름은 유지합니다. discard 공통 CTest 이름에는 `discard_`가 붙습니다.
+
+Discard 전용 사례는 저장된 정상 프레임도 제출하지 않는지, 기존 부분 파서와 링으로
+완성 가능한 프레임도 폐기하는지 확인합니다. 복구 중 새 입력 거부·누적 통계 보존·
+다음 정상 INIT/측정 수신 복귀도 검증합니다.
 
 현재 `RING_BUFFER_SIZE=256`이며 실제 저장 용량은 255바이트입니다.
 fixture는 `RING_BUFFER_SIZE - 1`에서 입력 길이와 프레임 절단 위치를 계산합니다.
@@ -83,7 +90,7 @@ static assertion은 fixture의 최소 크기(9)와 현재 `uint8_t` 인덱스의
 processor 함수를 직접 호출합니다. RX 스레드의 50ms 스케줄링이나 ISR 도착 시각,
 검사 직전의 동시 수신은 이 host 시험의 검증 범위가 아닙니다.
 
-`test_rx_init_errors`는 장치 미준비와 callback 등록 오류 전달, 실패 시 IRQ/준비 신호 억제, 성공 초기화를 검증합니다. 현재 총 21개입니다.
+`test_rx_init_errors`는 장치 미준비와 callback 등록 오류 전달, 실패 시 IRQ/준비 신호 억제, 성공 초기화를 검증합니다. drain·discard 양쪽 실행 파일에서 검사합니다.
 
 
 ## 공통 host 실행 형식
