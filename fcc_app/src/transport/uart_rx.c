@@ -66,7 +66,7 @@ int uart_rx_init(void)
     // Set Callback Function
     const int ret = uart_irq_callback_user_data_set(p_uart, uart_callback, NULL);
     if (ret != 0) {
-        LOG_ERR("Failed to set UART callback");
+        LOG_ERR("Failed to set UART callback: %d", ret);
         return ret;
     }
 
@@ -160,7 +160,13 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
 
                 rx_recover_overflow();
 
-                LOG_WRN("RX overflow: recovery completed");
+                struct uart_rx_stats stats;
+                uart_rx_get_stats(&stats);
+                // Cumulative values are individually atomic, not one snapshot.
+                LOG_WRN("RX overflow: recovery completed, events=%u, ISR dropped=%u bytes, recovery discarded=%u bytes",
+                        (unsigned int)stats.ring_overflow_events,
+                        (unsigned int)stats.rx_dropped_bytes,
+                        (unsigned int)stats.recovery_discarded_bytes);
 
                 break;
             }

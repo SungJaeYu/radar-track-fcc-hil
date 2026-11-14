@@ -113,7 +113,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - 측정 payload는 big-endian `>IHi`: timestamp_ms(uint32), range_m(uint16), azimuth_sc(int32), 총 10바이트.
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
 - TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6.
-- INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 DEBUG 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
+- INIT/RESET은 트랙을 초기화합니다. STATUS는 누적 통계를 이진 응답으로 반환하며 DEBUG 로그에는 큐 접수만 기록합니다. COMMAND는 미구현이라 무시 이유를 경고합니다.
   STATUS 통계는 28바이트 STATUS_REPORT(일곱 uint32)로 TX 큐에 제출합니다. PC는 구형 16바이트 응답도 읽으며 없는 필드는 미지원으로 표시합니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
 
@@ -258,7 +258,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 - [x] STATUS 진단: RX 오류·드롭 통계 규격과 응답
   - [x] RX 파싱 통계는 processor, overflow·폐기 통계는 UART 소유, atomic으로 개별 조회; parser·INIT/RESET에서 누적값 보존
-  - [x] 처리 스레드의 STATUS 로그 출력; 전체 항목의 동일 시점 snapshot은 보장하지 않음
+  - [x] 처리 스레드의 STATUS 응답 구성과 큐 접수 로그; 전체 항목의 동일 시점 snapshot은 보장하지 않음
   - [x] STATUS 응답 규격: CRC·길이 오류·부분 프레임 timeout·큐 드롭, big-endian uint32 일곱 항목(기존 네 통계 + overflow·ISR 폐기·복구 폐기)
 - [ ] BIT 자기진단: 검사 항목·수행 시점·결과 규격·합격 기준 정의
 - [x] TX 송신 기반과 STATUS 왕복: 복사 큐·전용 스레드·프레임 인코딩·PC CLI/GUI 수신

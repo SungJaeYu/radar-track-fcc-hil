@@ -15,19 +15,18 @@ int main(void)
     // These init APIs return 0 on success and a negative errno on failure.
     int ret = uart_tx_init();
     if (ret != 0) {
-        LOG_ERR("UART TX init failed %d", ret);
         return ret;
     }
 
     ret = uart_rx_init();
     if (ret != 0) {
-        LOG_ERR("UART RX init failed %d", ret);
         return ret;
     }
 
-    // Debug-only heartbeat; Zephyr processes each log message through its worker.
+    LOG_INF("FCC ready: USART6 RX/TX initialized");
+
+    // Keep the existing idle loop; periodic heartbeat output adds no tracking evidence.
     while (1) {
-        LOG_DBG("main alive");
         k_sleep(K_SECONDS(1));
     }
 

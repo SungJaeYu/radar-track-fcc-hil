@@ -54,7 +54,7 @@ west flash -d <repo>/build --runner openocd
 python pc_sim/radar_sender.py --port /dev/ttyUSB0 --count 20 --hz 10 --noise 0
 ```
 
-- 콘솔에서 `TYPE_INIT`과 최초 `Filters initialized` 로그 확인.
+- 콘솔에서 `INIT: track and measurement monitoring reset`과 최초 `Track started` 로그 확인.
 - 이어지는 예측·측정 처리 로그 확인. 거리와 각도 단위를 구분합니다.
 - PC 송신 출력은 보드 수신 증거가 아닙니다.
 - 송신 중단 후 약 1초가 지나면 timeout 로그가 한 번 나오고 트랙이 초기화되어야 합니다.
@@ -149,7 +149,7 @@ python -m pc_sim.status_client --port /dev/ttyUSB0 --timeout 2
 ```
 
 현재 STATUS payload는 사용하지 않지만 프레임의 LEN은 1..32여야 합니다.
-ST-Link 콘솔에서 `TYPE_STATUS`와 CRC·length·timeout·queue drops 누적값을 확인합니다.
+통계는 CLI/GUI의 이진 응답으로 확인합니다. 디버그 콘솔의 `STATUS report queued`는 큐 접수만 의미합니다.
 CRC 오류·잘못된 길이·부분 프레임 중단을 주입한 뒤 재조회하고, INIT/RESET 후에도
 누적값이 유지되는지 확인합니다. STATUS만 보내도 측정 무수신 timeout은 계속 동작해야 합니다.
 펌웨어는 통계를 28바이트 STATUS_REPORT로 구성해 TX 큐에 복사 제출합니다.

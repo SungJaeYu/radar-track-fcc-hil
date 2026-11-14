@@ -107,7 +107,7 @@ UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제
 
 `rx_frame_processor.c`가 CRC·길이 오류·부분 프레임 timeout·큐 드롭의 atomic
 카운터를 소유합니다. STATUS는 처리 스레드에서 지역 `stats`로 값을 복사해
-ST-Link 콘솔에 DEBUG 레벨로 출력합니다. 개별 값은 안전하게 읽지만 전체 항목을 같은 순간에
+이진 응답에 사용하고 콘솔에는 큐 접수 여부만 DEBUG로 기록합니다. 개별 값은 안전하게 읽지만 전체 항목을 같은 순간에
 고정하지는 않습니다. 조회·parser reset·INIT/RESET은 누적 카운터를 지우지 않습니다.
 `uart_rx.c`는 overflow 진입 횟수·ISR 폐기 바이트·복구 시 링 폐기 바이트를 별도로 소유합니다.
 하드웨어 BIT 결과나 UART 하드웨어 오류는 아직 제공하지 않습니다.

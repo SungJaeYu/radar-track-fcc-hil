@@ -19,7 +19,7 @@ Python GUI/시뮬레이터와 외부 Zephyr 소스는 이 점검 범위에 포�
 | `protocol/protocol_frame.c` | CRC가 포함/제외하는 wire 필드 |
 | `transport/uart_tx.c` | 초기화 semaphore가 일회성 시작 대기라는 의미 |
 | `transport/uart_rx.c` | 프로토콜 UART 역할, IRQ 활성화 전 parser 초기화; 의미 없는 error/경고 회피 표제 제거 |
-| `main.c` | 콘솔과 USART6 프로토콜 분리, DEBUG heartbeat와 Zephyr 로깅 worker의 메시지 처리 |
+| `main.c` | 콘솔과 USART6 프로토콜 분리, 중복 초기화 오류·heartbeat 제거와 준비 완료 로그, 기존 idle loop 유지 |
 
 ## 나머지 파일 점검
 

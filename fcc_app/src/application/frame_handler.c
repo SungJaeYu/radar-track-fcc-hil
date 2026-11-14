@@ -17,6 +17,7 @@ static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3);
 static void handle_radar_measurement(struct frame_handler *p_handler, const struct received_frame *p_frame);
 static void update_track_from_measurement(struct track *p_track, const struct radar_measurement *p_measurement);
 static void handle_status_request(void);
+static const char *track_state_name(TrackState state);
 
 LOG_MODULE_REGISTER(frame_handler, CONFIG_RADAR_HANDLER_LOG_LEVEL);
 
@@ -88,37 +89,35 @@ void handle_frame(struct frame_handler *p_handler, const struct received_frame *
 {
     switch (p_frame->frame.type) {
     case FRAME_TYPE_INIT:
-        LOG_INF("TYPE_INIT");
+        LOG_INF("INIT: track and measurement monitoring reset");
         frame_handler_init(p_handler);
         break;
 
     case FRAME_TYPE_MEAS_REPORT: {
-        LOG_DBG("TYPE_MEAS");
         handle_radar_measurement(p_handler, p_frame);
         break;
     }
     // Queue a STATUS_REPORT containing the current RX diagnostic counters.
     case FRAME_TYPE_STATUS_REQUEST: {
-        LOG_DBG("TYPE_STATUS");
         handle_status_request();
         break;
     }
 
     // Placeholder: no command payload interpretation or control action yet.
     case FRAME_TYPE_COMMAND:
-        LOG_DBG("TYPE_COMMAND");
+        LOG_WRN("COMMAND ignored: not implemented");
         break;
 
     case FRAME_TYPE_RESET:
-        LOG_INF("TYPE RESET");
+        LOG_INF("RESET: track and measurement monitoring reset");
         frame_handler_reset(p_handler);
         break;
 
     case FRAME_TYPE_STATUS_REPORT:
-        LOG_WRN("Unexpected STATUS_REPORT received");
+        LOG_WRN("STATUS_REPORT ignored: unexpected input");
         break;
     default:
-        LOG_WRN("Unknown frame type: 0x%02X", p_frame->frame.type);
+        LOG_WRN("Frame ignored: unsupported type=0x%02X", p_frame->frame.type);
         break;
     }
 }
@@ -131,12 +130,13 @@ static void handle_radar_measurement(struct frame_handler *p_handler, const stru
             p_frame->frame.payload,
             p_frame->frame.payload_length,
             &rm)) {
-        LOG_WRN("Invalid radar payload");
+        LOG_WRN("Invalid radar payload: length=%u", (unsigned int)p_frame->frame.payload_length);
         return;
     }
 
     if (!validate_radar_measurement(&rm)) {
-        LOG_WRN("Invalid radar measurement");
+        LOG_WRN("Invalid radar measurement: range=%.2f m, azimuth=%.4f rad",
+                (double)rm.range_m, (double)rm.azimuth_rad);
         return;
     }
 
@@ -145,10 +145,16 @@ static void handle_radar_measurement(struct frame_handler *p_handler, const stru
     p_handler->last_valid_rx_ms = p_frame->received_at_ms;
     p_handler->timeout_armed = true;
 
-    LOG_DBG("range: %.2f", (double)rm.range_m);
-    LOG_DBG("azimuth: %.2f", (double)rm.azimuth_rad);
+    LOG_DBG("Measurement: t=%u ms, range=%.2f m, azimuth=%.4f rad",
+            (unsigned int)rm.timestamp_ms, (double)rm.range_m, (double)rm.azimuth_rad);
 
+    const TrackState previous_state = p_handler->track.state;
     update_track_from_measurement(&p_handler->track, &rm);
+    // Startup has its own log; report other state transitions only when they occur.
+    if (previous_state != TRACK_STATE_EMPTY && previous_state != p_handler->track.state) {
+        LOG_INF("Track state: %s -> %s",
+                track_state_name(previous_state), track_state_name(p_handler->track.state));
+    }
 
 }
 
@@ -157,22 +163,26 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
     if (p_track->state == TRACK_STATE_EMPTY) {
         track_start(p_track, (float)p_measurement->range_m, (float)p_measurement->azimuth_rad, p_measurement->timestamp_ms);
 
-        LOG_INF("Filters initialized at range: %.2f", (double)p_measurement->range_m);
-        LOG_INF("Filters initialized at azimuth: %.2f", (double)p_measurement->azimuth_rad);
+        LOG_INF("Track started: TENTATIVE, t=%u ms, range=%.2f m, azimuth=%.4f rad",
+                (unsigned int)p_measurement->timestamp_ms,
+                (double)p_measurement->range_m, (double)p_measurement->azimuth_rad);
     } else {
 
         // Prediction may clear a lost/stale track. A later measurement starts it anew;
         // this measurement is not reused for startup after prediction returns false.
+        const uint32_t previous_time_ms = p_track->last_measurement_time_ms;
         if (!track_predict(p_track, p_measurement->timestamp_ms)) {
-            LOG_DBG("Invalid measurement interval");
+            LOG_DBG("Prediction skipped: previous_t=%u ms, received_t=%u ms, state=%s",
+                    (unsigned int)previous_time_ms,
+                    (unsigned int)p_measurement->timestamp_ms, track_state_name(p_track->state));
             return;
         }
 
         const float predicted_range_m = p_track->range_filter.estimate;
         const float predicted_azimuth_rad = p_track->azimuth_filter.estimate;
 
-        LOG_DBG("predicted range: %.2f", (double)predicted_range_m);
-        LOG_DBG("predicted azimuth: %.2f", (double)predicted_azimuth_rad);
+        LOG_DBG("Prediction: range=%.2f m, azimuth=%.4f rad",
+                (double)predicted_range_m, (double)predicted_azimuth_rad);
 
         // Compare with the prediction using both configured inclusive gates.
         const bool is_in_gate = gating_check(
@@ -186,28 +196,16 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
         // the prediction and advances track-loss policy, not RX error statistics.
         if (is_in_gate) {
             track_hit(p_track, p_measurement->range_m, p_measurement->azimuth_rad);
-            LOG_DBG("Measurement accepted");
         } else {
             track_miss(p_track);
-            LOG_DBG("Measurement rejected by gate");
         }
 
-        const float filtered_range_m =
-            p_track->range_filter.estimate;
-
-        const float filtered_azimuth_rad =
-            p_track->azimuth_filter.estimate;
-
-        LOG_DBG("filtered range: %.2f",
-            (double)filtered_range_m);
-
-        LOG_DBG("filtered azimuth: %.2f",
-            (double)filtered_azimuth_rad);
-
-        LOG_DBG("estimated range rate: %.2f",
-            (double)p_track->range_filter.rate);
-        LOG_DBG("estimated azimuth rate: %.2f",
-            (double)p_track->azimuth_filter.rate);
+        LOG_DBG("%s: range=%.2f m, azimuth=%.4f rad, range_rate=%.2f m/s, azimuth_rate=%.4f rad/s",
+                is_in_gate ? "Measurement accepted" : "Measurement rejected by gate",
+                (double)p_track->range_filter.estimate,
+                (double)p_track->azimuth_filter.estimate,
+                (double)p_track->range_filter.rate,
+                (double)p_track->azimuth_filter.rate);
     }
 }
 
@@ -224,12 +222,6 @@ static void handle_status_request(void)
 {
     struct rx_frame_stats stats;
     rx_frame_processor_get_stats(&stats);
-
-    LOG_DBG("CRC: %u, length: %u, timeout: %u, queue drops: %u",
-        (unsigned int)stats.crc_errors,
-        (unsigned int)stats.length_errors,
-        (unsigned int)stats.frame_timeouts,
-        (unsigned int)stats.queue_drops);
 
     struct send_frame request;
     struct uart_rx_stats uart_stats;
@@ -250,8 +242,32 @@ static void handle_status_request(void)
         return;
     }
     ret = uart_tx_submit(&request);
+    if (ret == -ENOMSG) {
+        LOG_WRN("STATUS submit failed: %d (TX queue full)", ret);
+        return;
+    }
     if (ret != 0) {
         LOG_ERR("STATUS submit failed: %d", ret);
         return;
+    }
+    // Submission only confirms a queue copy, not transmission or peer reception.
+    LOG_DBG("STATUS report queued: payload=%u bytes", (unsigned int)request.frame.payload_length);
+}
+
+static const char *track_state_name(TrackState state)
+{
+    switch (state) {
+    case TRACK_STATE_EMPTY:
+        return "EMPTY";
+    case TRACK_STATE_TENTATIVE:
+        return "TENTATIVE";
+    case TRACK_STATE_CONFIRMED:
+        return "CONFIRMED";
+    case TRACK_STATE_COASTING:
+        return "COASTING";
+    case TRACK_STATE_LOST:
+        return "LOST";
+    default:
+        return "UNKNOWN";
     }
 }

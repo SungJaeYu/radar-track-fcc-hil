@@ -72,3 +72,7 @@ Host configuration is independent of Zephyr prj.conf.
 
 STATUS combines four processor counters and three UART counters. Both owners are mocked;
 real counter increments are tested separately by the UART suite.
+
+로그 정리 회귀: STATUS 성공은 큐 접수 한 줄이며 실패 시 성공 로그를 내지 않는다.
+정상 갱신은 입력·예측·결과 3줄, 상태 변화 시 이름을 기록하고 상태가 같으면 전이 로그를 내지 않는다.
+host 모사는 DEBUG도 캡처하므로 실제 필터링·deferred 출력 검증은 별도다.

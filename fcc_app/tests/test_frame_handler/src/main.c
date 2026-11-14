@@ -103,7 +103,7 @@ static void test_status_zero(void)
     assert(submitted_frame.frame.payload_length == 28);
     const uint8_t expected[28] = {0};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
-    assert(strcmp(output, "TYPE_STATUS\nCRC: 0, length: 0, timeout: 0, queue drops: 0\n") == 0);
+    assert(strcmp(output, "STATUS report queued: payload=28 bytes\n") == 0);
 }
 
 static void test_status_snapshot(void)
@@ -114,7 +114,7 @@ static void test_status_snapshot(void)
     source_uart_stats = (struct uart_rx_stats){7, 0x80000000U, UINT32_MAX};
     request_status(&handler);
     assert(strcmp(output,
-                  "TYPE_STATUS\nCRC: 1, length: 23, timeout: 456, queue drops: 4294967295\n") == 0);
+                  "STATUS report queued: payload=28 bytes\n") == 0);
     source_stats.crc_errors = 2;
     output_size = 0;
     request_status(&handler);
@@ -123,7 +123,7 @@ static void test_status_snapshot(void)
                                 0, 0, 0, 7, 0x80, 0, 0, 0, 0xff, 0xff, 0xff, 0xff};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
     assert(strcmp(output,
-                  "TYPE_STATUS\nCRC: 2, length: 23, timeout: 456, queue drops: 4294967295\n") == 0);
+                  "STATUS report queued: payload=28 bytes\n") == 0);
     assert(source_stats.length_errors == 23 && source_stats.frame_timeouts == 456);
     assert(source_stats.queue_drops == UINT32_MAX);
 }
@@ -227,8 +227,10 @@ static void test_status_submit_failure_and_recovery(void)
         request_status(&handler);
         assert(submit_calls == 1 && stats_reads == 1);
         char expected[64];
-        snprintf(expected, sizeof(expected), "STATUS submit failed: %d\n", errors[i]);
+        snprintf(expected, sizeof(expected), "STATUS submit failed: %d", errors[i]);
         assert(strstr(output, expected) != NULL);
+        assert(strstr(output, "report queued") == NULL);
+        assert((strstr(output, "TX queue full") != NULL) == (errors[i] == -ENOMSG));
         assert(memcmp(before, &handler, sizeof(handler)) == 0);
         assert(source_stats.crc_errors == 0x12345678U && source_stats.queue_drops == 0);
 
@@ -273,7 +275,7 @@ static void test_incoming_status_report_is_ignored(void)
     };
     handle_frame(&handler, &frame);
     assert(stats_reads == 0 && submit_calls == 0);
-    assert(strcmp(output, "Unexpected STATUS_REPORT received\n") == 0);
+    assert(strcmp(output, "STATUS_REPORT ignored: unexpected input\n") == 0);
     assert(memcmp(before, &handler, sizeof(handler)) == 0);
 }
 
@@ -349,10 +351,20 @@ static void test_valid_measurements_arm_refresh_and_expire(void)
     handle_frame(&handler, &frame);
     assert(handler.timeout_armed && handler.last_valid_rx_ms == 5000);
     assert(handler.track.state == TRACK_STATE_TENTATIVE);
+    output_size = 0;
+    output[0] = '\0';
     frame = measurement(200, 1000, 5500);
     handle_frame(&handler, &frame);
     assert(handler.last_valid_rx_ms == 5500);
     assert(handler.track.hit_count == 2);
+    // One input, one prediction, and one result; unchanged state is silent.
+    size_t log_lines = 0;
+    for (const char *p_char = output; *p_char != '\0'; ++p_char) {
+        log_lines += *p_char == '\n';
+    }
+    assert(log_lines == 3);
+    assert(strstr(output, "range_rate=") != NULL);
+    assert(strstr(output, "Track state:") == NULL);
     frame_handler_check_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS / 2);
     assert(handler.timeout_armed);
     frame_handler_check_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
@@ -417,9 +429,11 @@ static void test_gate_rejection_refreshes_receive_timeout(void)
         handle_frame(&handler, &frame);
     }
     assert(handler.track.state == TRACK_STATE_CONFIRMED);
+    assert(strstr(output, "Track state: TENTATIVE -> CONFIRMED") != NULL);
     struct received_frame frame = measurement(400, 2000, 5900);
     handle_frame(&handler, &frame);
     assert(strstr(output, "Measurement rejected by gate") != NULL);
+    assert(strstr(output, "Track state: CONFIRMED -> COASTING") != NULL);
     assert(handler.track.state == TRACK_STATE_COASTING && handler.track.miss_count == 1);
     assert(handler.timeout_armed && handler.last_valid_rx_ms == 5900);
     frame_handler_check_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
@@ -440,7 +454,7 @@ static void test_timestamp_rejection_refreshes_receive_timeout(void)
         memcpy(before, &handler.track, sizeof(before));
         frame = measurement(timestamps[i], 1000, 5900);
         handle_frame(&handler, &frame);
-        assert(strstr(output, "Invalid measurement interval") != NULL);
+        assert(strstr(output, "Prediction skipped: previous_t=100 ms") != NULL);
         assert(memcmp(before, &handler.track, sizeof(before)) == 0);
         assert(handler.timeout_armed && handler.last_valid_rx_ms == 5900);
         frame_handler_check_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
