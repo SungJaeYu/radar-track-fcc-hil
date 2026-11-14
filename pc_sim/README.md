@@ -190,6 +190,10 @@ big-endian uint32 일곱 개(총 28바이트)를 담습니다.
 
 필드를 바꿀 때 C의 `status_report`/`status_message_encode()`와 Python `protocol.py`의
 `STATUS_FIELDS`를 함께 수정합니다. Python 길이·디코딩과 CLI/GUI 행은 이 목록을 공유합니다.
+C의 `STATUS_REPORT_FIELD_COUNT`도 갱신합니다. payload 길이는 필드 수 × 4바이트로 계산합니다.
+정적 assert는 현재 all-uint32 구조체 크기와 payload 길이 일치 및 최대 payload 용량을 검사합니다.
+구조체 멤버 수를 자동으로 세는 것은 아니며, 타입·패딩이 바뀌면 크기 검사도 재검토합니다.
+이 검사는 필드 순서나 인코더의 기록 누락을 보장하지 않으므로 고정 바이트열 테스트를 유지합니다.
 C endian 쓰기는 `common/byte_order.h`를 재사용합니다. 생성기는 사용하지 않습니다.
 고정 기대 바이트열·C→Python 상호운용·길이 오류·구형 응답·CLI/GUI 테스트도 함께 갱신합니다.
 28바이트 응답의 [실보드 UART·CLI·GUI 왕복](../docs/hardware-test-2026-11-14-status-extended.md)을 확인했습니다.

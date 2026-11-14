@@ -174,6 +174,9 @@ STATUS_REQUEST는 공통 LEN 1..32만 요구하며 현재 payload 내용은 무�
 | 24 | 4 | recovery_discarded_bytes — 복구 시 링 미소비 바이트 폐기 |
 
 각 필드는 big-endian uint32이고 payload 28바이트, 전체 프레임 33바이트다.
+`STATUS_REPORT_PAYLOAD_LENGTH`는 `STATUS_REPORT_FIELD_COUNT × 4U`로 계산한다.
+현재 all-uint32 구조체 크기 일치와 최대 payload 용량은 정적 assert로 검사한다.
+이는 필드 개수 자동 추론이나 직렬화 검증을 대신하지 않는다. 필드 추가 시 개수·인코더·PC 규격·테스트를 함께 갱신한다.
 PC는 구형 16바이트 응답도 해석하고 없는 필드는 미지원으로 표시한다. 새 펌웨어는 28바이트만 송신한다.
 카운터는 각각 atomic으로 읽지만 일곱 값이 모두 동일 시점이라는 보장은 없다.
 UART 하드웨어 오류·TX 실패·측정 무수신은 이 일곱 항목에 포함하지 않는다.
