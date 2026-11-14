@@ -37,10 +37,9 @@ pc_sim (Python 측정 생성)
 | SDK            | `~/zephyr-sdk-0.17.2`         |
 | west workspace | `~/zephyrproject`            |
 
-## PC 도구: `pc_sim/` 하나로 통합
+## PC 도구
 
-[실행 방법과 옵션](pc_sim/README.md). 기존 `tools/hil/` 도구를 `pc_sim/`으로 옮기고,
-기존 시나리오 실행기도 현재 펌웨어 규격으로 변경했습니다. 현재 프로토콜은 CRC-16/IBM-3740이며 이전 XOR 규격과 호환되지 않습니다.
+측정 송신기·시나리오·STATUS CLI는 `pc_sim/`에 있습니다. [실행 방법과 옵션](pc_sim/README.md)을 참고하세요.
 
 ```bash
 source ~/zephyrproject/.venv/bin/activate
@@ -61,7 +60,7 @@ python -m pytest
 
 전체 Python·C 테스트의 케이스와 검증 범위는 [테스트 케이스 목록](docs/test-cases.md)에 정리했습니다.
 요구사항별 규격·구현·테스트·검증 공백은 [요구사항 추적표](docs/requirements-traceability.md)에서 확인합니다.
-STATUS 요청·응답 CLI: `python -m pc_sim.status_client --port PORT --timeout 2` — [사용법](pc_sim/README.md#status-진단-요청). 모사 테스트와 `2aa57d9` 실보드 기본 왕복을 확인했습니다.
+STATUS 요청·응답 CLI: `python -m pc_sim.status_client --port PORT --timeout 2` — [사용법](pc_sim/README.md#status-진단-요청).
 
 ## 데스크톱 GUI
 
@@ -84,14 +83,14 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-실제 수신·복구 코드와 모사 UART를 사용하는 20개 테스트입니다.
+실제 수신·복구 코드와 모사 UART를 사용하는 host 테스트입니다.
 실행 조건과 검증 한계는 [UART 테스트 안내](fcc_app/tests/test_uart_rx/README.md)를 참고하세요.
 Python 테스트와 별도이며 실제 보드 HIL을 대신하지 않습니다.
 필터·추적 정책은 [Tracking C 테스트](fcc_app/tests/test_kalman/README.md)로 별도 검증합니다.
 
-TX host 테스트 4개는 [TX 테스트 안내](fcc_app/tests/test_uart_tx/README.md)를 참고하세요.
+TX host 테스트는 [TX 테스트 안내](fcc_app/tests/test_uart_tx/README.md)를 참고하세요.
 
-STATUS·명령·측정 처리 테스트 17개는 [STATUS 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
+STATUS·명령·측정 처리 테스트는 [STATUS 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
 
 ## 펌웨어 빌드·플래시
 
@@ -126,7 +125,6 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 
 현재 `prj.conf`에서 `CONFIG_RADAR_RX_OVERFLOW_DRAIN=y`를 선택하며, `uart_rx.c`에서 이를 `RX_OVERFLOW_POLICY_DRAIN_BUFFER`로 매핑합니다.
 정책은 `fcc_app/Kconfig`의 choice로 정의하고 `prj.conf`에서 선택합니다.
-기본값은 `CONFIG_RADAR_RX_OVERFLOW_DRAIN=y`이며 host RX 테스트는 drain 21·discard 18개를 실행합니다.
 버퍼가 가득 차면 실패한 바이트를 버리고 overflow 플래그를 설정합니다. 복구 중 새 입력도
 버리며, 기존 파서 상태와 저장된 바이트로 완성할 수 있는 프레임만 처리한 뒤 나머지를 초기화합니다.
 `RX_OVERFLOW_POLICY_DISCARD_ALL`은 저장된 바이트와 부분 프레임을 모두 바로 폐기합니다.
@@ -136,7 +134,7 @@ CRC 규격은 **CRC-16/IBM-3740 (CCITT-FALSE)**입니다. poly=`0x1021`, init=`0
 refin/refout=false, xorout=`0x0000`이며 `123456789`의 기준값은 `0x29B1`입니다.
 규격 이름과 매개변수는 [Zephyr CRC 문서](https://docs.zephyrproject.org/latest/doxygen/html/group__crc.html)와 일치합니다.
 STX와 CRC 자체는 계산에서 제외합니다. 측정 프레임은 총 15바이트, INIT은 6바이트입니다.
-Python 송신기·GUI와 보드 펌웨어를 함께 갱신해야 합니다. 최신 실보드·GUI 시험 결과는 [검증 기록](docs/hardware-test-2026-11-12-status.md)을 참고하세요.
+프로토콜 변경 시 Python 송신기·GUI와 보드 펌웨어를 함께 갱신해야 합니다.
 
 정상 프레임은 깊이 8의 큐에 복사합니다. 큐가 가득 차면 새 프레임을 버리고 누적 드롭을 집계합니다.
 INIT/RESET도 큐 포화 시 드롭될 수 있습니다.
@@ -150,7 +148,7 @@ fcc_app/src/
     protocol/         frame_parser, protocol_frame, radar_message
     application/      frame_handler: 메시지 처리·추적 실행
     tracking/         track, kalman_cv, gating, angle_utils
-    common/           crc16, ring_buffer
+    common/           crc16, ring_buffer, math_constants
 fcc_app/tests/
     test_uart_rx/      UART drain·링버퍼·부분 프레임 timeout
     test_frame_handler/ STATUS·INIT/RESET·측정 timeout
@@ -171,10 +169,6 @@ pc_sim/
     README.md          실행·옵션·제약
 tests/                Python 프로토콜·송신기·시나리오 테스트
 ```
-
-측정 TYPE은 `FRAME_TYPE_MEAS_REPORT`(0x02), 상태 요청은 `FRAME_TYPE_STATUS_REQUEST`(0x03)입니다.
-`FRAME_TYPE_STATUS_REPORT`(0x06)는 RX 통계 네 항목을 big-endian uint32로 담는 16바이트 응답입니다. 상세 규격은 [PC 도구 문서](pc_sim/README.md)를 참고합니다.
-[전체 TYPE 정의와 PC 역할](pc_sim/README.md)을 참고하세요.
 
 ## 구현 범위
 
@@ -203,7 +197,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [x] RX/handler 스레드·메시지 큐 분리, rx_frame_processor로 파서 소유·제출 처리 분리
 - [x] drain/discard 복구 정책과 큐 포화 드롭 집계 구현
   - [x] 부분 프레임 timeout 구현·host 검증: 바이트 처리 중단 시 parser 초기화·1회 집계·다음 정상 프레임 복구
-    - [x] 실제 보드 부분 송신 중단 후 timeout 집계·정상 STATUS 복귀 (`2aa57d9`)
+    - [x] 실제 보드 부분 송신 중단 후 timeout 집계·정상 STATUS 복귀
   - [x] RX 진단 카운터: CRC·길이·부분 프레임 timeout·큐 드롭, atomic 읽기·누적값 보존
   - [ ] 링버퍼 overflow 횟수·손실 바이트 통계
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
@@ -222,7 +216,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 - [x] 10바이트 측정 해석·유효성 검사, semicircle→rad 변환
 - [x] 거리·방위각 CV 칼만 필터, 예측·게이팅·보정, 시간 간격 검사
-  - [x] 게이트 Kconfig 설정 및 5개 설정 조합 × 4개 경계/조합 테스트
+  - [x] 게이트 Kconfig 설정, host 경계 시험·실보드 설정별 수용/거부 검증
 - [x] 트랙 생성·확인·coasting·lost 및 재시작 처리
 - [x] 첫 정상 측정 이후 무수신 timeout, INIT/RESET과 수신 시각 기반 감시
 
@@ -266,7 +260,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] STATUS payload 구성과 `uart_tx_submit()` 호출부 연결, host 오류 경로 검증
   - [x] PC STATUS CLI 수신·표시와 오류·deadline 모사 테스트
   - [x] GUI STATUS 수동 조회·통계·성공 시각, 중복 방지·timeout·연결 해제 모사 테스트
-  - [x] 실제 보드 → PC STATUS 송신 확인 — `2aa57d9`, CLI·GUI 및 오류 주입 시험
+  - [x] 실제 보드 → PC STATUS 송신 확인 — CLI·GUI 및 오류 주입 시험
   - [ ] 응답 프레임·CRC·명시적 단위·결과 시각과 TX 완료/실패 처리
   - [ ] TX 큐 포화 정책: 최신 추적 결과와 제어 응답의 보존·폐기 기준, 오류 집계
 - [ ] COMMAND/Lock On: 트랙 선택·해제·대상 소실 정책
@@ -289,58 +283,12 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 | 7 | COMMAND/Lock On·BIT | 선택·해제·소실 정책, 자기진단 항목·합격 기준 |
 | 8 | 통합 정량 평가 | 추적 오차·연속성·최대 부하·장시간 안정성 평가 |
 
-부분 프레임 timeout과 RX 기본 오류 통계·STATUS 로그는 구현했습니다.
-`처리 스레드 → 응답 복사 큐 → TX 스레드`까지 STATUS 응답 경로를 구현했습니다.
-지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
-PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회도 구현했습니다. 실제 STATUS CLI·GUI 송수신도 확인했습니다.
-overflow 정책·두 timeout·거리/방위각 게이트의 Kconfig 분리 및 host 검증은 완료했습니다.
-다음은 로깅 시스템 정리입니다. 이후 추적 결과 송신 규격을 확정하고 보드 추정값을 PC에서 확인합니다.
-강제 링 overflow·UART 오류·TX 부하는 남아 있습니다.
-
 ## 검증 현황
 
-2026-11-12 GUI 실보드: `2aa57d9` 빌드·플래시 후 STATUS CLI·GUI 왕복, 오류 통계 증가,
-INIT/RESET 통계 보존, 추적 중 조회·무수신 timeout 확인 완료.
-[실보드 결과와 원시 로그](docs/hardware-test-2026-11-12-status.md).
-
-최신 host: Python **136개 + subtest 9개**, Tracking **17개**·handler **17개** 통과.
-RX drain 21·discard 18·TX 4·게이팅 설정 20개를 합한 현재 C 사례 수는 97회 실행입니다.
-게이팅 기본값(100 m/10°)과 변경값(250 m/30°) 펌웨어 빌드도 통과했습니다.
-게이트 기본값·변경값 실보드 시험도 구성별 UART 16개·게이트 14개 통과했습니다.
-[결과와 원시 로그](docs/hardware-test-2026-11-14-gating.md). 보드는 기본값으로 복원했습니다.
-일반·디버그 펌웨어 빌드와 보드 UART 회귀 및 ±179° 경계 왕복은
-[2026-11-14 fmodf 실보드 결과](docs/hardware-test-2026-11-14-fmodf.md)를 참고합니다.
-GUI 실보드 검증은 11월 12일 결과이며 최신 GUI 자동 검증은 offscreen 모사 시험입니다.
-강제 링 overflow·하드웨어 UART 오류·부하·보드 assert 강제 실패는 미검증입니다.
-아래는 버전별 과거 실행 기록이며 당시 미검증·실패 상태를 그대로 보존합니다.
-
-2026-11-12 (`0e84bdd`): PC 프레임 파서·STATUS CLI 포함 Python 126개 + subtest 9개 통과.
-최신 펌웨어 빌드 성공; 기존 devicetree 중복 unit-address 경고 유지.
-ST-Link·USB-UART가 감지되지 않아 flash는 OpenOCD `Error: open failed`로 실패했으며,
-STATUS 실보드 왕복은 미검증입니다. 아래 날짜별 기록은 당시 버전의 결과입니다.
-
-2026-11-10: assert 제외 코딩 규칙 적용 완료. RX 21개·STATUS 5개·TX 4개·Tracking suite, Python 84개 + subtest 9개, 공개 헤더 단독 컴파일과 펌웨어 빌드 통과.
-
-2026-11-10: enum·TYPE 정리 후 Python 84개 + subtest 9개, RX/STATUS/TX/Tracking host 테스트와 펌웨어 빌드 통과. STATUS_REPORT는 예약 정의이며 실보드 재시험은 하지 않았습니다.
-
-2026-11-08: RX 20개·STATUS 5개·TX 4개·CRC/인코더 상호운용 26개 통과.
-이번 펌웨어 증분 빌드는 경고 없이 통과했습니다. TX 실보드 시험은 아직입니다.
-
-2026-11-04: UART host 20개와 STATUS handler host 5개 통과, 펌웨어 빌드 통과.
-CMake 재구성 시 기존 보드 devicetree의 `0x90000000` 중복 unit-address 경고가 남아 있습니다.
-통계·STATUS 변경의 flash/실보드 시험은 수행하지 않았습니다.
-
-2026-11-03: 부분 프레임 timeout 회귀 6개를 추가해 UART host C는 19개입니다.
-이 기능의 실보드 검증은 아직 남아 있습니다.
-
-2026-11-01 분리본 기준 Python 74개 + subtest 9개, UART host C 13개를 통과했고
-펌웨어 빌드·플래시와 실제 GUI 연결·송신·중지·재시작을 확인했습니다.
-CRC·길이 오류 후 복귀, timeout, 큐 포화 후 정상 복귀도 보드에서 확인했습니다.
-**링버퍼 overflow는 해당 시험에서 발생하지 않았으므로 실보드 drain 검증은 미완료입니다.**
-USART6 TX, 장시간·최대 부하와 폐루프 추적 정확도도 아직 검증하지 않았습니다.
-
-[실보드 시험 기록](docs/hardware-test-2026-11-01.md) · [테스트 목록](docs/test-cases.md).
-자동 테스트·빌드 성공과 실제 보드 검증은 구분합니다. 과거 구현은 Git 이력에서 확인할 수 있습니다.
+단일표적 추적, STATUS CLI·GUI 왕복, 수신 오류 처리, 무수신 timeout 및 게이트 설정 변경을
+실보드에서 검증했습니다. host 회귀 테스트와 일반·디버그 펌웨어 빌드도 확인했습니다.
+시험마다 대상 버전과 범위가 다르며, 강제 링버퍼 overflow·UART 하드웨어 오류·TX 부하·장시간 시험은 남아 있습니다.
+상세 결과와 원시 로그는 [검증 기록](docs/verification-history.md)을 참고하세요.
 
 ## HIL 통신 구조 · 배선
 
@@ -367,12 +315,20 @@ PC에 USB 2개로 콘솔과 데이터 링크를 분리한다. 서로 간섭 없�
 현재 설정 기준 배선·검증 절차는 [docs/board-bringup.md](docs/board-bringup.md)를 참고합니다.
 
 
-2026-11-14 assert 검증: 공통 host assert 어댑터를 연결하고 내부 전제 위반 3개 사례를 추가했습니다.
-[일반·디버그 실보드 검증](docs/hardware-test-2026-11-14-assert.md)을 참고합니다.
+## 주요 설정
 
-## 게이팅 설정과 주석 점검
+애플리케이션 설정은 `fcc_app/Kconfig`에서 정의하고 `fcc_app/prj.conf`에서 선택합니다.
+변경 후 펌웨어를 다시 빌드합니다.
 
-`fcc_app/prj.conf`에서 다음 값을 지정합니다. 변경 후 펌웨어를 다시 빌드합니다.
+| 설정 | 기본값 | 의미 |
+|---|---|---|
+| `CONFIG_RADAR_RX_OVERFLOW_DRAIN` | `y` | 저장된 바이트로 완성 가능한 프레임을 처리한 뒤 복구 |
+| `CONFIG_RADAR_FRAME_RX_TIMEOUT_MS` | `1000` | 부분 프레임 바이트 처리 중단 제한(ms) |
+| `CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS` | `1000` | 첫 정상 측정 이후 무수신 제한(ms) |
+| `CONFIG_RADAR_RANGE_GATE_M` | `100` | 거리 오차 상한(m) |
+| `CONFIG_RADAR_AZIMUTH_GATE_DEG` | `10` | 각도 오차 상한(정수 degree) |
+
+게이트 설정 예:
 
 ```ini
 CONFIG_RADAR_RANGE_GATE_M=100
@@ -386,3 +342,10 @@ CONFIG_RADAR_AZIMUTH_GATE_DEG=10
 공분산 기반 적응형 게이트는 아닙니다. π는 `common/math_constants.h`의 수학 상수입니다.
 
 [설정별 테스트](fcc_app/tests/test_kalman/README.md) · [전체 펌웨어 주석 점검](docs/comment-audit.md).
+
+## 상세 문서
+
+- [시스템 역할·ID 정책](docs/system-roles.md) · [구현 흐름](EXPLAINER.md)
+- [PC CLI](pc_sim/README.md) · [GUI](pc_sim/GUI.md) · [배선·보드 시험](docs/board-bringup.md)
+- [요구사항 추적표](docs/requirements-traceability.md) · [테스트 목록](docs/test-cases.md) · [검증 기록](docs/verification-history.md)
+- [코딩 스탠다드](docs/coding-standard.md) · [코드 점검](docs/coding-standard-audit.md) · [주석 점검](docs/comment-audit.md)
