@@ -204,8 +204,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
   - [x] overflow 정책 Kconfig 분리: DRAIN·DISCARD host 검증 및 두 펌웨어 실보드 UART 회귀
   - [x] timeout 설정 분리: 부분 프레임·측정 무수신 제한을 앱 Kconfig/prj.conf로 관리; 기본값/변경값 host 경계 시험 완료
-- [ ] 공통 타입·인터페이스 정리 — [코딩 스탠다드 초안](docs/coding-standard.md) 기준으로 이후 적용 — [파일별 수정 목록](docs/coding-standard-audit.md)
-  - [ ] RX/handler·TX의 공통 프레임 타입과 기본 인자 검증 분리; 수신 시각은 RX 전용 구조체에 유지하고 각 submit API·큐는 유지
+- [x] 공통 타입·인터페이스 및 코딩 규칙 정리 — [코딩 스탠다드](docs/coding-standard.md) · [적용 결과와 후속 과제](docs/coding-standard-audit.md)
+  - [x] `protocol_frame`과 `protocol_frame_is_valid()` 공유; 수신 시각은 `received_frame`에만 유지하고 RX/handler·TX의 submit API·복사 큐는 분리
   - [x] enum 타입 PascalCase·타입명 기반 열거자 접두사 통일; 숫자 값과 로그 문자열 유지, 참조 코드·테스트·문서 갱신
   - [x] 코딩 규칙 문서화·적용: 참조 포인터 `p_`·출력 포인터 `out_`와 선언/정의 인자명, 함수 중괄호·공백·줄바꿈, 직접 사용하는 헤더 include와 불필요 include 정리
   - [x] API 계약 통일: 음수 errno 반환과 Zephyr 오류 전달, CRC 함수의 유효 입력 전제, encode의 바이트 수/음수 오류 반환을 주석으로 명시
@@ -236,7 +236,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [x] 역할·ID 정책, 배선·빌드·테스트 목록·로그·화면과 블로그 기록 정리
   - [x] 시간 제어 host 시험: 부분 프레임 timeout 경계·무수신·다음 정상 프레임·정상 분할 수신
   - [x] 통계 조회·STATUS host 시험: 출력값, 반복 조회, 트랙·측정 timeout 보존
-  - [ ] 큐·동시성 시험: 포화 시 제어 순서, 오래된 측정, 실제 동시 조회, TX 실패 후 복귀
+  - [x] TX host 시험: 큐 복사·FIFO·포화 후 재제출, 인코딩 실패 후 다음 요청 처리; STATUS 제출 실패 후 복귀
+  - [ ] 큐·동시성 실보드 시험: 포화 시 제어 순서, 오래된 측정, 실제 동시 조회, 물리 통신 장애 후 복귀
   - [ ] 로깅 시스템: Zephyr deferred logging·모듈별 레벨·디버그 상세 출력·버퍼 유실 집계, 콘솔 출력 직렬화: heartbeat와 측정 로그의 중간 삽입 방지; 통신 검증은 가능한 경우 wire 응답으로 판정
   - [ ] 실보드 링버퍼 overflow/drain·UART overrun·TX 포화/부하 확인
   - [ ] 장시간·고부하·스택 여유·정량 손실 및 추적 정확도 평가
@@ -250,19 +251,20 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 ### 6. 상태·제어·결과 송신
 
-- [ ] STATUS/BIT: 상태·오류·드롭 통계 규격과 응답
+- [x] STATUS 진단: RX 오류·드롭 통계 규격과 응답
   - [x] RX 카운터는 processor 소유, atomic으로 개별 조회; parser·INIT/RESET에서 누적값 보존
   - [x] 처리 스레드의 STATUS 로그 출력; 전체 항목의 동일 시점 snapshot은 보장하지 않음
   - [x] STATUS 응답 규격: CRC·길이 오류·부분 프레임 timeout·큐 드롭, big-endian uint32 네 항목
-  - [ ] 실제 BIT 자기진단 항목 정의
-- [ ] TX 큐·전용 스레드, STATUS 응답과 추적 결과 송신, PC 수신·그래프 비교
+- [ ] BIT 자기진단: 검사 항목·수행 시점·결과 규격·합격 기준 정의
+- [x] TX 송신 기반과 STATUS 왕복: 복사 큐·전용 스레드·프레임 인코딩·PC CLI/GUI 수신
   - [x] TX 초기화·복사 큐·스레드, 프레임 인코딩·CRC·polling 송신 구현과 host 검증
   - [x] STATUS payload 구성과 `uart_tx_submit()` 호출부 연결, host 오류 경로 검증
   - [x] PC STATUS CLI 수신·표시와 오류·deadline 모사 테스트
   - [x] GUI STATUS 수동 조회·통계·성공 시각, 중복 방지·timeout·연결 해제 모사 테스트
   - [x] 실제 보드 → PC STATUS 송신 확인 — CLI·GUI 및 오류 주입 시험
-  - [ ] 응답 프레임·CRC·명시적 단위·결과 시각과 TX 완료/실패 처리
-  - [ ] TX 큐 포화 정책: 최신 추적 결과와 제어 응답의 보존·폐기 기준, 오류 집계
+- [ ] 추적 결과 송신·PC 비교: TRACK_REPORT payload·단위·결과 timestamp·송신 주기와 보드 추정값 그래프
+  - [ ] 기존 공통 프레임·CRC 인코더를 재사용하고 TX 완료/실패 통계·관측 방식 정의
+  - [ ] TX 큐 포화 정책 확장: 현재 새 요청 거부 방식에서 추적 결과·제어 응답의 우선순위·보존·폐기 기준과 오류 집계 정의
 - [ ] COMMAND/Lock On: 트랙 선택·해제·대상 소실 정책
 
 스레드는 표적마다 만들지 않고, 송신 대기 등 독립 실행 요구에 따라 추가합니다.
