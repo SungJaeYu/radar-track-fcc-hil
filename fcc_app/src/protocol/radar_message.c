@@ -2,6 +2,13 @@
 
 #include <stddef.h>
 
+#include "protocol/protocol_frame.h"
+
+#define RADAR_MEAS_PAYLOAD_LENGTH 10U
+
+_Static_assert(RADAR_MEAS_PAYLOAD_LENGTH <= PROTOCOL_MAX_PAYLOAD, "Radar measurement exceeds payload capacity");
+
+
 #define PI_F 3.14159265358979323846f
 #define SEMICIRCLE_SCALE 2147483648.0f
 
@@ -14,7 +21,7 @@ bool decode_radar_measurement(
         return false;
     }
 
-    if (payload_length != 10U) {
+    if (payload_length != RADAR_MEAS_PAYLOAD_LENGTH) {
         return false;
     }
 

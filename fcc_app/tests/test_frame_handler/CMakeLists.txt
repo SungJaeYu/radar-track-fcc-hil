@@ -10,7 +10,7 @@ add_executable(frame_handler_tests src/main.c
     ../../src/tracking/gating.c ../../src/protocol/radar_message.c
     ../../src/protocol/protocol_frame.c ../../src/common/crc16.c
     ../../src/protocol/status_message.c ../../src/protocol/frame_parser.c)
-target_include_directories(frame_handler_tests PRIVATE include ../../src)
+target_include_directories(frame_handler_tests PRIVATE include ../common/include ../../src)
 target_compile_definitions(frame_handler_tests PRIVATE
     CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS=${RADAR_MEASUREMENT_TIMEOUT_MS})
 target_compile_features(frame_handler_tests PRIVATE c_std_11)

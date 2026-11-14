@@ -4,6 +4,8 @@
 
 #define STATUS_REPORT_PAYLOAD_LENGTH 16
 
+_Static_assert(STATUS_REPORT_PAYLOAD_LENGTH <= PROTOCOL_MAX_PAYLOAD, "Status report exceeds payload capacity");
+
 static void write_u32_be(uint32_t value, uint8_t *out_buffer)
 {
     // The caller must provide at least four writable bytes.

@@ -209,13 +209,13 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
   - [x] overflow 정책 Kconfig 분리: DRAIN·DISCARD host 검증 및 두 펌웨어 실보드 UART 회귀
-  - [ ] timeout 설정 분리: 부분 프레임·측정 무수신 제한을 앱 Kconfig/prj.conf로 관리
+  - [x] timeout 설정 분리: 부분 프레임·측정 무수신 제한을 앱 Kconfig/prj.conf로 관리; 기본값/변경값 host 경계 시험 완료
 - [ ] 공통 타입·인터페이스 정리 — [코딩 스탠다드 초안](docs/coding-standard.md) 기준으로 이후 적용 — [파일별 수정 목록](docs/coding-standard-audit.md)
   - [ ] RX/handler·TX의 공통 프레임 타입과 기본 인자 검증 분리; 수신 시각은 RX 전용 구조체에 유지하고 각 submit API·큐는 유지
   - [x] enum 타입 PascalCase·타입명 기반 열거자 접두사 통일; 숫자 값과 로그 문자열 유지, 참조 코드·테스트·문서 갱신
   - [x] 코딩 규칙 문서화·적용: 참조 포인터 `p_`·출력 포인터 `out_`와 선언/정의 인자명, 함수 중괄호·공백·줄바꿈, 직접 사용하는 헤더 include와 불필요 include 정리
   - [x] API 계약 통일: 음수 errno 반환과 Zephyr 오류 전달, CRC 함수의 유효 입력 전제, encode의 바이트 수/음수 오류 반환을 주석으로 명시
-  - [ ] assert 적용: 링버퍼·wire 길이 제약은 정적 assert로 보호; 내부 불변조건의 런타임 assert는 디버그 빌드에서만 활성화하고 릴리스 입력 검증·오류 처리와 host 테스트 판정은 유지
+  - [x] assert 적용: 링버퍼·wire 길이 제약은 정적 assert로 보호; 내부 불변조건의 런타임 assert는 디버그 빌드에서만 활성화하고 릴리스 입력 검증·오류 처리와 host 테스트 판정은 유지
   - [x] 공통 규격 상수와 주석 정리: STX 중복 정의 제거, 프레임 추가 길이 상수화, 실제 IRQ 보호 범위에 맞는 주석 갱신
 
 ### 2. 단일표적 추적
@@ -242,6 +242,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] 시간 제어 host 시험: 부분 프레임 timeout 경계·무수신·다음 정상 프레임·정상 분할 수신
   - [x] 통계 조회·STATUS host 시험: 출력값, 반복 조회, 트랙·측정 timeout 보존
   - [ ] 큐·동시성 시험: 포화 시 제어 순서, 오래된 측정, 실제 동시 조회, TX 실패 후 복귀
+  - [ ] 콘솔 출력 직렬화: heartbeat와 측정 로그의 중간 삽입 방지; 통신 검증은 가능한 경우 wire 응답으로 판정
   - [ ] 실보드 링버퍼 overflow/drain·UART overrun·TX 포화/부하 확인
   - [ ] 장시간·고부하·스택 여유·정량 손실 및 추적 정확도 평가
 
@@ -278,18 +279,19 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 완료 기준 |
 | --- | --- | --- |
-| 1 | 두 timeout의 Kconfig 설정 분리 | 기본 1000ms 유지, 양수 범위·단위 명시, 기본값/변경값 경계 시험 |
-| 2 | 추적 결과 송신·GUI 비교 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
-| 3 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
-| 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
-| 5 | 다중표적 입력·track_manager·측정 연관 | 독립 추적부터 교차·소실/재등장까지 검증 |
-| 6 | COMMAND/Lock On·정량 평가·장시간 시험 | 선택·해제·소실 정책, 정확도·연속성·부하 한계 확인 |
+| 1 | 추적 결과 송신·GUI 비교 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
+| 2 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
+| 3 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
+| 4 | 다중표적 입력·track_manager·측정 연관 | 독립 추적부터 교차·소실/재등장까지 검증 |
+| 5 | COMMAND/Lock On·정량 평가·장시간 시험 | 선택·해제·소실 정책, 정확도·연속성·부하 한계 확인 |
 
 부분 프레임 timeout과 RX 기본 오류 통계·STATUS 로그는 구현했습니다.
 `처리 스레드 → 응답 복사 큐 → TX 스레드`까지 STATUS 응답 경로를 구현했습니다.
 지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
 PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회도 구현했습니다. 실제 STATUS CLI·GUI 송수신도 확인했습니다.
-overflow 정책 설정 분리와 두 정책의 host 검증은 완료했습니다. 다음은 부분 프레임·측정 무수신 timeout의 Kconfig 분리입니다. 강제 링 overflow·UART 오류·TX 부하는 남아 있습니다.
+overflow 정책과 두 timeout의 Kconfig 분리 및 host 검증은 완료했습니다.
+다음은 추적 결과 송신 규격을 정하고 보드 추정값을 PC에서 확인하는 작업입니다.
+강제 링 overflow·UART 오류·TX 부하는 남아 있습니다.
 
 ## 검증 현황
 
@@ -356,3 +358,7 @@ PC에 USB 2개로 콘솔과 데이터 링크를 분리한다. 서로 간섭 없�
 - 보드와 어댑터가 각각 USB로 급전되는 구성에서는 전원선 연결하지 않음.
 
 현재 설정 기준 배선·검증 절차는 [docs/board-bringup.md](docs/board-bringup.md)를 참고합니다.
+
+
+2026-11-14 assert 검증: 공통 host assert 어댑터를 연결하고 내부 전제 위반 3개 사례를 추가했습니다.
+[일반·디버그 실보드 검증](docs/hardware-test-2026-11-14-assert.md)을 참고합니다.

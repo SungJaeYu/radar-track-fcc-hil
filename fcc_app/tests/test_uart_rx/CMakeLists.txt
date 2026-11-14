@@ -14,7 +14,7 @@ function(add_rx_target target policy)
         ../../src/common/crc16.c
         ../../src/protocol/frame_parser.c
     )
-    target_include_directories(${target} PRIVATE include ../../src)
+    target_include_directories(${target} PRIVATE include ../common/include ../../src)
     target_compile_features(${target} PRIVATE c_std_11)
     target_compile_definitions(${target} PRIVATE ${policy}=1
         CONFIG_RADAR_FRAME_RX_TIMEOUT_MS=${RADAR_FRAME_RX_TIMEOUT_MS})

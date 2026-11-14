@@ -6,6 +6,9 @@
 
 #include "common/crc16.h"
 
+_Static_assert(PROTOCOL_MAX_PAYLOAD >= 1, "Protocol requires a nonempty payload");
+_Static_assert(PROTOCOL_MAX_PAYLOAD <= UINT8_MAX, "Payload length must fit in one byte");
+
 bool protocol_frame_is_valid(const struct protocol_frame *p_frame)
 {
     return p_frame != NULL && p_frame->payload_length > 0 && p_frame->payload_length <= PROTOCOL_MAX_PAYLOAD;

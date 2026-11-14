@@ -67,7 +67,8 @@ int crc_check_vector(void) {
     sdk = Path('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
     sdk_flags = ['-isysroot', str(sdk)] if sdk.exists() else []
     subprocess.run([str(compiler), *sdk_flags, '-std=c11', '-Wall', '-Wextra', '-Werror',
-                    '-shared', '-fPIC', '-I', str(src), str(wrapper),
+                    '-shared', '-fPIC', '-I', str(src),
+                    '-I', str(src.parent / 'tests/common/include'), str(wrapper),
                     str(src / 'protocol/frame_parser.c'), str(src / 'protocol/protocol_frame.c'),
                     str(src / 'common/crc16.c'), '-o', str(library)], check=True)
     lib = ctypes.CDLL(str(library))

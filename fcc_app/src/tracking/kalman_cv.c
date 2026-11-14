@@ -1,6 +1,10 @@
 #include "tracking/kalman_cv.h"
 
+#include <math.h>
 #include <stdbool.h>
+#include <stddef.h>
+
+#include <zephyr/sys/__assert.h>
 
 #include "tracking/angle_utils.h"
 
@@ -9,13 +13,22 @@ static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float valu
 
 void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float initial_value_rate, float p00, float p01, float p10, float p11, float process_noise, float measurement_noise)
 {
+    __ASSERT(p_kf != NULL, "Kalman filter pointer is NULL");
+    __ASSERT(
+        isfinite(process_noise) && process_noise >= 0.0f,
+        "Process noise must be finite and nonnegative: %f", (double)process_noise
+    );
+    __ASSERT(
+        isfinite(measurement_noise) && measurement_noise > 0.0f,
+        "Measurement noise must be finite and positive: %f", (double)measurement_noise
+    );
+
     p_kf->estimate = initial_value;
     p_kf->rate = initial_value_rate;
     p_kf->p00 = p00;
     p_kf->p01 = p01;
     p_kf->p10 = p10;
     p_kf->p11 = p11;
-
     p_kf->process_noise = process_noise;
     p_kf->measurement_noise = measurement_noise;
 }
@@ -42,6 +55,12 @@ void kalman_cv_correct_angle(struct kalman_cv_filter *p_kf, float angle_measurem
 
 static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s, bool is_angle)
 {
+    __ASSERT(p_kf != NULL, "Kalman filter pointer is NULL");
+    __ASSERT(
+        isfinite(dt_s) && dt_s >= 0.0f,
+        "Prediction interval must be finite and nonnegative: %f s", (double)dt_s
+    );
+
     // State Prediction
     p_kf->estimate += p_kf->rate * dt_s;
     if (is_angle) {
@@ -78,6 +97,8 @@ static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s
 
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle)
 {
+    __ASSERT(p_kf != NULL, "Kalman filter pointer is NULL");
+
     // Residual
     float residual = value_measurement - p_kf->estimate;
 
