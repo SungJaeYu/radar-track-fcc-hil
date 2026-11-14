@@ -65,7 +65,7 @@ ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overfl
 `rx_sem`으로 스레드에 알립니다. 플래그가 설정된 동안 ISR은 하드웨어 FIFO를 읽되 새 바이트는 저장하지 않습니다.
 파싱과 큐 제출은 IRQ 잠금 밖에서 실행되며, 실제 측정 처리는 handler 스레드가 맡습니다.
 
-현재 헤더의 `RX_OVERFLOW_POLICY`는 `RX_OVERFLOW_POLICY_DRAIN_BUFFER`입니다.
+현재 `uart_rx.c`가 Kconfig 선택을 매핑한 `RX_OVERFLOW_POLICY`는 `RX_OVERFLOW_POLICY_DRAIN_BUFFER`입니다.
 복구는 IRQ를 허용한 상태에서 기존 파서와 버퍼로 완성할 수 있는 프레임을 처리합니다.
 마지막에 짧게 IRQ를 잠그고 링버퍼·부분 프레임을 초기화한 뒤 overflow를 해제합니다.
 `RX_OVERFLOW_POLICY_DISCARD_ALL`을 선택하면 drain 없이 바로 초기화합니다. `fcc_app/Kconfig` choice와 `prj.conf`로 선택하며 기본값은 DRAIN입니다.
@@ -85,7 +85,7 @@ ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overfl
 
 ## 5. 무수신 timeout
 
-정상 레이더 측정을 처리한 이후 1000ms 이상 새 정상 측정이 없으면 handler를 초기화합니다.
+정상 레이더 측정을 처리한 이후 `CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS`(기본 1000ms) 이상 새 정상 측정이 없으면 handler를 초기화합니다.
 첫 정상 측정 전에는 감시하지 않으며, timeout 후에는 다음 정상 측정까지 감시를 해제합니다.
 STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 게이트 또는 timestamp 검사에서 거부된 측정도 decode·validate를 통과했다면 수신 시각은 갱신합니다.
@@ -96,7 +96,7 @@ STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 Python 테스트는 프레임 바이트·단위 변환·송신 순서·시나리오 CLI와 GUI 모델을 검증합니다.
 GUI 의존성을 설치하면 offscreen Qt·모사 serial로 시작·중지·재시작·오류·포트 해제도 검사합니다.
 `fcc_app/tests/test_kalman`은 C 필터·게이팅·추적 정책 등의 별도 테스트입니다.
-[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계를 drain 21·discard 18, 총 39회 실행으로 검증합니다.
+[UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계를 drain 24·discard 21, 총 45회 실행으로 검증합니다.
 UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
 이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
 현재 보드는 이진 트랙 응답을 송신하지 않으므로 PC의 폐루프 RMSE 계산은 아직 없습니다.
@@ -109,19 +109,21 @@ UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제
 카운터를 소유합니다. STATUS는 처리 스레드에서 지역 `stats`로 값을 복사해
 ST-Link 콘솔에 출력합니다. 개별 값은 안전하게 읽지만 전체 항목을 같은 순간에
 고정하지는 않습니다. 조회·parser reset·INIT/RESET은 누적 카운터를 지우지 않습니다.
-이 통계는 하드웨어 BIT 결과가 아니며 링버퍼 손실·UART 하드웨어 오류는 아직 집계하지 않습니다.
+`uart_rx.c`는 overflow 진입 횟수·ISR 폐기 바이트·복구 시 링 폐기 바이트를 별도로 소유합니다.
+하드웨어 BIT 결과나 UART 하드웨어 오류는 아직 제공하지 않습니다.
 
 `uart_tx.c/.h`는 초기화·TX 복사 큐·스레드와 polling 송신을 구현했습니다.
 `protocol_frame_encode()`가 STX·LEN·TYPE·payload·CRC 바이트열을 구성합니다.
-STATUS 처리부는 네 통계값을 big-endian uint32 순서로 인코딩한 16바이트
+STATUS 처리부는 processor의 네 통계와 UART의 세 통계를 big-endian uint32로 인코딩한 28바이트
 STATUS_REPORT를 TX 큐에 복사 제출합니다. 순서는 CRC 오류·길이 오류·부분 프레임
-timeout·큐 드롭입니다. 인코딩·큐 제출 실패는 오류 코드와 함께 로그로 남깁니다.
+timeout·큐 드롭·링 overflow 횟수·ISR 폐기 바이트·복구 폐기 바이트입니다. 인코딩·큐 제출 실패는 오류 코드와 함께 로그로 남깁니다.
 `frame_parser.py`가 PC 수신 프레임을 조립·검증하고 `decode_status_payload()`가 통계를 해석합니다.
 `status_client.py`는 CLI 왕복을, GUI의 STATUS 탭은 기존 worker를 통한 수동 조회를 제공합니다.
-둘 다 host 모사 시험을 통과했으며 [2026-11-12 실보드 시험](docs/hardware-test-2026-11-12-status.md)에서 CLI·GUI STATUS 왕복도 확인했습니다.
-TX host 테스트 4개와 CRC/인코더 상호운용 28개를 통과했으며 실보드 STATUS 송신도 확인했습니다. TX 포화·최대 부하는 별도 검증 대상입니다.
+둘 다 host 모사 시험을 통과했으며 [확장 STATUS 실보드 시험](docs/hardware-test-2026-11-14-status-extended.md)에서 CLI·GUI STATUS 왕복도 확인했습니다.
+TX host 테스트 4개와 CRC/인코더 상호운용 29개를 통과했으며 실보드 STATUS 송신도 확인했습니다. TX 포화·최대 부하는 별도 검증 대상입니다.
 handler host 테스트 17개는 STATUS 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향을 검증합니다.
-통계 snapshot은 모사하며 실제 RX atomic 카운터와 handler 명령의 통합 시험은 남아 있습니다.
+host 통계 snapshot은 모사합니다. 실보드에서는 CRC/LEN/부분 프레임 timeout 집계와
+INIT/RESET 후 보존을 확인했습니다. 강제 overflow·큐 포화 동시성 검증은 남아 있습니다.
 
 
 ## 2026-11-14 Kconfig 실보드 회귀

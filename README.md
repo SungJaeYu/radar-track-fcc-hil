@@ -114,7 +114,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
 - TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6.
 - INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
-  STATUS 통계는 16바이트 STATUS_REPORT로 TX 큐에 제출합니다. PC CLI 수신과 GUI 표시까지 구현했으며 실보드 기본 응답까지 확인했습니다.
+  STATUS 통계는 28바이트 STATUS_REPORT(일곱 uint32)로 TX 큐에 제출합니다. PC는 구형 16바이트 응답도 읽으며 없는 필드는 미지원으로 표시합니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
 
 ## RX 버퍼와 overflow 복구
@@ -145,10 +145,10 @@ INIT/RESET도 큐 포화 시 드롭될 수 있습니다.
 fcc_app/src/
     main.c            초기화·진입점
     transport/        uart_rx, uart_tx, rx_frame_processor
-    protocol/         frame_parser, protocol_frame, radar_message
+    protocol/         frame_parser, protocol_frame, radar_message, status_message
     application/      frame_handler: 메시지 처리·추적 실행
     tracking/         track, kalman_cv, gating, angle_utils
-    common/           crc16, ring_buffer, math_constants
+    common/           crc16, ring_buffer, math_constants, byte_order
 fcc_app/tests/
     test_uart_rx/      UART drain·링버퍼·부분 프레임 timeout
     test_frame_handler/ STATUS·INIT/RESET·측정 timeout
@@ -200,7 +200,9 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
     - [x] 실제 보드 부분 송신 중단 후 timeout 집계·정상 STATUS 복귀
   - [x] RX 진단 카운터: CRC·길이·부분 프레임 timeout·큐 드롭, atomic 읽기·누적값 보존
   - [x] 링버퍼 overflow 횟수·ISR 폐기 바이트·복구 시 미소비 바이트 폐기 통계와 조회 API, 정책별 host 검증
-  - [ ] 새 UART 통계의 STATUS_REPORT·PC CLI·GUI 연결
+  - [x] 새 UART 통계의 STATUS_REPORT·PC CLI·GUI 연결, 구형 응답 호환 및 host 검증
+  - [x] 확장된 STATUS_REPORT의 실보드 CLI·GUI 왕복
+  - [ ] 강제 overflow로 새 카운터 증가·복구 실보드 확인
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
   - [x] overflow 정책 Kconfig 분리: DRAIN·DISCARD host 검증 및 두 펌웨어 실보드 UART 회귀
@@ -254,9 +256,9 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 ### 6. 상태·제어·결과 송신
 
 - [x] STATUS 진단: RX 오류·드롭 통계 규격과 응답
-  - [x] RX 카운터는 processor 소유, atomic으로 개별 조회; parser·INIT/RESET에서 누적값 보존
+  - [x] RX 파싱 통계는 processor, overflow·폐기 통계는 UART 소유, atomic으로 개별 조회; parser·INIT/RESET에서 누적값 보존
   - [x] 처리 스레드의 STATUS 로그 출력; 전체 항목의 동일 시점 snapshot은 보장하지 않음
-  - [x] STATUS 응답 규격: CRC·길이 오류·부분 프레임 timeout·큐 드롭, big-endian uint32 네 항목
+  - [x] STATUS 응답 규격: CRC·길이 오류·부분 프레임 timeout·큐 드롭, big-endian uint32 일곱 항목(기존 네 통계 + overflow·ISR 폐기·복구 폐기)
 - [ ] BIT 자기진단: 검사 항목·수행 시점·결과 규격·합격 기준 정의
 - [x] TX 송신 기반과 STATUS 왕복: 복사 큐·전용 스레드·프레임 인코딩·PC CLI/GUI 수신
   - [x] TX 초기화·복사 큐·스레드, 프레임 인코딩·CRC·polling 송신 구현과 host 검증
@@ -280,7 +282,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 | --- | --- | --- |
 | 1 | 로깅 시스템 정리 | deferred logging, 모듈·레벨 분리, 디버그 상세 로그 제한, heartbeat 섞임·버퍼 포화 정책 검증 |
 | 2 | 추적 결과 송신·GUI 비교 | TRACK_REPORT 규격 확정, 보드 추정값 비교, TX 실패·포화 후 복귀 |
-| 3 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
+| 3 | 남은 수신 오류 통계·복구 | 구현된 링 손실 통계의 실보드 증가 검증·UART overrun/framing/parity 감지와 유실 후 복귀 |
 | 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
 | 5 | 단일표적 부하·자원 검증 | 강제 overflow, 스택 여유·지연·장시간 시험 기준과 결과 |
 | 6 | 다중표적 입력·track_manager·측정 연관 | 스캔 규격·트랙 ID·교차/미탐지/클러터 검증 |
@@ -354,3 +356,7 @@ CONFIG_RADAR_AZIMUTH_GATE_DEG=10
 - [PC CLI](pc_sim/README.md) · [GUI](pc_sim/GUI.md) · [배선·보드 시험](docs/board-bringup.md)
 - [요구사항 추적표](docs/requirements-traceability.md) · [테스트 목록](docs/test-cases.md) · [검증 기록](docs/verification-history.md)
 - [코딩 스탠다드](docs/coding-standard.md) · [코드 점검](docs/coding-standard-audit.md) · [주석 점검](docs/comment-audit.md)
+
+STATUS 규격은 수동 관리합니다. C의 `status_report`·인코더와 Python의
+`STATUS_FIELDS`를 함께 변경하면 CLI·GUI 표시가 필드 목록을 따라갑니다.
+코드 생성 스크립트나 별도 생성 단계는 없습니다. [필드 규격·호환성](pc_sim/README.md#status-report-payload).

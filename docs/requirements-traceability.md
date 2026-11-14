@@ -7,7 +7,7 @@
 ## 현재 기준 요약
 
 기능 기준: handler 보강 `658f2e6`, GUI STATUS `ed1f0bf`.
-Python 136개 + subtest 9개, Tracking 17개·게이트 설정 20개·handler 17개 통과. RX drain 21·discard 18·TX 4도 재검증 완료했다.
+Python 160개 + subtest 9개, Tracking 17개·게이트 설정 20개·handler 17개 통과. RX drain 24·discard 21·TX 4도 재검증 완료했다.
 PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료. 실보드 기본 왕복도 `2aa57d9`에서 확인했다.
 아래 단계별 구현 기록은 당시 상태이며 현재 판단은 이 요약과 요구사항 기준표를 우선한다.
 
@@ -36,13 +36,13 @@ PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료
 | ID | 요구사항 / 수용 조건 | 상세 규격 | 구현 근거 | 테스트 연결 | 검증 상태·남은 사항 |
 | --- | --- | --- | --- | --- | --- |
 | REQ-SYS-001 | PC는 시간·거리·방위각의 탐지 측정을 보내고 정답 target ID는 보내지 않아야 한다. | [SPEC-MEAS](#spec-meas) | [radar_message.c](../fcc_app/src/protocol/radar_message.c) · `decode_radar_measurement` | [test_kalman](#tests-test_kalman) / [Python](#tests-python) | 구현; payload·시나리오 제한 시험. 다중표적 연관은 별도 범위 |
-| REQ-IF-001 | 데이터 UART와 진단 콘솔을 분리하고 정해진 핀·baud로 연결해야 한다. | [SPEC-EXEC](#spec-exec) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_init` | [보드 기록](hardware-test-2026-11-01.md) · 소스 검토 | 구현; 이전 보드 RX 기록 있음. 현재 TX 물리 검증 대기 |
+| REQ-IF-001 | 데이터 UART와 진단 콘솔을 분리하고 정해진 핀·baud로 연결해야 한다. | [SPEC-EXEC](#spec-exec) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_init` | [보드 기록](hardware-test-2026-11-01.md) · 소스 검토 | 구현; RX/TX 기본 왕복·물리 선 단절/복귀 확인. 부하 시험은 별도 |
 | REQ-PRO-001 | LEN 1..32와 STX/TYPE/payload/CRC 배치를 지키고 완성된 유효 프레임만 제출해야 한다. | [SPEC-WIRE](#spec-wire) | [frame_parser.c](../fcc_app/src/protocol/frame_parser.c) · `parser_feed` | [test_uart_rx](#tests-test_uart_rx) / [test_frame_handler](#tests-test_frame_handler) / [Python](#tests-python) | 구현; host·Python/C 상호운용 연결 |
 | REQ-PRO-002 | CRC-16/IBM-3740으로 오류를 검출하고 CRC·길이 오류 프레임을 처리 큐에 제출하지 않아야 한다. | [SPEC-WIRE](#spec-wire) | [protocol_frame.c](../fcc_app/src/protocol/protocol_frame.c) · `protocol_frame_crc` | [test_uart_rx](#tests-test_uart_rx) / [test_frame_handler](#tests-test_frame_handler) / [Python](#tests-python) | 구현; 변조·길이·정상 프레임 복귀 시험 |
 | REQ-PRO-003 | 인코더는 정확한 바이트 수를 반환하고 잘못된 인자·용량 부족 시 출력 버퍼를 유지해야 한다. | [SPEC-WIRE](#spec-wire) | [protocol_frame.c](../fcc_app/src/protocol/protocol_frame.c) · `protocol_frame_encode` | [Python](#tests-python) | 구현; NULL·길이·용량 경계 시험 |
 | REQ-RX-001 | 링버퍼는 FIFO 순서·순환을 유지하고 full 상태의 push가 기존 데이터를 훼손하지 않아야 한다. | [SPEC-RX](#spec-rx) | [ring_buffer.c](../fcc_app/src/common/ring_buffer.c) · `ring_push / ring_pop` | [test_uart_rx](#tests-test_uart_rx) | 구현; host 검증, 실제 IRQ 경쟁은 제외 |
-| REQ-RX-002 | overflow 시 새 바이트를 버리고 선택한 복구 정책 실행 후 정상 수신을 재개해야 한다. | [SPEC-RX](#spec-rx) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `rx_recover_overflow` | [test_uart_rx](#tests-test_uart_rx) | 구현; drain 21·discard 18 host 통과. 실보드 강제 overflow 미검증 |
-| REQ-RX-003 | 미완성 프레임의 바이트 처리가 1000ms 중단되면 조립 상태를 지우고 timeout을 한 번 집계해야 한다. | [SPEC-TIME](#spec-time) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `rx_frame_processor_check_timeout` | [test_uart_rx](#tests-test_uart_rx) | 구현; 모든 중단 위치·경계·복귀 host 검증. 보드 대기 |
+| REQ-RX-002 | overflow 시 새 바이트를 버리고 선택한 복구 정책 실행 후 정상 수신을 재개해야 한다. | [SPEC-RX](#spec-rx) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `rx_recover_overflow` | [test_uart_rx](#tests-test_uart_rx) | 구현; drain 24·discard 21 host 통과. 실보드 강제 overflow 미검증 |
+| REQ-RX-003 | 미완성 프레임의 바이트 처리가 1000ms 중단되면 조립 상태를 지우고 timeout을 한 번 집계해야 한다. | [SPEC-TIME](#spec-time) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `rx_frame_processor_check_timeout` | [test_uart_rx](#tests-test_uart_rx) | 구현; 모든 중단 위치·경계·복귀 host 검증. 보드 부분 중단·집계·정상 복귀 확인; 전 경계 보드 검증은 별도 |
 | REQ-RX-004 | 완성 프레임과 완료 시각을 복사 제출하고 큐 포화 시 새 프레임 드롭을 집계해야 한다. | [SPEC-EXEC](#spec-exec) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `submit_parsed_frame` | [test_uart_rx](#tests-test_uart_rx) | 구현; 제출 모사 검증. 실제 handler 큐 포화·동시성 추가 필요 |
 | REQ-RX-005 | 초기화 실패는 errno를 전달하고 RX 활성화·준비 신호를 내지 않아야 한다. | [SPEC-EXEC](#spec-exec) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_init` | [test_uart_rx](#tests-test_uart_rx) | 구현; 장치 미준비·callback 실패·성공 host 검증 |
 | REQ-MEA-001 | 10바이트 측정을 해석하고 거리 0을 거부하며 방위각을 rad로 변환해야 한다. | [SPEC-MEAS](#spec-meas) | [radar_message.c](../fcc_app/src/protocol/radar_message.c) · `decode_radar_measurement / validate_radar_measurement` | [test_kalman](#tests-test_kalman) / [Python](#tests-python)  [test_frame_handler](#tests-test_frame_handler) | 구현; 변환·길이·거리 검증. handler의 잘못된 길이·거리 0에 대한 감시 영향 host 검증 완료 |
@@ -50,12 +50,13 @@ PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료
 | REQ-TRK-002 | 거리·방위각 게이트를 모두 만족하는 측정만 보정에 사용해야 한다. | [SPEC-TRACK](#spec-track) | [gating.c](../fcc_app/src/tracking/gating.c) · `gating_check` | [test_kalman](#tests-test_kalman)  [test_frame_handler](#tests-test_frame_handler) | 구현; 기본/최소/좁은/넓은/최대 설정 20개 경계·AND·wrap 검증. handler의 gate 거부·COASTING·수신 시각 갱신 host 검증 완료 |
 | REQ-TRK-003 | 중복·역행 시각을 거부하고 정상 wraparound를 허용하며 1000ms 초과 예측 간격은 트랙을 지워야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_predict` | [test_kalman](#tests-test_kalman) | 구현; timestamp 경계·복귀 host 검증 |
 | REQ-TRK-004 | hit/miss에 따라 트랙을 생성·확인·coasting·lost 처리하고 재시작해야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_start / track_hit / track_miss` | [test_kalman](#tests-test_kalman) | 구현; 상태 전이 host 검증 |
-| REQ-CTL-001 | INIT/RESET은 트랙과 측정 timeout 감시를 초기화하되 RX 누적 통계는 보존해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_frame / frame_handler_reset` | [Python](#tests-python)  [test_frame_handler](#tests-test_frame_handler) | 구현; 명령 경유 초기화·모사 통계 응답 보존 host 검증. 실제 RX 카운터 통합 시험은 남음 |
+| REQ-CTL-001 | INIT/RESET은 트랙과 측정 timeout 감시를 초기화하되 RX 누적 통계는 보존해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_frame / frame_handler_reset` | [Python](#tests-python)  [test_frame_handler](#tests-test_frame_handler) | 구현; 명령 경유 초기화·모사 통계 응답 보존 host 검증. 실보드 CRC/LEN/timeout 누적값 보존 확인; 큐·overflow 증가 후 통합 시험은 남음 |
 | REQ-CTL-002 | 첫 유효 측정 이후 1000ms 동안 유효 측정이 없으면 트랙을 한 번 초기화해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `frame_handler_check_timeout` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상/무효 측정·gate/timestamp 거부·경계·1회 만료 host 검증 완료 |
 | REQ-STA-001 | RX 오류 네 항목을 누적 집계하고 조회·파서 reset으로 초기화하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `rx_frame_processor_get_stats` | [test_uart_rx](#tests-test_uart_rx) | 구현; 개별 atomic 조회 host 검증. 동시 snapshot 보장은 요구하지 않음 |
-| REQ-STA-002 | STATUS 요청당 네 통계를 담은 16바이트 응답을 한 번 제출하고 트랙·측정 timeout은 변경하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_status_request` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상·반복 조회·인코딩·상태 보존 host 검증. `2aa57d9` CLI·GUI 기본 왕복 확인 |
+| REQ-STA-002 | STATUS 요청당 일곱 통계를 담은 28바이트 응답을 한 번 제출하고 트랙·측정 timeout은 변경하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_status_request` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상·반복 조회·인코딩·상태 보존 host 검증. 28바이트 CLI·GUI 왕복 확인; 아래 확장 STATUS 증거 참조 |
 | REQ-STA-003 | STATUS 인코딩·제출 실패를 기록하고 즉시 재시도하지 않으며 이후 요청을 처리할 수 있어야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_status_request` | [test_frame_handler](#tests-test_frame_handler) | 구현; 오류 주입·다음 요청 복귀 host 검증 |
 | REQ-STA-004 | 입력된 STATUS_REPORT에는 응답을 생성하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_frame` | [test_frame_handler](#tests-test_frame_handler) | 구현; 반향 응답 방지 host 검증 |
+| REQ-STA-005 | 링 overflow 진입 횟수·ISR 폐기 바이트·복구 시 미소비 링 폐기 바이트를 누적 집계해야 한다. | [SPEC-RX](#spec-rx) / [SPEC-STATUS](#spec-status) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_get_stats` | [test_uart_rx](#tests-test_uart_rx) | 정책별 host 증가·누적·순환 검증, STATUS 전송 확인. 강제 overflow 실보드 증가 미검증 |
 | REQ-TX-001 | 유효 요청을 큐에 복사하고 FIFO 순서로 송신하며 포화·잘못된 요청은 errno로 반환해야 한다. | [SPEC-TX](#spec-tx) | [uart_tx.c](../fcc_app/src/transport/uart_tx.c) · `uart_tx_submit / uart_tx_thread` | [test_uart_tx](#tests-test_uart_tx) | 구현; 모사 큐·바이트 순서·복사 검증. 실제 큐 동시성 미검증 |
 | REQ-TX-002 | 장치 초기화 성공 후 송신을 시작하고 인코딩 실패 요청만 버린 뒤 다음 요청을 처리해야 한다. | [SPEC-TX](#spec-tx) | [uart_tx.c](../fcc_app/src/transport/uart_tx.c) · `uart_tx_init / uart_tx_thread` | [test_uart_tx](#tests-test_uart_tx) | 구현; host 검증. 기본 UART 전달 확인. 대기 경합·송신 완료 통지·부하 검증은 별도 |
 | REQ-PC-001 | 송신 도구는 공통 wire 규격을 사용하고 연속 송신 시작마다 INIT을 보내야 한다. | [SPEC-PC](#spec-pc) | [protocol.py](../pc_sim/protocol.py) · `encode_frame` | [Python](#tests-python) | 구현; Python 송신·상호운용 시험 연결 |
@@ -168,11 +169,16 @@ STATUS_REQUEST는 공통 LEN 1..32만 요구하며 현재 payload 내용은 무�
 | 4 | 4 | length_errors |
 | 8 | 4 | frame_timeouts — 부분 프레임 timeout |
 | 12 | 4 | queue_drops — RX → handler 큐 포화 드롭 |
+| 16 | 4 | ring_overflow_events — overflow 복구 진입 횟수 |
+| 20 | 4 | rx_dropped_bytes — ISR에서 저장하지 못한 바이트 |
+| 24 | 4 | recovery_discarded_bytes — 복구 시 링 미소비 바이트 폐기 |
 
-각 필드는 big-endian uint32이고 payload 16바이트, 전체 프레임 21바이트다.
-카운터는 각각 atomic으로 읽지만 네 값이 모두 동일 시점이라는 보장은 없다.
-링버퍼 overflow·손실 바이트·UART 하드웨어 오류·TX 실패·측정 무수신은 이 네 항목에 포함하지 않는다.
-포화/오버플로 카운터 정책과 실제 BIT 항목은 후속 설계 대상이다.
+각 필드는 big-endian uint32이고 payload 28바이트, 전체 프레임 33바이트다.
+PC는 구형 16바이트 응답도 해석하고 없는 필드는 미지원으로 표시한다. 새 펌웨어는 28바이트만 송신한다.
+카운터는 각각 atomic으로 읽지만 일곱 값이 모두 동일 시점이라는 보장은 없다.
+UART 하드웨어 오류·TX 실패·측정 무수신은 이 일곱 항목에 포함하지 않는다.
+폐기 바이트는 하드웨어 유실과 parser가 소비한 부분 프레임을 포함하지 않는다.
+카운터 값 자체의 최대값 도달 시 포화/순환 정책과 실제 BIT 항목은 후속 설계 대상이다.
 
 인코딩 실패 시 TX 제출하지 않고, 제출 실패 시 로그 후 종료한다. 즉시 재시도하지 않는다.
 다음 STATUS 요청은 다시 처리한다. 외부에서 STATUS_REPORT가 들어오면 로그만 남기고 응답하지 않는다.
@@ -207,6 +213,9 @@ GUI는 설정 탭·스크롤 접근, 시작/중지/재시작·연결 종료·실
 | 테스트 함수 | 연결 요구사항 |
 | --- | --- |
 | [`test_rx_init_errors`](../fcc_app/tests/test_uart_rx/src/main.c) | REQ-RX-005 |
+| [`test_uart_stats_normal_receive`](../fcc_app/tests/test_uart_rx/src/main.c) | REQ-STA-005, REQ-RX-002 |
+| [`test_uart_stats_overflow_and_recovery`](../fcc_app/tests/test_uart_rx/src/main.c) | REQ-STA-005, REQ-RX-002 |
+| [`test_uart_stats_wrapped_ring_recovery`](../fcc_app/tests/test_uart_rx/src/main.c) | REQ-STA-005, REQ-RX-002 |
 | [`test_stats_snapshot_and_reset`](../fcc_app/tests/test_uart_rx/src/main.c) | REQ-STA-001 |
 | [`test_timeout_boundary_for_every_partial_frame`](../fcc_app/tests/test_uart_rx/src/main.c) | REQ-RX-003 |
 | [`test_timeout_ignores_idle_and_complete_frames`](../fcc_app/tests/test_uart_rx/src/main.c) | REQ-RX-003 |
@@ -314,10 +323,10 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 
 | ID | 목표 / 완료 기준 | 선행 설계·검증 |
 | --- | --- | --- |
-| FUT-001 | PC가 STATUS 응답의 TYPE·길이·CRC를 검증하고 네 통계를 표시한다 | 파서·CLI·GUI 수동 조회 구현 및 host 검증 완료. 물리 왕복은 FUT-002 |
-| FUT-002 | 현재 STATUS 응답을 실제 USART6에서 수신해 host 기대값과 일치함을 확인한다 | 완료: `2aa57d9` CLI·GUI 왕복·오류 통계·추적 병행. [증거](hardware-test-2026-11-12-status.md) |
+| FUT-001 | PC가 STATUS 응답의 TYPE·길이·CRC를 검증하고 일곱 통계를 표시한다 | 파서·CLI·GUI 수동 조회 구현 및 host 검증 완료. 물리 왕복은 FUT-002 |
+| FUT-002 | 현재 STATUS 응답을 실제 USART6에서 수신해 host 기대값과 일치함을 확인한다 | 완료: 28바이트 CLI·GUI 왕복·오류 통계·추적 병행. [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md) |
 | FUT-003 | 보드 추적 결과를 PC로 보내 정답과 비교한다 | 결과 TYPE·단위·timestamp·송신 주기·TX 포화 정책, 정확도 목표 TBD |
-| FUT-004 | 링 overflow·손실·UART 오류를 구분해 집계·복구한다 | 하드웨어 오류 API와 유실량 정의; 실제 overflow/overrun 재현 |
+| FUT-004 | 링 overflow·손실·UART 오류를 구분해 집계·복구한다 | 링 overflow·ISR/복구 폐기 집계와 STATUS 전송 구현. 하드웨어 오류 API·복구와 실제 overflow/overrun 재현은 남음 |
 | FUT-005 | 제어 요청과 오래된 측정의 큐 처리 정책을 정의한다 | INIT/RESET 우선순위·reset 이전 대기 데이터·최대 허용 지연 TBD |
 | FUT-006 | 다중 측정·트랙을 연관하고 펌웨어 자체 ID로 관리한다 | 스캔 규격·최대 표적 수·트랙 수명·교차/클러터 평가. 정답 ID 입력 금지 |
 | FUT-007 | COMMAND/Lock On과 BIT를 제공한다 | 명령 payload·선택/해제·소실 동작·자기진단 항목과 합격 기준 TBD |
@@ -406,7 +415,7 @@ CTL-001은 명령 경유 트랙 초기화와 모사 통계 응답 보존을 확�
 카운터와 handler를 함께 실행하는 host 통합 검증은 남아 있다. 이후 실보드 시험에서는 INIT/RESET 후 실제 카운터 보존을 관측했다. 모든 RTOS 경쟁 조건을 검증한 것은 아니다.
 
 
-## 최신 STATUS 실보드 결과
+## 이전 STATUS 실보드 결과 (16바이트 규격)
 
 `2aa57d9`에서 CLI·GUI STATUS 왕복, CRC/LEN/부분 프레임 timeout 통계 증가,
 INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.
@@ -450,3 +459,11 @@ REQ-TRK-002 / SPEC-TRACK의 거리 경계·각도 안팎·AND·wrap 및 설정�
 측정 무수신 timeout, STATUS 요청/응답 경로 단절, 재부팅 없는 정상 왕복·추적 복귀를 확인했다.
 수동 분리 시각에 대한 정밀 지연, USB 제거·전원 재인가·오배선·부하 시험은 포함하지 않았다.
 [결과와 원시 로그](hardware-test-2026-11-14-link-loss.md).
+
+## 확장 STATUS host·실보드 검증
+
+28바이트 응답에 UART overflow·폐기 카운터 세 개를 연결했다.
+handler 17개, 전체 C 103회, Python 160개 + subtest 9개 및 펌웨어 빌드 통과.
+구형 16바이트는 PC에서 지원하되 추가 필드는 미지원으로 표시한다.
+확장 규격의 실보드 UART 18개 조건과 CLI·GUI 왕복도 통과했다. [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md).
+새 UART 카운터는 0 전송을 확인했으며 실제 overflow 증가·복구 시험은 별도다.

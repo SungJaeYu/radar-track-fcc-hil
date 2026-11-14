@@ -1,0 +1,53 @@
+main alive
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_INIT
+TYPE_MEAS
+range: 999.00
+azimuth: 0.26
+Filters initialized at range: 999.00
+Filters initialized at azimuth: 0.26
+TYPE_MEAS
+range: 997.00
+azimuth: 0.26
+predicted range: 999.00
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 997.32
+filtered azimuth: 0.26
+estimated range rate: -13.15
+estimated azimuth rate: 0.00
+TYPE_MEAS
+range: 995.00
+azimuth: 0.26
+predicted range: 995.95
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 995.21
+filtered azimuth: 0.26
+estimated range rate: -17.24
+estimated azimuth rate: 0.00
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_MEAS
+range: 997.00
+azimuth: 0.26
+predicted range: 993.41
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 995.85
+filtered azimuth: 0.26
+estimated range rate: -7.35
+estimated azimuth rate: 0.00
+TYPE_MEAS
+range: 990.00
+azimuth: 0.26
+predicted range: 994.85
+predicted azimuth: 0.26
+Measurement accepted
+filtered range: 991.76
+filtered azimuth: 0.26
+estimated range rate: -16.45
+estimated azimuth rate: 0.00
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0

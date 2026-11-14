@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 136개 + subtest 9개, C host 103회 실행(RX drain 24·discard 21·handler 17·TX 4·Tracking 17·게이팅 설정 20)입니다.
+현재 합계는 Python 160개 + subtest 9개, C host 103회 실행(RX drain 24·discard 21·handler 17·TX 4·Tracking 17·게이팅 설정 20)입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -12,14 +12,14 @@
 | 구분 | 위치 | 케이스 수 | 실행 환경 |
 |---|---|---:|---|
 | 수동 송신기·INIT/RESET | `tests/test_hil_protocol.py` | 6 | Python, serial 모사 |
-| PC STATUS CLI | `tests/test_status_client.py` | 21 | Python, serial·monotonic clock 모사 |
+| PC STATUS CLI | `tests/test_status_client.py` | 23 | Python, serial·monotonic clock 모사 |
 | PC 수신 프레임 파서 | `tests/test_frame_parser.py` | 16 | Python, serial I/O 없음 |
-| 프로토콜·단위 변환 | `tests/test_protocol.py` | 23 | Python |
+| 프로토콜·단위 변환 | `tests/test_protocol.py` | 43 | Python |
 | 연속 측정 송신기 | `tests/test_radar_sender.py` | 5 + 내부 subtest 9 | Python, serial·sleep 모사 |
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
 | GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
-| GUI 화면·통신 작업부 | `tests/test_gui.py` | 9 | offscreen Qt, serial 모사 |
-| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 28 | Python + 실제 C 파서 host 컴파일 |
+| GUI 화면·통신 작업부 | `tests/test_gui.py` | 10 | offscreen Qt, serial 모사 |
+| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 29 | Python + 실제 C 파서 host 컴파일 |
 | 내부 assert | `tests/test_firmware_assertions.py` | 6 | 실제 C host 자식 프로세스의 SIGABRT·메시지 검증 |
 | 게이팅 설정 행렬 | `fcc_app/tests/test_kalman/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 17 | host C 또는 Zephyr Ztest |
@@ -27,7 +27,7 @@
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 17 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **136개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **160개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest의 `tracking`에서 17개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
 UART C는 정책별 실행을 CTest에 따로 등록하므로 45개로 표시됩니다. 공통 사례 19개는 두 번 실행합니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
@@ -196,7 +196,7 @@ ctest --test-dir /tmp/radar-uart-tests -R '^test_ring_wraparound$' --output-on-f
 /tmp/radar-track-tests/track_tests
 ```
 
-마지막 명령은 Tracking 13개 전체를 실행하며 개별 이름을 출력합니다.
+마지막 명령은 Tracking 17개 전체를 실행하며 개별 이름을 출력합니다.
 macOS 컴파일러·SDK 지정 방법과 모사 범위는 [UART 안내](../fcc_app/tests/test_uart_rx/README.md),
 Zephyr Ztest 실행법은 [Tracking 안내](../fcc_app/tests/test_kalman/README.md)를 참고합니다.
 
@@ -227,7 +227,7 @@ GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 
 | 테스트 함수 | 검증 내용 |
 |---|---|
-| `test_status_zero` | 0인 네 통계값, 조회 1회, 16바이트 STATUS_REPORT 제출 1회 |
+| `test_status_zero` | 0인 일곱 통계값, 두 API 각각 조회 1회, 28바이트 STATUS_REPORT 제출 1회 |
 | `test_status_snapshot` | 서로 다른 값·UINT32_MAX 출력, 반복 조회 시 최신값 반영·누적값 보존 |
 | `test_status_preserves_track` | 활성 트랙과 timeout 관리 상태를 변경하지 않음 |
 | `test_status_does_not_arm_timeout` | 첫 측정 전 STATUS로 timeout 감시가 시작되지 않음 |
@@ -268,7 +268,7 @@ TX 인코딩·실제 송신과 실보드 검증은 이번 검증 범위에 포�
 
 TX host는 실제 `uart_tx.c` 워커를 동기 실행하고 UART 출력 바이트를 수집합니다.
 빈 큐에서 실제 대기할 지점에 테스트를 종료하며 RTOS 스케줄링·동시성·물리 송신은 검증하지 않습니다.
-STATUS에서 TX로 제출하는 호출부는 아직 연결되지 않았습니다.
+STATUS handler에서 TX 제출을 호출하며 별도 handler suite가 연결과 실패 복귀를 검사합니다.
 
 ## 2026-11-10 폴더 분리 검증
 
@@ -390,7 +390,7 @@ Qt offscreen과 가짜 serial로 실행합니다. 실보드 응답·IRQ 동시�
 handler 17개 모두 통과. INIT/RESET 통계는 모사 snapshot 응답 보존 검증이며 실제 RX 카운터 통합 검증은 아니다. 펌웨어 수정·flash·실보드 시험은 하지 않았다.
 
 
-## 최신 STATUS 실보드 결과
+## 이전 STATUS 실보드 결과 (16바이트 규격)
 
 `2aa57d9`에서 CLI·GUI STATUS 왕복, CRC/LEN/부분 프레임 timeout 통계 증가,
 INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.
@@ -416,8 +416,8 @@ flash·실보드 강제 overflow는 수행하지 않았습니다.
 
 ## 내부 assert host 검증
 
-`tests/test_firmware_assertions.py`의 3개 사례는 NULL 링버퍼, 잘못된 parser 상태,
-무한대 process noise를 별도 프로세스에서 주입합니다. SIGABRT와 오류 문구를 확인하며
+`tests/test_firmware_assertions.py`의 6개 사례는 NULL 링버퍼, 잘못된 parser 상태,
+무한대 process noise와 NaN/±Inf 각도를 별도 프로세스에서 주입합니다. SIGABRT와 오류 문구를 확인하며
 NDEBUG 정의 상태에서도 host 어댑터가 검사를 유지하는지 검증합니다.
 공통 헤더는 `fcc_app/tests/common/include/zephyr/sys/__assert.h`이고 host target에만 연결합니다.
 펌웨어에서는 실제 Zephyr assert를 사용합니다. 이 시험은 보드 fatal 처리의 검증이 아닙니다.
@@ -464,3 +464,14 @@ Python 136개 + subtest 9개와 기본 펌웨어 빌드도 통과했다.
 103회는 현재 전체 C 사례 구성 수이며 이번에는 RX suite만 재실행했다.
 STATUS_REPORT 규격은 기존 16바이트를 유지하며 새 카운터 전송은 미연결이다.
 이번 변경의 flash·실보드 시험은 수행하지 않았다.
+
+## 28바이트 STATUS 확장
+
+- 일곱 필드의 독립 고정 payload·전체 프레임/CRC, 필드별 0/UINT32_MAX 검증.
+- 실제 C STATUS 인코더 → Python 프레임 parser·디코더 상호운용.
+- 16/28바이트만 수용, 미지원 길이 거부, CLI·GUI의 구형 미지원 표시.
+- handler의 실제 두 조회 API 연결은 서로 다른 모사 값으로 필드 순서와 반복 조회를 확인.
+
+C 103회, Python 160개 + subtest 9개, 기본 펌웨어 빌드 통과.
+GUI offscreen 표시·값 갱신과 후속 flash·실보드 UART 18개 조건, CLI·GUI 왕복을 확인했다.
+[확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 강제 overflow 증가 검증은 제외한다.

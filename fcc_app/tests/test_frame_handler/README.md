@@ -15,7 +15,7 @@ parser, and tracking code:
 - Zero counters and one response submission per request.
 - Distinct counter values, UINT32_MAX, and fresh values on repeated requests.
 - Active track preservation and unchanged timeout arming/refresh behavior.
-- Exact 16-byte big-endian payload and a fixed 21-byte frame/CRC reference,
+- Exact 28-byte big-endian payload and a fixed 33-byte frame/CRC reference,
   independently calculated with Python binascii; parsing the resulting frame.
 - NULL input/output rejection with -EINVAL and unchanged output on failure.
 - TX submission errors (-ENOMSG, -EINVAL, -EIO), no immediate retry, preserved
@@ -69,3 +69,6 @@ Host CMake cache variable `RADAR_MEASUREMENT_TIMEOUT_MS` defaults to 1000 ms and
 `CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS` to the tested source. Use a separate build directory
 and add `-DRADAR_MEASUREMENT_TIMEOUT_MS=2300` to the configure command to test a non-default value.
 Host configuration is independent of Zephyr prj.conf.
+
+STATUS combines four processor counters and three UART counters. Both owners are mocked;
+real counter increments are tested separately by the UART suite.

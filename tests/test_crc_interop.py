@@ -35,6 +35,7 @@ def parser_lib(tmp_path_factory):
     wrapper.write_text('''
 #include "protocol/frame_parser.h"
 #include "common/crc16.h"
+#include "protocol/status_message.h"
 #include <string.h>
 int encode_test(unsigned char type, const unsigned char *p_data,
                 unsigned char length, unsigned char *p_out, size_t capacity,
@@ -42,6 +43,14 @@ int encode_test(unsigned char type, const unsigned char *p_data,
     struct protocol_frame frame = {.type = type, .payload_length = length};
     if (length <= PROTOCOL_MAX_PAYLOAD && p_data != NULL) memcpy(frame.payload, p_data, length);
     return protocol_frame_encode(null_frame ? NULL : &frame, p_out, capacity);
+}
+int encode_status_test(unsigned char *out_wire, size_t capacity) {
+    const struct status_report report = {
+        0x12345678U, 0x80000000U, 1U, 0xffffffffU, 7U, 0x01020304U, 0xffffffffU
+    };
+    struct protocol_frame frame;
+    int ret = status_message_encode(&report, &frame);
+    return ret ? ret : protocol_frame_encode(&frame, out_wire, capacity);
 }
 int frame_type_constant(int index) {
     const int types[] = {FRAME_TYPE_INIT, FRAME_TYPE_MEAS_REPORT,
@@ -70,13 +79,15 @@ int crc_check_vector(void) {
                     '-shared', '-fPIC', '-I', str(src),
                     '-I', str(src.parent / 'tests/common/include'), str(wrapper),
                     str(src / 'protocol/frame_parser.c'), str(src / 'protocol/protocol_frame.c'),
-                    str(src / 'common/crc16.c'), '-o', str(library)], check=True)
+                    str(src / 'common/crc16.c'), str(src / 'protocol/status_message.c'), '-o', str(library)], check=True)
     lib = ctypes.CDLL(str(library))
     lib.reset_parser.restype = None
     lib.feed_byte.argtypes = [ctypes.c_ubyte]
     lib.payload_byte.argtypes = [ctypes.c_int]
     lib.encode_test.argtypes = [ctypes.c_ubyte, ctypes.c_void_p, ctypes.c_ubyte,
                                 ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
+    lib.encode_status_test.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
+    lib.encode_status_test.restype = ctypes.c_int
     lib.encode_test.restype = ctypes.c_int
     return lib
 
@@ -184,3 +195,17 @@ def test_reserved_status_report_framing(parser_lib):
     parser_lib.reset_parser()
     assert feed(parser_lib, frame)[-1] == 1
     assert parser_lib.frame_type() == protocol.FRAME_TYPE_STATUS_REPORT
+
+
+def test_c_status_encoder_to_python_decoder(parser_lib):
+    from pc_sim.frame_parser import FrameParser
+    buffer = ctypes.create_string_buffer(33)
+    assert parser_lib.encode_status_test(buffer, len(buffer)) == 33
+    frames = FrameParser().feed(buffer.raw)
+    assert len(frames) == 1 and frames[0].frame_type == 6
+    assert protocol.decode_status_payload(frames[0].payload) == {
+        "crc_errors": 0x12345678, "length_errors": 0x80000000,
+        "frame_timeouts": 1, "queue_drops": 0xffffffff,
+        "ring_overflow_events": 7, "rx_dropped_bytes": 0x01020304,
+        "recovery_discarded_bytes": 0xffffffff,
+    }

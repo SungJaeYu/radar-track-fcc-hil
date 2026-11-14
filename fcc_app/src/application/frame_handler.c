@@ -9,6 +9,7 @@
 #include "protocol/status_message.h"
 #include "tracking/gating.h"
 #include "transport/rx_frame_processor.h"
+#include "transport/uart_rx.h"
 #include "transport/uart_tx.h"
 
 static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3);
@@ -228,7 +229,19 @@ static void handle_status_request(void)
         (unsigned int)stats.queue_drops);
 
     struct send_frame request;
-    int ret = status_message_encode(&stats, &request.frame);
+    struct uart_rx_stats uart_stats;
+    uart_rx_get_stats(&uart_stats);
+    // Each owner supplies cumulative counters; this is not a simultaneous snapshot.
+    const struct status_report report = {
+        .crc_errors = stats.crc_errors,
+        .length_errors = stats.length_errors,
+        .frame_timeouts = stats.frame_timeouts,
+        .queue_drops = stats.queue_drops,
+        .ring_overflow_events = uart_stats.ring_overflow_events,
+        .rx_dropped_bytes = uart_stats.rx_dropped_bytes,
+        .recovery_discarded_bytes = uart_stats.recovery_discarded_bytes,
+    };
+    int ret = status_message_encode(&report, &request.frame);
     if (ret != 0) {
         printk("STATUS encode failed: %d\n", ret);
         return;

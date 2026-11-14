@@ -297,3 +297,24 @@ def test_preview_rejects_status_request(app):
     worker = SessionWorker()
     assert not worker.request_status()
     assert worker.commands.empty()
+
+
+def test_gui_extended_and_legacy_status_fields(app):
+    from pc_sim.protocol import decode_status_payload
+    window = MainWindow()
+    try:
+        window.connected = True
+        window.on_status_received(decode_status_payload(bytes.fromhex(
+            "12345678 80000000 00000001 ffffffff 00000007 01020304 ffffffff")))
+        assert len(window.status_values) == 7
+        assert window.status_values['ring_overflow_events'].text() == '7'
+        assert window.status_values['rx_dropped_bytes'].text() == '16909060'
+        assert window.status_values['recovery_discarded_bytes'].text() == '4294967295'
+        # Legacy replies must replace old extended values with unsupported, not zero.
+        window.on_status_received(decode_status_payload(bytes(16)))
+        for key in ('ring_overflow_events', 'rx_dropped_bytes', 'recovery_discarded_bytes'):
+            assert window.status_values[key].text() == '미지원'
+        assert window.status_values['crc_errors'].text() == '0'
+    finally:
+        window.connected = False
+        window.close()

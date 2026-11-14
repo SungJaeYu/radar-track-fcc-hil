@@ -2,20 +2,11 @@
 
 #include <errno.h>
 
-#define STATUS_REPORT_PAYLOAD_LENGTH 16
+#include "common/byte_order.h"
 
 _Static_assert(STATUS_REPORT_PAYLOAD_LENGTH <= PROTOCOL_MAX_PAYLOAD, "Status report exceeds payload capacity");
 
-static void write_u32_be(uint32_t value, uint8_t *out_buffer)
-{
-    // The caller must provide at least four writable bytes.
-    out_buffer[0] = (uint8_t)(value >> 24);
-    out_buffer[1] = (uint8_t)(value >> 16);
-    out_buffer[2] = (uint8_t)(value >> 8);
-    out_buffer[3] = (uint8_t)value;
-}
-
-int status_message_encode(const struct rx_frame_stats *p_stats, struct protocol_frame *out_frame)
+int status_message_encode(const struct status_report *p_stats, struct protocol_frame *out_frame)
 {
     if (p_stats == NULL || out_frame == NULL) {
         return -EINVAL;
@@ -28,6 +19,10 @@ int status_message_encode(const struct rx_frame_stats *p_stats, struct protocol_
     write_u32_be(p_stats->length_errors,  &out_frame->payload[4]);
     write_u32_be(p_stats->frame_timeouts, &out_frame->payload[8]);
     write_u32_be(p_stats->queue_drops,    &out_frame->payload[12]);
+
+    write_u32_be(p_stats->ring_overflow_events, &out_frame->payload[16]);
+    write_u32_be(p_stats->rx_dropped_bytes, &out_frame->payload[20]);
+    write_u32_be(p_stats->recovery_discarded_bytes, &out_frame->payload[24]);
 
     return 0;
 }

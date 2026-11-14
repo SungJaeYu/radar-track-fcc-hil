@@ -1,0 +1,7 @@
+CRC errors:     1
+Length errors:  2
+Frame timeouts: 1
+Queue drops:    0
+Ring overflows: 0
+ISR dropped bytes: 0
+Recovery discarded bytes: 0

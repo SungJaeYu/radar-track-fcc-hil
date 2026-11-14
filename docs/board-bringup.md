@@ -83,7 +83,8 @@ python -m pc_sim.run_sim --port /dev/ttyUSB0 --duration 10 --noise 0 --azimuth-n
 
 소프트웨어 링버퍼 크기는 하드웨어 FIFO 크기와 다릅니다. drain 복구 중 새 입력은 버립니다.
 복구 로그만으로 무손실 수신이나 다음 프레임의 즉시 처리를 판정하지 않습니다.
-현재 손실 바이트·overflow 횟수 카운터가 없으므로 정확한 손실량은 이 로그로 계산할 수 없습니다.
+STATUS의 overflow 횟수·ISR 폐기 바이트·복구 폐기 바이트를 시험 전후 비교합니다.
+하드웨어 유실과 parser가 소비한 부분 프레임은 제외하므로 전체 손실량으로 해석하지 않습니다.
 하드웨어 UART overrun은 소프트웨어 링버퍼 overflow와 별도 확인 대상입니다.
 
 ## 6. 검증 기록
@@ -91,7 +92,7 @@ python -m pc_sim.run_sim --port /dev/ttyUSB0 --duration 10 --noise 0 --azimuth-n
 Python 테스트, UART/Tracking host C 테스트, 펌웨어 빌드, flash, 실제 보드 로그를 별도 결과로 남깁니다.
 통합 도구의 테스트 통과만으로 새 보드 HIL까지 통과했다고 기록하지 않습니다.
 
-최신 결과: [2026-11-12 STATUS CLI·GUI 검증](hardware-test-2026-11-12-status.md). 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
+최신 결과: [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 전체 이력은 [검증 기록](verification-history.md)을 따릅니다. 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
 
 VS Code의 로컬 기본 작업 `Zephyr: Build firmware`와 IntelliSense는 모두
 `<repo>/build`를 사용합니다. 새 C 파일을 CMake에 등록한 뒤 빌드하면
@@ -147,15 +148,15 @@ python -m pc_sim.status_client --port /dev/ttyUSB0 --timeout 2
 ST-Link 콘솔에서 `TYPE_STATUS`와 CRC·length·timeout·queue drops 누적값을 확인합니다.
 CRC 오류·잘못된 길이·부분 프레임 중단을 주입한 뒤 재조회하고, INIT/RESET 후에도
 누적값이 유지되는지 확인합니다. STATUS만 보내도 측정 무수신 timeout은 계속 동작해야 합니다.
-펌웨어는 통계를 16바이트 STATUS_REPORT로 구성해 TX 큐에 복사 제출합니다.
-CLI는 응답 TYPE·길이·CRC를 검사한 뒤 네 통계를 출력합니다.
+펌웨어는 통계를 28바이트 STATUS_REPORT로 구성해 TX 큐에 복사 제출합니다.
+CLI는 응답 TYPE·길이·CRC를 검사한 뒤 일곱 통계를 출력합니다.
 GUI·다른 송신기를 닫아 포트를 단독 사용하고 PC6 TX → 어댑터 RXD 배선도 확인합니다.
 정상 조회·반복 조회·오류 주입 후 통계 증가·추적 중 조회를 확인하고 로그와 펌웨어 버전을 남깁니다.
 GUI 시험은 CLI 종료 후 STATUS 탭에서 별도로 수행합니다.
 `2aa57d9`에서 이 기본 절차를 수행했습니다. 상세 범위와 로그는 아래 시험 기록을 참고합니다.
 
 
-## 최신 STATUS 실보드 결과
+## 이전 STATUS 실보드 결과 (16바이트 규격)
 
 `2aa57d9`에서 CLI·GUI STATUS 왕복, CRC/LEN/부분 프레임 timeout 통계 증가,
 INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.

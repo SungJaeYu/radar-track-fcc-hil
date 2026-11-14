@@ -75,5 +75,32 @@ def test_decode_status_payload_zero():
 
 @pytest.mark.parametrize("length", [0, 15, 17])
 def test_decode_status_payload_invalid_length(length):
-    with pytest.raises(ValueError, match="STATUS_REPORT payload must be exactly 16 bytes"):
+    with pytest.raises(ValueError, match="STATUS_REPORT payload must be 16 or 28 bytes"):
+        protocol.decode_status_payload(bytes(length))
+
+
+def test_decode_extended_status_golden_payload():
+    # Literal wire bytes are independent of the production field definition.
+    payload = bytes.fromhex(
+        "12345678 80000000 00000001 ffffffff 00000007 01020304 ffffffff")
+    assert protocol.decode_status_payload(payload) == {
+        "crc_errors": 0x12345678, "length_errors": 0x80000000,
+        "frame_timeouts": 1, "queue_drops": 0xffffffff,
+        "ring_overflow_events": 7, "rx_dropped_bytes": 0x01020304,
+        "recovery_discarded_bytes": 0xffffffff,
+    }
+
+
+@pytest.mark.parametrize("index", range(7))
+@pytest.mark.parametrize("value", [0, 0xffffffff])
+def test_extended_status_field_boundaries(index, value):
+    values = [0] * 7
+    values[index] = value
+    stats = protocol.decode_status_payload(struct.pack(">7I", *values))
+    assert list(stats.values()) == values
+
+
+@pytest.mark.parametrize("length", [20, 24, 27, 29, 32])
+def test_reject_unknown_status_layout(length):
+    with pytest.raises(ValueError):
         protocol.decode_status_payload(bytes(length))

@@ -10,7 +10,7 @@
 
 // Only the handler call is wrapped for failure injection; successful calls use
 // the real encoder linked separately. No production source is changed.
-static int test_status_encode(const struct rx_frame_stats *p_stats,
+static int test_status_encode(const struct status_report *p_stats,
                               struct protocol_frame *out_frame);
 #define status_message_encode test_status_encode
 #include "application/frame_handler.c"
@@ -20,12 +20,14 @@ static char output[2048];
 static size_t output_size;
 static unsigned int stats_reads;
 static struct rx_frame_stats source_stats;
+static struct uart_rx_stats source_uart_stats;
+static unsigned int uart_stats_reads;
 static struct send_frame submitted_frame;
 static unsigned int submit_calls;
 static int submit_result;
 static int encode_result;
 
-static int test_status_encode(const struct rx_frame_stats *p_stats,
+static int test_status_encode(const struct status_report *p_stats,
                               struct protocol_frame *out_frame)
 {
     if (encode_result != 0) {
@@ -63,10 +65,17 @@ void rx_frame_processor_get_stats(struct rx_frame_stats *out_stats)
     *out_stats = source_stats;
 }
 
+void uart_rx_get_stats(struct uart_rx_stats *out_stats)
+{
+    uart_stats_reads++;
+    *out_stats = source_uart_stats;
+}
+
 static void reset_test(struct frame_handler *p_handler)
 {
     memset(output, 0, sizeof(output));
-    output_size = stats_reads = 0;
+    output_size = stats_reads = uart_stats_reads = 0;
+    memset(&source_uart_stats, 0, sizeof(source_uart_stats));
     submit_calls = 0;
     submit_result = encode_result = 0;
     memset(&submitted_frame, 0, sizeof(submitted_frame));
@@ -91,8 +100,8 @@ static void test_status_zero(void)
     request_status(&handler);
     assert(stats_reads == 1 && submit_calls == 1);
     assert(submitted_frame.frame.type == FRAME_TYPE_STATUS_REPORT);
-    assert(submitted_frame.frame.payload_length == 16);
-    const uint8_t expected[16] = {0};
+    assert(submitted_frame.frame.payload_length == 28);
+    const uint8_t expected[28] = {0};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
     assert(strcmp(output, "TYPE_STATUS\nCRC: 0, length: 0, timeout: 0, queue drops: 0\n") == 0);
 }
@@ -102,14 +111,16 @@ static void test_status_snapshot(void)
     struct frame_handler handler;
     reset_test(&handler);
     source_stats = (struct rx_frame_stats){1, 23, 456, UINT32_MAX};
+    source_uart_stats = (struct uart_rx_stats){7, 0x80000000U, UINT32_MAX};
     request_status(&handler);
     assert(strcmp(output,
                   "TYPE_STATUS\nCRC: 1, length: 23, timeout: 456, queue drops: 4294967295\n") == 0);
     source_stats.crc_errors = 2;
     output_size = 0;
     request_status(&handler);
-    assert(stats_reads == 2 && submit_calls == 2);
-    const uint8_t expected[] = {0, 0, 0, 2, 0, 0, 0, 23, 0, 0, 1, 0xc8, 0xff, 0xff, 0xff, 0xff};
+    assert(stats_reads == 2 && uart_stats_reads == 2 && submit_calls == 2);
+    const uint8_t expected[] = {0, 0, 0, 2, 0, 0, 0, 23, 0, 0, 1, 0xc8, 0xff, 0xff, 0xff, 0xff,
+                                0, 0, 0, 7, 0x80, 0, 0, 0, 0xff, 0xff, 0xff, 0xff};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
     assert(strcmp(output,
                   "TYPE_STATUS\nCRC: 2, length: 23, timeout: 456, queue drops: 4294967295\n") == 0);
@@ -157,20 +168,19 @@ static void test_status_does_not_refresh_timeout(void)
 
 static void test_status_encode_wire(void)
 {
-    const struct rx_frame_stats stats = {0x12345678U, 0x80000000U, 1U, UINT32_MAX};
+    const struct status_report stats = {0x12345678U, 0x80000000U, 1U, UINT32_MAX, 7U, 0x01020304U, UINT32_MAX};
     struct protocol_frame frame;
     memset(&frame, 0xa5, sizeof(frame));
     assert(status_message_encode(&stats, &frame) == 0);
-    assert(frame.type == FRAME_TYPE_STATUS_REPORT && frame.payload_length == 16);
+    assert(frame.type == FRAME_TYPE_STATUS_REPORT && frame.payload_length == 28);
     // Independently calculated with Python binascii.crc_hqx(body, 0xffff).
-    const uint8_t expected[] = {0x7e, 0x10, 0x06, 0x12, 0x34, 0x56, 0x78, 0x80, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xeb, 0x11};
+    const uint8_t expected[] = {0x7e, 0x1c, 0x06, 0x12, 0x34, 0x56, 0x78, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x07, 0x01, 0x02, 0x03, 0x04, 0xff, 0xff, 0xff, 0xff, 0xae, 0x34};
     uint8_t wire[sizeof(expected) + 1];
     memset(wire, 0xa5, sizeof(wire));
     assert(protocol_frame_encode(&frame, wire, sizeof(wire)) == (int)sizeof(expected));
     assert(memcmp(wire, expected, sizeof(expected)) == 0);
     assert(wire[sizeof(expected)] == 0xa5);
-    for (size_t i = 16; i < sizeof(frame.payload); ++i) {
+    for (size_t i = 28; i < sizeof(frame.payload); ++i) {
         assert(frame.payload[i] == 0xa5);
     }
     assert(stats.crc_errors == 0x12345678U && stats.length_errors == 0x80000000U);
@@ -184,13 +194,13 @@ static void test_status_encode_wire(void)
                (i + 1 == sizeof(expected) ? PARSER_RESULT_FRAME_READY : PARSER_RESULT_INCOMPLETE));
     }
     assert(parser.frame.type == FRAME_TYPE_STATUS_REPORT);
-    assert(parser.frame.payload_length == 16);
-    assert(memcmp(parser.frame.payload, &expected[3], 16) == 0);
+    assert(parser.frame.payload_length == 28);
+    assert(memcmp(parser.frame.payload, &expected[3], 28) == 0);
 }
 
 static void test_status_encode_invalid_arguments(void)
 {
-    const struct rx_frame_stats stats = {0};
+    const struct status_report stats = {0};
     struct protocol_frame frame;
     memset(&frame, 0xa5, sizeof(frame));
     unsigned char before[sizeof(frame)];
@@ -308,7 +318,7 @@ static void check_control_reset(FrameType type)
     request_status(&handler);
     assert(submitted_frame.frame.payload_length == before.payload_length);
     assert(memcmp(submitted_frame.frame.payload, before.payload, before.payload_length) == 0);
-    assert(stats_reads == 2 && submit_calls == 2);
+    assert(stats_reads == 2 && uart_stats_reads == 2 && submit_calls == 2);
 
     // A new valid measurement rearms monitoring after either command.
     frame = measurement(0, 2000, 30000);

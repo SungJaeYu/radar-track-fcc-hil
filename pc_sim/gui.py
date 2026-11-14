@@ -16,6 +16,7 @@ from serial.tools import list_ports
 
 from .gui_model import Settings
 from .gui_worker import SessionWorker
+from .protocol import STATUS_FIELDS
 
 STYLE = '''
 QWidget { background: #101820; color: #dce8ef; font-size: 13px; }
@@ -155,12 +156,7 @@ class MainWindow(QMainWindow):
         status_layout.addWidget(self.status_message)
         status_form = QFormLayout()
         self.status_values = {}
-        for key, label in (
-            ('crc_errors', 'CRC 오류'),
-            ('length_errors', '길이 오류'),
-            ('frame_timeouts', '부분 프레임 timeout'),
-            ('queue_drops', 'RX 큐 드롭'),
-        ):
+        for key, _, label in STATUS_FIELDS:
             value = QLabel('—')
             value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
             self.status_values[key] = value
@@ -319,8 +315,8 @@ class MainWindow(QMainWindow):
         if not self.connected:
             return
         self.status_pending = False
-        for key, value in stats.items():
-            self.status_values[key].setText(str(value))
+        for key, value in self.status_values.items():
+            value.setText(str(stats[key]) if key in stats else "미지원")
         self.status_updated.setText('마지막 성공 조회: ' + datetime.now().strftime('%H:%M:%S'))
         self.status_message.setText('조회 성공')
         self.status_button.setEnabled(True)

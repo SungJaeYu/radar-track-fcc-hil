@@ -26,8 +26,8 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - 보드 `radar_message.c`가 semicircle을 rad로 변환합니다.
 - RX 스레드는 `rx_frame_processor`로 파싱하고 완성 프레임을 큐에 복사합니다.
 - 별도 handler 스레드가 측정·추적·STATUS 처리를 수행합니다.
-- STATUS는 RX 오류 통계의 atomic 복사본을 로그로 출력합니다. 16바이트 STATUS_REPORT를 TX 큐에 복사 제출합니다.
-- TX 초기화·복사 큐·워커·인코딩·polling 송신은 구현되어 있습니다. STATUS 제출까지 연결했으며 PC 파서·STATUS CLI·GUI 수동 조회까지 구현했으며 `2aa57d9`에서 STATUS CLI·GUI 실보드 왕복도 확인했습니다. 강제 overflow·UART 오류·부하 시험은 남아 있습니다.
+- STATUS는 processor의 네 통계를 로그로 출력합니다. UART의 세 통계를 더한 일곱 값을 28바이트 STATUS_REPORT로 TX 큐에 복사 제출합니다. 각 값은 atomic 조회하며 동시 snapshot은 보장하지 않습니다.
+- TX 초기화·복사 큐·워커·인코딩·polling 송신은 구현되어 있습니다. STATUS 제출까지 연결했으며 PC 파서·STATUS CLI·GUI 수동 조회까지 구현했으며 [확장 STATUS 실보드 시험](docs/hardware-test-2026-11-14-status-extended.md)에서 28바이트 응답의 CLI·GUI 왕복도 확인했습니다. 강제 overflow·UART 오류·부하 시험은 남아 있습니다.
 - RX 링버퍼는 256바이트, 실제 저장 용량은 255바이트입니다. 인덱스는 `uint8_t`이므로 더 큰 버퍼는 타입 변경이 필요합니다.
 - overflow 정책은 `fcc_app/Kconfig` choice와 `prj.conf`에서 선택하며 `uart_rx.c`에서 매핑합니다. 기본값은 DRAIN입니다.
 - overflow 복구 중 새 입력은 버리고 저장된 바이트로 완성 가능한 프레임만 처리한 뒤 링·파서를 초기화합니다.
@@ -37,8 +37,8 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 검증
 
-- `python -m pytest`: GUI 의존성 설치 시 136개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
-- [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 21·discard 18, 총 39회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
+- `python -m pytest`: GUI 의존성 설치 시 160개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
+- [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 24·discard 21, 총 45회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [STATUS host 테스트](fcc_app/tests/test_frame_handler/README.md): 통계·응답·실패 복귀·INIT/RESET·측정 timeout 17개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.
 - [TX host 테스트](fcc_app/tests/test_uart_tx/README.md): 초기화·요청 검증·복사 큐·송신 순서·실패 후 복귀 4개 사례.
 - [Tracking C 테스트](fcc_app/tests/test_kalman/README.md): 필터·게이팅·추적 정책 17개 사례.
@@ -50,7 +50,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 작업 원칙
 
-- [코딩 스탠다드 초안](docs/coding-standard.md): 참조 포인터 `p_`, 출력 `out_`, enum PascalCase와 타입명 기반 열거자 접두사, 함수 중괄호 다음 줄, 제어문 같은 줄·공백 한 칸. 음수 errno 반환 규칙을 적용했으며 기존 펌웨어를 임의로 일괄 수정하지 않습니다.
+- [코딩 스탠다드](docs/coding-standard.md): 참조 포인터 `p_`, 출력 `out_`, enum PascalCase와 타입명 기반 열거자 접두사, 함수 중괄호 다음 줄, 제어문 같은 줄·공백 한 칸. 음수 errno 반환 규칙을 적용했으며 기존 펌웨어를 임의로 일괄 수정하지 않습니다.
 
 - 작은 검증 사다리로 진행. 각 단계는 직전 단계 위에서 검증 가능해야 함.
   매 단계 끝에 "어떻게 보드에서 확인하는지"를 명시할 것.

@@ -106,7 +106,8 @@ overflow 시 기본 drain 정책은 저장된 데이터로 완성 가능한 프�
 `--hz`는 측정 생성·송신 주기를 정하는 옵션이며 보드의 처리 완료를 기다리는 기능은 아닙니다.
 송신 속도를 높였다는 사실이나 PC 출력만으로 overflow 발생·복구를 판정하지 않습니다.
 보드의 복구 로그와 이후 정상 측정 처리를 확인하는 [보드 시험 절차](../docs/board-bringup.md)를 참고하세요.
-현재 펌웨어에는 정확한 손실량을 보고하는 카운터나 이진 응답이 없습니다.
+STATUS_REPORT로 overflow 횟수와 소프트웨어 폐기 바이트를 조회할 수 있습니다.
+하드웨어 유실과 parser가 소비한 부분 프레임은 제외하므로 전체 통신 손실량은 아닙니다.
 
 ## 통합과 이력
 
@@ -126,7 +127,7 @@ python -m pc_sim.status_client --port PORT --timeout 2
 
 기본 baud는 115200이며 `--baud`로 지정할 수 있습니다. 요청 payload는 `00`입니다.
 이 명령은 INIT/RESET을 보내지 않으며, 정상 응답을 받으면 CRC errors, Length errors,
-Frame timeouts, Queue drops 네 항목을 출력합니다.
+Frame timeouts, Queue drops와 링 overflow·ISR 폐기 바이트·복구 폐기 바이트를 출력합니다.
 
 - 송신 직전 기존 수신 버퍼를 비운 뒤 한 번 요청합니다. 포트는 독점 사용해야 합니다.
 - 프레임을 분할·연속 조립하고 CRC/LEN 오류, 다른 TYPE, 길이가 잘못된 STATUS는 건너뜁니다.
@@ -150,14 +151,14 @@ GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 C
 | 0x03 | `FRAME_TYPE_STATUS_REQUEST` | PC 진단 도구 → FCC 상태 조회 |
 | 0x04 | `FRAME_TYPE_COMMAND` | 명령 예약, 동작 미구현 |
 | 0x05 | `FRAME_TYPE_RESET` | FCC 추적 리셋 |
-| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 16바이트 payload; CLI·GUI 수신 구현; 실보드 기본 왕복 확인 |
+| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 28바이트 payload; PC는 구형 16바이트 응답도 지원 |
 
 기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
 `protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는
 추가하지 않습니다. STATUS_REQUEST는 콘솔 통계 출력과 STATUS_REPORT 제출을 수행합니다.
-응답 payload는 CRC 오류·길이 오류·부분 프레임 timeout·큐 드롭 순서로
-big-endian uint32 네 개(`>IIII`, 총 16바이트)를 담습니다.
-개별 카운터는 atomic 조회하지만 네 항목 전체의 동일 시점 snapshot은 보장하지 않습니다.
+응답 payload는 CRC 오류·길이 오류·부분 프레임 timeout·큐 드롭·링 overflow 횟수·ISR 폐기·복구 폐기 순서로
+big-endian uint32 일곱 개(총 28바이트)를 담습니다.
+개별 카운터는 atomic 조회하지만 전체의 동일 시점 snapshot은 보장하지 않습니다.
 기존 보드 로그 `TYPE_MEAS`/`TYPE_STATUS`는 유지하며, STATUS_REPORT 응답을 뜻하지 않습니다.
 `small_byte_test.py`의 선택지는 구현된 수신 경로 1~5로 유지합니다.
 
@@ -168,3 +169,28 @@ big-endian uint32 네 개(`>IIII`, 총 16바이트)를 담습니다.
 기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
 [결과와 원시 로그](../docs/hardware-test-2026-11-14-kconfig.md).
 강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.
+
+## STATUS_REPORT payload
+
+| 바이트 offset | 필드 | 의미 |
+|---|---|---|
+| 0 | crc_errors | CRC 오류 |
+| 4 | length_errors | 프레임 길이 오류 |
+| 8 | frame_timeouts | 부분 프레임 timeout |
+| 12 | queue_drops | RX → handler 큐 제출 실패(-ENOMSG) |
+| 16 | ring_overflow_events | 링 저장 실패로 복구에 진입한 횟수 |
+| 20 | rx_dropped_bytes | ISR이 FIFO에서 읽고 링에 저장하지 못한 바이트 |
+| 24 | recovery_discarded_bytes | 복구 시 링에 남아 폐기한 미소비 바이트 |
+
+모두 big-endian uint32이며 전체 wire 프레임은 33바이트입니다.
+마지막 두 바이트 카운터는 하드웨어 유실이나 parser가 이미 소비한 부분 프레임을 포함하지 않습니다.
+새 PC는 구형 16바이트도 수용하고, 없는 세 필드는 CLI `unsupported`·GUI `미지원`으로 표시합니다.
+새 펌웨어는 28바이트만 송신하므로 구형 PC는 업데이트해야 합니다. 다른 payload 길이는 거부합니다.
+이는 길이로 구분하는 명시적 두 규격 호환이며 임의 확장·버전 협상은 지원하지 않습니다.
+
+필드를 바꿀 때 C의 `status_report`/`status_message_encode()`와 Python `protocol.py`의
+`STATUS_FIELDS`를 함께 수정합니다. Python 길이·디코딩과 CLI/GUI 행은 이 목록을 공유합니다.
+C endian 쓰기는 `common/byte_order.h`를 재사용합니다. 생성기는 사용하지 않습니다.
+고정 기대 바이트열·C→Python 상호운용·길이 오류·구형 응답·CLI/GUI 테스트도 함께 갱신합니다.
+28바이트 응답의 [실보드 UART·CLI·GUI 왕복](../docs/hardware-test-2026-11-14-status-extended.md)을 확인했습니다.
+강제 overflow에 의한 새 카운터 증가 시험은 남아 있습니다.

@@ -167,3 +167,19 @@ def test_cli_invalid_arguments(monkeypatch, option, value):
     with pytest.raises(SystemExit) as error:
         status_client.main(["--port", "fake", option, value])
     assert error.value.code == 2
+
+
+@pytest.mark.parametrize("extended", [False, True])
+def test_cli_shared_status_fields(monkeypatch, capsys, extended):
+    payload = bytes.fromhex("12345678 80000000 00000001 ffffffff")
+    if extended:
+        payload += bytes.fromhex("00000007 01020304 ffffffff")
+    port = FakePort([encode_frame(6, payload)])
+    use_clock(monkeypatch, port)
+    monkeypatch.setattr(status_client.serial, "Serial", lambda *args, **kwargs: port)
+    assert status_client.main(["--port", "fake"]) == 0
+    output = capsys.readouterr().out
+    expected_overflows = "7" if extended else "unsupported"
+    expected_discarded = "4294967295" if extended else "unsupported"
+    assert f"Ring overflows: {expected_overflows}" in output
+    assert f"Recovery discarded bytes: {expected_discarded}" in output

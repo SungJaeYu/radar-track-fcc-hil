@@ -13,8 +13,8 @@ cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
 ```
 
-drain 21개와 discard 18개, 총 39개 실행을 CTest에 등록했습니다.
-공통 16개 사례를 양쪽에서 실행하고 drain 전용 5개·discard 전용 2개를 추가합니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 drain 21개를, `uart_rx_discard_tests`는 discard 18개를 실행합니다.
+drain 24개와 discard 21개, 총 45개 실행을 CTest에 등록했습니다.
+공통 19개 사례를 양쪽에서 실행하고 drain 전용 5개·discard 전용 2개를 추가합니다. 실행 파일 `uart_rx_tests`를 직접 실행하면 drain 24개를, `uart_rx_discard_tests`는 discard 21개를 실행합니다.
 `uart_rx_tests test_receives_after_recovery`처럼 이름을 넘기면 한 사례를 실행합니다.
 Release 빌드에서도 검증용 `assert`가 제거되지 않도록 `-UNDEBUG`를 적용합니다.
 
@@ -119,4 +119,6 @@ DRAIN 24개·DISCARD 21개, CTest 총 45개입니다. 새 공통 사례는 두 �
 - 기존 `test_preserves_partial_parser_and_drops_new_input`에서도 drain 중 ISR 주입 바이트의 집계를 확인합니다.
 
 host 모사는 실제 atomic 동시성·IRQ 타이밍을 재현하지 않습니다.
-새 통계의 STATUS_REPORT 전송과 강제 overflow 실보드 시험은 아직 포함하지 않습니다.
+이 RX host suite는 STATUS_REPORT 송신을 검사하지 않습니다. 별도 handler·Python 상호운용 및
+[실보드 STATUS 시험](../../../docs/hardware-test-2026-11-14-status-extended.md)에서 전송을 확인합니다.
+강제 overflow 실보드 시험은 남아 있습니다.

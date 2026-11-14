@@ -61,19 +61,26 @@ def build_radar_frame_from_radians(timestamp_ms, range_m, azimuth_rad):
     return build_radar_frame(timestamp_ms, distance, semicircle)
 
 
+# Wire order, CLI label, GUI label. All fields are unsigned 32-bit counters.
+STATUS_FIELDS = (
+    ("crc_errors", "CRC errors", "CRC 오류"),
+    ("length_errors", "Length errors", "길이 오류"),
+    ("frame_timeouts", "Frame timeouts", "부분 프레임 timeout"),
+    ("queue_drops", "Queue drops", "RX 큐 드롭"),
+    ("ring_overflow_events", "Ring overflows", "링 overflow 횟수"),
+    ("rx_dropped_bytes", "ISR dropped bytes", "ISR 폐기 바이트"),
+    ("recovery_discarded_bytes", "Recovery discarded bytes", "복구 중 버퍼 폐기 바이트"),
+)
+STATUS_PAYLOAD = struct.Struct(">" + "I" * len(STATUS_FIELDS))
+# Compatibility is explicitly limited to the original four-counter layout.
+LEGACY_STATUS_PAYLOAD = struct.Struct(">4I")
+
+
 def decode_status_payload(payload):
-    """Decode a 16-byte payload into four named big-endian uint32 counters.
-
-    The caller validates frame TYPE and CRC before passing the payload.
-    Raise ValueError for an incorrect payload length.
-    """
-    if len(payload) != 16:
-        raise ValueError("STATUS_REPORT payload must be exactly 16 bytes")
-    crc_errors, length_errors, frame_timeouts, queue_drops = struct.unpack(">IIII", payload)
-
-    return {
-        "crc_errors": crc_errors,
-        "length_errors": length_errors,
-        "frame_timeouts": frame_timeouts,
-        "queue_drops": queue_drops,
-    }
+    """Decode current or legacy counters; absent legacy fields remain absent, not zero."""
+    layouts = (LEGACY_STATUS_PAYLOAD, STATUS_PAYLOAD)
+    layout = next((item for item in layouts if item.size == len(payload)), None)
+    if layout is None:
+        raise ValueError(
+            f"STATUS_REPORT payload must be {LEGACY_STATUS_PAYLOAD.size} or {STATUS_PAYLOAD.size} bytes")
+    return {field[0]: value for field, value in zip(STATUS_FIELDS, layout.unpack(payload))}

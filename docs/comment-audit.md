@@ -1,6 +1,6 @@
 # 펌웨어 주석 점검 — 2026-11-14
 
-범위: `fcc_app/src`의 C/헤더 30개. 주석 없는 줄 수가 아니라 API 계약, 단위, 소유권,
+범위: `fcc_app/src`의 C/헤더 31개. 주석 없는 줄 수가 아니라 API 계약, 단위, 소유권,
 오류/상태 전이의 설명 유무를 점검했다. 영어 `//` 규칙을 유지한다.
 단순 대입·자명한 함수는 헤더 계약으로 충분하며 줄마다 주석을 추가하지 않는다.
 Python GUI/시뮬레이터와 외부 Zephyr 소스는 이 점검 범위에 포함하지 않는다.
@@ -25,6 +25,7 @@ Python GUI/시뮬레이터와 외부 Zephyr 소스는 이 점검 범위에 포�
 
 | 파일 | 확인한 기존 설명 / 판단 |
 |---|---|
+| `common/byte_order.h` | 표준 정수 타입만 의존하는 static inline big-endian 쓰기와 출력 용량 전제 |
 | `common/crc16.h` | CRC 모델과 호출 계약 있음 |
 | `common/ring_buffer.c`, `.h` | 한 슬롯 예약, 용량, 실패 반환 및 동기화 책임 설명 있음 |
 | `tracking/angle_utils.c`, `.h` | fmodf 정규화 구간·유한값 전제·큰 float의 정밀도 한계 설명 있음; 공통 π 사용 |
@@ -33,8 +34,8 @@ Python GUI/시뮬레이터와 외부 Zephyr 소스는 이 점검 범위에 포�
 | `protocol/frame_parser.c`, `.h` | 길이·CRC·부분 수신 결과 및 parser 상태 설명 있음 |
 | `protocol/radar_message.c`, `.h` | wire 필드 단위와 semicircle 변환 계약 있음; 공통 π 사용 |
 | `protocol/protocol_frame.h` | wire 레이아웃, payload 크기, 반환값 계약 있음 |
-| `protocol/status_message.c`, `.h` | 4바이트 big-endian 쓰기와 STATUS 카운터 레이아웃 계약 있음 |
-| `transport/uart_rx.h` | 초기화/복구 정책 API 계약 있음 |
+| `protocol/status_message.c`, `.h` | 7개 uint32의 28바이트 레이아웃·출력 보존·순수 데이터 계약; endian 쓰기는 common/byte_order.h 공유 |
+| `transport/uart_rx.h` | 초기화/복구 정책·세 누적 통계의 단위·제외 범위·개별 atomic 조회 계약 있음 |
 | `transport/uart_tx.h` | 복사 큐, 반환값, UART 송신과 상대 수신 보장의 차이 설명 있음 |
 | `transport/rx_frame_processor.c` | parser 소유권·atomic 통계·timeout·완성 프레임 전달 설명 있음 |
 

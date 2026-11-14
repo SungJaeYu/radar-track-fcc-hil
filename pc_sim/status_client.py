@@ -12,6 +12,7 @@ from .protocol import (
     FRAME_TYPE_STATUS_REPORT,
     FRAME_TYPE_STATUS_REQUEST,
     decode_status_payload,
+    STATUS_FIELDS,
     encode_frame,
 )
 
@@ -87,10 +88,8 @@ def main(argv=None) -> int:
         print(f"STATUS request failed: {error}", file=sys.stderr)
         return 1
 
-    print(f"CRC errors:     {stats['crc_errors']}")
-    print(f"Length errors:  {stats['length_errors']}")
-    print(f"Frame timeouts: {stats['frame_timeouts']}")
-    print(f"Queue drops:    {stats['queue_drops']}")
+    for key, label, _ in STATUS_FIELDS:
+        print(f"{label + ':':15} {stats.get(key, 'unsupported')}")
     return 0
 
 

@@ -1,0 +1,8 @@
+{
+  "status_frames": 20,
+  "payload_bytes": 28,
+  "wire_bytes": 33,
+  "pc_crc_errors": 0,
+  "pc_length_errors": 0,
+  "firmware_sources_match_recorded_hashes": true
+}
