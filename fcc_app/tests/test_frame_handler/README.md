@@ -36,8 +36,9 @@ and PC/GUI decoding remain outside this suite.
 2026-11-12: all ten cases and the firmware build passed. No flash or board test
 was performed. Firmware source was reviewed, not modified by the test update.
 
-The local VS Code task `Host: Configure STATUS tests` generates this test's own
-compile database. The test must use host headers, not the firmware's Zephyr paths.
+The CMake configure command above generates this test's own compile database.
+The test must use host headers, not the firmware's Zephyr paths. See the
+[optional editor guide](../../../tools/vscode/README.md).
 
 2026-11-04: all five STATUS cases and all 20 UART cases passed. The firmware
 build also passed with the empty TX module registered. CMake regeneration

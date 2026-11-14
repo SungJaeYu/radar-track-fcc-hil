@@ -1,54 +1,72 @@
-# VS Code 설정 예제
+# VS Code 개발 환경 안내
 
-macOS + Xcode/Command Line Tools + Homebrew CMake/Ninja + `~/zephyrproject` 환경용입니다.
-실제 `.vscode/`는 개인 설정으로 Git에서 제외합니다. 저장소 루트에서 초기 설정을 복사합니다.
-기존 설정이 있다면 필요한 항목을 병합하세요.
+VS Code는 선택 사항입니다. 빌드·테스트는 저장소의 CLI 명령으로 실행할 수 있습니다.
+개인 에디터 설정인 `.vscode/`와 생성된 빌드 파일은 Git에서 제외합니다.
+이 디렉터리에는 설정 JSON을 배포하지 않고, 환경을 연결하는 방법만 유지합니다.
+
+## 필요한 확장
+
+- C/C++ 분석: Microsoft C/C++ (`ms-vscode.cpptools`).
+- Kconfig 문법 강조: `luveti.kconfig` (선택).
 
 ```sh
-mkdir -p .vscode
-cp tools/vscode/*.json .vscode/
+code --install-extension ms-vscode.cpptools
+code --install-extension luveti.kconfig
 ```
 
-1. `Zephyr: Build firmware`로 `build/compile_commands.json`과 생성 헤더를 갱신합니다.
-2. `Host: Configure UART tests`, `STATUS tests`, `TX tests`, `Tracking tests`를 실행합니다.
-   각 작업은 host CMake 구성과 compile database 생성만 수행하며 테스트 실행은 별도입니다.
-3. C/C++ 확장은 firmware database를 먼저, 각 host database를 이후 순서로 참조합니다.
-   ARM/Zephyr 설정을 host mock 테스트에 전역 강제하지 않습니다.
-4. 파일 이동 후 오류가 남으면 `C/C++: Reset IntelliSense Database`를 실행하고
-   `C/C++: Log Diagnostics`에서 해당 소스의 compile database 연결을 확인합니다.
+`code` 명령이 PATH에 없으면 VS Code 확장 화면에서 같은 ID로 검색해 설치합니다.
 
-`fcc_app/src` 하나를 include root로 사용합니다. 예: `"transport/uart_rx.h"`.
-헤더 분석은 연결된 translation unit 설정을 따릅니다. compile database가 생성되기 전에는
-fallback includePath만으로 Zephyr 생성 헤더·매크로를 모두 해석할 수 없습니다.
+## 빌드 정보로 IntelliSense 구성
 
-CMake/Ninja가 PATH에 없거나 Xcode 설치 위치·Zephyr workspace가 다르면 tasks.json의 경로를 조정합니다.
-추가 소스는 CMake에 등록하고 다시 빌드하세요. compile database는 생성물이며 커밋하지 않습니다.
+컴파일러 경로·include 경로·CONFIG 매크로를 수작업으로 복제하지 않고
+CMake가 생성하는 `compile_commands.json`을 사용합니다.
 
-## Kconfig 변경 후 CONFIG 매크로 오류
+1. [펌웨어 빌드](../../README.md#펌웨어-빌드플래시)에
+   `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`을 전달합니다.
+2. host 테스트도 각 CMake 구성 명령에 같은 옵션을 전달합니다.
+   [RX](../../fcc_app/tests/test_uart_rx/README.md),
+   [handler](../../fcc_app/tests/test_frame_handler/README.md),
+   [TX](../../fcc_app/tests/test_uart_tx/README.md),
+   [Tracking](../../fcc_app/tests/test_kalman/README.md)의 명령을 따릅니다.
+3. 로컬 C/C++ 설정의 `compileCommands`에 생성된 데이터베이스 경로를 연결합니다.
+   기본 펌웨어 분석은 일반 빌드, 디버그 전용 분석은 debug.conf 빌드의 데이터베이스를 선택합니다.
 
-`CONFIG_...`는 Zephyr 구성 단계가 생성하는
-`build/zephyr/include/generated/zephyr/autoconf.h`에 정의됩니다.
-compile_commands.json의 `-imacros` 옵션으로 적용되므로 Kconfig/prj.conf 변경 후에는 다시 빌드해야 합니다.
+권장 빌드 디렉터리 이름을 사용할 경우 연결 대상은 다음과 같습니다.
 
-`Tasks: Run Task` → `Project: Refresh IntelliSense`를 실행하면 펌웨어 빌드와 네 host 테스트 구성을 순서대로 갱신합니다.
-오류가 남으면 `C/C++: Reset IntelliSense Database`를 실행하고 파일을 다시 여세요.
-`C/C++: Log Diagnostics`에서 해당 소스의 compile database 연결도 확인하세요.
+| 대상 | 컴파일 데이터베이스 |
+|---|---|
+| 일반 펌웨어 | `build/compile_commands.json` |
+| 디버그 펌웨어 | `build_logging_debug/compile_commands.json` |
+| RX host | `build_uart_rx/compile_commands.json` |
+| handler host | `build_frame_handler/compile_commands.json` |
+| TX host | `build_uart_tx/compile_commands.json` |
+| Tracking host | `build_tracking/compile_commands.json` |
 
-host 테스트는 Kconfig를 실행하지 않으므로 해당 CMake target에서 CONFIG 값을 전달합니다.
-전역 `defines`에 값을 복사하거나 생성된 autoconf.h를 직접 수정하지 마세요.
-실제 빌드와 에디터가 서로 다른 값을 사용하게 될 수 있습니다.
+다른 빌드 디렉터리를 사용하면 경로도 맞춰 변경합니다. 일반·디버그 설정을 동시에
+하나의 기준으로 해석하지 않고, 현재 분석할 펌웨어 구성을 명확히 선택합니다.
+디버그 빌드 방법과 로그 레벨은 [로깅 안내](../../docs/logging.md)를 참고합니다.
 
-## Kconfig 파일 언어 모드
+## 펌웨어와 host 환경 구분
 
-Kconfig는 C/C++ 소스가 아닙니다. 설정 예제는 `Kconfig`와 `Kconfig.*`를
-`plaintext`로 연결해 C/C++ 진단이 적용되지 않도록 합니다.
-별도 Kconfig 언어 확장이 없는 환경에서도 동작하며 문법 검증은 Zephyr 빌드에서 수행합니다.
-열려 있는 파일에 이전 언어 모드가 남으면 탭을 닫고 다시 열거나 `Developer: Reload Window`를 실행하세요.
+펌웨어는 ARM 도구체인과 실제 Zephyr 헤더를 사용하고, host 테스트는 PC 컴파일러와
+테스트용 모사 헤더를 사용합니다. ARM 경로·매크로를 모든 파일에 전역 적용하지 않습니다.
+예를 들어 `zephyr/logging/log.h`는 host에서
+`fcc_app/tests/common/include/zephyr/logging/log.h`로 해석해야 합니다.
 
-디버그 assert·로그 빌드는 별도 디렉터리에 `west build -d build_debug -b stm32f746g_disco fcc_app -- -DEXTRA_CONF_FILE=debug.conf`로 구성합니다.
-기본 IntelliSense는 계속 `build`의 일반 설정을 사용하므로 디버그 전용 분석은 해당 빌드의 compile database를 선택해야 합니다.
+일부 host 테스트는 제품 C 파일을 직접 포함하므로 같은 파일도 분석 문맥이 달라질 수 있습니다.
+오류가 생기면 파일을 연 상태에서 `C/C++: Log Diagnostics`로 실제 선택된
+컴파일러·데이터베이스·include 경로를 확인합니다. 설정 변경 뒤에는
+`C/C++: Reset IntelliSense Database`로 재분석할 수 있습니다.
+실제 컴파일 실패와 에디터 진단은 구분합니다.
 
-`zephyr/logging/log.h`는 펌웨어에서 실제 Zephyr 헤더, host 테스트에서
-`fcc_app/tests/common/include/zephyr/logging/log.h` 모사 헤더로 해석합니다.
-host 모사는 로그 텍스트만 캡처하며 실제 deferred 처리·레벨 필터링은 검증하지 않습니다.
-일반 설정의 앱 로그 레벨은 INFO, debug.conf는 DEBUG입니다.
+## Kconfig와 생성 헤더
+
+Kconfig는 C/C++ 파일이 아닙니다. `luveti.kconfig` 설치 후 `Kconfig`, `Kconfig.*`의
+언어 모드를 `kconfig`로 지정합니다. 이전 `plaintext` 또는 C++ 연결이 남아 있으면
+로컬 파일 연결을 수정하고 파일을 다시 엽니다. 문법 강조·접기는 지원하지만
+자동 포맷터나 Zephyr 의미 검증을 제공하는 확장은 아닙니다. 현재 파일은 공백 4칸을 사용합니다.
+
+`CONFIG_*`는 Zephyr 구성 단계에서 `zephyr/include/generated/zephyr/autoconf.h`에
+생성되고 컴파일 데이터베이스의 `-imacros`로 적용됩니다. Kconfig/prj.conf 변경 후에는
+다시 빌드합니다. 생성 헤더를 직접 수정하거나 동일한 값을 에디터의 `defines`에 복사하지 않습니다.
+host 테스트는 Kconfig를 실행하지 않고 각 CMake target에서 필요한 설정값을 전달합니다.

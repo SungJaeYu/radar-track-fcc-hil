@@ -37,6 +37,9 @@ pc_sim (Python 측정 생성)
 | SDK            | `~/zephyr-sdk-0.17.2`         |
 | west workspace | `~/zephyrproject`            |
 
+개인 `.vscode/` 설정은 추적하지 않습니다. [VS Code 사용 안내](tools/vscode/README.md)는
+컴파일 데이터베이스 연결 방법을 설명하며, 빌드·테스트는 에디터 없이도 실행할 수 있습니다.
+
 ## PC 도구
 
 측정 송신기·시나리오·STATUS CLI는 `pc_sim/`에 있습니다. [실행 방법과 옵션](pc_sim/README.md)을 참고하세요.
@@ -154,7 +157,7 @@ fcc_app/tests/
     test_frame_handler/ STATUS·INIT/RESET·측정 timeout
     test_uart_tx/      TX 큐·인코딩·송신 순서
     test_kalman/       필터·게이팅·추적 C 회귀 테스트
-tools/vscode/         로컬 VS Code 설정 예제
+tools/vscode/         선택적 VS Code 개발 환경 안내
 pc_sim/
     gui.py             데스크톱 화면·실시간 그래프
     gui_worker.py      시리얼 소유·송수신·콘솔 작업 스레드

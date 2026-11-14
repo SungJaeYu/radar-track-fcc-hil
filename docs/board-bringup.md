@@ -98,48 +98,14 @@ Python 테스트, UART/Tracking host C 테스트, 펌웨어 빌드, flash, 실�
 
 최신 결과: [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 전체 이력은 [검증 기록](verification-history.md)을 따릅니다. 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
 
-VS Code의 로컬 기본 작업 `Zephyr: Build firmware`와 IntelliSense는 모두
-`<repo>/build`를 사용합니다. 새 C 파일을 CMake에 등록한 뒤 빌드하면
-`compile_commands.json`이 갱신됩니다. `.vscode/`는 Git 제외 대상입니다.
+### 에디터 분석 설정
 
-
-### IntelliSense 경로 오류 재발 확인
-
-펌웨어와 호스트 테스트는 서로 다른 컴파일 환경을 사용합니다.
-UART 테스트는 실제 `uart_rx.c`를 직접 포함하므로 테스트에 펌웨어용 기본
-includePath가 적용되면 `cmsis_core.h` 등의 가짜 include 오류가 생길 수 있습니다.
-
-로컬 `.vscode/c_cpp_properties.json`의 `compileCommands`에는 다음 다섯 경로를
-순서대로 연결합니다. 펌웨어를 먼저 두어 공통 소스의 기본 분석을 유지합니다.
-
-```json
-"compileCommands": [
-  "${workspaceFolder}/build/compile_commands.json",
-  "${workspaceFolder}/build_uart_rx/compile_commands.json",
-  "${workspaceFolder}/build_frame_handler/compile_commands.json",
-  "${workspaceFolder}/build_uart_tx/compile_commands.json",
-  "${workspaceFolder}/build_tracking/compile_commands.json"
-]
-```
-
-- 펌웨어: `Zephyr: Build firmware` 작업으로 빌드와 데이터베이스를 갱신합니다.
-- UART 호스트 테스트: `Host: Configure UART tests` 작업으로 별도 데이터베이스를
-  생성합니다. 이 작업은 테스트 실행이 아니라 CMake 구성입니다.
-- 공통 `compilerPath`, `intelliSenseMode`, `forcedInclude`로 ARM 환경을 강제하지
-  않습니다. 컴파일러·매크로·생성 헤더는 각 데이터베이스 항목을 따릅니다.
-- 새 펌웨어 C 파일은 `fcc_app/CMakeLists.txt`에 등록한 뒤 빌드합니다.
-- 오류가 남으면 `C/C++: Log Diagnostics`에서 해당 파일의 compile commands
-  항목을 확인합니다. 펌웨어는 ARM GCC와 Zephyr/CMSIS 경로, 호스트 테스트는
-  호스트 컴파일러와 `tests/test_uart_rx/include` 모사 헤더를 사용해야 합니다.
-- 파일 매핑이 이전 설정에 남으면 `C/C++: Reset IntelliSense Database`로
-  재분석합니다. 오류 표시를 끄거나 시스템 헤더 전체를 재귀 추가하지 않습니다.
-
-`build*`와 `.vscode`는 Git 제외 대상입니다. 새 체크아웃에서는
-[VS Code 설정 예제](../tools/vscode/README.md)를 `.vscode/`에 복사한 뒤 firmware 빌드와
-UART/STATUS/TX/Tracking host configure 작업을 실행합니다.
-모듈 include는 `"protocol/frame_parser.h"`처럼 src 기준으로 작성하고,
-CMake가 `fcc_app/src`를 include root로 전달합니다. 하위 폴더를 각각 includePath에 나열하지 않습니다.
-실제 컴파일 실패는 IntelliSense 설정으로 해결하지 않고 별도로 확인합니다.
+새 C 파일은 `fcc_app/CMakeLists.txt`에 등록하고 다시 빌드합니다.
+`-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`으로 생성한 데이터베이스를 에디터에 연결합니다.
+펌웨어와 host 테스트는 서로 다른 컴파일러·헤더를 사용하므로 분석 문맥도 구분합니다.
+개인 `.vscode/` 설정은 Git에서 제외하며 복사할 설정 JSON을 제공하지 않습니다.
+[VS Code 개발 환경 안내](../tools/vscode/README.md)를 참고하세요.
+실제 컴파일 실패는 에디터 설정으로 해결하지 않고 별도로 확인합니다.
 
 
 ### STATUS 통계 확인 (기본 왕복 검증 완료, 재현 절차)
