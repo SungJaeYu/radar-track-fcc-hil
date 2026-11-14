@@ -27,6 +27,9 @@ add_rx_target(uart_rx_tests CONFIG_RADAR_RX_OVERFLOW_DRAIN)
 add_rx_target(uart_rx_discard_tests CONFIG_RADAR_RX_OVERFLOW_DISCARD)
 
 set(common_cases
+    test_uart_stats_normal_receive
+    test_uart_stats_overflow_and_recovery
+    test_uart_stats_wrapped_ring_recovery
     test_rx_init_errors
     test_stats_snapshot_and_reset
     test_timeout_boundary_for_every_partial_frame

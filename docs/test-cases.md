@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 136개 + subtest 9개, C host 97회 실행(RX drain 21·discard 18·handler 17·TX 4·Tracking 17·게이팅 설정 20)입니다.
+현재 합계는 Python 136개 + subtest 9개, C host 103회 실행(RX drain 24·discard 21·handler 17·TX 4·Tracking 17·게이팅 설정 20)입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -25,11 +25,11 @@
 | 필터·추적 | `fcc_app/tests/test_kalman` | 17 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 17 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
-| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 39 (drain 21 + discard 18) | host C, Zephyr API 모사 |
+| UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **136개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest의 `tracking`에서 17개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
-UART C는 정책별 실행을 CTest에 따로 등록하므로 39개로 표시됩니다. 공통 사례 16개는 두 번 실행합니다.
+UART C는 정책별 실행을 CTest에 따로 등록하므로 45개로 표시됩니다. 공통 사례 19개는 두 번 실행합니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
@@ -133,7 +133,7 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 | `test_explicit_reset_cancels_partial_timeout` | 명시적 reset 이후 만료 취소와 누적 카운터 보존 |
 
 현재 BUFFER_SIZE=256, 실제 용량=255이며 fixture는 버퍼 크기에서 입력 길이를 계산합니다.
-DRAIN·DISCARD를 별도 실행 파일로 컴파일합니다. 공통 16개와 정책별 전용 사례를 실행합니다.
+DRAIN·DISCARD를 별도 실행 파일로 컴파일합니다. 공통 19개와 정책별 전용 사례를 실행합니다.
 실제 ISR·복구·링버퍼·파서를 사용하지만 UART FIFO, IRQ, atomic, 시간, frame_handler_submit은 모사합니다.
 무한 RX 스레드는 실행하지 않으며 실제 동시성·스케줄링과 트랙 무수신 timeout은 검증하지 않습니다.
 부분 프레임 timeout은 제어 가능한 모사 시각으로 실제 processor 함수를 검사합니다.
@@ -455,3 +455,12 @@ REQ-TRK-002 / SPEC-TRACK의 거리 경계·각도 안팎·AND·wrap 및 설정�
 측정 무수신 timeout, STATUS 요청/응답 경로 단절, 재부팅 없는 정상 왕복·추적 복귀를 확인했다.
 수동 분리 시각에 대한 정밀 지연, USB 제거·전원 재인가·오배선·부하 시험은 포함하지 않았다.
 [결과와 원시 로그](hardware-test-2026-11-14-link-loss.md).
+
+## UART overflow 통계 API 회귀
+
+[새 통계 테스트 세 가지](../fcc_app/tests/test_uart_rx/README.md#uart-overflow-통계)를
+DRAIN/DISCARD 양쪽에서 실행하여 RX host 총 45개 통과.
+Python 136개 + subtest 9개와 기본 펌웨어 빌드도 통과했다.
+103회는 현재 전체 C 사례 구성 수이며 이번에는 RX suite만 재실행했다.
+STATUS_REPORT 규격은 기존 16바이트를 유지하며 새 카운터 전송은 미연결이다.
+이번 변경의 flash·실보드 시험은 수행하지 않았다.

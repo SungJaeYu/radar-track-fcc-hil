@@ -66,6 +66,9 @@ static void reset_test(void)
 {
     irq_locked = 0;
     atomic_set(&rx_overflow, 0);
+    atomic_set(&ring_overflow_events, 0);
+    atomic_set(&rx_dropped_bytes, 0);
+    atomic_set(&recovery_discarded_bytes, 0);
     submitted = 0;
     submit_attempts = 0;
     submit_result = 0;
@@ -115,6 +118,11 @@ static void test_preserves_partial_parser_and_drops_new_input(void)
     inject_during_submit = true;
     rx_recover_overflow();
     assert(submitted == 1 && !inject_during_submit);
+    struct uart_rx_stats stats;
+    uart_rx_get_stats(&stats);
+    assert(stats.ring_overflow_events == 1);
+    assert(stats.rx_dropped_bytes == 1 + sizeof(init_frame));
+    assert(stats.recovery_discarded_bytes == 0);
     assert(last_frame.frame.type == FRAME_TYPE_MEAS_REPORT &&
            last_frame.frame.payload_length == 10);
     assert(memcmp(last_frame.frame.payload, radar_frame + 3, 10) == 0);
@@ -477,7 +485,89 @@ static void test_discard_drops_completable_partial_frame(void)
 }
 #endif
 
+// Assert the public copy API without relying on the private counter representation.
+static void assert_uart_stats(uint32_t events, uint32_t dropped, uint32_t discarded)
+{
+    struct uart_rx_stats stats;
+    memset(&stats, 0xff, sizeof(stats));
+    uart_rx_get_stats(&stats);
+    assert(stats.ring_overflow_events == events);
+    assert(stats.rx_dropped_bytes == dropped);
+    assert(stats.recovery_discarded_bytes == discarded);
+}
+
+static void test_uart_stats_normal_receive(void)
+{
+    reset_test();
+    assert_uart_stats(0, 0, 0);
+    receive(init_frame, sizeof(init_frame));
+    uint8_t byte;
+    while (ring_pop(&rx_ring, &byte)) {
+        rx_frame_processor_feed(byte);
+    }
+    assert(submitted == 1);
+    assert_uart_stats(0, 0, 0);
+}
+
+static void test_uart_stats_overflow_and_recovery(void)
+{
+    reset_test();
+    receive_overflow(init_frame, sizeof(init_frame), 0);
+    assert_uart_stats(1, 1, 0);
+    // Further ISR drops belong to the same episode, not new overflow events.
+    const uint8_t extra[] = {1, 2, 3, 4};
+    receive(extra, sizeof(extra));
+    assert_uart_stats(1, 5, 0);
+    rx_recover_overflow();
+    assert_recovered();
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DISCARD)
+    const uint32_t discarded = RX_CAPACITY;
+#else
+    const uint32_t discarded = 0;
+#endif
+    assert_uart_stats(1, 5, discarded);
+    // Reading stats and resetting parser state must preserve cumulative counts.
+    assert_uart_stats(1, 5, discarded);
+    rx_frame_processor_reset();
+    assert_uart_stats(1, 5, discarded);
+    receive_overflow(init_frame, sizeof(init_frame), 0);
+    rx_recover_overflow();
+    assert_uart_stats(2, 6, 2 * discarded);
+}
+
+static void test_uart_stats_wrapped_ring_recovery(void)
+{
+    reset_test();
+    // Advance both indices, then leave six unread bytes straddling the array end.
+    for (unsigned i = 0; i < RING_BUFFER_SIZE - 3U; ++i) {
+        uint8_t byte;
+        assert(ring_push(&rx_ring, 0));
+        assert(ring_pop(&rx_ring, &byte));
+    }
+    receive(init_frame, sizeof(init_frame));
+    // Model recovery entry independently of the ISR overflow-count tests.
+    atomic_set(&rx_overflow, 1);
+    rx_recover_overflow();
+#if defined(CONFIG_RADAR_RX_OVERFLOW_DISCARD)
+    assert_uart_stats(0, 0, sizeof(init_frame));
+#else
+    assert_uart_stats(0, 0, 0);
+    assert(submitted == 1);
+#endif
+    assert_recovered();
+    struct uart_rx_stats before;
+    uart_rx_get_stats(&before);
+    atomic_set(&rx_overflow, 1);
+    rx_recover_overflow();
+    // Empty recovery must neither add bytes nor clear earlier counters.
+    assert_uart_stats(before.ring_overflow_events, before.rx_dropped_bytes,
+                      before.recovery_discarded_bytes);
+}
+
 static const struct test_case cases[] = {
+    TEST_CASE(test_uart_stats_normal_receive),
+    TEST_CASE(test_uart_stats_overflow_and_recovery),
+    TEST_CASE(test_uart_stats_wrapped_ring_recovery),
 #if defined(CONFIG_RADAR_RX_OVERFLOW_DISCARD)
     TEST_CASE(test_discard_drops_complete_frame_and_recovers),
     TEST_CASE(test_discard_drops_completable_partial_frame),

@@ -106,3 +106,17 @@ Host CMake cache variable `RADAR_FRAME_RX_TIMEOUT_MS` defaults to 1000 ms and su
 `CONFIG_RADAR_FRAME_RX_TIMEOUT_MS` to the tested source. Use a separate build directory
 and add `-DRADAR_FRAME_RX_TIMEOUT_MS=1375` to the configure command to test a non-default value.
 Host configuration is independent of Zephyr prj.conf.
+
+## UART overflow 통계
+
+`uart_rx_get_stats()`의 세 누적 카운터를 실제 ISR·복구 코드로 검증합니다.
+DRAIN 24개·DISCARD 21개, CTest 총 45개입니다. 새 공통 사례는 두 정책에서 각각 실행합니다.
+
+- `test_uart_stats_normal_receive`: 조회 결과가 0으로 채워지고 정상 수신에서는 증가하지 않음.
+- `test_uart_stats_overflow_and_recovery`: 첫 손실 1바이트·overflow 1회, 복구 중 추가 4바이트,
+  정책별 저장 바이트 폐기량, 반복 조회·parser reset 후 보존, 두 번째 overflow 누적.
+- `test_uart_stats_wrapped_ring_recovery`: 순환한 head/tail의 미소비 바이트 수와 빈 복구의 누적값 보존.
+- 기존 `test_preserves_partial_parser_and_drops_new_input`에서도 drain 중 ISR 주입 바이트의 집계를 확인합니다.
+
+host 모사는 실제 atomic 동시성·IRQ 타이밍을 재현하지 않습니다.
+새 통계의 STATUS_REPORT 전송과 강제 overflow 실보드 시험은 아직 포함하지 않습니다.

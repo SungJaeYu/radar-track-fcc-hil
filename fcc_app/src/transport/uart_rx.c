@@ -5,6 +5,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/kernel.h>
+#include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/printk.h>
 
@@ -26,6 +27,15 @@ static struct ring_buffer rx_ring;
 
 // 1 means bytes were lost: the ISR drops new input until the RX thread finishes recovery.
 static atomic_t rx_overflow = ATOMIC_INIT(0);
+// Bytes read from the UART FIFO but not stored because the ring is full
+// or overflow recovery is active. Excludes buffered data discarded during
+// recovery and bytes lost by the UART hardware.
+static atomic_t rx_dropped_bytes = ATOMIC_INIT(0);
+// Number of transitions into overflow recovery after a failed ring push.
+static atomic_t ring_overflow_events = ATOMIC_INIT(0);
+// Buffered bytes discarded by the overflow recovery.
+// Excludes bytes dropped by the ISR and partial data already consumed by the parser.
+static atomic_t recovery_discarded_bytes = ATOMIC_INIT(0);
 
 // Notify the RX thread of buffered data or overflow; actual bytes remain in rx_ring.
 K_SEM_DEFINE(rx_sem, 0, 1);
@@ -73,6 +83,18 @@ int uart_rx_init(void)
     return 0;
 }
 
+void uart_rx_get_stats(struct uart_rx_stats *out_stats)
+{
+    __ASSERT(out_stats != NULL, "Output stats pointer is NULL");
+
+    out_stats->ring_overflow_events =
+        (uint32_t)atomic_get(&ring_overflow_events);
+    out_stats->rx_dropped_bytes =
+        (uint32_t)atomic_get(&rx_dropped_bytes);
+    out_stats->recovery_discarded_bytes =
+        (uint32_t)atomic_get(&recovery_discarded_bytes);
+}
+
 static void uart_callback(const struct device *p_dev, void *p_user_data)
 {
     ARG_UNUSED(p_user_data);
@@ -90,10 +112,13 @@ static void uart_callback(const struct device *p_dev, void *p_user_data)
                 // Keep draining the hardware FIFO during recovery, but discard new bytes.
                 // Drain recovery requires the buffer to contain only bytes received before the first loss.
                 if (atomic_get(&rx_overflow) != 0) {
+                    atomic_inc(&rx_dropped_bytes);
                     continue;
                 }
 
                 if (!ring_push(&rx_ring, c)) {
+                    atomic_inc(&ring_overflow_events);
+                    atomic_inc(&rx_dropped_bytes);
                     // Drop the byte that could not be stored and mark recovery as required.
                     atomic_set(&rx_overflow, 1);
                 }
@@ -194,6 +219,11 @@ static void rx_finish_recovery(void)
 {
     // Protect only the short recovery cleanup; do not log or run tracking here.
     const unsigned int key = irq_lock();
+
+    // Count unread bytes before clearing the ring.
+    // Drain recovery normally leaves no unread bytes.
+    const uint32_t discarded_bytes = (rx_ring.head + RING_BUFFER_SIZE - rx_ring.tail) % RING_BUFFER_SIZE;
+    atomic_add(&recovery_discarded_bytes, discarded_bytes);
 
     // Clear the software buffer and partial frame, then resume searching for PROTOCOL_STX.
     // This does not flush the hardware FIFO or guarantee alignment with the next frame.

@@ -70,6 +70,14 @@ static int atomic_inc(atomic_t *p_value)
     return (*p_value)++;
 }
 
+// Match the previous-value return contract; no concurrent access is simulated.
+static int atomic_add(atomic_t *p_value, int amount)
+{
+    const int previous = *p_value;
+    *p_value += amount;
+    return previous;
+}
+
 static void atomic_set(atomic_t *p_value, int value)
 {
     *p_value = value;

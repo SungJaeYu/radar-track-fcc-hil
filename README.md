@@ -199,7 +199,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] 부분 프레임 timeout 구현·host 검증: 바이트 처리 중단 시 parser 초기화·1회 집계·다음 정상 프레임 복구
     - [x] 실제 보드 부분 송신 중단 후 timeout 집계·정상 STATUS 복귀
   - [x] RX 진단 카운터: CRC·길이·부분 프레임 timeout·큐 드롭, atomic 읽기·누적값 보존
-  - [ ] 링버퍼 overflow 횟수·손실 바이트 통계
+  - [x] 링버퍼 overflow 횟수·ISR 폐기 바이트·복구 시 미소비 바이트 폐기 통계와 조회 API, 정책별 host 검증
+  - [ ] 새 UART 통계의 STATUS_REPORT·PC CLI·GUI 연결
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [ ] 큐 포화·지연 정책: INIT/RESET 유실, reset 전 대기 측정과 오래된 측정의 처리 기준
   - [x] overflow 정책 Kconfig 분리: DRAIN·DISCARD host 검증 및 두 펌웨어 실보드 UART 회귀
