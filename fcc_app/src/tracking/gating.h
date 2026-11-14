@@ -4,8 +4,10 @@
 #include <stdbool.h>
 
 // Compare measurement and prediction in meters and radians.
-// Return true only if both errors are within the fixed gates, including boundaries.
-// The current gates are 100 m and 10 degrees; angular error is wrapped.
+// Require finite inputs and a finite angular subtraction result.
+// Return true only if both absolute errors are within the configured half-widths.
+// CONFIG_RADAR_RANGE_GATE_M is meters; CONFIG_RADAR_AZIMUTH_GATE_DEG is whole degrees.
+// Defaults are +/-100 m and +/-10 degrees. Boundaries are inclusive; angles are wrapped.
 // This function does not update filters or track state.
 bool gating_check(
     float measured_range_m,

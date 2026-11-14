@@ -75,3 +75,12 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 비정상 s는 일반 if로 보정을 생략하며, 내부 유한성 assert는 디버그에서 활성화합니다.
 [최신 보드 시험](docs/hardware-test-2026-11-14-fmodf.md).
 다음 작업은 deferred logging·로그 레벨·버퍼 포화 정책 정리이며 아직 미구현입니다.
+
+## 게이트 설정 및 공통 각도 상수
+
+`CONFIG_RADAR_RANGE_GATE_M`(기본 100, 범위 1–65535 m),
+`CONFIG_RADAR_AZIMUTH_GATE_DEG`(기본 10, 범위 1–180 정수 degree)는
+`fcc_app/Kconfig`에서 정의하고 `prj.conf`에서 선택합니다. 두 inclusive half-width를 모두 검사합니다.
+π는 `common/math_constants.h`에서 공유하며 설정값이 아닙니다.
+기존 Tracking 17개에 host 설정 조합 20개가 추가되었습니다.
+주석 보완 및 파일별 점검 결과는 [주석 점검표](docs/comment-audit.md)에 기록했습니다.

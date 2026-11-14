@@ -170,7 +170,7 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
         printk("predicted range: %.2f\n", (double)predicted_range_m);
         printk("predicted azimuth: %.2f\n", (double)predicted_azimuth_rad);
 
-        // Gating
+        // Compare with the prediction using both configured inclusive gates.
         const bool is_in_gate = gating_check(
             p_measurement->range_m,
             predicted_range_m,
@@ -178,7 +178,8 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
             predicted_azimuth_rad
         );
 
-        // Correction
+        // Only accepted measurements correct the filters. A gate miss retains
+        // the prediction and advances track-loss policy, not RX error statistics.
         if (is_in_gate) {
             track_hit(p_track, p_measurement->range_m, p_measurement->azimuth_rad);
             printk("Measurement accepted\n");

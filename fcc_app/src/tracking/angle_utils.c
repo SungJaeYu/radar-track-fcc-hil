@@ -4,7 +4,7 @@
 
 #include <zephyr/sys/__assert.h>
 
-#define PI_F 3.14159265358979323846f
+#include "common/math_constants.h"
 
 float wrap_angle_rad(float angle_rad)
 {
@@ -12,13 +12,13 @@ float wrap_angle_rad(float angle_rad)
 
     // Remove complete turns without a subtraction loop that scales with input magnitude.
     // fmodf preserves the dividend's sign and leaves a remainder in (-2*pi, 2*pi).
-    float wrapped = fmodf(angle_rad, 2.0f * PI_F);
+    float wrapped = fmodf(angle_rad, 2.0f * MATH_PI_F);
 
     // Preserve the wire-independent internal convention (-pi, pi], including -pi -> +pi.
-    if (wrapped > PI_F) {
-        wrapped -= 2.0f * PI_F;
-    } else if (wrapped <= -PI_F) {
-        wrapped += 2.0f * PI_F;
+    if (wrapped > MATH_PI_F) {
+        wrapped -= 2.0f * MATH_PI_F;
+    } else if (wrapped <= -MATH_PI_F) {
+        wrapped += 2.0f * MATH_PI_F;
     }
 
     return wrapped;

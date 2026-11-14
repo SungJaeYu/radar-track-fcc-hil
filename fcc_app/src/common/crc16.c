@@ -2,6 +2,7 @@
 
 uint16_t crc16_update(uint16_t crc, const uint8_t byte)
 {
+    // Feed the next byte MSB-first using the non-reflected 0x1021 polynomial.
     crc ^= (uint16_t)byte << 8;
 
     for (int i = 0; i < 8; ++i) {

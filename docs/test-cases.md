@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 136개 + subtest 9개, C host 77회 실행(RX drain 21·discard 18·handler 17·TX 4·Tracking 17)입니다.
+현재 합계는 Python 136개 + subtest 9개, C host 97회 실행(RX drain 21·discard 18·handler 17·TX 4·Tracking 17·게이팅 설정 20)입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -21,13 +21,14 @@
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 9 | offscreen Qt, serial 모사 |
 | CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 28 | Python + 실제 C 파서 host 컴파일 |
 | 내부 assert | `tests/test_firmware_assertions.py` | 6 | 실제 C host 자식 프로세스의 SIGABRT·메시지 검증 |
+| 게이팅 설정 행렬 | `fcc_app/tests/test_kalman/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 17 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS 처리 | `fcc_app/tests/test_frame_handler` | 17 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 39 (drain 21 + discard 18) | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **136개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
-Tracking C는 CTest에 `tracking` 하나로 등록되어 그 안에서 17개 함수를 실행합니다.
+Tracking C는 CTest의 `tracking`에서 17개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
 UART C는 정책별 실행을 CTest에 따로 등록하므로 39개로 표시됩니다. 공통 사례 16개는 두 번 실행합니다.
 `pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
@@ -428,3 +429,15 @@ NDEBUG 정의 상태에서도 host 어댑터가 검사를 유지하는지 검증
 
 후속 플래시·실보드 시험 완료: 일반·디버그 각각 UART 16개·각도 경계 6개 조건 통과.
 [결과와 원시 로그](hardware-test-2026-11-14-fmodf.md). 이전 문단의 미실시 상태를 대체합니다.
+
+## 2026-11-14 게이트 설정 회귀
+
+요구사항 REQ-TRK-002 / SPEC-TRACK. 실제 `gating.c`를 설정별로 따로 컴파일합니다.
+설정 조합과 네 가지 사례의 상세 내용은 [Tracking 테스트 안내](../fcc_app/tests/test_kalman/README.md#게이트-설정-행렬)를 참고합니다.
+최소·좁은 값·기본값·넓은 값·최대값에서 부호 양쪽 경계 포함/초과, 두 게이트 AND,
+±π 경계 통과/거부 및 180° 특례를 검증합니다. 모든 가능한 정수 조합을 전수 검사한 것은 아닙니다.
+C host 97회, Python 136개 + subtest 9개 통과. 이번 설정 변경은 flash/보드 검증하지 않았습니다.
+
+펌웨어 기본값(100 m/10°) 및 별도 override(250 m/30°) 빌드 성공과 생성된 `.config`를 확인했다.
+기존 보드 devicetree 중복 unit-address 경고는 유지된다. 새 빌드의 Zephyr 버전 메타데이터
+조회에서는 시스템 git의 Xcode 라이선스 경고가 있었지만 컴파일/링크는 성공했다.

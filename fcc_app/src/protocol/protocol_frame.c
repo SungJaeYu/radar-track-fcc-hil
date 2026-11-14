@@ -16,6 +16,7 @@ bool protocol_frame_is_valid(const struct protocol_frame *p_frame)
 
 uint16_t protocol_frame_crc(const struct protocol_frame *p_frame)
 {
+    // Protect LEN, TYPE, and payload; STX and the trailing CRC are excluded.
     uint16_t crc = CRC16_INITIAL_VALUE;
 
     crc = crc16_update(crc, p_frame->payload_length);

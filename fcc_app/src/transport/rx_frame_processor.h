@@ -12,8 +12,9 @@ void rx_frame_processor_reset(void);
 // Measurement semantics are validated later by the handler. A full queue drops the frame.
 void rx_frame_processor_feed(uint8_t byte);
 
-// Use board uptime in ms. Discard a partial frame after >= 1000 ms since the last
-// byte was processed here (not its hardware arrival). Idle PARSER_STATE_WAIT_STX is not monitored.
+// Use board uptime in ms. Discard a partial frame after CONFIG_RADAR_FRAME_RX_TIMEOUT_MS
+// (default 1000 ms) since the last byte was processed here, not its hardware arrival.
+// Idle PARSER_STATE_WAIT_STX is not monitored.
 void rx_frame_processor_check_timeout(int64_t now_ms);
 
 struct rx_frame_stats {

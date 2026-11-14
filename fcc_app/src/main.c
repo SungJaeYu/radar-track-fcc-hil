@@ -6,7 +6,7 @@
 
 int main(void)
 {
-    // Boot Signal
+    // Console diagnostics are separate from USART6 protocol frames.
     printk("=== FCC learning-rebuild boot ===\n");
 
     // Prepare the transmit path before enabling reception.
@@ -23,6 +23,7 @@ int main(void)
         return ret;
     }
 
+    // This heartbeat may interleave with other printk calls; deferred logging is planned.
     while (1) {
         printk("main alive\n");
         k_sleep(K_SECONDS(1));

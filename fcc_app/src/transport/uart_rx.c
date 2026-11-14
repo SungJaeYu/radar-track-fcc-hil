@@ -19,7 +19,7 @@
 #error "Select an RX overflow recovery policy"
 #endif
 
-// Set UART device
+// USART6 carries protocol traffic; the board console uses a separate UART.
 static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 
 static struct ring_buffer rx_ring;
@@ -47,7 +47,6 @@ int uart_rx_init(void)
 {
     // Check UART device is ready
     if (!device_is_ready(p_uart)) {
-        // Error Handling
         printk("USART6 is not ready\n");
         return -ENODEV;
     }
@@ -55,14 +54,13 @@ int uart_rx_init(void)
     // Set Callback Function
     const int ret = uart_irq_callback_user_data_set(p_uart, uart_callback, NULL);
     if (ret != 0) {
-        // error
         printk("Failed to set UART callback\n");
         return ret;
     }
 
     ring_init(&rx_ring);
 
-    // init Parser
+    // Initialize partial-frame state before enabling the ISR.
     rx_frame_processor_reset();
 
     // Enable RX Interrupt
@@ -77,7 +75,6 @@ int uart_rx_init(void)
 
 static void uart_callback(const struct device *p_dev, void *p_user_data)
 {
-    // Avoid Warning
     ARG_UNUSED(p_user_data);
 
     // Refresh interrupt status before querying pending/ready flags.

@@ -2,14 +2,13 @@
 
 #include <stddef.h>
 
+#include "common/math_constants.h"
 #include "protocol/protocol_frame.h"
 
 #define RADAR_MEAS_PAYLOAD_LENGTH 10U
 
 _Static_assert(RADAR_MEAS_PAYLOAD_LENGTH <= PROTOCOL_MAX_PAYLOAD, "Radar measurement exceeds payload capacity");
 
-
-#define PI_F 3.14159265358979323846f
 #define SEMICIRCLE_SCALE 2147483648.0f
 
 bool decode_radar_measurement(
@@ -49,7 +48,7 @@ bool decode_radar_measurement(
     // Signed semicircle units use 2^31 units per pi radians.
     out_measurement->azimuth_rad =
         (float)azimuth_sc *
-        (PI_F / SEMICIRCLE_SCALE);
+        (MATH_PI_F / SEMICIRCLE_SCALE);
 
     return true;
 }
@@ -61,8 +60,8 @@ bool validate_radar_measurement(
         return false;
     }
 
-    if (p_measurement->azimuth_rad < -PI_F ||
-        p_measurement->azimuth_rad > PI_F) {
+    if (p_measurement->azimuth_rad < -MATH_PI_F ||
+        p_measurement->azimuth_rad > MATH_PI_F) {
         return false;
     }
 

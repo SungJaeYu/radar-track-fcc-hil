@@ -54,3 +54,33 @@ Zephyr native_sim 또는 STM32 보드 실행 결과는 별도로 구분해야 �
 
 CTest에 10초 제한을 두어 반복문으로 되돌아갈 때 무한 대기를 검출합니다.
 NaN·±Inf 각도 입력의 assert 실패는 `tests/test_firmware_assertions.py`에서 자식 프로세스로 검증합니다.
+
+## 게이트 설정 행렬
+
+host 모드는 기존 `track_tests` 17개와 아래 20개를 실행합니다. CTest 등록 항목은 총 21개입니다.
+`gating_cases.c`가 실제 `gating.c`·`angle_utils.c`를 설정별 실행 파일로 빌드합니다.
+Zephyr Ztest는 기존 17개를 기본 설정으로 실행하며 host 전용 행렬은 포함하지 않습니다.
+
+| 실행 파일 | 거리 half-width (m) | 각도 half-width (°) |
+|---|---:|---:|
+| `gating_minimum` | 1 | 1 |
+| `gating_narrow` | 50 | 5 |
+| `gating_default` | 100 | 10 |
+| `gating_wide` | 250 | 30 |
+| `gating_maximum` | 65535 | 180 |
+
+각 설정은 다음 네 사례를 실행합니다. 요구사항은 REQ-TRK-002 / SPEC-TRACK입니다.
+
+| 함수 | 검증 |
+|---|---|
+| `range_boundary` | 양·음 경계 및 내부 허용, 경계 밖 거부 |
+| `angle_boundary` | 양·음 경계와 인접 float, 180° 바깥 값의 wrap 후 허용 |
+| `both_required` | 두 조건 모두 충족해야 통과, 한쪽/양쪽 초과 거부 |
+| `wrapped_error` | ±π 횡단의 최단 각도 차이, 두 끝점 동일 방향, wrap 이후에도 한계 밖이면 거부 |
+
+`ctest --test-dir build_tracking -R gating_ --output-on-failure`로 행렬만 실행할 수 있습니다.
+180°에서는 각도 초과 거부 사례가 성립하지 않아 해당 분기를 제외하고 거리 거부를 확인합니다.
+최대 거리 설정 시험은 게이트 함수의 합성 float 입력이며 uint16 wire 측정 범위 검사가 아닙니다.
+테스트 π 리터럴은 생산 상수와 독립적으로 유지합니다.
+
+2026-11-14: STM32용 Zephyr Ztest 앱도 빌드 성공했으며 기본 gate 설정이 생성된 `.config`에 반영됨을 확인했습니다. 이 앱의 보드 실행은 하지 않았습니다.

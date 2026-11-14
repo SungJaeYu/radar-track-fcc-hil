@@ -11,6 +11,7 @@ static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 
 static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3);
 
+// One-time startup barrier: queued requests must wait for successful UART init.
 K_SEM_DEFINE(tx_ready_sem, 0, 1);
 
 // The queue stores complete request copies; the TX thread alone emits their bytes.
@@ -22,7 +23,6 @@ int uart_tx_init(void)
 {
     // Check UART device is ready
     if (!device_is_ready(p_uart)) {
-        // Error Handling
         printk("USART6 is not ready\n");
         return -ENODEV;
     }

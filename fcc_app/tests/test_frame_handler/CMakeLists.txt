@@ -12,7 +12,8 @@ add_executable(frame_handler_tests src/main.c
     ../../src/protocol/status_message.c ../../src/protocol/frame_parser.c)
 target_include_directories(frame_handler_tests PRIVATE include ../common/include ../../src)
 target_compile_definitions(frame_handler_tests PRIVATE
-    CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS=${RADAR_MEASUREMENT_TIMEOUT_MS})
+    CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS=${RADAR_MEASUREMENT_TIMEOUT_MS}
+    CONFIG_RADAR_RANGE_GATE_M=100 CONFIG_RADAR_AZIMUTH_GATE_DEG=10)
 target_compile_features(frame_handler_tests PRIVATE c_std_11)
 target_compile_options(frame_handler_tests PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 target_link_libraries(frame_handler_tests PRIVATE m)

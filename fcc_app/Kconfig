@@ -43,4 +43,24 @@ config RADAR_MEASUREMENT_TIMEOUT_MS
         is received within this interval. Monitoring starts only
         after the first valid measurement.
 
+# Rectangular measurement gates: maximum absolute errors, not full window widths.
+config RADAR_RANGE_GATE_M
+    int "Range gate half-width (m)"
+    range 1 65535
+    default 100
+    help
+        Accept a measurement only when its absolute range error is at most
+        this value in meters. The angular gate must also pass.
+        This is a fixed threshold, not a covariance-based gate.
+
+config RADAR_AZIMUTH_GATE_DEG
+    int "Azimuth gate half-width (degrees)"
+    range 1 180
+    default 10
+    help
+        Maximum absolute wrapped angular error, including the boundary.
+        Configuration uses whole degrees; calculations use radians.
+        At 180 degrees every finite normalized angular error passes,
+        but the range gate still applies.
+
 endmenu

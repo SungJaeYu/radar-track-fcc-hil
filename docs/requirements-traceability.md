@@ -7,7 +7,7 @@
 ## 현재 기준 요약
 
 기능 기준: handler 보강 `658f2e6`, GUI STATUS `ed1f0bf`.
-Python 136개 + subtest 9개, Tracking 17개·handler 17개 통과. RX drain 21·discard 18·TX 4도 재검증 완료했다.
+Python 136개 + subtest 9개, Tracking 17개·게이트 설정 20개·handler 17개 통과. RX drain 21·discard 18·TX 4도 재검증 완료했다.
 PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료. 실보드 기본 왕복도 `2aa57d9`에서 확인했다.
 아래 단계별 구현 기록은 당시 상태이며 현재 판단은 이 요약과 요구사항 기준표를 우선한다.
 
@@ -47,7 +47,7 @@ PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료
 | REQ-RX-005 | 초기화 실패는 errno를 전달하고 RX 활성화·준비 신호를 내지 않아야 한다. | [SPEC-EXEC](#spec-exec) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_init` | [test_uart_rx](#tests-test_uart_rx) | 구현; 장치 미준비·callback 실패·성공 host 검증 |
 | REQ-MEA-001 | 10바이트 측정을 해석하고 거리 0을 거부하며 방위각을 rad로 변환해야 한다. | [SPEC-MEAS](#spec-meas) | [radar_message.c](../fcc_app/src/protocol/radar_message.c) · `decode_radar_measurement / validate_radar_measurement` | [test_kalman](#tests-test_kalman) / [Python](#tests-python)  [test_frame_handler](#tests-test_frame_handler) | 구현; 변환·길이·거리 검증. handler의 잘못된 길이·거리 0에 대한 감시 영향 host 검증 완료 |
 | REQ-TRK-001 | 거리와 방위각을 CV 칼만 필터로 예측·보정하고 각도 오차의 순환을 처리해야 한다. | [SPEC-TRACK](#spec-track) | [kalman_cv.c](../fcc_app/src/tracking/kalman_cv.c) · `kalman_cv_predict / kalman_cv_correct_angle` | [test_kalman](#tests-test_kalman) | 구현; 수치·공분산·수렴 host 검증. 실측 정확도 목표 미정 |
-| REQ-TRK-002 | 거리·방위각 게이트를 모두 만족하는 측정만 보정에 사용해야 한다. | [SPEC-TRACK](#spec-track) | [gating.c](../fcc_app/src/tracking/gating.c) · `gating_check` | [test_kalman](#tests-test_kalman)  [test_frame_handler](#tests-test_frame_handler) | 구현; 게이트 함수 경계 검증. handler의 gate 거부·COASTING·수신 시각 갱신 host 검증 완료 |
+| REQ-TRK-002 | 거리·방위각 게이트를 모두 만족하는 측정만 보정에 사용해야 한다. | [SPEC-TRACK](#spec-track) | [gating.c](../fcc_app/src/tracking/gating.c) · `gating_check` | [test_kalman](#tests-test_kalman)  [test_frame_handler](#tests-test_frame_handler) | 구현; 기본/최소/좁은/넓은/최대 설정 20개 경계·AND·wrap 검증. handler의 gate 거부·COASTING·수신 시각 갱신 host 검증 완료 |
 | REQ-TRK-003 | 중복·역행 시각을 거부하고 정상 wraparound를 허용하며 1000ms 초과 예측 간격은 트랙을 지워야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_predict` | [test_kalman](#tests-test_kalman) | 구현; timestamp 경계·복귀 host 검증 |
 | REQ-TRK-004 | hit/miss에 따라 트랙을 생성·확인·coasting·lost 처리하고 재시작해야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_start / track_hit / track_miss` | [test_kalman](#tests-test_kalman) | 구현; 상태 전이 host 검증 |
 | REQ-CTL-001 | INIT/RESET은 트랙과 측정 timeout 감시를 초기화하되 RX 누적 통계는 보존해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_frame / frame_handler_reset` | [Python](#tests-python)  [test_frame_handler](#tests-test_frame_handler) | 구현; 명령 경유 초기화·모사 통계 응답 보존 host 검증. 실제 RX 카운터 통합 시험은 남음 |
@@ -145,7 +145,8 @@ INIT/RESET은 트랙과 감시를 지우고 RX 통계는 지우지 않는다. ST
 - 거리와 방위각에 각각 상태 `[값, 변화율]`의 CV 필터를 사용한다.
   `dt = delta_ms / 1000`; 각도 보정은 wrap된 최소 각도 차이를 사용한다.
   Q/R 초기 튜닝값은 [track.c](../fcc_app/src/tracking/track.c)의 단위 주석을 기준으로 하며 센서 교정값으로 간주하지 않는다.
-- 게이트는 `|거리 오차| <=100m` 그리고 `|wrap 각도 오차| <=10°`인 직사각형 게이트다.
+- 게이트는 `|거리 오차| <= CONFIG_RADAR_RANGE_GATE_M` 그리고 `|wrap 각도 오차| <= CONFIG_RADAR_AZIMUTH_GATE_DEG × π / 180`인 직사각형 게이트다. 기본값은 100 m·10°이고 경계를 포함한다.
+- Kconfig 허용 범위는 1–65535 m·정수 1–180°다. 180°는 모든 정규화 각도 오차를 허용한다. 설정별 검증은 `gating_cases.c`의 `range_boundary`, `angle_boundary`, `both_required`, `wrapped_error`를 5개 조합에서 실행한다.
 - EMPTY에서 측정으로 TENTATIVE 생성, hit_count=1. 총 3 hit에서 CONFIRMED.
   TENTATIVE miss는 EMPTY. CONFIRMED miss는 COASTING, 누적 5 miss에서 LOST.
   COASTING에서 hit는 CONFIRMED로 복귀하고 miss_count를 지운다.

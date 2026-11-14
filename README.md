@@ -222,6 +222,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 - [x] 10바이트 측정 해석·유효성 검사, semicircle→rad 변환
 - [x] 거리·방위각 CV 칼만 필터, 예측·게이팅·보정, 시간 간격 검사
+  - [x] 게이트 Kconfig 설정 및 5개 설정 조합 × 4개 경계/조합 테스트
 - [x] 트랙 생성·확인·coasting·lost 및 재시작 처리
 - [x] 첫 정상 측정 이후 무수신 timeout, INIT/RESET과 수신 시각 기반 감시
 
@@ -292,7 +293,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 `처리 스레드 → 응답 복사 큐 → TX 스레드`까지 STATUS 응답 경로를 구현했습니다.
 지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
 PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회도 구현했습니다. 실제 STATUS CLI·GUI 송수신도 확인했습니다.
-overflow 정책과 두 timeout의 Kconfig 분리 및 host 검증은 완료했습니다.
+overflow 정책·두 timeout·거리/방위각 게이트의 Kconfig 분리 및 host 검증은 완료했습니다.
 다음은 로깅 시스템 정리입니다. 이후 추적 결과 송신 규격을 확정하고 보드 추정값을 PC에서 확인합니다.
 강제 링 overflow·UART 오류·TX 부하는 남아 있습니다.
 
@@ -303,7 +304,9 @@ INIT/RESET 통계 보존, 추적 중 조회·무수신 timeout 확인 완료.
 [실보드 결과와 원시 로그](docs/hardware-test-2026-11-12-status.md).
 
 최신 host: Python **136개 + subtest 9개**, Tracking **17개**·handler **17개** 통과.
-RX drain 21·discard 18·TX 4를 합한 현재 C 사례 수는 77회 실행입니다.
+RX drain 21·discard 18·TX 4·게이팅 설정 20개를 합한 현재 C 사례 수는 97회 실행입니다.
+게이팅 기본값(100 m/10°)과 변경값(250 m/30°) 펌웨어 빌드도 통과했습니다.
+이번 변경의 실보드 시험은 하지 않았습니다.
 일반·디버그 펌웨어 빌드와 보드 UART 회귀 및 ±179° 경계 왕복은
 [2026-11-14 fmodf 실보드 결과](docs/hardware-test-2026-11-14-fmodf.md)를 참고합니다.
 GUI 실보드 검증은 11월 12일 결과이며 최신 GUI 자동 검증은 offscreen 모사 시험입니다.
@@ -365,3 +368,20 @@ PC에 USB 2개로 콘솔과 데이터 링크를 분리한다. 서로 간섭 없�
 
 2026-11-14 assert 검증: 공통 host assert 어댑터를 연결하고 내부 전제 위반 3개 사례를 추가했습니다.
 [일반·디버그 실보드 검증](docs/hardware-test-2026-11-14-assert.md)을 참고합니다.
+
+## 게이팅 설정과 주석 점검
+
+`fcc_app/prj.conf`에서 다음 값을 지정합니다. 변경 후 펌웨어를 다시 빌드합니다.
+
+```ini
+CONFIG_RADAR_RANGE_GATE_M=100
+CONFIG_RADAR_AZIMUTH_GATE_DEG=10
+```
+
+값은 전체 창 폭이 아닌 **허용 오차의 절댓값 상한**입니다. 기본값은 ±100 m·±10°이며,
+두 조건을 모두 만족해야 통과합니다. 경계도 포함합니다. 거리 설정은 1–65535 m,
+각도 설정은 정수 1–180°를 허용하고 내부 계산은 radian입니다.
+180°는 정규화된 각도 오차를 모두 허용하지만 거리 검사는 유지합니다.
+공분산 기반 적응형 게이트는 아닙니다. π는 `common/math_constants.h`의 수학 상수입니다.
+
+[설정별 테스트](fcc_app/tests/test_kalman/README.md) · [전체 펌웨어 주석 점검](docs/comment-audit.md).

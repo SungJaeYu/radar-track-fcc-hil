@@ -1,7 +1,9 @@
 #include "tracking/track.h"
 
+// Lifecycle thresholds are independent of the configurable measurement gates.
 #define TRACK_CONFIRM_HITS 3U
 #define TRACK_LOST_MISSES 5U
+// Sensor timestamp gap limit, distinct from the host-clock RX silence timeout.
 #define TRACK_MAX_PREDICT_INTERVAL_MS 1000U
 
 void track_init(struct track *p_track)
