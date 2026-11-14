@@ -15,7 +15,9 @@ struct status_report {
     uint32_t recovery_discarded_bytes;
 };
 
-#define STATUS_REPORT_PAYLOAD_LENGTH 28U
+// Every wire field is a four-byte uint32; update the count when adding counters.
+#define STATUS_REPORT_FIELD_COUNT 7U
+#define STATUS_REPORT_PAYLOAD_LENGTH (STATUS_REPORT_FIELD_COUNT * 4U)
 
 // Encode seven big-endian uint32 counters in the declaration order above.
 // Set STATUS_REPORT type and the 28-byte payload length; no source counters are reset.

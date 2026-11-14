@@ -4,6 +4,10 @@
 
 #include "common/byte_order.h"
 
+// Guard the current all-uint32 layout, not the correctness of field serialization.
+// Revisit this check if field types or structure padding change.
+_Static_assert(sizeof(struct status_report) == STATUS_REPORT_PAYLOAD_LENGTH,
+               "Update STATUS field count or review structure padding");
 _Static_assert(STATUS_REPORT_PAYLOAD_LENGTH <= PROTOCOL_MAX_PAYLOAD, "Status report exceeds payload capacity");
 
 int status_message_encode(const struct status_report *p_stats, struct protocol_frame *out_frame)
