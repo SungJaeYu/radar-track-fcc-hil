@@ -20,7 +20,7 @@ cmake --build /tmp/radar-track-tests
 ctest --test-dir /tmp/radar-track-tests --output-on-failure
 ```
 
-실행 파일 `track_tests`를 직접 실행하면 13개 개별 테스트 이름을 볼 수 있습니다.
+실행 파일 `track_tests`를 직접 실행하면 17개 개별 테스트 이름을 볼 수 있습니다.
 호스트 실행은 Zephyr 스레드, UART, 보드 동작을 검증하지 않습니다.
 링버퍼 크기·overflow drain 복구는 별도의 [UART host 테스트](../test_uart_rx/README.md)에서 검증합니다.
 해당 테스트 역시 실제 보드 IRQ 타이밍이나 하드웨어 수신 성공을 보장하지 않습니다.
@@ -44,3 +44,13 @@ Zephyr native_sim 또는 STM32 보드 실행 결과는 별도로 구분해야 �
 `track_tests test_name`으로 한 사례만 선택할 수 있습니다.
 각 성공은 `PASS: test_name`으로 출력하며 잘못된 이름은 종료 코드 2를 반환합니다.
 실행기는 `../common/test_runner.h`를 공유합니다. 모사 환경과 검증 범위는 각 suite가 유지합니다.
+
+## 각도 정규화·비정상 공분산 회귀
+
+- `test_angle_wrap_boundaries`: 0, ±π, ±2π와 π 양옆의 인접 float.
+- `test_angle_wrap_multiple_turns`: ±10바퀴와 양·음 잔여 각도.
+- `test_angle_wrap_large_finite_values`: ±1e10, ±FLT_MAX의 종료·출력 범위·재정규화 안정성. 큰 입력의 물리적 각도 정확도를 보장하지는 않습니다.
+- `test_correction_rejects_invalid_innovation_covariance`: s=0, 음수, 임계값 이하, NaN, ±Inf에서 선형·각도 보정이 필터를 변경하지 않음.
+
+CTest에 10초 제한을 두어 반복문으로 되돌아갈 때 무한 대기를 검출합니다.
+NaN·±Inf 각도 입력의 assert 실패는 `tests/test_firmware_assertions.py`에서 자식 프로세스로 검증합니다.

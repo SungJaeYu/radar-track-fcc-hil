@@ -1,3 +1,4 @@
+#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -54,6 +55,62 @@ TEST(test_angle_wrap)
     NEAR(wrap_angle_rad(-PI_F), PI_F);
     NEAR(angle_diff_rad(RAD(-179.0f), RAD(179.0f)), RAD(2.0f));
     NEAR(angle_diff_rad(RAD(179.0f), RAD(-179.0f)), RAD(-2.0f));
+}
+
+TEST(test_angle_wrap_boundaries)
+{
+    CHECK(wrap_angle_rad(0.0f) == 0.0f);
+    CHECK(wrap_angle_rad(-0.0f) == 0.0f);
+    CHECK(wrap_angle_rad(PI_F) == PI_F);
+    CHECK(wrap_angle_rad(-PI_F) == PI_F);
+    CHECK(wrap_angle_rad(2.0f * PI_F) == 0.0f);
+    CHECK(wrap_angle_rad(-2.0f * PI_F) == 0.0f);
+
+    // Adjacent representable values exercise the open and closed endpoints.
+    const float inside = nextafterf(PI_F, 0.0f);
+    const float outside = nextafterf(PI_F, INFINITY);
+    CHECK(wrap_angle_rad(inside) == inside);
+    CHECK(wrap_angle_rad(-inside) == -inside);
+    CHECK(wrap_angle_rad(outside) < 0.0f);
+    CHECK(wrap_angle_rad(-outside) > 0.0f);
+}
+
+TEST(test_angle_wrap_multiple_turns)
+{
+    for (int turns = -10; turns <= 10; ++turns) {
+        NEAR(wrap_angle_rad((float)turns * 2.0f * PI_F + 0.25f), 0.25f);
+        NEAR(wrap_angle_rad((float)turns * 2.0f * PI_F - 0.25f), -0.25f);
+    }
+}
+
+TEST(test_angle_wrap_large_finite_values)
+{
+    // Check termination and range, not a physically meaningful angle at this precision.
+    const float values[] = {1e10f, -1e10f, FLT_MAX, -FLT_MAX};
+    for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        const float wrapped = wrap_angle_rad(values[i]);
+        CHECK(isfinite(wrapped));
+        CHECK(wrapped > -PI_F && wrapped <= PI_F);
+        CHECK(wrap_angle_rad(wrapped) == wrapped);
+    }
+}
+
+TEST(test_correction_rejects_invalid_innovation_covariance)
+{
+    const float values[] = {0.0f, -1.0f, 1e-7f, 1e-6f, NAN, INFINITY, -INFINITY};
+    for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        struct kalman_cv_filter filter;
+        kalman_cv_init(&filter, 10, 2, 1, 0, 0, 1, 0, 1);
+        // Inject internal corruption after valid initialization; exercise the release guard.
+        filter.p00 = values[i];
+        filter.measurement_noise = 0.0f;
+        unsigned char before[sizeof(filter)];
+        memcpy(before, &filter, sizeof(filter));
+        kalman_cv_correct(&filter, 12);
+        CHECK(memcmp(before, &filter, sizeof(filter)) == 0);
+        kalman_cv_correct_angle(&filter, 0.1f);
+        CHECK(memcmp(before, &filter, sizeof(filter)) == 0);
+    }
 }
 
 TEST(test_gate)
@@ -249,6 +306,10 @@ TEST(test_lost_restarts_for_any_timestamp)
 #ifdef TRACK_TEST_HOST
 static const struct test_case cases[] = {
     TEST_CASE(test_angle_wrap),
+    TEST_CASE(test_angle_wrap_boundaries),
+    TEST_CASE(test_angle_wrap_multiple_turns),
+    TEST_CASE(test_angle_wrap_large_finite_values),
+    TEST_CASE(test_correction_rejects_invalid_innovation_covariance),
     TEST_CASE(test_gate),
     TEST_CASE(test_cv_prediction_and_covariance),
     TEST_CASE(test_cv_correction),

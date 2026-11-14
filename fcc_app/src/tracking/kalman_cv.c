@@ -14,6 +14,12 @@ static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float valu
 void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float initial_value_rate, float p00, float p01, float p10, float p11, float process_noise, float measurement_noise)
 {
     __ASSERT(p_kf != NULL, "Kalman filter pointer is NULL");
+    __ASSERT(isfinite(initial_value), "Initial value must be finite");
+    __ASSERT(isfinite(initial_value_rate), "Initial value rate must be finite");
+    __ASSERT(isfinite(p00) && p00 >= 0.0f, "p00 value must be finite and nonnegative: %f", (double)p00);
+    __ASSERT(isfinite(p01), "p01 value must be finite");
+    __ASSERT(isfinite(p10), "p10 value must be finite");
+    __ASSERT(isfinite(p11) && p11 >= 0.0f, "p11 value must be finite and nonnegative: %f", (double)p11);
     __ASSERT(
         isfinite(process_noise) && process_noise >= 0.0f,
         "Process noise must be finite and nonnegative: %f", (double)process_noise
@@ -60,6 +66,8 @@ static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s
         isfinite(dt_s) && dt_s >= 0.0f,
         "Prediction interval must be finite and nonnegative: %f s", (double)dt_s
     );
+    __ASSERT(isfinite(p_kf->estimate), "Estimated value must be finite");
+    __ASSERT(isfinite(p_kf->rate), "Estimated rate value must be finite");
 
     // State Prediction
     p_kf->estimate += p_kf->rate * dt_s;
@@ -98,6 +106,9 @@ static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle)
 {
     __ASSERT(p_kf != NULL, "Kalman filter pointer is NULL");
+    __ASSERT(isfinite(p_kf->estimate), "Estimated value must be finite");
+    __ASSERT(isfinite(p_kf->rate), "Estimated rate value must be finite");
+    __ASSERT(isfinite(value_measurement), "Measurement value must be finite");
 
     // Residual
     float residual = value_measurement - p_kf->estimate;
@@ -109,8 +120,9 @@ static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float valu
     // Innovation covariance
     const float s = p_kf->p00 + p_kf->measurement_noise;
 
-    // Avoid division by a near-zero/nonpositive innovation covariance; keep the prior state.
-    if (s <= 1e-6f) {
+    // Skip correction for nonfinite or near-zero/nonpositive innovation covariance.
+    // Preserve the prior filter state; this does not repair an already invalid covariance.
+    if (!isfinite(s) || s <= 1e-6f) {
         return;
     }
 

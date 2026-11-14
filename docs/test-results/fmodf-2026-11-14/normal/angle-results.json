@@ -1,0 +1,45 @@
+{
+  "angles_deg": [
+    179,
+    -179,
+    179,
+    -179,
+    179,
+    -179
+  ],
+  "frames_hex": [
+    "7e0a020000000003e87f49f49f763d",
+    "7e0a020000006403e880b60b618d0f",
+    "7e0a02000000c803e87f49f49f9385",
+    "7e0a020000012c03e880b60b61849d",
+    "7e0a020000019003e87f49f49fad6c",
+    "7e0a02000001f403e880b60b61565e"
+  ],
+  "checks": {
+    "initialized_once": true,
+    "accepted_five": true,
+    "no_gate_rejections": true,
+    "finite_normalized_angles": true,
+    "stats_unchanged": true,
+    "no_assert": true
+  },
+  "printed_angles_rad": [
+    -3.14,
+    3.14,
+    -3.14,
+    3.14,
+    -3.14
+  ],
+  "before": {
+    "crc_errors": 1,
+    "length_errors": 2,
+    "frame_timeouts": 1,
+    "queue_drops": 0
+  },
+  "after": {
+    "crc_errors": 1,
+    "length_errors": 2,
+    "frame_timeouts": 1,
+    "queue_drops": 0
+  }
+}

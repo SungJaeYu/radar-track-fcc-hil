@@ -26,8 +26,12 @@ def assertion_probe(tmp_path_factory):
 #include "common/ring_buffer.h"
 #include "protocol/frame_parser.h"
 #include "tracking/kalman_cv.h"
+#include "tracking/angle_utils.h"
 int main(int argc, char **argv) {
     if (argc != 2) return 2;
+    if (argv[1][0] == 'n') wrap_angle_rad(NAN);
+    if (argv[1][0] == 'i') wrap_angle_rad(INFINITY);
+    if (argv[1][0] == 'm') wrap_angle_rad(-INFINITY);
     if (argv[1][0] == 'r') ring_init(NULL);
     if (argv[1][0] == 'p') {
         struct frame_parser parser;
@@ -60,8 +64,11 @@ int main(int argc, char **argv) {
     ("ring", "Ring buffer pointer is NULL"),
     ("parser", "Invalid parser state: 99"),
     ("kalman", "Process noise must be finite and nonnegative"),
+    ("nan", "Angle value must be finite"),
+    ("infinity", "Angle value must be finite"),
+    ("minus_infinity", "Angle value must be finite"),
 ])
 def test_internal_contract_asserts_even_with_ndebug(assertion_probe, mode, message):
-    result = subprocess.run([str(assertion_probe), mode], capture_output=True, text=True)
+    result = subprocess.run([str(assertion_probe), mode], capture_output=True, text=True, timeout=5)
     assert result.returncode == -signal.SIGABRT
     assert message in result.stderr

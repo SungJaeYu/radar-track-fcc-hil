@@ -169,3 +169,11 @@ INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습
 기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
 [결과와 원시 로그](hardware-test-2026-11-14-kconfig.md).
 강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.
+
+
+## fmodf·수치 보호 검증 (2026-11-14)
+
+각도 정규화는 fmodf와 범위 보정으로 (-π, π]를 유지합니다.
+비정상 s는 일반 if로 보정을 생략하며, 내부 유한성 assert는 디버그에서 활성화합니다.
+[최신 보드 시험](hardware-test-2026-11-14-fmodf.md).
+다음 작업은 deferred logging·로그 레벨·버퍼 포화 정책 정리이며 아직 미구현입니다.

@@ -242,7 +242,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] 시간 제어 host 시험: 부분 프레임 timeout 경계·무수신·다음 정상 프레임·정상 분할 수신
   - [x] 통계 조회·STATUS host 시험: 출력값, 반복 조회, 트랙·측정 timeout 보존
   - [ ] 큐·동시성 시험: 포화 시 제어 순서, 오래된 측정, 실제 동시 조회, TX 실패 후 복귀
-  - [ ] 콘솔 출력 직렬화: heartbeat와 측정 로그의 중간 삽입 방지; 통신 검증은 가능한 경우 wire 응답으로 판정
+  - [ ] 로깅 시스템: Zephyr deferred logging·모듈별 레벨·디버그 상세 출력·버퍼 유실 집계, 콘솔 출력 직렬화: heartbeat와 측정 로그의 중간 삽입 방지; 통신 검증은 가능한 경우 wire 응답으로 판정
   - [ ] 실보드 링버퍼 overflow/drain·UART overrun·TX 포화/부하 확인
   - [ ] 장시간·고부하·스택 여유·정량 손실 및 추적 정확도 평가
 
@@ -279,18 +279,21 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 완료 기준 |
 | --- | --- | --- |
-| 1 | 추적 결과 송신·GUI 비교 | 보드 통계와 추정값 표시; TX 실패·포화 후 복귀 |
-| 2 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
-| 3 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
-| 4 | 다중표적 입력·track_manager·측정 연관 | 독립 추적부터 교차·소실/재등장까지 검증 |
-| 5 | COMMAND/Lock On·정량 평가·장시간 시험 | 선택·해제·소실 정책, 정확도·연속성·부하 한계 확인 |
+| 1 | 로깅 시스템 정리 | deferred logging, 모듈·레벨 분리, 디버그 상세 로그 제한, heartbeat 섞임·버퍼 포화 정책 검증 |
+| 2 | 추적 결과 송신·GUI 비교 | TRACK_REPORT 규격 확정, 보드 추정값 비교, TX 실패·포화 후 복귀 |
+| 3 | 남은 수신 오류 통계·복구 | 링버퍼 손실·UART overrun/framing/parity 감지와 유실 후 복귀 |
+| 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |
+| 5 | 단일표적 부하·자원 검증 | 강제 overflow, 스택 여유·지연·장시간 시험 기준과 결과 |
+| 6 | 다중표적 입력·track_manager·측정 연관 | 스캔 규격·트랙 ID·교차/미탐지/클러터 검증 |
+| 7 | COMMAND/Lock On·BIT | 선택·해제·소실 정책, 자기진단 항목·합격 기준 |
+| 8 | 통합 정량 평가 | 추적 오차·연속성·최대 부하·장시간 안정성 평가 |
 
 부분 프레임 timeout과 RX 기본 오류 통계·STATUS 로그는 구현했습니다.
 `처리 스레드 → 응답 복사 큐 → TX 스레드`까지 STATUS 응답 경로를 구현했습니다.
 지역변수 주소만 큐에 저장하지 않고 응답 데이터 자체를 복사합니다.
 PC 응답 파서·payload 해석·CLI는 구현했습니다. GUI 수동 조회도 구현했습니다. 실제 STATUS CLI·GUI 송수신도 확인했습니다.
 overflow 정책과 두 timeout의 Kconfig 분리 및 host 검증은 완료했습니다.
-다음은 추적 결과 송신 규격을 정하고 보드 추정값을 PC에서 확인하는 작업입니다.
+다음은 로깅 시스템 정리입니다. 이후 추적 결과 송신 규격을 확정하고 보드 추정값을 PC에서 확인합니다.
 강제 링 overflow·UART 오류·TX 부하는 남아 있습니다.
 
 ## 검증 현황
@@ -299,12 +302,12 @@ overflow 정책과 두 timeout의 Kconfig 분리 및 host 검증은 완료했습
 INIT/RESET 통계 보존, 추적 중 조회·무수신 timeout 확인 완료.
 [실보드 결과와 원시 로그](docs/hardware-test-2026-11-12-status.md).
 
-최신 host 결과: GUI STATUS 포함 Python **130개 + subtest 9개**, handler **17개** 통과.
-handler 보강 커밋은 `658f2e6`, GUI STATUS 커밋은 `ed1f0bf`입니다.
-2026-11-14: RX drain 21·discard 18, handler 17·TX 4·Tracking 13 통과(총 73회 함수 실행).
-두 정책의 펌웨어 빌드·플래시와 UART 회귀 16개 조건씩 통과했고 기본 DRAIN으로 복원했습니다.
-[최신 실보드 결과·원시 로그](docs/hardware-test-2026-11-14-kconfig.md). 강제 링 overflow는 미검증입니다.
-Python·GUI 시험은 11월 12일 결과이며 이번 Kconfig 변경에서 재실행하지 않았습니다.
+최신 host: Python **136개 + subtest 9개**, Tracking **17개**·handler **17개** 통과.
+RX drain 21·discard 18·TX 4를 합한 현재 C 사례 수는 77회 실행입니다.
+일반·디버그 펌웨어 빌드와 보드 UART 회귀 및 ±179° 경계 왕복은
+[2026-11-14 fmodf 실보드 결과](docs/hardware-test-2026-11-14-fmodf.md)를 참고합니다.
+GUI 실보드 검증은 11월 12일 결과이며 최신 GUI 자동 검증은 offscreen 모사 시험입니다.
+강제 링 overflow·하드웨어 UART 오류·부하·보드 assert 강제 실패는 미검증입니다.
 아래는 버전별 과거 실행 기록이며 당시 미검증·실패 상태를 그대로 보존합니다.
 
 2026-11-12 (`0e84bdd`): PC 프레임 파서·STATUS CLI 포함 Python 126개 + subtest 9개 통과.

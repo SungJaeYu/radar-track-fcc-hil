@@ -1,13 +1,13 @@
 # 요구사항·상세 규격·테스트 추적
 
-기준일: 2026-11-12. 현재 저장소 작업본의 소스·테스트와 기존 보드 기록을 검토한 개발 기준 초안이다.
+기준일: 2026-11-14. 현재 저장소 작업본의 소스·테스트와 기존 보드 기록을 검토한 개발 기준 초안이다.
 이미 구현된 동작을 요구사항으로 명문화했으며, 이 문서 작성만으로 모든 설계 선택이 최종 확정되거나
 미검증 동작이 검증된 것으로 바뀌지 않는다. 프로토콜·정책 변경 시 아래 절차로 함께 갱신한다.
 
 ## 현재 기준 요약
 
 기능 기준: handler 보강 `658f2e6`, GUI STATUS `ed1f0bf`.
-Python 130개 + subtest 9개와 handler host 17개 통과. RX 21·TX 4·Tracking 13은 기존 검증 기록이다.
+Python 136개 + subtest 9개, Tracking 17개·handler 17개 통과. RX drain 21·discard 18·TX 4도 재검증 완료했다.
 PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료. 실보드 기본 왕복도 `2aa57d9`에서 확인했다.
 아래 단계별 구현 기록은 당시 상태이며 현재 판단은 이 요약과 요구사항 기준표를 우선한다.
 
@@ -128,8 +128,8 @@ payload는 정확히 10바이트이며 정답 ID를 포함하지 않는다. NULL
 
 | 조건 | 기준 시계·시점 | 경계와 결과 |
 | --- | --- | --- |
-| 부분 프레임 timeout | RX가 마지막 바이트를 처리한 보드 uptime | 조립 중 경과 `>=1000ms`이면 parser reset·frame_timeouts 1 증가. STX 대기이면 감시하지 않음 |
-| 측정 무수신 timeout | 마지막 decode·validate 성공 프레임의 received_at_ms | 첫 유효 측정 후에만 감시. 경과 `>=1000ms`이면 트랙 reset·감시 해제·로그 1회 |
+| 부분 프레임 timeout | RX가 마지막 바이트를 처리한 보드 uptime | 조립 중 경과 `>=CONFIG_RADAR_FRAME_RX_TIMEOUT_MS` (기본 1000ms)이면 parser reset·frame_timeouts 1 증가. STX 대기이면 감시하지 않음 |
+| 측정 무수신 timeout | 마지막 decode·validate 성공 프레임의 received_at_ms | 첫 유효 측정 후에만 감시. 경과 `>=CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS` (기본 1000ms)이면 트랙 reset·감시 해제·로그 1회 |
 | 예측 간격 | 송신 측정 timestamp의 uint32 차이 | `>1000ms`이면 트랙 삭제. 정확히 1000ms는 예측 허용 |
 
 부분 프레임은 바이트를 처리할 때마다 기준 시각을 갱신한다. 전체 프레임 조립 시간이
@@ -259,6 +259,10 @@ GUI는 설정 탭·스크롤 접근, 시작/중지/재시작·연결 종료·실
 | 테스트 함수 | 연결 요구사항 |
 | --- | --- |
 | [`test_angle_wrap`](../fcc_app/tests/test_kalman/src/main.c) | REQ-TRK-001 |
+| [`test_angle_wrap_boundaries`](../fcc_app/tests/test_kalman/src/main.c) | REQ-TRK-001 |
+| [`test_angle_wrap_multiple_turns`](../fcc_app/tests/test_kalman/src/main.c) | REQ-TRK-001 |
+| [`test_angle_wrap_large_finite_values`](../fcc_app/tests/test_kalman/src/main.c) | REQ-TRK-001 |
+| [`test_correction_rejects_invalid_innovation_covariance`](../fcc_app/tests/test_kalman/src/main.c) | REQ-TRK-001 |
 | [`test_cv_prediction_and_covariance`](../fcc_app/tests/test_kalman/src/main.c) | REQ-TRK-001 |
 | [`test_cv_correction`](../fcc_app/tests/test_kalman/src/main.c) | REQ-TRK-001 |
 | [`test_angle_prediction_and_correction`](../fcc_app/tests/test_kalman/src/main.c) | REQ-TRK-001 |
@@ -316,7 +320,8 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 | FUT-005 | 제어 요청과 오래된 측정의 큐 처리 정책을 정의한다 | INIT/RESET 우선순위·reset 이전 대기 데이터·최대 허용 지연 TBD |
 | FUT-006 | 다중 측정·트랙을 연관하고 펌웨어 자체 ID로 관리한다 | 스캔 규격·최대 표적 수·트랙 수명·교차/클러터 평가. 정답 ID 입력 금지 |
 | FUT-007 | COMMAND/Lock On과 BIT를 제공한다 | 명령 payload·선택/해제·소실 동작·자기진단 항목과 합격 기준 TBD |
-| FUT-008 | 설정·자원·지연을 반복 검증 가능한 기준으로 관리한다 | overflow Kconfig·정책별 host 완료; timeout 설정 분리, 강제 overflow 실보드·스택·처리량·장시간·최대 지연 목표 TBD |
+| FUT-009 | 로그를 모듈·레벨별로 관리하고 스레드 간 문장 섞임을 방지한다 | deferred logging, 릴리스 상세 로그 제한, 로그 버퍼 포화·유실 정책과 UART RX 영향 검증 |
+| FUT-008 | 설정·자원·지연을 반복 검증 가능한 기준으로 관리한다 | overflow·timeout Kconfig 및 정책별 host 완료; 강제 overflow 실보드·스택·처리량·장시간·최대 지연 목표 TBD |
 
 FUT-001은 구현·host 검증 완료, FUT-002 기본 실보드 왕복도 완료했다. CTL-002 측정 경유 검증은 완료했다.
 남은 host 공백은 CTL-001의 실제 RX 카운터와 명령 처리 통합, RX-004의 실제 큐 경계와 다른 errno 처리다.
@@ -413,7 +418,7 @@ INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습
 [RX 테스트](../fcc_app/tests/test_uart_rx/README.md)는 drain 21·discard 18, 총 39회 실행한다.
 `test_discard_drops_complete_frame_and_recovers`와 `test_discard_drops_completable_partial_frame`를
 REQ-RX-002에 연결한다. 공통 16개는 두 정책 모두에서 검사한다.
-Overflow 정책 Kconfig 분리는 구현됐으며 timeout 설정 분리·실보드 강제 overflow·자원 검증은 남아 있다.
+Overflow·timeout Kconfig 분리와 host 경계 시험은 완료됐으며 실보드 강제 overflow·자원 검증은 남아 있다.
 
 
 ## 2026-11-14 Kconfig 실보드 회귀
@@ -422,3 +427,11 @@ Overflow 정책 Kconfig 분리는 구현됐으며 timeout 설정 분리·실보�
 기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
 [결과와 원시 로그](hardware-test-2026-11-14-kconfig.md).
 강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.
+
+
+## 각도 정규화 후속 검증
+
+`wrap_angle_rad`는 fmodf와 1회 범위 보정으로 (-π, π]를 유지한다.
+Tracking의 경계·다중 회전·큰 유한값 시험과 비정상 innovation covariance 보정 생략 시험을 추가했다.
+NaN·±Inf 각도 입력의 내부 전제 위반은 Python 자식 프로세스 assert 시험으로 확인한다.
+[일반·디버그 실보드 결과](hardware-test-2026-11-14-fmodf.md). 큰 float와 NaN/Inf의 직접 주입은 host 범위다.

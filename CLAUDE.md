@@ -37,11 +37,11 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 검증
 
-- `python -m pytest`: GUI 의존성 설치 시 130개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
+- `python -m pytest`: GUI 의존성 설치 시 136개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 21·discard 18, 총 39회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [STATUS host 테스트](fcc_app/tests/test_frame_handler/README.md): 통계·응답·실패 복귀·INIT/RESET·측정 timeout 17개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.
 - [TX host 테스트](fcc_app/tests/test_uart_tx/README.md): 초기화·요청 검증·복사 큐·송신 순서·실패 후 복귀 4개 사례.
-- [Tracking C 테스트](fcc_app/tests/test_kalman/README.md): 필터·게이팅·추적 정책 13개 사례.
+- [Tracking C 테스트](fcc_app/tests/test_kalman/README.md): 필터·게이팅·추적 정책 17개 사례.
 - 수동 초기화만 필요할 때: `python pc_sim/small_byte_test.py init --type 1 --port PORT`.
 - 송신: `python pc_sim/radar_sender.py --port PORT --count 20 --noise 0`.
 - 두 연속 송신기는 실행마다 INIT을 한 번 자동 전송하고 timestamp를 0부터 시작합니다.
@@ -67,3 +67,11 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
 [결과와 원시 로그](docs/hardware-test-2026-11-14-kconfig.md).
 강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.
+
+
+## fmodf·수치 보호 검증 (2026-11-14)
+
+각도 정규화는 fmodf와 범위 보정으로 (-π, π]를 유지합니다.
+비정상 s는 일반 if로 보정을 생략하며, 내부 유한성 assert는 디버그에서 활성화합니다.
+[최신 보드 시험](docs/hardware-test-2026-11-14-fmodf.md).
+다음 작업은 deferred logging·로그 레벨·버퍼 포화 정책 정리이며 아직 미구현입니다.

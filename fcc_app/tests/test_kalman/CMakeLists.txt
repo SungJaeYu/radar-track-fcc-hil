@@ -12,6 +12,8 @@ if(TRACK_TEST_HOST)
     target_link_libraries(track_tests PRIVATE m)
     set(TEST_TARGET track_tests)
     add_test(NAME tracking COMMAND track_tests)
+    # Detect regressions to nonterminating angle normalization loops.
+    set_tests_properties(tracking PROPERTIES TIMEOUT 10)
 else()
     find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
     project(test_kalman)
