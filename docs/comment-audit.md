@@ -19,7 +19,7 @@ Python GUI/시뮬레이터와 외부 Zephyr 소스는 이 점검 범위에 포�
 | `protocol/protocol_frame.c` | CRC가 포함/제외하는 wire 필드 |
 | `transport/uart_tx.c` | 초기화 semaphore가 일회성 시작 대기라는 의미 |
 | `transport/uart_rx.c` | 프로토콜 UART 역할, IRQ 활성화 전 parser 초기화; 의미 없는 error/경고 회피 표제 제거 |
-| `main.c` | 콘솔과 USART6 프로토콜 분리, heartbeat 출력 혼합 가능성과 로깅 TODO |
+| `main.c` | 콘솔과 USART6 프로토콜 분리, DEBUG heartbeat와 Zephyr 로깅 worker의 메시지 처리 |
 
 ## 나머지 파일 점검
 
@@ -40,6 +40,5 @@ Python GUI/시뮬레이터와 외부 Zephyr 소스는 이 점검 범위에 포�
 | `transport/rx_frame_processor.c` | parser 소유권·atomic 통계·timeout·완성 프레임 전달 설명 있음 |
 
 현재 범위에서 추가로 반드시 보완해야 할 계약 주석은 발견하지 않았다.
-알고리즘/정책을 변경할 때 이 판단도 다시 점검해야 한다. 특히 후속 로깅 작업에서는
-heartbeat 임시 설명을 실제 정책으로 갱신하고, 다중표적 작업에서는 단일 RX/handler 소유권과
+알고리즘/정책을 변경할 때 이 판단도 다시 점검해야 한다. 로깅 설정·검증 범위는 [로깅 문서](logging.md)를 따른다. 다중표적 작업에서는 단일 RX/handler 소유권과
 고정 직사각형 게이트 설명을 함께 검토한다.

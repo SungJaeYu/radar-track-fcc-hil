@@ -475,3 +475,9 @@ STATUS_REPORT 규격은 기존 16바이트를 유지하며 새 카운터 전송�
 C 103회, Python 160개 + subtest 9개, 기본 펌웨어 빌드 통과.
 GUI offscreen 표시·값 갱신과 후속 flash·실보드 UART 18개 조건, CLI·GUI 왕복을 확인했다.
 [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 강제 overflow 증가 검증은 제외한다.
+
+## 모듈별 로깅 전환 (2026-11-14)
+
+[설정·레벨·검증 경계](logging.md). C host 103회, Python 160개 + subtest 9개와
+일반/디버그 펌웨어 빌드 검증. host는 로그 텍스트를 동기 캡처하며 실제 로깅 스레드·포화를 모사하지 않는다.
+이번 전환의 flash·실보드 출력·부하 검증은 수행하지 않았다.

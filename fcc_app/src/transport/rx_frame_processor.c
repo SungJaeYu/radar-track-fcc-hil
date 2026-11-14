@@ -3,11 +3,13 @@
 #include <errno.h>
 
 #include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/printk.h>
 
 #include "application/frame_handler.h"
 #include "protocol/frame_parser.h"
+
+LOG_MODULE_REGISTER(rx_frame_processor, CONFIG_RADAR_RX_PROCESSOR_LOG_LEVEL);
 
 // Accessed only by the RX thread after initialization
 static struct frame_parser parser;
@@ -95,13 +97,13 @@ static void submit_parsed_frame(void)
         atomic_inc(&queue_drops_count);
         // Report the first drop and every hundredth drop to limit repetitive output.
         if (atomic_get(&queue_drops_count) == 1 || atomic_get(&queue_drops_count) % 100 == 0) {
-            printk("Frame queue drops: %u\n", (unsigned int)atomic_get(&queue_drops_count));
+            LOG_WRN("Frame queue drops: %u", (unsigned int)atomic_get(&queue_drops_count));
         }
     } else if (ret == -EINVAL) {
-        printk("Frame submit rejected: type=0x%02X, length=%u\n",
+        LOG_ERR("Frame submit rejected: type=0x%02X, length=%u",
            (unsigned int)received.frame.type,
            (unsigned int)received.frame.payload_length);
     } else if (ret != 0) {
-        printk("Frame submit failed: %d\n", ret);
+        LOG_ERR("Frame submit failed: %d", ret);
     }
 }

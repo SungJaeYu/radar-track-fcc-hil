@@ -42,6 +42,10 @@ west flash -d <repo>/build --runner openocd
 - Linux 예: 콘솔 `/dev/ttyACM0`, 데이터 `/dev/ttyUSB0`.
   macOS는 각각 `cu.usbmodem...`, `cu.usbserial...` 등의 실제 장치명을 확인합니다.
 
+일반 빌드는 INFO 이상만 출력합니다. 아래 측정·예측 로그를 확인하는 절차는
+`debug.conf` 빌드가 필요합니다. STATUS의 일곱 통계는 일반 빌드에서도 wire로 조회합니다.
+[로깅 빌드 방법](logging.md).
+
 ## 3. 자동 INIT과 측정 송신
 
 저장소 루트에서:

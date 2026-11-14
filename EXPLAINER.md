@@ -107,7 +107,7 @@ UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제
 
 `rx_frame_processor.c`가 CRC·길이 오류·부분 프레임 timeout·큐 드롭의 atomic
 카운터를 소유합니다. STATUS는 처리 스레드에서 지역 `stats`로 값을 복사해
-ST-Link 콘솔에 출력합니다. 개별 값은 안전하게 읽지만 전체 항목을 같은 순간에
+ST-Link 콘솔에 DEBUG 레벨로 출력합니다. 개별 값은 안전하게 읽지만 전체 항목을 같은 순간에
 고정하지는 않습니다. 조회·parser reset·INIT/RESET은 누적 카운터를 지우지 않습니다.
 `uart_rx.c`는 overflow 진입 횟수·ISR 폐기 바이트·복구 시 링 폐기 바이트를 별도로 소유합니다.
 하드웨어 BIT 결과나 UART 하드웨어 오류는 아직 제공하지 않습니다.
@@ -139,7 +139,7 @@ INIT/RESET 후 보존을 확인했습니다. 강제 overflow·큐 포화 동시�
 각도 정규화는 fmodf와 범위 보정으로 (-π, π]를 유지합니다.
 비정상 s는 일반 if로 보정을 생략하며, 내부 유한성 assert는 디버그에서 활성화합니다.
 [최신 보드 시험](docs/hardware-test-2026-11-14-fmodf.md).
-다음 작업은 deferred logging·로그 레벨·버퍼 포화 정책 정리이며 아직 미구현입니다.
+후속 변경으로 [로깅 기반](docs/logging.md)을 구현했습니다. 실보드 출력·포화/유실·수신 영향 검증은 남아 있습니다.
 
 ## 게이트 설정 및 공통 각도 상수
 

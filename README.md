@@ -113,7 +113,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - 측정 payload는 big-endian `>IHi`: timestamp_ms(uint32), range_m(uint16), azimuth_sc(int32), 총 10바이트.
 - 방위각은 semicircle: `rad = azimuth_sc × π / 2³¹`. 보드 내부 추정은 라디안입니다.
 - TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6.
-- INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
+- INIT/RESET은 트랙을 초기화합니다. STATUS는 RX 오류·timeout·queue drop 누적 통계를 DEBUG 로그로 출력합니다. COMMAND는 타입 로그만 출력합니다.
   STATUS 통계는 28바이트 STATUS_REPORT(일곱 uint32)로 TX 큐에 제출합니다. PC는 구형 16바이트 응답도 읽으며 없는 필드는 미지원으로 표시합니다.
 - 현재 보드는 UART로 이진 트랙 결과를 반환하지 않습니다.
 
@@ -242,7 +242,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] TX host 시험: 큐 복사·FIFO·포화 후 재제출, 인코딩 실패 후 다음 요청 처리; STATUS 제출 실패 후 복귀
   - [x] RX/TX 데이터 선 물리 단절·복원: 무수신/STATUS timeout과 재부팅 없는 정상 왕복·추적 복귀
   - [ ] 큐·동시성 실보드 시험: 포화 시 제어 순서, 오래된 측정, 실제 동시 조회; USB 제거·전원 재인가 등 추가 장애 복귀
-  - [ ] 로깅 시스템: Zephyr deferred logging·모듈별 레벨·디버그 상세 출력·버퍼 유실 집계, 콘솔 출력 직렬화: heartbeat와 측정 로그의 중간 삽입 방지; 통신 검증은 가능한 경우 wire 응답으로 판정
+  - [x] [로깅 기반](docs/logging.md): 다섯 모듈의 deferred logging, 일반 INFO·디버그 DEBUG, 비차단·새 로그 폐기 설정
+  - [ ] 로깅 실보드 검증: 문장 섞임·포화/유실 관측·반복 경고 제한·UART 수신 영향·스택 실측; 통신 결과는 wire 응답으로 판정
   - [ ] 실보드 링버퍼 overflow/drain·UART overrun·TX 포화/부하 확인
   - [ ] 장시간·고부하·스택 여유·정량 손실 및 추적 정확도 평가
 
@@ -280,7 +281,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 완료 기준 |
 | --- | --- | --- |
-| 1 | 로깅 시스템 정리 | deferred logging, 모듈·레벨 분리, 디버그 상세 로그 제한, heartbeat 섞임·버퍼 포화 정책 검증 |
+| 1 | 로깅 실보드·부하 검증 | 전환된 deferred logging의 문장 섞임·로그 유실 관측·반복 경고 제한·UART 영향 검증 |
 | 2 | 추적 결과 송신·GUI 비교 | TRACK_REPORT 규격 확정, 보드 추정값 비교, TX 실패·포화 후 복귀 |
 | 3 | 남은 수신 오류 통계·복구 | 구현된 링 손실 통계의 실보드 증가 검증·UART overrun/framing/parity 감지와 유실 후 복귀 |
 | 4 | RX 큐 포화·지연·INIT/RESET 정책 | 제어 프레임 유실과 reset 전 대기 측정 처리 기준 명시 |

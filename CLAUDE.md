@@ -26,7 +26,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - 보드 `radar_message.c`가 semicircle을 rad로 변환합니다.
 - RX 스레드는 `rx_frame_processor`로 파싱하고 완성 프레임을 큐에 복사합니다.
 - 별도 handler 스레드가 측정·추적·STATUS 처리를 수행합니다.
-- STATUS는 processor의 네 통계를 로그로 출력합니다. UART의 세 통계를 더한 일곱 값을 28바이트 STATUS_REPORT로 TX 큐에 복사 제출합니다. 각 값은 atomic 조회하며 동시 snapshot은 보장하지 않습니다.
+- STATUS는 processor의 네 통계를 DEBUG 로그로 출력합니다. UART의 세 통계를 더한 일곱 값을 28바이트 STATUS_REPORT로 TX 큐에 복사 제출합니다. 각 값은 atomic 조회하며 동시 snapshot은 보장하지 않습니다.
 - TX 초기화·복사 큐·워커·인코딩·polling 송신은 구현되어 있습니다. STATUS 제출까지 연결했으며 PC 파서·STATUS CLI·GUI 수동 조회까지 구현했으며 [확장 STATUS 실보드 시험](docs/hardware-test-2026-11-14-status-extended.md)에서 28바이트 응답의 CLI·GUI 왕복도 확인했습니다. 강제 overflow·UART 오류·부하 시험은 남아 있습니다.
 - RX 링버퍼는 256바이트, 실제 저장 용량은 255바이트입니다. 인덱스는 `uint8_t`이므로 더 큰 버퍼는 타입 변경이 필요합니다.
 - overflow 정책은 `fcc_app/Kconfig` choice와 `prj.conf`에서 선택하며 `uart_rx.c`에서 매핑합니다. 기본값은 DRAIN입니다.
@@ -74,7 +74,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 각도 정규화는 fmodf와 범위 보정으로 (-π, π]를 유지합니다.
 비정상 s는 일반 if로 보정을 생략하며, 내부 유한성 assert는 디버그에서 활성화합니다.
 [최신 보드 시험](docs/hardware-test-2026-11-14-fmodf.md).
-다음 작업은 deferred logging·로그 레벨·버퍼 포화 정책 정리이며 아직 미구현입니다.
+후속 변경으로 [로깅 기반](docs/logging.md)을 구현했습니다. 실보드 출력·포화/유실·수신 영향 검증은 남아 있습니다.
 
 ## 게이트 설정 및 공통 각도 상수
 

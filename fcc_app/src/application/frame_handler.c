@@ -3,7 +3,7 @@
 #include <errno.h>
 
 #include <zephyr/kernel.h>
-#include <zephyr/sys/printk.h>
+#include <zephyr/logging/log.h>
 
 #include "protocol/radar_message.h"
 #include "protocol/status_message.h"
@@ -17,6 +17,8 @@ static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3);
 static void handle_radar_measurement(struct frame_handler *p_handler, const struct received_frame *p_frame);
 static void update_track_from_measurement(struct track *p_track, const struct radar_measurement *p_measurement);
 static void handle_status_request(void);
+
+LOG_MODULE_REGISTER(frame_handler, CONFIG_RADAR_HANDLER_LOG_LEVEL);
 
 K_THREAD_DEFINE(frame_handler_tid, 2048, frame_handler_thread, NULL, NULL, NULL, 6, 0, 0);
 
@@ -78,44 +80,45 @@ void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms
 
     // Clear the stale track and disarm monitoring so this timeout is logged once.
     frame_handler_reset(p_handler);
-    printk("Radar measurement timeout: track cleared\n");
+
+    LOG_WRN("Radar measurement timeout: track cleared");
 }
 
 void handle_frame(struct frame_handler *p_handler, const struct received_frame *p_frame)
 {
     switch (p_frame->frame.type) {
     case FRAME_TYPE_INIT:
-        printk("TYPE_INIT\n");
+        LOG_INF("TYPE_INIT");
         frame_handler_init(p_handler);
         break;
 
     case FRAME_TYPE_MEAS_REPORT: {
-        printk("TYPE_MEAS\n");
+        LOG_DBG("TYPE_MEAS");
         handle_radar_measurement(p_handler, p_frame);
         break;
     }
     // Queue a STATUS_REPORT containing the current RX diagnostic counters.
     case FRAME_TYPE_STATUS_REQUEST: {
-        printk("TYPE_STATUS\n");
+        LOG_DBG("TYPE_STATUS");
         handle_status_request();
         break;
     }
 
     // Placeholder: no command payload interpretation or control action yet.
     case FRAME_TYPE_COMMAND:
-        printk("TYPE_COMMAND\n");
+        LOG_DBG("TYPE_COMMAND");
         break;
 
     case FRAME_TYPE_RESET:
-        printk("TYPE RESET\n");
+        LOG_INF("TYPE RESET");
         frame_handler_reset(p_handler);
         break;
 
     case FRAME_TYPE_STATUS_REPORT:
-        printk("Unexpected STATUS_REPORT received\n");
+        LOG_WRN("Unexpected STATUS_REPORT received");
         break;
     default:
-        printk("Unknown frame type: 0x%02X\n", p_frame->frame.type);
+        LOG_WRN("Unknown frame type: 0x%02X", p_frame->frame.type);
         break;
     }
 }
@@ -128,12 +131,12 @@ static void handle_radar_measurement(struct frame_handler *p_handler, const stru
             p_frame->frame.payload,
             p_frame->frame.payload_length,
             &rm)) {
-        printk("Invalid radar payload\n");
+        LOG_WRN("Invalid radar payload");
         return;
     }
 
     if (!validate_radar_measurement(&rm)) {
-        printk("Invalid radar measurement\n");
+        LOG_WRN("Invalid radar measurement");
         return;
     }
 
@@ -142,8 +145,8 @@ static void handle_radar_measurement(struct frame_handler *p_handler, const stru
     p_handler->last_valid_rx_ms = p_frame->received_at_ms;
     p_handler->timeout_armed = true;
 
-    printk("range: %.2f\n", (double)rm.range_m);
-    printk("azimuth: %.2f\n", (double)rm.azimuth_rad);
+    LOG_DBG("range: %.2f", (double)rm.range_m);
+    LOG_DBG("azimuth: %.2f", (double)rm.azimuth_rad);
 
     update_track_from_measurement(&p_handler->track, &rm);
 
@@ -154,22 +157,22 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
     if (p_track->state == TRACK_STATE_EMPTY) {
         track_start(p_track, (float)p_measurement->range_m, (float)p_measurement->azimuth_rad, p_measurement->timestamp_ms);
 
-        printk("Filters initialized at range: %.2f\n", (double)p_measurement->range_m);
-        printk("Filters initialized at azimuth: %.2f\n", (double)p_measurement->azimuth_rad);
+        LOG_INF("Filters initialized at range: %.2f", (double)p_measurement->range_m);
+        LOG_INF("Filters initialized at azimuth: %.2f", (double)p_measurement->azimuth_rad);
     } else {
 
         // Prediction may clear a lost/stale track. A later measurement starts it anew;
         // this measurement is not reused for startup after prediction returns false.
         if (!track_predict(p_track, p_measurement->timestamp_ms)) {
-            printk("Invalid measurement interval\n");
+            LOG_DBG("Invalid measurement interval");
             return;
         }
 
         const float predicted_range_m = p_track->range_filter.estimate;
         const float predicted_azimuth_rad = p_track->azimuth_filter.estimate;
 
-        printk("predicted range: %.2f\n", (double)predicted_range_m);
-        printk("predicted azimuth: %.2f\n", (double)predicted_azimuth_rad);
+        LOG_DBG("predicted range: %.2f", (double)predicted_range_m);
+        LOG_DBG("predicted azimuth: %.2f", (double)predicted_azimuth_rad);
 
         // Compare with the prediction using both configured inclusive gates.
         const bool is_in_gate = gating_check(
@@ -183,10 +186,10 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
         // the prediction and advances track-loss policy, not RX error statistics.
         if (is_in_gate) {
             track_hit(p_track, p_measurement->range_m, p_measurement->azimuth_rad);
-            printk("Measurement accepted\n");
+            LOG_DBG("Measurement accepted");
         } else {
             track_miss(p_track);
-            printk("Measurement rejected by gate\n");
+            LOG_DBG("Measurement rejected by gate");
         }
 
         const float filtered_range_m =
@@ -195,15 +198,15 @@ static void update_track_from_measurement(struct track *p_track, const struct ra
         const float filtered_azimuth_rad =
             p_track->azimuth_filter.estimate;
 
-        printk("filtered range: %.2f\n",
+        LOG_DBG("filtered range: %.2f",
             (double)filtered_range_m);
 
-        printk("filtered azimuth: %.2f\n",
+        LOG_DBG("filtered azimuth: %.2f",
             (double)filtered_azimuth_rad);
 
-        printk("estimated range rate: %.2f\n",
+        LOG_DBG("estimated range rate: %.2f",
             (double)p_track->range_filter.rate);
-        printk("estimated azimuth rate: %.2f\n",
+        LOG_DBG("estimated azimuth rate: %.2f",
             (double)p_track->azimuth_filter.rate);
     }
 }
@@ -222,7 +225,7 @@ static void handle_status_request(void)
     struct rx_frame_stats stats;
     rx_frame_processor_get_stats(&stats);
 
-    printk("CRC: %u, length: %u, timeout: %u, queue drops: %u\n",
+    LOG_DBG("CRC: %u, length: %u, timeout: %u, queue drops: %u",
         (unsigned int)stats.crc_errors,
         (unsigned int)stats.length_errors,
         (unsigned int)stats.frame_timeouts,
@@ -243,12 +246,12 @@ static void handle_status_request(void)
     };
     int ret = status_message_encode(&report, &request.frame);
     if (ret != 0) {
-        printk("STATUS encode failed: %d\n", ret);
+        LOG_ERR("STATUS encode failed: %d", ret);
         return;
     }
     ret = uart_tx_submit(&request);
     if (ret != 0) {
-        printk("STATUS submit failed: %d\n", ret);
+        LOG_ERR("STATUS submit failed: %d", ret);
         return;
     }
 }

@@ -5,7 +5,9 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/printk.h>
+#include <zephyr/logging/log.h>
+
+LOG_MODULE_REGISTER(uart_tx, CONFIG_RADAR_UART_TX_LOG_LEVEL);
 
 static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
 
@@ -23,7 +25,7 @@ int uart_tx_init(void)
 {
     // Check UART device is ready
     if (!device_is_ready(p_uart)) {
-        printk("USART6 is not ready\n");
+        LOG_ERR("USART6 is not ready");
         return -ENODEV;
     }
 
@@ -62,7 +64,7 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
             const int length = protocol_frame_encode(&request.frame, buffer, sizeof(buffer));
 
             if (length < 0) {
-                printk("TX encode failed: %d\n", length);
+                LOG_ERR("TX encode failed: %d", length);
                 continue;
             }
 

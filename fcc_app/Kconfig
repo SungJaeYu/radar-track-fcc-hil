@@ -63,4 +63,29 @@ config RADAR_AZIMUTH_GATE_DEG
         At 180 degrees every finite normalized angular error passes,
         but the range gate still applies.
 
+# Generate per-module log levels and their OFF/ERR/WRN/INF/DBG choices.
+# Select a choice in prj.conf or debug.conf; do not assign the derived integer.
+# The template depends on LOG and uses LOG_DEFAULT_LEVEL for its Default choice.
+menu "Application logging"
+module = RADAR_MAIN
+module-str = Radar startup
+source "subsys/logging/Kconfig.template.log_config"
+
+module = RADAR_UART_RX
+module-str = Radar UART RX
+source "subsys/logging/Kconfig.template.log_config"
+
+module = RADAR_RX_PROCESSOR
+module-str = Radar RX frame processor
+source "subsys/logging/Kconfig.template.log_config"
+
+module = RADAR_UART_TX
+module-str = Radar UART TX
+source "subsys/logging/Kconfig.template.log_config"
+
+module = RADAR_HANDLER
+module-str = Radar frame handler
+source "subsys/logging/Kconfig.template.log_config"
+endmenu
+
 endmenu

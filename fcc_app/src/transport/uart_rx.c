@@ -5,12 +5,14 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/printk.h>
 
 #include "common/ring_buffer.h"
 #include "transport/rx_frame_processor.h"
+
+LOG_MODULE_REGISTER(uart_rx, CONFIG_RADAR_UART_RX_LOG_LEVEL);
 
 #if defined(CONFIG_RADAR_RX_OVERFLOW_DRAIN)
 #define RX_OVERFLOW_POLICY RX_OVERFLOW_POLICY_DRAIN_BUFFER
@@ -57,14 +59,14 @@ int uart_rx_init(void)
 {
     // Check UART device is ready
     if (!device_is_ready(p_uart)) {
-        printk("USART6 is not ready\n");
+        LOG_ERR("USART6 is not ready");
         return -ENODEV;
     }
 
     // Set Callback Function
     const int ret = uart_irq_callback_user_data_set(p_uart, uart_callback, NULL);
     if (ret != 0) {
-        printk("Failed to set UART callback\n");
+        LOG_ERR("Failed to set UART callback");
         return ret;
     }
 
@@ -158,7 +160,7 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
 
                 rx_recover_overflow();
 
-                printk("RX overflow: recovery completed\n");
+                LOG_WRN("RX overflow: recovery completed");
 
                 break;
             }
