@@ -105,7 +105,9 @@ host 테스트는 공통 어댑터로 assert를 항상 검사합니다.
 - [x] TX host에서 큐 복사·FIFO·포화 후 재제출 및 인코딩 실패 후 다음 요청 처리 검증.
   근거: `test_tx_queue_copy_fifo_full_and_recovery`, `test_tx_encode_error_continues`;
   STATUS 제출 실패 복귀는 `test_status_submit_failure_and_recovery`에서 검증한다.
-- [ ] 실제 TX 포화·최대 부하·물리 통신 장애 복구 검증. host 모사 결과로 대체하지 않는다.
+- [x] RX/TX 데이터 선 물리 단절·복원: 무수신/응답 timeout 및 재부팅 없는 복귀.
+  [실보드 증거](hardware-test-2026-11-14-link-loss.md).
+- [ ] 실제 TX 포화·최대 부하 및 USB 제거·전원 재인가 등 추가 장애 복구 검증.
 
 ## 검증 범위
 

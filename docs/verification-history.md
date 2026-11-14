@@ -9,6 +9,7 @@
 
 | 기록 | 주요 범위 |
 |---|---|
+| [RX/TX 물리 단절·복원](hardware-test-2026-11-14-link-loss.md) | 두 방향 데이터 선 단절, 무수신/응답 timeout, 재부팅 없는 복귀 |
 | [게이트 설정](hardware-test-2026-11-14-gating.md) | 기본/변경 게이트 값의 수용·거부, UART 회귀, 기본 펌웨어 복원 |
 | [각도 정규화·수치 보호](hardware-test-2026-11-14-fmodf.md) | 일반/디버그 UART 회귀, ±179° 경계 왕복 |
 | [assert](hardware-test-2026-11-14-assert.md) | 일반/디버그 빌드와 정상 입력 실보드 시험 |

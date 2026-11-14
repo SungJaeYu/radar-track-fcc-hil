@@ -1,0 +1,9 @@
+{
+  "phase": "tracking_cut",
+  "checks": {
+    "tracking_started": true,
+    "timeout_once": true
+  },
+  "elapsed_s": null,
+  "status": null
+}

@@ -1,0 +1,15 @@
+{
+  "phase": "rx_restored",
+  "checks": {
+    "status_response": true,
+    "tracking_init": true,
+    "four_updates": true
+  },
+  "elapsed_s": null,
+  "status": {
+    "crc_errors": 1,
+    "length_errors": 2,
+    "frame_timeouts": 1,
+    "queue_drops": 0
+  }
+}

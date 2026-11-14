@@ -1,0 +1,10 @@
+{
+  "phase": "tx_disconnected",
+  "checks": {
+    "pc_status_timeout": true,
+    "bounded_wait": true,
+    "request_reached_handler": true
+  },
+  "elapsed_s": 1.0010108330170624,
+  "status": null
+}
