@@ -1,0 +1,233 @@
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 750.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 791.67
+filtered azimuth: 0.00
+estimated range rate: -1666.72
+estimated azimuth rate: 0.00
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 749.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement rejected by gate
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+main alive
+TYPE_MEAS
+range: 1000.00
+azimuth: -0.52
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: -0.29
+estimated range rate: 0.00
+estimated azimuth rate: -0.58
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: -0.53
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement rejected by gate
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1250.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1208.33
+filtered azimuth: 0.00
+estimated range rate: 1666.72
+estimated azimuth rate: 0.00
+TYPE_INIT
+main alive
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1251.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement rejected by gate
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.52
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.29
+estimated range rate: 0.00
+estimated azimuth rate: 0.58
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.53
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement rejected by gate
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_INIT
+main alive
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1249.00
+azimuth: 0.52
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1207.50
+filtered azimuth: 0.29
+estimated range rate: 1660.06
+estimated azimuth rate: 0.58
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1251.00
+azimuth: 0.53
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement rejected by gate
+filtered range: 1000.00
+filtered azimuth: 0.00
+estimated range rate: 0.00
+estimated azimuth rate: 0.00
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 3.12
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 3.12
+TYPE_MEAS
+range: 1000.00
+azimuth: -3.12
+predicted range: 1000.00
+predicted azimuth: 3.12
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: -3.14
+estimated range rate: 0.00
+estimated azimuth rate: 0.04
+main alive
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: -3.12
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: -3.12
+TYPE_MEAS
+range: 1000.00
+azimuth: 3.12
+predicted range: 1000.00
+predicted azimuth: -3.12
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 3.14
+estimated range rate: 0.00
+estimated azimuth rate: -0.04
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1150.00
+azimuth: 0.00
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1125.00
+filtered azimuth: 0.00
+estimated range rate: 1000.03
+estimated azimuth rate: 0.00
+TYPE_INIT
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.00
+Filters initialized at range: 1000.00
+Filters initialized at azimuth: 0.00
+TYPE_MEAS
+range: 1000.00
+azimuth: 0.35
+predicted range: 1000.00
+predicted azimuth: 0.00
+Measurement accepted
+filtered range: 1000.00
+filtered azimuth: 0.19
+estimated range rate: 0.00
+estimated azimuth rate: 0.39
+main alive
+TYPE_STATUS
+CRC: 1, length: 2, timeout: 1, queue drops: 0

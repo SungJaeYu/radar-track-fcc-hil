@@ -436,3 +436,10 @@ Overflow·timeout Kconfig 분리와 host 경계 시험은 완료됐으며 실보
 Tracking의 경계·다중 회전·큰 유한값 시험과 비정상 innovation covariance 보정 생략 시험을 추가했다.
 NaN·±Inf 각도 입력의 내부 전제 위반은 Python 자식 프로세스 assert 시험으로 확인한다.
 [일반·디버그 실보드 결과](hardware-test-2026-11-14-fmodf.md). 큰 float와 NaN/Inf의 직접 주입은 host 범위다.
+
+## 게이트 설정 실보드 검증 (2026-11-14)
+
+`610e01e`: 기본값 100 m/10°와 변경값 250 m/30° 각각 UART 16개·게이트 14개 통과.
+REQ-TRK-002 / SPEC-TRACK의 거리 경계·각도 안팎·AND·wrap 및 설정에 따른 수용/거부 차이를 확인했다.
+보드는 기본값/DRAIN으로 복원했다. 앞선 설정 변경의 실보드 미검증 기록은 이 결과로 보완한다.
+[결과·원시 로그·검증 한계](hardware-test-2026-11-14-gating.md).

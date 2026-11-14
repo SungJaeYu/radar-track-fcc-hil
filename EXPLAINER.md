@@ -147,3 +147,5 @@ handler host 테스트 17개는 STATUS 응답·실패 복귀, INIT/RESET과 정�
 π는 `common/math_constants.h`에서 공유하며 설정값이 아닙니다.
 기존 Tracking 17개에 host 설정 조합 20개가 추가되었습니다.
 주석 보완 및 파일별 점검 결과는 [주석 점검표](docs/comment-audit.md)에 기록했습니다.
+
+2026-11-14 `610e01e` 게이트 설정 실보드: 100 m/10° 및 250 m/30° 각각 UART 16개·게이트 14개 통과. 기본값/DRAIN으로 복원. [결과](docs/hardware-test-2026-11-14-gating.md).

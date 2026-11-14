@@ -1,0 +1,166 @@
+{
+  "revision": "610e01e",
+  "mode": "normal",
+  "gate_m": 100,
+  "gate_deg": 10,
+  "cases": [
+    {
+      "name": "range_boundary_-1",
+      "range_error_m": -100,
+      "initial_deg": 0,
+      "measured_deg": 0,
+      "expected_accept": true,
+      "accepted": 1,
+      "rejected": 0,
+      "passed": true
+    },
+    {
+      "name": "range_outside_-1",
+      "range_error_m": -101,
+      "initial_deg": 0,
+      "measured_deg": 0,
+      "expected_accept": false,
+      "accepted": 0,
+      "rejected": 1,
+      "passed": true
+    },
+    {
+      "name": "angle_inside_-1",
+      "range_error_m": 0,
+      "initial_deg": 0,
+      "measured_deg": -9.9,
+      "expected_accept": true,
+      "accepted": 1,
+      "rejected": 0,
+      "passed": true
+    },
+    {
+      "name": "angle_outside_-1",
+      "range_error_m": 0,
+      "initial_deg": 0,
+      "measured_deg": -10.1,
+      "expected_accept": false,
+      "accepted": 0,
+      "rejected": 1,
+      "passed": true
+    },
+    {
+      "name": "range_boundary_1",
+      "range_error_m": 100,
+      "initial_deg": 0,
+      "measured_deg": 0,
+      "expected_accept": true,
+      "accepted": 1,
+      "rejected": 0,
+      "passed": true
+    },
+    {
+      "name": "range_outside_1",
+      "range_error_m": 101,
+      "initial_deg": 0,
+      "measured_deg": 0,
+      "expected_accept": false,
+      "accepted": 0,
+      "rejected": 1,
+      "passed": true
+    },
+    {
+      "name": "angle_inside_1",
+      "range_error_m": 0,
+      "initial_deg": 0,
+      "measured_deg": 9.9,
+      "expected_accept": true,
+      "accepted": 1,
+      "rejected": 0,
+      "passed": true
+    },
+    {
+      "name": "angle_outside_1",
+      "range_error_m": 0,
+      "initial_deg": 0,
+      "measured_deg": 10.1,
+      "expected_accept": false,
+      "accepted": 0,
+      "rejected": 1,
+      "passed": true
+    },
+    {
+      "name": "both_inside",
+      "range_error_m": 99,
+      "initial_deg": 0,
+      "measured_deg": 9.9,
+      "expected_accept": true,
+      "accepted": 1,
+      "rejected": 0,
+      "passed": true
+    },
+    {
+      "name": "both_outside",
+      "range_error_m": 101,
+      "initial_deg": 0,
+      "measured_deg": 10.1,
+      "expected_accept": false,
+      "accepted": 0,
+      "rejected": 1,
+      "passed": true
+    },
+    {
+      "name": "wrap_positive",
+      "range_error_m": 0,
+      "initial_deg": 179,
+      "measured_deg": -179,
+      "expected_accept": true,
+      "accepted": 1,
+      "rejected": 0,
+      "passed": true
+    },
+    {
+      "name": "wrap_negative",
+      "range_error_m": 0,
+      "initial_deg": -179,
+      "measured_deg": 179,
+      "expected_accept": true,
+      "accepted": 1,
+      "rejected": 0,
+      "passed": true
+    },
+    {
+      "name": "same_input_range_150",
+      "range_error_m": 150,
+      "initial_deg": 0,
+      "measured_deg": 0,
+      "expected_accept": false,
+      "accepted": 0,
+      "rejected": 1,
+      "passed": true
+    },
+    {
+      "name": "same_input_angle_20",
+      "range_error_m": 0,
+      "initial_deg": 0,
+      "measured_deg": 20,
+      "expected_accept": false,
+      "accepted": 0,
+      "rejected": 1,
+      "passed": true
+    }
+  ],
+  "checks": {
+    "all_cases_passed": true,
+    "stats_unchanged": true,
+    "no_assert": true
+  },
+  "before": {
+    "crc_errors": 1,
+    "length_errors": 2,
+    "frame_timeouts": 1,
+    "queue_drops": 0
+  },
+  "after": {
+    "crc_errors": 1,
+    "length_errors": 2,
+    "frame_timeouts": 1,
+    "queue_drops": 0
+  },
+  "hex_sha256": "fb972adec8605b232d8d5d45eaa4fdabc2b6b41aecddde22f34d2bd1d72a4fa4"
+}
