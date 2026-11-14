@@ -1,0 +1,26 @@
+{
+  "mode": "producer",
+  "phases": [],
+  "status": [],
+  "errors": [
+    "Command '['/Users/yuseungjae/zephyrproject/.venv/bin/west', 'flash', '-d', '/Users/yuseungjae/Desktop/radar-track-fcc-hil/build_log_stress', '--runner', 'openocd']' returned non-zero exit status 1."
+  ],
+  "hex_sha256": "f03c4a225da09ca8a0f19ce93c9bf080591bc02f9b19d12053a4b6f6fe8cb1b9",
+  "log_dropped_notice_total": 0,
+  "producer_sequences_received": 0,
+  "checks": {
+    "no_io_errors": false,
+    "log_loss_observed": false,
+    "status_counters_zero": false,
+    "status_each_phase": false,
+    "status_after_stop": false,
+    "no_fatal_or_assert": true,
+    "single_boot": false,
+    "confirmed": false,
+    "recovery_measurement_logged": false,
+    "timeout_once": false,
+    "producer_completed": false,
+    "producer_started": false
+  },
+  "passed": false
+}

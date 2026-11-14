@@ -1,0 +1,43 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/yuseungjae/Desktop/radar-track-fcc-hil/build_frame_handler
+ninja: no work to do.
+Test project /Users/yuseungjae/Desktop/radar-track-fcc-hil/build_frame_handler
+      Start  1: test_init_command_resets_tracking
+ 1/17 Test  #1: test_init_command_resets_tracking ....................   Passed    0.00 sec
+      Start  2: test_reset_command_resets_tracking
+ 2/17 Test  #2: test_reset_command_resets_tracking ...................   Passed    0.00 sec
+      Start  3: test_valid_measurements_arm_refresh_and_expire
+ 3/17 Test  #3: test_valid_measurements_arm_refresh_and_expire .......   Passed    0.00 sec
+      Start  4: test_invalid_measurements_do_not_arm_timeout
+ 4/17 Test  #4: test_invalid_measurements_do_not_arm_timeout .........   Passed    0.00 sec
+      Start  5: test_invalid_measurements_do_not_refresh_timeout
+ 5/17 Test  #5: test_invalid_measurements_do_not_refresh_timeout .....   Passed    0.00 sec
+      Start  6: test_gate_rejection_refreshes_receive_timeout
+ 6/17 Test  #6: test_gate_rejection_refreshes_receive_timeout ........   Passed    0.00 sec
+      Start  7: test_timestamp_rejection_refreshes_receive_timeout
+ 7/17 Test  #7: test_timestamp_rejection_refreshes_receive_timeout ...   Passed    0.00 sec
+      Start  8: test_status_zero
+ 8/17 Test  #8: test_status_zero .....................................   Passed    0.00 sec
+      Start  9: test_status_snapshot
+ 9/17 Test  #9: test_status_snapshot .................................   Passed    0.00 sec
+      Start 10: test_status_preserves_track
+10/17 Test #10: test_status_preserves_track ..........................   Passed    0.00 sec
+      Start 11: test_status_does_not_arm_timeout
+11/17 Test #11: test_status_does_not_arm_timeout .....................   Passed    0.00 sec
+      Start 12: test_status_does_not_refresh_timeout
+12/17 Test #12: test_status_does_not_refresh_timeout .................   Passed    0.00 sec
+      Start 13: test_status_encode_wire
+13/17 Test #13: test_status_encode_wire ..............................   Passed    0.00 sec
+      Start 14: test_status_encode_invalid_arguments
+14/17 Test #14: test_status_encode_invalid_arguments .................   Passed    0.00 sec
+      Start 15: test_status_submit_failure_and_recovery
+15/17 Test #15: test_status_submit_failure_and_recovery ..............   Passed    0.00 sec
+      Start 16: test_status_encode_failure_does_not_submit
+16/17 Test #16: test_status_encode_failure_does_not_submit ...........   Passed    0.00 sec
+      Start 17: test_incoming_status_report_is_ignored
+17/17 Test #17: test_incoming_status_report_is_ignored ...............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 17
+
+Total Test time (real) =   0.03 sec

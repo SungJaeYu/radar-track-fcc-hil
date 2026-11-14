@@ -88,4 +88,13 @@ module-str = Radar frame handler
 source "subsys/logging/Kconfig.template.log_config"
 endmenu
 
+config RADAR_LOG_STRESS_TEST
+    bool "Run a bounded log saturation test after boot"
+    depends on LOG_MODE_DEFERRED && LOG_PROCESS_THREAD && ASSERT
+    default n
+    help
+        Bench testing only. Generate numbered log bursts once after boot
+        to exercise log-buffer exhaustion while UART traffic continues.
+        Do not enable in normal firmware. See tests/log_stress/README.md.
+
 endmenu

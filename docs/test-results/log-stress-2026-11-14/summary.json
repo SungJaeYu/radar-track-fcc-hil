@@ -1,0 +1,82 @@
+{
+  "producer-retry": {
+    "wire": {
+      "responses": 65,
+      "crc_errors": 0,
+      "length_errors": 0,
+      "complete": true,
+      "valid_status": true
+    },
+    "max_status_ms": 60.702540969941765,
+    "phases": [
+      {
+        "name": "baseline",
+        "target_hz": 10,
+        "sent": 30,
+        "duration_s": 3.000070416019298,
+        "actual_hz": 9.999765285444894
+      },
+      {
+        "name": "loaded",
+        "target_hz": 10,
+        "sent": 119,
+        "duration_s": 12.00026008405257,
+        "actual_hz": 9.91645174075368
+      },
+      {
+        "name": "recovery",
+        "target_hz": 10,
+        "sent": 30,
+        "duration_s": 3.000195541011635,
+        "actual_hz": 9.999348239109878
+      }
+    ]
+  },
+  "traffic": {
+    "wire": {
+      "responses": 57,
+      "crc_errors": 0,
+      "length_errors": 0,
+      "complete": true,
+      "valid_status": true
+    },
+    "max_status_ms": 56.4717500237748,
+    "phases": [
+      {
+        "name": "baseline",
+        "target_hz": 10,
+        "sent": 30,
+        "duration_s": 3.000451209023595,
+        "actual_hz": 9.99849619609798
+      },
+      {
+        "name": "50Hz",
+        "target_hz": 50,
+        "sent": 128,
+        "duration_s": 3.0003138330066577,
+        "actual_hz": 42.662203730777506
+      },
+      {
+        "name": "100Hz",
+        "target_hz": 100,
+        "sent": 246,
+        "duration_s": 3.000076457974501,
+        "actual_hz": 81.99791020195755
+      },
+      {
+        "name": "200Hz",
+        "target_hz": 200,
+        "sent": 472,
+        "duration_s": 3.0001777500147,
+        "actual_hz": 157.32401188485827
+      },
+      {
+        "name": "recovery",
+        "target_hz": 10,
+        "sent": 30,
+        "duration_s": 3.000545749964658,
+        "actual_hz": 9.99818116432764
+      }
+    ]
+  }
+}

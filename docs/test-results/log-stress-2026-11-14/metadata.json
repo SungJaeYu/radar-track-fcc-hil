@@ -1,0 +1,62 @@
+{
+  "base_commit": "0b284c6cd8aa21a6326145759ee9656d3f88a66f",
+  "uncommitted_test_fixture": true,
+  "source_sha256": {
+    "fcc_app/CMakeLists.txt": "cd652dcb2ce774775833a107d5dbb84fab9ad54986a8c028ea9dc9d1f58ab51f",
+    "fcc_app/Kconfig": "95f269d40cc17734ce9f598610023355834759eba33bc117fcb840f56ca935d2",
+    "fcc_app/debug.conf": "22f194e318bdae40a347b6955e369b7e5ff1aa0a31643a3729637ca821a2a9d9",
+    "fcc_app/prj.conf": "55dee785018f697452bf3a83faa435be07d57b4810292f3ec03100a8bd26d0fc",
+    "fcc_app/src/application/frame_handler.c": "cff1f13737a6e7c492b2a765fe83e104d271bfacbbc5ccca713dfbab277e4ca9",
+    "fcc_app/src/application/frame_handler.h": "2c20ccf97c633b9561509a5e644367a19c914336528115f566630d2b35e53516",
+    "fcc_app/src/common/byte_order.h": "3068a7d10a7a108e3d32801510f3df52c14a39333f9510d41738b13814987084",
+    "fcc_app/src/common/crc16.c": "cc8ebf200f755fda120acc040cc29d239a025722e67f3a0bde72269496d7b262",
+    "fcc_app/src/common/crc16.h": "ff16015d147e1e8501f2d76f6f7ad18d0c1eeefefcc2fba687d478fae0587b3c",
+    "fcc_app/src/common/math_constants.h": "fd617c5bf0baecbb567fa5fd4dadf9ad29272c10245cd300a7fbf02c9f4e6b27",
+    "fcc_app/src/common/ring_buffer.c": "5a7252395ee4d48e3a7bdc56ba1a8097700bfd6fb31b1c7abc400c1821975fc1",
+    "fcc_app/src/common/ring_buffer.h": "303cbfe200f73a9b9e6398f27d5f76f94489ceefcd6bf94934f73eaef61748ac",
+    "fcc_app/src/main.c": "39cfddb3c06ecc6c214dbe722d38b7d22a29cff0b4da9eadd0750e4a4e8cb117",
+    "fcc_app/src/protocol/frame_parser.c": "2798ad568783523d9b49a90351c3aa3968b691db59dbf2c3093e3f2857c20b39",
+    "fcc_app/src/protocol/frame_parser.h": "d9d0bb246ac43121f767ed53d489c3849da3e7695562af7a42892e98a442b5da",
+    "fcc_app/src/protocol/protocol_frame.c": "2bb28183b9761c21c3979aa8f64ea9ff45668326c5dbed2cde8424e707a377bc",
+    "fcc_app/src/protocol/protocol_frame.h": "f25e6644c5635fa91a4c72a0a98d213f51fbdb345ef4c2869ebf4eb57f884224",
+    "fcc_app/src/protocol/radar_message.c": "0368349586b0658b1c7a709fd3caf7c2a2bb57f141e1278e9b49dccf046bfba1",
+    "fcc_app/src/protocol/radar_message.h": "dce3b120b9e60cb7885395a7f963966ed9292c335828e2a298a4272323a0b92f",
+    "fcc_app/src/protocol/status_message.c": "ea829c0d69d64b9fc07c38df1f83ded1ed303a4b9e260f3b77cbc4cc994cb54e",
+    "fcc_app/src/protocol/status_message.h": "1fb635272690c1536ca9ec343b3017c3b8380c54972480f6cf93ca18585177a9",
+    "fcc_app/src/tracking/angle_utils.c": "a982efca95d49ce703810b0ed6231595f9262a28df94c035da2783d7dd17bceb",
+    "fcc_app/src/tracking/angle_utils.h": "9481baddb7c4930fb36e1d61a79b4c06dc61d7e748d039514c587e118ed682a8",
+    "fcc_app/src/tracking/gating.c": "a5ece331031e473da559064ade439ea24c9ec816337dd0b78a81a9e21b1b4f7f",
+    "fcc_app/src/tracking/gating.h": "5b313191ab6e167cd1d5b6f39022d1a6717920f54dc5b6e034770d7f4890a55e",
+    "fcc_app/src/tracking/kalman_cv.c": "da121290af88e15b6ec0b1d0190633859c7b0eb7a8514e3c6a2c7797333cdc22",
+    "fcc_app/src/tracking/kalman_cv.h": "d2081fb4e5c60e7eec9f25abfa61af6fbadd73e308a6f85850da49e8e8792e5c",
+    "fcc_app/src/tracking/track.c": "b0fd3adedf0664744cd9f2ca44228372577d39be428f63a4c10bd9cd30e51b07",
+    "fcc_app/src/tracking/track.h": "042d5b922317d321d397062ff3941ca3853b956ef904fbb09dcee94dceb69d15",
+    "fcc_app/src/transport/rx_frame_processor.c": "381ec79c8219f66722b733bc35322bde08ef7ff7308877b67662c8d85dedf8af",
+    "fcc_app/src/transport/rx_frame_processor.h": "8d5628ffea2a7ff650ff4c72f62edcefb758ec96dec23f2ed8e6be26c6b7854c",
+    "fcc_app/src/transport/uart_rx.c": "892d1abbdd27f9bd96a65e0fdfd0b831d16d12d639d9607166de80f621c737e3",
+    "fcc_app/src/transport/uart_rx.h": "2b7b1e4d7e8ed11009e4f97ac8b1623ce710ff20a72f7867e0249d938c097393",
+    "fcc_app/src/transport/uart_tx.c": "469adddb2eff0dfbe53da1d84d12798b2ba640be6f3447c4cf2fe7a1f926b8bf",
+    "fcc_app/src/transport/uart_tx.h": "91ce48b06906fc2d2ee9e2752abf1cee11e357e7eaa6236a10507e2f0bf90011",
+    "fcc_app/tests/log_stress/README.md": "8fd95127e8ea341cbfd88e79913311defbe69ee98b66a0a8fd2cb5c7b49e11e9",
+    "fcc_app/tests/log_stress/board_check.py": "e4f791e981bb2aeade58b152487776b210fdddf721a933ce395cf93e1ac05dc9",
+    "fcc_app/tests/log_stress/log_stress.c": "9713dc32e7cea722a4c9f408aaf325e46a071913ebeeec43c94ea3a64b70b512",
+    "fcc_app/tests/log_stress/stress.conf": "e3aa674c34fc04f3d24fb9e00a96b691af0ac018297d6bee33dea92cc47dc9f0"
+  },
+  "builds": {
+    "build": {
+      "test_enabled": false,
+      "test_source_included": false,
+      "hex_sha256": "8683cafc32dc30c8e73285f134d60d551e6f27bb377ed32c5117021b32fefe38"
+    },
+    "build_logging_debug": {
+      "test_enabled": false,
+      "test_source_included": false,
+      "hex_sha256": "4d113aadbb7fc2beddaa62ce0df8efa9f87bf166a21a4b6eb91484edb829d74a"
+    },
+    "build_log_stress": {
+      "test_enabled": true,
+      "test_source_included": true,
+      "hex_sha256": "f03c4a225da09ca8a0f19ce93c9bf080591bc02f9b19d12053a4b6f6fe8cb1b9"
+    }
+  }
+}

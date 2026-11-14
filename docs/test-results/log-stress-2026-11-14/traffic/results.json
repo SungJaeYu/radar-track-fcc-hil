@@ -1,0 +1,853 @@
+{
+  "mode": "traffic",
+  "phases": [
+    {
+      "name": "baseline",
+      "target_hz": 10,
+      "sent": 30,
+      "duration_s": 3.000451209023595
+    },
+    {
+      "name": "50Hz",
+      "target_hz": 50,
+      "sent": 128,
+      "duration_s": 3.0003138330066577
+    },
+    {
+      "name": "100Hz",
+      "target_hz": 100,
+      "sent": 246,
+      "duration_s": 3.000076457974501
+    },
+    {
+      "name": "200Hz",
+      "target_hz": 200,
+      "sent": 472,
+      "duration_s": 3.0001777500147
+    },
+    {
+      "name": "recovery",
+      "target_hz": 10,
+      "sent": 30,
+      "duration_s": 3.000545749964658
+    }
+  ],
+  "status": [
+    {
+      "phase": "baseline",
+      "at_s": 2.173289125028532,
+      "elapsed_ms": 51.91683297744021,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 2.225386540987529,
+      "elapsed_ms": 55.899167025927454,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 2.5318551249802113,
+      "elapsed_ms": 55.83645805018023,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 2.8378148750052787,
+      "elapsed_ms": 50.638957996852696,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 3.1390847910079174,
+      "elapsed_ms": 55.821417015977204,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 3.4452346250182018,
+      "elapsed_ms": 52.41312499856576,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 3.747967790986877,
+      "elapsed_ms": 55.77962502138689,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 4.054260125034489,
+      "elapsed_ms": 55.95395795535296,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 4.360573958023451,
+      "elapsed_ms": 55.89891696581617,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 4.666759708023164,
+      "elapsed_ms": 51.20929196709767,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 4.9682242079870775,
+      "elapsed_ms": 55.41875003837049,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline-end",
+      "at_s": 5.2256988330045715,
+      "elapsed_ms": 53.161874995566905,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 5.278943290992174,
+      "elapsed_ms": 55.66283402731642,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 5.584963875007816,
+      "elapsed_ms": 51.73237499548122,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 5.887017874978483,
+      "elapsed_ms": 52.16358305187896,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 6.189810124982614,
+      "elapsed_ms": 56.23158300295472,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 6.496182832983322,
+      "elapsed_ms": 56.321583047974855,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 6.802542541001458,
+      "elapsed_ms": 50.72529200697318,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 7.103681540989783,
+      "elapsed_ms": 54.32854202808812,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 7.408617708017118,
+      "elapsed_ms": 55.235708015970886,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 7.7139102080254816,
+      "elapsed_ms": 54.05824998160824,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz",
+      "at_s": 8.01851662498666,
+      "elapsed_ms": 51.26041604671627,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "50Hz-end",
+      "at_s": 8.279181166028138,
+      "elapsed_ms": 55.27862499002367,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 8.334481875004712,
+      "elapsed_ms": 53.40099998284131,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 8.638309916015714,
+      "elapsed_ms": 51.51870899135247,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 8.939993707987014,
+      "elapsed_ms": 55.750333005562425,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 9.246216250001453,
+      "elapsed_ms": 55.86083303205669,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 9.552687124989461,
+      "elapsed_ms": 50.99487502593547,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 9.854318665980827,
+      "elapsed_ms": 54.17954199947417,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 10.158585541008506,
+      "elapsed_ms": 55.79933401895687,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 10.465076666034292,
+      "elapsed_ms": 55.050916969776154,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 10.770661708025727,
+      "elapsed_ms": 55.538541986607015,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz",
+      "at_s": 11.076298540981952,
+      "elapsed_ms": 55.99675001576543,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "100Hz-end",
+      "at_s": 11.334541750024073,
+      "elapsed_ms": 55.928415968082845,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 11.390571291034576,
+      "elapsed_ms": 55.82058394793421,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 11.696744250017218,
+      "elapsed_ms": 55.53358298493549,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 12.002551999990828,
+      "elapsed_ms": 51.31537502165884,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 12.303949458000716,
+      "elapsed_ms": 56.07695801882073,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 12.610125790990423,
+      "elapsed_ms": 50.595334032550454,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 12.911243374983314,
+      "elapsed_ms": 55.873166013043374,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 13.21729562501423,
+      "elapsed_ms": 55.636624980252236,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 13.52295391599182,
+      "elapsed_ms": 55.890874995384365,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 13.828849499986973,
+      "elapsed_ms": 54.57404104527086,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz",
+      "at_s": 14.134107707999647,
+      "elapsed_ms": 52.154208009596914,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "200Hz-end",
+      "at_s": 14.390664166014176,
+      "elapsed_ms": 55.88620901107788,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 14.446665583003778,
+      "elapsed_ms": 55.95566699048504,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 14.753004458034411,
+      "elapsed_ms": 55.93741696793586,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 15.059136500000022,
+      "elapsed_ms": 55.524000024888664,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 15.365041457989719,
+      "elapsed_ms": 53.19825001060963,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 15.668261166021693,
+      "elapsed_ms": 52.24479199387133,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 15.97057154099457,
+      "elapsed_ms": 56.4717500237748,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 16.277595458028372,
+      "elapsed_ms": 55.30220799846575,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 16.583130875020288,
+      "elapsed_ms": 54.68374997144565,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 16.88833045802312,
+      "elapsed_ms": 54.29291696054861,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 17.192700166022405,
+      "elapsed_ms": 55.34441699273884,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery-end",
+      "at_s": 17.447110750013962,
+      "elapsed_ms": 55.79804099397734,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "after-stop",
+      "at_s": 21.00603749998845,
+      "elapsed_ms": 55.19354098942131,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    }
+  ],
+  "errors": [],
+  "hex_sha256": "4d113aadbb7fc2beddaa62ce0df8efa9f87bf166a21a4b6eb91484edb829d74a",
+  "last_measurement_ms": 15135,
+  "log_dropped_notice_total": 1909,
+  "producer_sequences_received": 0,
+  "checks": {
+    "no_io_errors": true,
+    "log_loss_observed": true,
+    "status_counters_zero": true,
+    "status_each_phase": true,
+    "status_after_stop": true,
+    "no_fatal_or_assert": true,
+    "single_boot": true,
+    "confirmed": true,
+    "recovery_measurement_logged": true,
+    "timeout_once": true
+  },
+  "passed": true
+}

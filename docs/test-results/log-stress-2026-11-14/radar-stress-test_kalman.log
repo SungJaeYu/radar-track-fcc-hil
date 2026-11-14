@@ -1,0 +1,51 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/yuseungjae/Desktop/radar-track-fcc-hil/build_tracking
+ninja: no work to do.
+Test project /Users/yuseungjae/Desktop/radar-track-fcc-hil/build_tracking
+      Start  1: tracking
+ 1/21 Test  #1: tracking .........................   Passed    0.04 sec
+      Start  2: gating_default_range_boundary
+ 2/21 Test  #2: gating_default_range_boundary ....   Passed    0.00 sec
+      Start  3: gating_default_angle_boundary
+ 3/21 Test  #3: gating_default_angle_boundary ....   Passed    0.00 sec
+      Start  4: gating_default_both_required
+ 4/21 Test  #4: gating_default_both_required .....   Passed    0.00 sec
+      Start  5: gating_default_wrapped_error
+ 5/21 Test  #5: gating_default_wrapped_error .....   Passed    0.00 sec
+      Start  6: gating_minimum_range_boundary
+ 6/21 Test  #6: gating_minimum_range_boundary ....   Passed    0.00 sec
+      Start  7: gating_minimum_angle_boundary
+ 7/21 Test  #7: gating_minimum_angle_boundary ....   Passed    0.00 sec
+      Start  8: gating_minimum_both_required
+ 8/21 Test  #8: gating_minimum_both_required .....   Passed    0.00 sec
+      Start  9: gating_minimum_wrapped_error
+ 9/21 Test  #9: gating_minimum_wrapped_error .....   Passed    0.00 sec
+      Start 10: gating_narrow_range_boundary
+10/21 Test #10: gating_narrow_range_boundary .....   Passed    0.00 sec
+      Start 11: gating_narrow_angle_boundary
+11/21 Test #11: gating_narrow_angle_boundary .....   Passed    0.00 sec
+      Start 12: gating_narrow_both_required
+12/21 Test #12: gating_narrow_both_required ......   Passed    0.00 sec
+      Start 13: gating_narrow_wrapped_error
+13/21 Test #13: gating_narrow_wrapped_error ......   Passed    0.00 sec
+      Start 14: gating_wide_range_boundary
+14/21 Test #14: gating_wide_range_boundary .......   Passed    0.00 sec
+      Start 15: gating_wide_angle_boundary
+15/21 Test #15: gating_wide_angle_boundary .......   Passed    0.00 sec
+      Start 16: gating_wide_both_required
+16/21 Test #16: gating_wide_both_required ........   Passed    0.00 sec
+      Start 17: gating_wide_wrapped_error
+17/21 Test #17: gating_wide_wrapped_error ........   Passed    0.00 sec
+      Start 18: gating_maximum_range_boundary
+18/21 Test #18: gating_maximum_range_boundary ....   Passed    0.00 sec
+      Start 19: gating_maximum_angle_boundary
+19/21 Test #19: gating_maximum_angle_boundary ....   Passed    0.00 sec
+      Start 20: gating_maximum_both_required
+20/21 Test #20: gating_maximum_both_required .....   Passed    0.00 sec
+      Start 21: gating_maximum_wrapped_error
+21/21 Test #21: gating_maximum_wrapped_error .....   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 21
+
+Total Test time (real) =   0.09 sec

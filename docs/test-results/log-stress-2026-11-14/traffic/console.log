@@ -1,0 +1,1236 @@
+*** Booting Zephyr OS build 4.2.0 ***
+[00:00:00.000,000] [0m<inf> radar_main: === FCC learning-rebuild boot ===[0m
+[00:00:00.000,000] [0m<inf> radar_main: FCC ready: USART6 RX/TX initialized[0m
+[00:00:00.205,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:00.206,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:00.258,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.258,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.258,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:00.358,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=100 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.358,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.358,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:00.458,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=200 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.458,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.458,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:00.458,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:00:00.559,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=300 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.559,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.559,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:00.564,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:00.659,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=400 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.659,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.659,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:00.759,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=500 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.759,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.759,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:00.859,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=601 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.860,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.860,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:00.870,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:00.960,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=702 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.960,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:00.960,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.060,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=802 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.060,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.060,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.161,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=902 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.161,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.161,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.171,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:01.261,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1003 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.261,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.261,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.361,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1103 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.361,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.362,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.462,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1203 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.462,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.462,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.477,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:01.562,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1304 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.562,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.562,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.662,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1404 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.662,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.662,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.763,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1504 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.763,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.763,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.780,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:01.863,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1604 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.863,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.863,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:01.963,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1704 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.963,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:01.963,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.063,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1805 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.063,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.063,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.087,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:02.163,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=1905 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.163,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.163,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.264,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2005 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.264,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.264,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.364,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2106 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.364,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.364,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.393,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:02.464,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2206 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.464,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.464,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.565,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2306 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.565,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.565,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.665,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2407 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.665,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.665,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.699,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:02.765,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2507 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.765,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.765,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.866,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2607 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.866,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.866,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:02.966,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2708 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.966,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:02.966,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.000,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:03.066,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2808 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.066,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.066,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.167,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=2909 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.167,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.167,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.258,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:03.311,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3053 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.312,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.312,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.312,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:03.368,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3110 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.368,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.368,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.388,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3130 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.388,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.388,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.409,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3150 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.409,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.409,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.429,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3170 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.429,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.429,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.449,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3191 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.449,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.449,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.469,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3211 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.469,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.469,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.489,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3231 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.489,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.489,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.510,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3252 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.510,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.510,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.530,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3272 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.530,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.530,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.551,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3293 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.551,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.551,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.571,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3313 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.571,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.571,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.592,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3334 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.592,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.592,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.613,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3354 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.613,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.613,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.617,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:03.670,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3412 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.670,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.670,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.690,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3432 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.690,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.690,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.710,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3452 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.710,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.710,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.730,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3472 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.730,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.731,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.765,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3496 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.765,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.765,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.776,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3518 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.776,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.776,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.796,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3538 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.796,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.796,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.817,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3559 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.817,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.817,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.837,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3579 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.837,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.837,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.857,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3599 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.857,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.858,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.877,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3619 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.877,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.877,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.898,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3640 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.898,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.898,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:03.918,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3660 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.919,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:03.919,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:03.919,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:03.972,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3714 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.972,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.972,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:03.992,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3735 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.992,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:03.993,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.013,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3755 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.013,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.013,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.033,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3775 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.033,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.033,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.054,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3796 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.054,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.054,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.074,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3816 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.074,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.074,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.095,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3837 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.095,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.095,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.115,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3857 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.115,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.115,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.135,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3877 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.135,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.135,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.155,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3897 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.155,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.155,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.176,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3918 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.176,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.176,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.196,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3938 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.196,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.196,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.217,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=3959 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.217,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.217,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.221,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:04.279,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4021 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.279,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.279,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.299,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4041 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.299,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.299,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.319,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4061 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.319,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.319,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.339,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4082 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.339,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.340,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.360,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4102 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.360,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.360,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.380,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4123 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.380,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.381,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.401,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4143 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.401,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.401,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.422,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4164 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.422,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.422,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.442,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4184 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.442,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.442,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.462,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4204 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.462,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.462,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.482,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4225 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.482,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.503,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4245 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.503,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.523,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4266 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.585,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4327 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.585,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.585,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.605,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4348 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.605,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.605,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.625,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4368 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.646,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4388 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.646,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.666,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4408 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.686,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4429 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.707,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4449 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.727,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4469 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.747,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4490 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.747,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.768,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4511 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.768,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.788,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4531 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.809,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4552 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.809,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:04.830,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4572 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.834,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:04.885,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4628 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.885,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.886,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:04.906,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4649 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.906,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.926,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4669 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.947,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4690 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.947,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:04.967,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4710 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:04.987,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4730 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.008,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4751 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:05.028,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4771 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.029,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.049,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4792 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:05.049,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.069,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4812 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.090,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4833 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.110,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4853 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:05.110,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.131,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4873 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.135,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:05.190,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4933 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.190,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.190,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:05.211,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4953 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.211,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.231,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4973 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.231,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.251,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=4994 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.271,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5014 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.291,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5034 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.291,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.312,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5055 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 4 messages dropped ---
+[0m[00:00:05.332,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5075 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.353,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5095 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.373,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5116 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.373,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.394,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5137 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.414,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5157 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.414,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.435,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5178 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.440,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.496,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5239 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:05.496,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.496,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.516,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5259 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.516,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.537,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5280 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.557,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5300 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.557,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.578,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5321 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.578,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.598,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5341 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.619,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5362 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.639,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5382 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.659,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5402 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.659,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.679,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5422 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.699,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5443 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.699,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.720,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5463 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.740,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5484 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.744,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.800,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5543 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:05.800,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.800,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:05.820,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5563 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.820,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:05.820,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 4 messages dropped ---
+[0m[00:00:05.840,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5583 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.860,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5604 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.860,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.881,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5624 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.901,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5644 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.901,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.921,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5665 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.941,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5685 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.961,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5705 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.962,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:05.986,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5729 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:05.986,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.010,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5753 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.030,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5774 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 6 messages dropped ---
+[0m[00:00:06.049,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:06.101,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5845 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.101,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.101,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:06.121,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5865 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:06.121,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.121,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.142,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5885 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.162,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5906 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.162,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.183,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5926 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.203,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5946 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.203,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.223,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5967 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.244,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=5987 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.264,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6008 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.264,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.284,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6028 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.305,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6048 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.305,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:06.309,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:06.366,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6109 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.366,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.366,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:06.366,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:06.419,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6163 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 6 messages dropped ---
+[0m[00:00:06.419,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.419,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.429,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6173 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 4 messages dropped ---
+[0m[00:00:06.440,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6183 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.450,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6194 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.471,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6214 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.471,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.491,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6235 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.502,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6245 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.522,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6266 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.533,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6276 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.553,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6297 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.574,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6317 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:06.584,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6328 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.605,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6349 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.615,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6359 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.646,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6390 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:06.666,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6411 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.668,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.721,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6465 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.721,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.721,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.731,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6475 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.741,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6485 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.752,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6496 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.772,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6516 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.783,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6527 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.803,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6547 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.824,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6568 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.834,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6578 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.855,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6599 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:06.865,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6609 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.886,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6630 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.896,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6640 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.917,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6661 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.937,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6681 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:06.947,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6692 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:06.969,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.026,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6771 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.026,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.026,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.036,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6781 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.036,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.057,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6801 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.067,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6812 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.088,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6833 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.099,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6843 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.119,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6864 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.140,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6884 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.150,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6895 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.171,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6915 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.181,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6926 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.202,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6946 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.212,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6957 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.233,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6977 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:07.243,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=6988 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:07.264,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7008 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.332,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7077 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.332,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.332,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.342,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7087 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.343,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.353,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7098 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.363,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7108 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.384,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7129 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.405,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7149 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.415,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7160 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.435,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7180 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.456,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7201 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.466,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7211 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 6 messages dropped ---
+[0m[00:00:07.487,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7232 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.497,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7242 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.518,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7263 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.528,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7273 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.549,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7294 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:07.570,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7315 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.580,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7325 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.633,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7379 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.634,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.634,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.654,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7399 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.654,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.685,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7430 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.695,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7440 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.716,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7461 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.716,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.737,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7482 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.758,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7503 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.768,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7513 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.788,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7534 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:07.799,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7544 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.819,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7564 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.829,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7575 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.850,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7595 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:07.870,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7616 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.881,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7626 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.938,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7683 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.938,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.938,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:07.959,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7704 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 4 messages dropped ---
+[0m[00:00:07.969,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7714 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:07.989,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7735 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:08.000,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7745 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:08.020,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7766 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:08.041,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7786 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:08.051,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7797 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:08.072,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7817 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.082,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7827 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.103,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7848 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.123,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7869 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.134,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7879 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.154,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7900 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.164,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7910 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.185,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7931 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.187,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:08.244,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=7989 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 7 messages dropped ---
+[0m[00:00:08.244,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.244,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 14 messages dropped ---
+[0m[00:00:08.254,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8000 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.264,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8010 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.285,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8031 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.296,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8042 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.317,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8063 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.337,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8083 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.348,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8094 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.368,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8114 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.379,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8125 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.400,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8146 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.420,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8166 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:08.431,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8177 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.452,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8198 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.462,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8208 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.483,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8229 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.493,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8239 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.494,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.549,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8295 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.549,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.559,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8305 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.559,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.569,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8316 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.590,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8336 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.601,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8347 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.621,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8368 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.642,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8388 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.662,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8409 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.673,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8419 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.693,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8440 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.703,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8450 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:08.724,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8471 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.735,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8481 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.755,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8502 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.776,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8522 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:08.786,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8533 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.855,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8601 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.855,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.855,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.865,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8611 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.865,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.875,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8622 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.886,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8632 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.906,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8653 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.917,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8663 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.937,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8684 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.958,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8705 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:08.968,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8715 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:08.989,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8736 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:08.999,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8746 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.020,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8766 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.040,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8787 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.051,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8797 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:09.071,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8818 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.082,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8829 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.102,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8849 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.160,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8907 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.160,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.161,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 10 messages dropped ---
+[0m[00:00:09.171,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8918 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.181,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8928 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.202,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8949 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.212,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8959 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.233,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=8979 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 2 messages dropped ---
+[0m[00:00:09.253,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9000 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.253,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.274,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9021 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 3 messages dropped ---
+[0m[00:00:09.284,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9031 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.305,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9052 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.315,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9062 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.336,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9083 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:09.357,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9104 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.418,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9165 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.418,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.418,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.418,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.474,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9221 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.474,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.474,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.479,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9226 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.479,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.495,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9242 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.510,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9258 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.537,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9284 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 9 messages dropped ---
+[0m[00:00:09.552,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9299 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.568,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9315 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.589,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9336 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.604,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9352 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.625,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9373 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 4 messages dropped ---
+[0m[00:00:09.641,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9388 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.661,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9409 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.677,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9425 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.698,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9446 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.713,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9461 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.723,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.779,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9527 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 9 messages dropped ---
+[0m[00:00:09.779,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.780,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 14 messages dropped ---
+[0m[00:00:09.785,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9532 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 7 messages dropped ---
+[0m[00:00:09.800,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9548 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.816,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9564 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 10 messages dropped ---
+[0m[00:00:09.831,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9579 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 10 messages dropped ---
+[0m[00:00:09.847,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9595 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.868,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9616 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.883,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9631 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.904,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9652 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:09.920,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9668 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:09.940,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9689 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:09.958,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9706 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.973,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9722 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:09.989,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9737 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.005,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9753 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.026,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9774 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.080,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9829 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.080,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.080,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 14 messages dropped ---
+[0m[00:00:10.086,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9834 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 7 messages dropped ---
+[0m[00:00:10.096,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9845 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.112,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9860 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.133,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9882 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 9 messages dropped ---
+[0m[00:00:10.149,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9897 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.170,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9918 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.191,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9939 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.206,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9955 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.222,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9971 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:10.243,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=9992 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.259,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10008 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.274,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10023 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.295,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10044 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.311,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10060 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.329,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.386,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10135 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.386,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.386,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 14 messages dropped ---
+[0m[00:00:10.391,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10140 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.396,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10146 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.418,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10167 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.433,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10182 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.449,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10198 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.470,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10219 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.485,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10235 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.485,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.506,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10256 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 1 messages dropped ---
+[0m[00:00:10.527,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10277 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.543,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10293 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.560,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10310 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.585,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10335 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.603,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10343 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.614,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10364 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.631,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10381 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.686,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10436 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.686,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.686,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.691,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10441 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.701,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10451 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.722,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10472 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.737,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10487 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 6 messages dropped ---
+[0m[00:00:10.758,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10508 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.779,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10529 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.794,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10544 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:10.815,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10565 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 5 messages dropped ---
+[0m[00:00:10.831,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10581 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.852,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10602 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.873,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10623 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.888,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10638 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.904,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10654 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.924,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10675 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.992,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10742 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 11 messages dropped ---
+[0m[00:00:10.992,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.992,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[1;31m--- 14 messages dropped ---
+[0m[00:00:10.997,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10747 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 8 messages dropped ---
+[0m[00:00:10.997,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[1;31m--- 6 messages dropped ---
+[0m[00:00:11.007,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10758 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.028,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10779 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.044,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10794 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.064,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10815 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.080,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10831 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.101,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10851 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.132,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10882 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.147,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10898 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.173,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10924 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.173,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.188,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10939 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.209,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10960 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.224,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=10975 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.297,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11048 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.297,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.297,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:11.302,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11053 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.312,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11064 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.333,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11084 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.349,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11100 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.365,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11116 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.385,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11137 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.401,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11152 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.422,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11173 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.437,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11189 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.453,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11204 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.478,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11230 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.479,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.494,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11246 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.515,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11266 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.530,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11282 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.602,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11354 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.602,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.602,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:11.607,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11359 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.618,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11369 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.633,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11385 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.649,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11401 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.670,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11422 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.686,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11438 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.706,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11458 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.722,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11474 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.737,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11489 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.753,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11505 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.779,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11531 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.794,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11547 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.815,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11567 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.831,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11583 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.850,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:11.906,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11658 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.906,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.906,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:11.911,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11664 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.911,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.916,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11669 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.932,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11685 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.953,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11706 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.969,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11721 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.984,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11737 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.000,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11753 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.021,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11773 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.036,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11789 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.057,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11810 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.072,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11825 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.093,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11846 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.114,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11867 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.129,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11882 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.150,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11903 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.208,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11961 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.208,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.208,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:12.213,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11966 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.224,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11977 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.239,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=11992 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.260,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12013 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.276,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12029 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.296,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12049 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.312,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12065 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.328,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12081 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.348,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12102 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.364,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12117 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.389,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12143 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.405,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12158 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.467,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12221 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.468,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.468,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:12.468,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:12.567,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12321 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.567,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.567,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:12.668,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12421 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.668,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.668,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:12.768,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12521 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.768,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.768,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:12.773,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:12.868,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12622 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.868,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.868,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:12.968,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12722 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.968,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:12.968,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.068,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12822 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.068,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.068,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.079,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:13.168,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=12922 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.168,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.168,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.269,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13023 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.269,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.269,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.369,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13123 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.369,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.369,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.385,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:13.469,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13223 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.469,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.469,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.569,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13323 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.569,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.569,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.670,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13423 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.670,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.670,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.688,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:13.770,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13524 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.770,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.770,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.870,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13624 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.870,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.870,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.970,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13724 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.971,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.971,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:13.991,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:14.071,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13824 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.071,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.071,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.171,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=13925 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.171,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.171,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.272,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14025 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.272,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.272,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.298,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:14.372,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14126 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.372,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.372,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.472,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14226 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.472,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.472,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.572,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14326 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.572,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.573,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.603,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:14.672,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14426 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.673,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.673,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.773,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14527 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.773,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.773,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.873,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14627 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.873,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.874,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:14.908,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:14.974,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14728 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.974,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.974,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:15.074,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14828 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:15.074,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:15.074,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:15.181,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=14935 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:15.181,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:15.181,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:15.212,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:15.281,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=15035 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:15.281,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:15.281,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:15.381,000] [0m<dbg> frame_handler: handle_radar_measurement: Measurement: t=15135 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:15.381,000] [0m<dbg> frame_handler: update_track_from_measurement: Prediction: range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:15.382,000] [0m<dbg> frame_handler: update_track_from_measurement: Measurement accepted: range=1000.00 m, azimuth=0.0000 rad, range_rate=0.00 m/s, azimuth_rate=0.0000 rad/s[0m
+[00:00:15.467,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m
+[00:00:16.419,000] [1;33m<wrn> frame_handler: Radar measurement timeout: track cleared[0m
+[00:00:19.026,000] [0m<dbg> frame_handler: handle_status_request: STATUS report queued: payload=28 bytes[0m

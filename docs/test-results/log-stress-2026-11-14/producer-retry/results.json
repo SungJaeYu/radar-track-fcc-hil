@@ -1,0 +1,955 @@
+{
+  "mode": "producer",
+  "phases": [
+    {
+      "name": "baseline",
+      "target_hz": 10,
+      "sent": 30,
+      "duration_s": 3.000070416019298
+    },
+    {
+      "name": "loaded",
+      "target_hz": 10,
+      "sent": 119,
+      "duration_s": 12.00026008405257
+    },
+    {
+      "name": "recovery",
+      "target_hz": 10,
+      "sent": 30,
+      "duration_s": 3.000195541011635
+    }
+  ],
+  "status": [
+    {
+      "phase": "baseline",
+      "at_s": 2.1976089159725234,
+      "elapsed_ms": 55.38612499367446,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 2.253054249973502,
+      "elapsed_ms": 52.60462500154972,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 2.5560782499960624,
+      "elapsed_ms": 54.9995829933323,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 2.861645666009281,
+      "elapsed_ms": 55.83899997873232,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 3.167702874983661,
+      "elapsed_ms": 51.0375410085544,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 3.4687505000038072,
+      "elapsed_ms": 55.720040982123464,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 3.7751100409659557,
+      "elapsed_ms": 55.704709026031196,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 4.080955000012182,
+      "elapsed_ms": 51.149665960110724,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 4.382711832993664,
+      "elapsed_ms": 55.047833011485636,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 4.687836083001457,
+      "elapsed_ms": 55.45245797839016,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "at_s": 4.9938129159854725,
+      "elapsed_ms": 51.286667003296316,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "baseline-end",
+      "at_s": 5.253088333003689,
+      "elapsed_ms": 52.099374996032566,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 5.305294124991633,
+      "elapsed_ms": 55.794125015381724,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 5.611299041018356,
+      "elapsed_ms": 51.780458947177976,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 5.913491832965519,
+      "elapsed_ms": 52.2450830321759,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 6.215817665972281,
+      "elapsed_ms": 55.98041700432077,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 6.522189332987182,
+      "elapsed_ms": 51.857042009942234,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 6.824426915962249,
+      "elapsed_ms": 56.29604205023497,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 7.131271457998082,
+      "elapsed_ms": 55.70954200811684,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 7.437085625017062,
+      "elapsed_ms": 60.702540969941765,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 7.748223582981154,
+      "elapsed_ms": 51.36170802870765,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 8.049749916011933,
+      "elapsed_ms": 56.20558396913111,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 8.356108582986053,
+      "elapsed_ms": 54.32195798493922,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 8.660744499997236,
+      "elapsed_ms": 52.95066599501297,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 8.964292457967531,
+      "elapsed_ms": 51.87862500315532,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 9.266262665973045,
+      "elapsed_ms": 56.20783404447138,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 9.572714665962849,
+      "elapsed_ms": 56.60308402730152,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 9.879898790968582,
+      "elapsed_ms": 56.3089590286836,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 10.186294457991607,
+      "elapsed_ms": 51.64845800027251,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 10.488516707962845,
+      "elapsed_ms": 54.85862505156547,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 10.793809124967083,
+      "elapsed_ms": 52.71229101344943,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 11.096894707996398,
+      "elapsed_ms": 56.048667000140995,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 11.40318645798834,
+      "elapsed_ms": 55.815958010498434,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 11.709129791008309,
+      "elapsed_ms": 56.21337500633672,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 12.015449957980309,
+      "elapsed_ms": 56.07300001429394,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 12.322024666005746,
+      "elapsed_ms": 56.275959010235965,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 12.628331790969241,
+      "elapsed_ms": 54.5441250433214,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 12.933203332999256,
+      "elapsed_ms": 56.43212498398498,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 13.239801957970485,
+      "elapsed_ms": 56.2979580136016,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 13.546224374964368,
+      "elapsed_ms": 52.90025001158938,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 13.849380832980387,
+      "elapsed_ms": 52.124292007647455,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 14.152141749975272,
+      "elapsed_ms": 55.49466604134068,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 14.457777125004213,
+      "elapsed_ms": 54.98616601107642,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 14.762996750010643,
+      "elapsed_ms": 56.237707962282,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 15.069512207992375,
+      "elapsed_ms": 51.321292005013674,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 15.371404165984131,
+      "elapsed_ms": 55.87941699195653,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 15.67779987497488,
+      "elapsed_ms": 52.733666030690074,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 15.980560833006166,
+      "elapsed_ms": 56.337624962907284,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 16.28694074996747,
+      "elapsed_ms": 56.285500002559274,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 16.593824332987424,
+      "elapsed_ms": 53.59370802761987,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 16.89772162499139,
+      "elapsed_ms": 56.3221659976989,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded",
+      "at_s": 17.204260832979344,
+      "elapsed_ms": 56.40537501312792,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "loaded-end",
+      "at_s": 17.30546558299102,
+      "elapsed_ms": 56.30470800679177,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 17.361916875001043,
+      "elapsed_ms": 55.99995801458135,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 17.668186958006117,
+      "elapsed_ms": 56.39400001382455,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 17.97505841596285,
+      "elapsed_ms": 56.19750003097579,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 18.281333666003775,
+      "elapsed_ms": 52.64974996680394,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 18.584438332996797,
+      "elapsed_ms": 56.281582976225764,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 18.891307250014506,
+      "elapsed_ms": 56.38704099692404,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 19.19778004096588,
+      "elapsed_ms": 56.38625001301989,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 19.504344582965132,
+      "elapsed_ms": 56.22020800365135,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 19.810611040971708,
+      "elapsed_ms": 56.31549999816343,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery",
+      "at_s": 20.117109665996395,
+      "elapsed_ms": 56.08920898521319,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "recovery-end",
+      "at_s": 20.361982207978144,
+      "elapsed_ms": 56.12800002563745,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    },
+    {
+      "phase": "after-stop",
+      "at_s": 23.92316679097712,
+      "elapsed_ms": 53.56974998721853,
+      "stats": {
+        "crc_errors": 0,
+        "length_errors": 0,
+        "frame_timeouts": 0,
+        "queue_drops": 0,
+        "ring_overflow_events": 0,
+        "rx_dropped_bytes": 0,
+        "recovery_discarded_bytes": 0
+      }
+    }
+  ],
+  "errors": [],
+  "hex_sha256": "f03c4a225da09ca8a0f19ce93c9bf080591bc02f9b19d12053a4b6f6fe8cb1b9",
+  "last_measurement_ms": 18021,
+  "log_dropped_notice_total": 19860,
+  "producer_sequences_received": 161,
+  "checks": {
+    "no_io_errors": true,
+    "log_loss_observed": true,
+    "status_counters_zero": true,
+    "status_each_phase": true,
+    "status_after_stop": true,
+    "no_fatal_or_assert": true,
+    "single_boot": true,
+    "confirmed": true,
+    "recovery_measurement_logged": true,
+    "timeout_once": true,
+    "producer_completed": true,
+    "producer_started": true
+  },
+  "passed": true
+}

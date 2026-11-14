@@ -487,3 +487,10 @@ GUI offscreen 표시·값 갱신과 후속 flash·실보드 UART 18개 조건, C
 `67d247b`: 일반 INFO·디버그 DEBUG 각각 30조건 통과. 로그 레벨·측정/상태 전이·경고,
 STATUS/오류/timeout을 확인하고 일반 펌웨어로 복원했다.
 [판정·로그·최초 시험의 지연 출력 대기 수정](hardware-test-2026-11-14-logging.md). 강제 로그 포화·장시간은 제외했다.
+
+## 로그 포화·측정 부하 실보드 시험 (2026-11-14)
+
+[시험 도구](../fcc_app/tests/log_stress/README.md): 20,000개 생성기 + 10Hz 측정,
+일반 DEBUG의 단계별 측정 부하(최고 실측 평균 157.32Hz), 로그 유실·STATUS·복귀·timeout 판정.
+STATUS 총 122개 wire 재검사, RX 통계 0. 기본 INFO 복원.
+[결과와 제한](hardware-test-2026-11-14-log-stress.md). 기존 host 사례 개수에는 포함하지 않는다.

@@ -82,14 +82,17 @@ west build -d <repo>/build_logging_debug -b stm32f746g_disco <repo>/fcc_app -- -
 - RX/handler/TX/Tracking host 회귀 및 Python 시험으로 기존 처리·오류 로그 경로를 확인한다.
 - 일반/디버그 빌드의 최종 모듈 레벨과 ELF의 상세 로그 문자열 포함 여부를 확인한다.
 - [기본 실보드 회귀](hardware-test-2026-11-14-logging.md)는 일반/디버그 각 30조건 통과했다. 관측한 문장의 형식과 UART 왕복을 확인했다.
-- 강제 로그 포화·유실 알림 발생, 반복 경고 폭주, 최악 RX 처리 영향·스택 실측은 후속 검증이다.
+- [강제 로그 포화·측정 부하](hardware-test-2026-11-14-log-stress.md)에서 유실 알림과 STATUS/복귀를 확인했다. 반복 경고 폭주, 최악 RX 처리 영향·스택 실측은 후속 검증이다.
 
 2026-11-14 전환: C host 103회, Python 160개 + subtest 9개 통과.
 일반·디버그 펌웨어 빌드와 레벨/문자열 검증은 완료했으며 이번 전환의 flash·실보드 시험은 수행하지 않았다.
 
 후속 로그 정리: handler 17개·RX 45개·TX 4개 통과. 기존 사례에서 정상 측정 3줄,
 상태 전이 출력, STATUS 접수 한 줄, 실패 시 접수 로그 없음과 큐 포화 문구를 확인했다.
-일반·디버그 빌드 통과. 실보드 로그·포화 검증은 여전히 별도다.
+일반·디버그 빌드 통과. 후속 일반/디버그 실보드 회귀와 강제 포화 결과는 위 검증 링크를 참고한다.
 
 후속 실보드 시험: `67d247b` 일반/디버그 각각 30조건 통과, 일반 INFO로 복원 후 STATUS 확인.
 앞선 미실시 문단은 당시 기록이며 [실보드 증거](hardware-test-2026-11-14-logging.md)가 기본 회귀 상태를 갱신한다.
+
+시험용 생성기는 [tests/log_stress](../fcc_app/tests/log_stress/README.md)에 격리했다.
+`CONFIG_RADAR_LOG_STRESS_TEST`는 기본 비활성이고 일반 DEBUG 설정만으로 활성화되지 않는다.
