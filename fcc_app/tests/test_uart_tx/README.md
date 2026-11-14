@@ -32,3 +32,6 @@ warnings. No board flash or HIL was performed.
 `uart_tx_tests test_name`으로 한 사례만 선택할 수 있습니다.
 각 성공은 `PASS: test_name`으로 출력하며 잘못된 이름은 종료 코드 2를 반환합니다.
 실행기는 `../common/test_runner.h`를 공유합니다. 모사 환경과 검증 범위는 각 suite가 유지합니다.
+
+최신 로깅 일반·디버그 실보드 회귀는 [별도 시험 기록](../../../docs/hardware-test-2026-11-14-logging.md)을 참고합니다.
+host 테스트의 로그 캡처와 실제 보드의 지연 출력 검증은 구분합니다.

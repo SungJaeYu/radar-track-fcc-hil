@@ -1,0 +1,6 @@
+[00:00:11.265,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:14.359,000] [0m<inf> frame_handler: RESET: track and measurement monitoring reset[0m
+[00:00:14.516,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:14.676,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:14.879,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:00:16.795,000] [1;33m<wrn> frame_handler: Radar measurement timeout: track cleared[0m

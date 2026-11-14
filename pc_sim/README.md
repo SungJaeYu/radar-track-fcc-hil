@@ -155,11 +155,11 @@ GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 C
 
 기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
 `protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는
-추가하지 않습니다. STATUS_REQUEST는 콘솔 통계 출력과 STATUS_REPORT 제출을 수행합니다.
+추가하지 않습니다. STATUS_REQUEST는 STATUS_REPORT를 큐에 제출하며 DEBUG 콘솔에는 접수만 기록합니다.
 응답 payload는 CRC 오류·길이 오류·부분 프레임 timeout·큐 드롭·링 overflow 횟수·ISR 폐기·복구 폐기 순서로
 big-endian uint32 일곱 개(총 28바이트)를 담습니다.
 개별 카운터는 atomic 조회하지만 전체의 동일 시점 snapshot은 보장하지 않습니다.
-기존 보드 로그 `TYPE_MEAS`/`TYPE_STATUS`는 유지하며, STATUS_REPORT 응답을 뜻하지 않습니다.
+보드의 단순 `TYPE_MEAS`/`TYPE_STATUS` 로그는 제거했습니다. 측정 상세는 디버그 빌드에서만 출력하며, 통계는 이진 응답으로 확인합니다.
 `small_byte_test.py`의 선택지는 구현된 수신 경로 1~5로 유지합니다.
 
 
@@ -198,3 +198,10 @@ C endian 쓰기는 `common/byte_order.h`를 재사용합니다. 생성기는 사
 고정 기대 바이트열·C→Python 상호운용·길이 오류·구형 응답·CLI/GUI 테스트도 함께 갱신합니다.
 28바이트 응답의 [실보드 UART·CLI·GUI 왕복](../docs/hardware-test-2026-11-14-status-extended.md)을 확인했습니다.
 강제 overflow에 의한 새 카운터 증가 시험은 남아 있습니다.
+
+## 로깅 전환 후 보드 사용
+
+일반 INFO 빌드는 측정 상세를 출력하지 않습니다. 상세 관측에는 `debug.conf`를 적용합니다.
+STATUS는 두 설정 모두 일곱 통계를 이진 응답으로 반환합니다.
+[일반·디버그 실보드 회귀](../docs/hardware-test-2026-11-14-logging.md)는 각 30조건 통과했습니다.
+GUI 화면은 이번 회귀에 포함하지 않았으며 강제 로그 포화·장시간은 미검증입니다.

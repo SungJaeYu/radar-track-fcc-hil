@@ -1,0 +1,9 @@
+[00:00:07.809,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:10.906,000] [0m<inf> frame_handler: RESET: track and measurement monitoring reset[0m
+[00:00:11.063,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:11.221,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:11.430,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:00:13.338,000] [1;33m<wrn> frame_handler: Radar measurement timeout: track cleared[0m
+[00:00:15.929,000] [1;33m<wrn> frame_handler: COMMAND ignored: not implemented[0m
+[00:00:15.929,000] [1;33m<wrn> frame_handler: Frame ignored: unsupported type=0x7F[0m
+[00:00:15.931,000] [1;33m<wrn> frame_handler: Invalid radar measurement: range=0.00 m, azimuth=0.0000 rad[0m

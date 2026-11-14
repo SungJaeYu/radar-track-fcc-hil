@@ -9,6 +9,7 @@
 
 | 기록 | 주요 범위 |
 |---|---|
+| [로깅 일반·디버그](hardware-test-2026-11-14-logging.md) | 각 30조건, 레벨·측정·상태 전이·WARN 문장, STATUS/오류/timeout; 강제 포화 제외 |
 | [확장 STATUS 28바이트](hardware-test-2026-11-14-status-extended.md) | UART 18조건, 통계 7개, CLI·GUI 측정 병행 조회; 강제 overflow 제외 |
 | [RX/TX 물리 단절·복원](hardware-test-2026-11-14-link-loss.md) | 두 방향 데이터 선 단절, 무수신/응답 timeout, 재부팅 없는 복귀 |
 | [게이트 설정](hardware-test-2026-11-14-gating.md) | 기본/변경 게이트 값의 수용·거부, UART 회귀, 기본 펌웨어 복원 |

@@ -122,3 +122,6 @@ host 모사는 실제 atomic 동시성·IRQ 타이밍을 재현하지 않습니�
 이 RX host suite는 STATUS_REPORT 송신을 검사하지 않습니다. 별도 handler·Python 상호운용 및
 [실보드 STATUS 시험](../../../docs/hardware-test-2026-11-14-status-extended.md)에서 전송을 확인합니다.
 강제 overflow 실보드 시험은 남아 있습니다.
+
+최신 로깅 일반·디버그 실보드 회귀는 [별도 시험 기록](../../../docs/hardware-test-2026-11-14-logging.md)을 참고합니다.
+host 테스트의 로그 캡처와 실제 보드의 지연 출력 검증은 구분합니다.
