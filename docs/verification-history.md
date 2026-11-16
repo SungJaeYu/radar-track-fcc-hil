@@ -5,6 +5,21 @@
 이 문서는 검증 증거의 진입점입니다. 날짜별 기록은 당시 소스·설정에 대한 결과이며,
 이전의 미검증 상태나 테스트 개수를 현재 상태로 해석하지 않습니다.
 
+## 최신 코드와 검증 경계 — 2026-11-17
+
+- 기준: 이름·경로 정리 `fd96c17`, 로그 부하 판정 수정 `838aca6`. [변경 전후](naming-review.md).
+- 변경 전 Python 160개 + subtest 9개, C host 115회 실행 통과. 이름 변경 후 같은 회귀도 통과했습니다.
+- 최종 Python **172개 + subtest 9개** 통과. 추가된 12개는 로그 시험기의 혼합 STATUS/TRACK 수용과 오류 거부를 검사합니다. 수정 전 혼합 입력 두 사례의 실패를 재현했습니다.
+- C host **115회** 통과: RX drain 24/discard 21, handler 29, TX 4, Tracking 17, 게이트 설정 행렬 20. CTest 등록은 Tracking 묶음 때문에 99항목입니다.
+- 일반·디버그 펌웨어 빌드 성공. FLASH/RAM은 일반 42,608/15,696바이트, 디버그 58,608/16,976바이트입니다. 기존 devicetree 중복 주소 및 디버그 assert 활성화 안내는 유지됩니다.
+- 일반/디버그와 네 host suite의 compile database에서 파일 존재·옛 소스 경로 제거를 확인했습니다. `test_tracking` 이동으로 해당 CMake cache를 새로 구성했고 로컬 VS Code의 기존 `build_tracking/compile_commands.json` 연결을 유지했습니다. VS Code 화면 진단 자체는 재확인하지 않았습니다.
+- TRACK_REPORT 추가본의 flash·실보드 왕복·PC payload 디코더·GUI/정량 평가는 남아 있습니다. 아래 실보드 기록은 모두 그 이전 버전입니다.
+- 로그 부하 실행기는 STATUS/TRACK의 CRC·길이를 구분하지만 TRACK 수치·순번·전달률은 검사하지 않습니다. 수정 후 실보드 재시험은 남아 있습니다. [도구 제한](../fcc_app/tests/log_stress/README.md#대상-버전과-현재-제한).
+
+재현 명령: `python -m pytest -q`; 각 host README의 CMake/CTest 명령;
+[일반 빌드](../README.md#펌웨어-빌드플래시)와 [디버그 빌드](logging.md#빌드와-확인).
+하드웨어 포트나 flash 없이 수행한 검증입니다.
+
 ## 실보드 시험 기록
 
 | 기록 | 주요 범위 |

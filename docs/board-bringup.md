@@ -1,10 +1,11 @@
 # 현재 학습 펌웨어 배선·보드 검증
 
-현재 실행 경로는 USART6 수신 → rx_frame_processor → 메시지 큐 → handler 스레드 → ST-Link 로그입니다.
-과거 LCD 구현 문서와 달리 현재 소스에는 LCD 표시나 이진 트랙 응답 경로가 없습니다.
+현재 실행 경로는 USART6 수신 → rx_frame_processor → 메시지 큐 → handler 스레드의 radar_processor입니다.
+보고는 report_sender → TX 큐 → uart_tx → USART6로 나가며 ST-Link는 별도 진단 로그입니다.
+현재 소스에 LCD 표시는 없으며 이진 TRACK_REPORT 측정 결과 송신은 구현되어 있습니다. PC 해석과 새 결과 경로의 실보드 검증은 남아 있습니다.
 
-STATUS 요청에는 handler → TX 복사 큐 → TX 스레드 → USART6 응답 경로도 있습니다.
-PC 응답 디코더·CLI·GUI는 구현했습니다. STATUS 기본 실보드 왕복은 `2aa57d9`에서 확인했습니다.
+STATUS 요청과 유효 측정 처리에는 각각 STATUS_REPORT·TRACK_REPORT 송신 경로가 있습니다.
+PC STATUS 디코더·CLI·GUI는 구현했고 TRACK 해석·평가는 미구현입니다. STATUS 기본 실보드 왕복은 `2aa57d9`에서 확인했습니다.
 
 ## 배선과 통신 설정
 
@@ -15,7 +16,7 @@ PC 응답 디코더·CLI·GUI는 구현했습니다. STATUS 기본 실보드 왕
 | USB-UART | STM32 핀 | 역할 |
 | --- | --- | --- |
 | TXD | PC7 / USART6_RX | PC 측정·제어 요청 입력 |
-| RXD | PC6 / USART6_TX | STATUS_REPORT 출력; 이진 트랙 결과는 미구현 |
+| RXD | PC6 / USART6_TX | STATUS_REPORT·TRACK_REPORT 출력; PC TRACK 해석은 미구현 |
 | GND | GND | 공통 접지 |
 | VCC / 5V / 3V3 | 연결하지 않음 | 보드와 어댑터는 각자 USB로 급전 |
 
@@ -37,7 +38,7 @@ west flash -d <repo>/build --runner openocd
 ## 2. 포트와 콘솔
 
 - ST-Link VCP: 부팅·측정·추적 로그. `=== FCC learning-rebuild boot ===` 확인.
-- 외부 USB-UART: USART6 측정·제어 입력과 STATUS 응답 출력. 위 배선 참조.
+- 외부 USB-UART: USART6 측정·제어 입력과 STATUS/TRACK 보고 출력. 위 배선 참조.
 - 하나의 데이터 포트를 송신기와 모니터가 동시에 열지 않도록 합니다.
 - Linux 예: 콘솔 `/dev/ttyACM0`, 데이터 `/dev/ttyUSB0`.
   macOS는 각각 `cu.usbmodem...`, `cu.usbserial...` 등의 실제 장치명을 확인합니다.
@@ -96,7 +97,7 @@ STATUS의 overflow 횟수·ISR 폐기 바이트·복구 폐기 바이트를 시�
 Python 테스트, UART/Tracking host C 테스트, 펌웨어 빌드, flash, 실제 보드 로그를 별도 결과로 남깁니다.
 통합 도구의 테스트 통과만으로 새 보드 HIL까지 통과했다고 기록하지 않습니다.
 
-최신 결과: [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 전체 이력은 [검증 기록](verification-history.md)을 따릅니다. 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
+STATUS 왕복 결과: [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 이후 로그 부하 시험과 최신 host/build 결과는 [검증 기록](verification-history.md)을 따릅니다. TRACK_REPORT 추가본의 실보드 왕복은 아직 검증하지 않았습니다. 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
 
 ### 에디터 분석 설정
 
@@ -114,7 +115,7 @@ Python 테스트, UART/Tracking host C 테스트, 펌웨어 빌드, flash, 실�
 python -m pc_sim.status_client --port /dev/ttyUSB0 --timeout 2
 ```
 
-현재 STATUS payload는 사용하지 않지만 프레임의 LEN은 1..32여야 합니다.
+현재 STATUS_REQUEST payload 내용은 사용하지 않지만 프레임의 LEN은 1..32여야 합니다.
 통계는 CLI/GUI의 이진 응답으로 확인합니다. 디버그 콘솔의 `STATUS report queued`는 큐 접수만 의미합니다.
 CRC 오류·잘못된 길이·부분 프레임 중단을 주입한 뒤 재조회하고, INIT/RESET 후에도
 누적값이 유지되는지 확인합니다. STATUS만 보내도 측정 무수신 timeout은 계속 동작해야 합니다.
@@ -123,41 +124,17 @@ CLI는 응답 TYPE·길이·CRC를 검사한 뒤 일곱 통계를 출력합니�
 GUI·다른 송신기를 닫아 포트를 단독 사용하고 PC6 TX → 어댑터 RXD 배선도 확인합니다.
 정상 조회·반복 조회·오류 주입 후 통계 증가·추적 중 조회를 확인하고 로그와 펌웨어 버전을 남깁니다.
 GUI 시험은 CLI 종료 후 STATUS 탭에서 별도로 수행합니다.
-`2aa57d9`에서 이 기본 절차를 수행했습니다. 상세 범위와 로그는 아래 시험 기록을 참고합니다.
+`2aa57d9`에서 이 기본 절차를 수행했습니다. 상세 범위와 로그는 [검증 이력](verification-history.md)을 참고합니다.
 
+## TRACK_REPORT 추가 후 검증 경계
 
-## 이전 STATUS 실보드 결과 (16바이트 규격)
+현재 펌웨어는 유효 측정 payload마다 TYPE=7을 제출합니다. STATUS CLI는 다른 TYPE을 건너뛰고,
+GUI worker도 TRACK 결과를 표시·저장하지 않습니다. 따라서 기존 STATUS 명령 성공만으로
+측정 결과 반환을 검증했다고 판정하지 않습니다.
 
-`2aa57d9`에서 CLI·GUI STATUS 왕복, CRC/LEN/부분 프레임 timeout 통계 증가,
-INIT/RESET 통계 보존, 추적 중 조회와 무수신 timeout을 확인했습니다.
-[2026-11-12 시험 결과·원시 로그](hardware-test-2026-11-12-status.md)를 참고합니다.
-이 기록은 이전 STATUS 실보드 미검증/연기 상태를 대체합니다. 강제 링 overflow·UART overrun·부하 시험은 남아 있습니다.
+다음 실보드 시험에서는 [TRACK_REPORT 규격](requirements-traceability.md#spec-track-report)에 맞는
+PC 디코더·원시 프레임 수집을 먼저 연결하고, 값·시각·순번·유효성·오류 후 복귀를 확인해야 합니다.
+[로그 부하 실행기](../fcc_app/tests/log_stress/README.md)는 STATUS/TRACK 혼합의 CRC·길이를 검사하도록 수정했습니다. TRACK 수치·순번·전달률을 평가하는 도구는 아니며 수정 후 실보드 재시험은 남아 있습니다.
 
-
-## 2026-11-14 Kconfig 실보드 회귀
-
-`1e956c5`의 DRAIN·DISCARD 펌웨어를 각각 플래시하고 UART·STATUS·오류 처리 16개 조건씩 통과했습니다.
-기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
-[결과와 원시 로그](hardware-test-2026-11-14-kconfig.md).
-강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.
-
-
-## fmodf·수치 보호 검증 (2026-11-14)
-
-각도 정규화는 fmodf와 범위 보정으로 (-π, π]를 유지합니다.
-비정상 s는 일반 if로 보정을 생략하며, 내부 유한성 assert는 디버그에서 활성화합니다.
-[최신 보드 시험](hardware-test-2026-11-14-fmodf.md).
-다음 작업은 deferred logging·로그 레벨·버퍼 포화 정책 정리이며 아직 미구현입니다.
-
-## 게이트 설정 실보드 검증 (2026-11-14)
-
-`610e01e`: 기본값 100 m/10°와 변경값 250 m/30° 각각 UART 16개·게이트 14개 통과.
-REQ-TRK-002 / SPEC-TRACK의 거리 경계·각도 안팎·AND·wrap 및 설정에 따른 수용/거부 차이를 확인했다.
-보드는 기본값/DRAIN으로 복원했다. 앞선 설정 변경의 실보드 미검증 기록은 이 결과로 보완한다.
-[결과·원시 로그·검증 한계](hardware-test-2026-11-14-gating.md).
-
-## 로깅 실보드 회귀 (2026-11-14)
-
-`67d247b`: 일반 INFO·디버그 DEBUG 각각 30조건 통과. 로그 레벨·측정/상태 전이·경고,
-STATUS/오류/timeout을 확인하고 일반 펌웨어로 복원했다.
-[판정·로그·최초 시험의 지연 출력 대기 수정](hardware-test-2026-11-14-logging.md). 강제 로그 포화·장시간은 제외했다.
+날짜별 Kconfig·각도·게이트·STATUS·로깅 시험은 [검증 이력](verification-history.md)에 모았습니다.
+각 기록의 commit과 당시 미검증 범위를 보존하며 최신 펌웨어 전체의 합격 근거로 확대하지 않습니다.

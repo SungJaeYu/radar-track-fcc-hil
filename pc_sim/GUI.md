@@ -78,6 +78,7 @@ macOS에서는 설치할 Qt 버전이 지원하는 운영체제 버전을 사용
 - 실행 로그: INIT, 측정 프레임, 중지·완료·오류. 각 로그 창은 최근 2000줄을 유지합니다.
 
 현재 BIT, COMMAND, 다중표적, 보드 추정값 그래프, 로그 파일 저장은 구현하지 않았습니다.
+펌웨어의 TYPE=7 TRACK_REPORT 송신은 구현됐지만 현재 GUI worker는 이 TYPE을 건너뜁니다. 화면의 그래프는 계속 PC 합성값입니다. [지원 경계](README.md#track_report-지원-상태).
 이 GUI는 단일표적의 고정 방위각·일정 거리 변화율 시나리오입니다.
 `run_sim.py`의 다중표적 시나리오 선택기는 포함하지 않습니다.
 
@@ -101,7 +102,7 @@ Qt 실행 흐름은 [공식 QThread 문서](https://doc.qt.io/qtforpython-6/PySi
 2026-11-01 최신 펌웨어로 GUI 연결·송신·중지 후 timeout·재시작·재연결·종료를 확인했습니다.
 [실제 화면과 결과](../docs/hardware-test-2026-11-01.md)를 참고하세요.
 
-펌웨어 STATUS는 ST-Link 통계 로그 출력과 USART6 STATUS_REPORT 제출까지 구현되어 있습니다.
+펌웨어 STATUS는 USART6 STATUS_REPORT 제출까지 구현되어 있습니다. ST-Link DEBUG 로그는 큐 접수만 표시하며 일곱 통계값은 wire 응답으로 조회합니다.
 GUI의 STATUS 탭에서 수동 조회와 USART6 응답 디코딩을 제공합니다. [2026-11-12 실보드 시험](../docs/hardware-test-2026-11-12-status.md)에서 통계 표시·측정 병행·송신 중지 후 조회를 확인했습니다.
 
 측정 생성은 `FRAME_TYPE_MEAS_REPORT`(0x02)를 사용합니다. `FRAME_TYPE_STATUS_REPORT`(0x06)는 펌웨어에서 송신하며 GUI에서 응답 통계를 표시합니다.

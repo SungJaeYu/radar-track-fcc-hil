@@ -21,9 +21,12 @@ PC에서 추적을 완료한 트랙이나 안정적인 표적 ID를 보드에 �
 
 ## 파일 역할
 
-- `small_byte_test.py`: 문자열을 담은 프레임 하나 송신. 기본 TYPE=1로 필터 초기화에 사용. TYPE=5 RESET도 지원.
+- `frame_sender.py`: 문자열을 담은 프레임 하나 송신. 기본 TYPE=1로 필터 초기화에 사용. TYPE=5 RESET도 지원.
 - `radar_sender.py`: 거리·방위각 측정값을 생성하고 연속 송신. `--port` 생략 시 출력만 수행.
-- `protocol.py`: 모든 송신기가 공유하는 프레임 생성·CRC-16·라디안 변환.
+- `protocol.py`: 공통 프레임 생성·CRC-16·라디안 변환·STATUS payload 해석.
+- `frame_parser.py`: 수신 프레임 조립과 LEN/CRC 검증.
+- `status_client.py`: STATUS 요청·응답 CLI.
+- `gui.py`, `gui_model.py`, `gui_worker.py`: 화면·측정 생성·포트 소유 및 STATUS 수신.
 - `targets.py`: 등속 표적, 잡음, 미탐지, 클러터 모델.
 - `run_sim.py`: 표적 시나리오를 현재 규격으로 송신하거나 프레임만 출력.
 
@@ -31,7 +34,7 @@ PC에서 추적을 완료한 트랙이나 안정적인 표적 ID를 보드에 �
 레이더 TYPE은 `2`, payload는 big-endian `uint32 timestamp_ms + uint16 range_m + int32 azimuth_sc`의 10바이트(`struct.pack(">IHi", ...)`)입니다.
 `--azimuth`는 degree가 아닌 int32 semicircle 값(-2147483648..2147483647)을 직접 받습니다.
 변환식은 `azimuth_rad = azimuth_sc × π / 2³¹`이며, `1073741824`는 90°, `-1073741824`는 -90°입니다.
-기본값은 기존 약 30° 방향을 유지하는 `178956971`입니다. FCC는 수신 후 라디안으로 변환합니다.
+기본값 `178956971`은 약 **15°**입니다(`value × 180 / 2³¹`). CLI 도움말도 같은 단위를 표시하며 FCC는 수신 후 라디안으로 변환합니다.
 
 ## 실행
 
@@ -41,7 +44,7 @@ PC에서 추적을 완료한 트랙이나 안정적인 표적 ID를 보드에 �
 source ~/zephyrproject/.venv/bin/activate
 
 # 수동 초기화만 할 때 (아래 연속 송신기는 시작 시 자동 INIT)
-python pc_sim/small_byte_test.py init --type 1 --port /dev/cu.usbserial-A5069RR4
+python pc_sim/frame_sender.py init --type 1 --port /dev/cu.usbserial-A5069RR4
 
 # 잡음 없이 1000m부터 초당 20m씩 접근, 10Hz로 20개 송신
 python pc_sim/radar_sender.py --port /dev/cu.usbserial-A5069RR4 --hz 10 --count 20 --noise 0
@@ -62,7 +65,7 @@ python -m pytest
 
 `tests/`만 실행하며 보드 연결이나 flash를 수행하지 않습니다.
 펌웨어의 [UART 복구](../fcc_app/tests/test_uart_rx/README.md)와
-[Tracking C 테스트](../fcc_app/tests/test_kalman/README.md)는 별도 CMake/CTest 명령으로 실행합니다.
+[Tracking C 테스트](../fcc_app/tests/test_tracking/README.md)는 별도 CMake/CTest 명령으로 실행합니다.
 
 ## 시나리오 실행
 
@@ -111,6 +114,8 @@ STATUS_REPORT로 overflow 횟수와 소프트웨어 폐기 바이트를 조회�
 
 ## 통합과 이력
 
+2026-11-17 수동 도구는 `small_byte_test.py`에서 `frame_sender.py`로 이름을 변경했습니다. 기존 명령의 파일 경로만 바꾸면 TYPE·포트·payload 옵션은 그대로 사용할 수 있습니다.
+
 이전 XOR 규격은 현재 CRC-16 펌웨어와 호환되지 않습니다.
 이전 구현은 Git 이력에 남아 있으며, 구버전과 신버전 송신기를 섞어 사용하지 않습니다.
 현재와 맞지 않는 과거 설계·계획 문서는 제거했습니다. 현재 실행 방법은 이 문서를 따릅니다.
@@ -139,12 +144,12 @@ Frame timeouts, Queue drops와 링 overflow·ISR 폐기 바이트·복구 폐기
 - parser 자체에는 바이트 간 timeout이 없습니다. 이 CLI는 거래 전체 timeout으로 대기를 종료합니다.
 - STATUS는 오류 통계이며 실제 BIT 결과는 아닙니다. [실보드 CLI·GUI 왕복](../docs/hardware-test-2026-11-12-status.md)을 확인했습니다.
 
-기존 `python pc_sim/small_byte_test.py status --type 3 --port PORT`는 요청만 보내는 도구입니다.
+기존 `python pc_sim/frame_sender.py status --type 3 --port PORT`는 요청만 보내는 도구입니다.
 GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 CLI가 같은 포트를 열지 않도록 합니다.
 
 ## TYPE 요청·보고 구분
 
-| 값 | 공통 상수 | 역할 |
+| 값 | 규격 상수 | 역할 |
 | --- | --- | --- |
 | 0x01 | `FRAME_TYPE_INIT` | FCC 추적 초기화 |
 | 0x02 | `FRAME_TYPE_MEAS_REPORT` | 레이더 시뮬레이터 → FCC 측정 보고 |
@@ -152,6 +157,7 @@ GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 C
 | 0x04 | `FRAME_TYPE_COMMAND` | 명령 예약, 동작 미구현 |
 | 0x05 | `FRAME_TYPE_RESET` | FCC 추적 리셋 |
 | 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 28바이트 payload; PC는 구형 16바이트 응답도 지원 |
+| 0x07 | `FRAME_TYPE_TRACK_REPORT` | FCC → PC 추적 보고, 32바이트 payload; PC 전용 디코더·표시는 미구현 |
 
 기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
 `protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는
@@ -160,15 +166,15 @@ GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 C
 big-endian uint32 일곱 개(총 28바이트)를 담습니다.
 개별 카운터는 atomic 조회하지만 전체의 동일 시점 snapshot은 보장하지 않습니다.
 보드의 단순 `TYPE_MEAS`/`TYPE_STATUS` 로그는 제거했습니다. 측정 상세는 디버그 빌드에서만 출력하며, 통계는 이진 응답으로 확인합니다.
-`small_byte_test.py`의 선택지는 구현된 수신 경로 1~5로 유지합니다.
+`frame_sender.py`의 선택지는 구현된 수신 경로 1~5로 유지합니다.
 
 
-## 2026-11-14 Kconfig 실보드 회귀
+## TRACK_REPORT 지원 상태
 
-`1e956c5`의 DRAIN·DISCARD 펌웨어를 각각 플래시하고 UART·STATUS·오류 처리 16개 조건씩 통과했습니다.
-기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
-[결과와 원시 로그](../docs/hardware-test-2026-11-14-kconfig.md).
-강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.
+펌웨어는 유효 측정마다 TYPE=7을 TX 큐에 제출합니다. [32바이트 배치와 동작](../docs/requirements-traceability.md#spec-track-report)은 펌웨어에 구현되어 host 검증을 마쳤습니다.
+PC는 TYPE=7 상수를 공유하며 로그 부하 시험기는 TRACK의 CRC·32바이트 길이를 확인합니다. 공통 파서는 TYPE 값에 관계없이 프레임을 조립하지만, STATUS CLI·GUI worker는 TYPE=6만 처리합니다. TRACK payload 디코더·결과 보존·그래프·평가는 아직 없습니다.
+`radar_sender.py`와 `run_sim.py`는 송신 도구이며 반환 결과를 수집하지 않습니다. 기존 도구의 실행 성공은 TRACK 왕복 성공을 뜻하지 않습니다.
+과거 설정별 보드 결과는 [검증 이력](../docs/verification-history.md)을 참고하세요.
 
 ## STATUS_REPORT payload
 
@@ -204,4 +210,4 @@ C endian 쓰기는 `common/byte_order.h`를 재사용합니다. 생성기는 사
 일반 INFO 빌드는 측정 상세를 출력하지 않습니다. 상세 관측에는 `debug.conf`를 적용합니다.
 STATUS는 두 설정 모두 일곱 통계를 이진 응답으로 반환합니다.
 [일반·디버그 실보드 회귀](../docs/hardware-test-2026-11-14-logging.md)는 각 30조건 통과했습니다.
-GUI 화면은 이번 회귀에 포함하지 않았으며 강제 로그 포화·장시간은 미검증입니다.
+GUI 화면은 해당 로깅 회귀에 포함하지 않았습니다. 이후 [로그 포화·측정 부하 시험](../docs/hardware-test-2026-11-14-log-stress.md)에서 STATUS 유지·유실 알림·복귀를 확인했으며 장시간 검증은 남아 있습니다.

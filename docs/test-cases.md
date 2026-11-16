@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 160개 + subtest 9개, C host 115회 실행(RX drain 24·discard 21·handler 29·TX 4·Tracking 17·게이팅 설정 20)입니다.
+현재 합계는 Python 172개 + subtest 9개, C host 115회 실행(RX drain 24·discard 21·handler 29·TX 4·Tracking 17·게이팅 설정 20)입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -11,7 +11,7 @@
 
 | 구분 | 위치 | 케이스 수 | 실행 환경 |
 |---|---|---:|---|
-| 수동 송신기·INIT/RESET | `tests/test_hil_protocol.py` | 6 | Python, serial 모사 |
+| 수동 송신기·INIT/RESET | `tests/test_frame_sender.py` | 6 | Python, serial 모사 |
 | PC STATUS CLI | `tests/test_status_client.py` | 23 | Python, serial·monotonic clock 모사 |
 | PC 수신 프레임 파서 | `tests/test_frame_parser.py` | 16 | Python, serial I/O 없음 |
 | 프로토콜·단위 변환 | `tests/test_protocol.py` | 43 | Python |
@@ -20,28 +20,29 @@
 | GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 10 | offscreen Qt, serial 모사 |
 | CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 29 | Python + 실제 C 파서 host 컴파일 |
+| 로그 부하 wire 판정 | `tests/test_log_stress.py` | 12 | Python, 기록 바이트열만 검사; flash/serial 없음 |
 | 내부 assert | `tests/test_firmware_assertions.py` | 6 | 실제 C host 자식 프로세스의 SIGABRT·메시지 검증 |
-| 게이팅 설정 행렬 | `fcc_app/tests/test_kalman/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
-| 필터·추적 | `fcc_app/tests/test_kalman` | 17 | host C 또는 Zephyr Ztest |
+| 게이팅 설정 행렬 | `fcc_app/tests/test_tracking/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
+| 필터·추적 | `fcc_app/tests/test_tracking` | 17 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
-| STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 29 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
+| STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 29 | host C, 통계 조회·TX 제출·로그 캡처·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **160개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **172개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest의 `tracking`에서 17개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
 UART C는 정책별 실행을 CTest에 따로 등록하므로 45개로 표시됩니다. 공통 사례 19개는 두 번 실행합니다.
-`pc_sim/small_byte_test.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
+`pc_sim/frame_sender.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
 
-소스: [test_hil_protocol.py](../tests/test_hil_protocol.py)
+소스: [test_frame_sender.py](../tests/test_frame_sender.py)
 
 | 테스트 함수 | 수 | 입력·검증 내용 |
 |---|---:|---|
 | `test_init_frame_matches_firmware_wire_format` | 1 | TYPE=1, `hello` payload가 `7e 05 01 68 65 6c 6c 6f 0e ab`으로 인코딩되는지 |
-| `test_small_byte_sender_writes_init_frame` | 1 | 수동 송신기가 위 INIT 프레임을 모사 serial에 정확히 한 번 쓰는지 |
-| `test_small_byte_rejects_invalid_byte_length` | 3 | 빈 문자열, ASCII 33글자, UTF-8 `가` 11글자(33바이트)를 종료 코드 2로 거부하고 포트를 열지 않는지 |
-| `test_small_byte_sender_can_send_firmware_reset` | 1 | TYPE=5, payload `r`이 `7e 01 05 72 5a 8c`로 한 번 송신되는지 |
+| `test_frame_sender_writes_init_frame` | 1 | 수동 송신기가 위 INIT 프레임을 모사 serial에 정확히 한 번 쓰는지 |
+| `test_frame_sender_rejects_invalid_byte_length` | 3 | 빈 문자열, ASCII 33글자, UTF-8 `가` 11글자(33바이트)를 종료 코드 2로 거부하고 포트를 열지 않는지 |
+| `test_frame_sender_can_send_firmware_reset` | 1 | TYPE=5, payload `r`이 `7e 01 05 72 5a 8c`로 한 번 송신되는지 |
 
 ## Python: 프로토콜·단위 변환
 
@@ -85,7 +86,7 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 
 ## C: 필터·추적
 
-소스: [test_kalman/src/main.c](../fcc_app/tests/test_kalman/src/main.c)
+소스: [test_tracking/src/main.c](../fcc_app/tests/test_tracking/src/main.c)
 
 | 테스트 함수 | 입력·검증 내용 |
 |---|---|
@@ -170,6 +171,19 @@ GUI 의존성 설치·실행법은 [GUI 안내](../pc_sim/GUI.md)를 참고합�
 | `test_crc_low_byte_required_for_completion` | 1 | CRC 하위 바이트 전까지 INCOMPLETE, 마지막 바이트 후 READY |
 | `test_plausible_corrupted_length_does_not_report_ready` | 1 | LEN 10→9 변조가 READY로 처리되지 않고 CRC_ERROR 발생 |
 
+## Python: 로그 부하 기록 판정
+
+소스: [test_log_stress.py](../tests/test_log_stress.py). 실제 [board_check.check_wire](../fcc_app/tests/log_stress/board_check.py)를 실행한다.
+
+| 테스트 함수 | 수 | 검증 내용 |
+| --- | ---: | --- |
+| `test_log_stress_accepts_mixed_reports` | 2 | 연속/한 바이트 분할 STATUS·TRACK 혼합에서 STATUS만 조회 응답으로 집계 |
+| `test_log_stress_accepts_status_only_capture` | 1 | 기존 STATUS 전용 기록 수용 |
+| `test_log_stress_rejects_invalid_capture` | 9 | STATUS 없음·개수 불일치·비영 통계·구형 길이, TRACK 길이 오류, 미지원 TYPE, CRC/LEN 오류, 불완전 꼬리 거부 |
+
+이 시험은 수집된 TRACK의 CRC·길이만 검증하며 수치·순번·모든 측정의 전달 여부는 검증하지 않는다.
+STATUS CLI는 조회 전 입력 버퍼를 비우므로 이 실행기를 TRACK 무손실 수집기로 사용하지 않는다.
+
 ## 실행 방법
 
 저장소 루트에서 실행합니다. Python 의존성이 설치된 Zephyr venv를 사용합니다.
@@ -179,13 +193,21 @@ source ~/zephyrproject/.venv/bin/activate
 python -m pytest
 python -m pytest --collect-only -q
 
-cmake -G Ninja -S fcc_app/tests/test_kalman -B /tmp/radar-track-tests -DTRACK_TEST_HOST=ON
+cmake -G Ninja -S fcc_app/tests/test_tracking -B /tmp/radar-track-tests -DTRACK_TEST_HOST=ON
 cmake --build /tmp/radar-track-tests
 ctest --test-dir /tmp/radar-track-tests --output-on-failure
 
 cmake -G Ninja -S fcc_app/tests/test_uart_rx -B /tmp/radar-uart-tests
 cmake --build /tmp/radar-uart-tests
 ctest --test-dir /tmp/radar-uart-tests --output-on-failure
+
+cmake -G Ninja -S fcc_app/tests/test_frame_handler -B /tmp/radar-handler-tests
+cmake --build /tmp/radar-handler-tests
+ctest --test-dir /tmp/radar-handler-tests --output-on-failure
+
+cmake -G Ninja -S fcc_app/tests/test_uart_tx -B /tmp/radar-tx-tests
+cmake --build /tmp/radar-tx-tests
+ctest --test-dir /tmp/radar-tx-tests --output-on-failure
 ```
 
 개별 실행 예시:
@@ -198,11 +220,11 @@ ctest --test-dir /tmp/radar-uart-tests -R '^test_ring_wraparound$' --output-on-f
 
 마지막 명령은 Tracking 17개 전체를 실행하며 개별 이름을 출력합니다.
 macOS 컴파일러·SDK 지정 방법과 모사 범위는 [UART 안내](../fcc_app/tests/test_uart_rx/README.md),
-Zephyr Ztest 실행법은 [Tracking 안내](../fcc_app/tests/test_kalman/README.md)를 참고합니다.
+Zephyr Ztest 실행법은 [Tracking 안내](../fcc_app/tests/test_tracking/README.md)를 참고합니다.
 
 ## 실제 보드 시험과 남은 검증
 
-2026-11-01 최신 CRC·큐·수신 모듈 분리본의 실제 GUI와 보드 시험을 완료했습니다.
+2026-11-01 당시 CRC·큐·수신 모듈 분리본의 실제 GUI와 보드 시험을 완료했습니다.
 정상 측정 20개, timeout, CRC·길이 오류 후 정상 복귀, RESET, burst 후 복귀를 확인했습니다.
 GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 [결과와 검증 한계](hardware-test-2026-11-01.md)를 참고하세요.
@@ -223,7 +245,7 @@ GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 ## STATUS 처리 C 테스트
 
 실제 handler·STATUS 인코더·프레임 인코더/파서·추적 코드를 실행하고 통계 조회값, TX 제출 결과와 `printk`를 모사합니다.
-실행 방법: [STATUS 테스트 안내](../fcc_app/tests/test_frame_handler/README.md).
+실행 방법: [handler 테스트 안내](../fcc_app/tests/test_frame_handler/README.md).
 
 | 테스트 함수 | 검증 내용 |
 |---|---|
@@ -268,7 +290,7 @@ TX 인코딩·실제 송신과 실보드 검증은 이번 검증 범위에 포�
 
 TX host는 실제 `uart_tx.c` 워커를 동기 실행하고 UART 출력 바이트를 수집합니다.
 빈 큐에서 실제 대기할 지점에 테스트를 종료하며 RTOS 스케줄링·동시성·물리 송신은 검증하지 않습니다.
-STATUS handler에서 TX 제출을 호출하며 별도 handler suite가 연결과 실패 복귀를 검사합니다.
+report_sender가 STATUS/TRACK의 TX 제출을 호출하며 별도 handler suite가 연결과 실패 복귀를 검사합니다.
 
 ## 2026-11-10 폴더 분리 검증
 
@@ -433,7 +455,7 @@ NDEBUG 정의 상태에서도 host 어댑터가 검사를 유지하는지 검증
 ## 2026-11-14 게이트 설정 회귀
 
 요구사항 REQ-TRK-002 / SPEC-TRACK. 실제 `gating.c`를 설정별로 따로 컴파일합니다.
-설정 조합과 네 가지 사례의 상세 내용은 [Tracking 테스트 안내](../fcc_app/tests/test_kalman/README.md#게이트-설정-행렬)를 참고합니다.
+설정 조합과 네 가지 사례의 상세 내용은 [Tracking 테스트 안내](../fcc_app/tests/test_tracking/README.md#게이트-설정-행렬)를 참고합니다.
 최소·좁은 값·기본값·넓은 값·최대값에서 부호 양쪽 경계 포함/초과, 두 게이트 AND,
 ±π 경계 통과/거부 및 180° 특례를 검증합니다. 모든 가능한 정수 조합을 전수 검사한 것은 아닙니다.
 C host 97회, Python 136개 + subtest 9개 통과. 이번 설정 변경은 flash/보드 검증하지 않았습니다.
@@ -497,6 +519,9 @@ STATUS 총 122개 wire 재검사, RX 통계 0. 기본 INFO 복원.
 
 ## TRACK_REPORT 측정 경로 host 회귀 (2026-11-16)
 
+요구사항: [REQ-RPT-001~003 / SPEC-TRACK-REPORT](requirements-traceability.md#spec-track-report).
+10개 보고 사례의 이름·검증값은 아래 suite README에, handler 전체 29개의 역추적은 [추적표](requirements-traceability.md#tests-test_frame_handler)에 모았다.
+
 기존 handler 17개를 새 보고서 제출·로그 동작에 맞게 갱신하고 10개를 추가했다.
 [전체 사례와 검증 범위](../fcc_app/tests/test_frame_handler/README.md#track_report-host-coverage-2026-11-16).
 고정 wire/CRC와 float 비트 표현, 상태·결과·유효 플래그, 시각 거부·게이트 거부·소실·재시작,
@@ -504,4 +529,5 @@ STATUS 총 122개 wire 재검사, RX 통계 0. 기본 INFO 복원.
 INIT/RESET/timeout 이벤트 보고·PC TRACK 수신·실보드 왕복 검증은 포함하지 않는다.
 
 2026-11-16 레이더 처리 분리: 기존 27개 회귀와 processor API 2개, 총 29개 통과.
-무효 입력의 상태/출력 보존과 timeout 1회 반환·송신 비개입을 추가 검증했다.
+`test_processor_invalid_input_preserves_output`은 무효 입력의 상태/출력 보존을,
+`test_processor_timeout_event_once_without_transmission`은 timeout 1회 반환·송신 비개입을 검증했다.

@@ -16,11 +16,17 @@
 
 출력 포인터에는 `p_`를 중복하지 않고 `out_`만 사용합니다.
 포인터가 가리키는 상태 객체를 갱신하는 것과 별도 결과를 출력하는 것은 구분합니다.
-예를 들어 `parser_feed(struct frame_parser *p_parser, ...)`는 상태 객체 참조이고,
+예를 들어 `frame_parser_feed(struct frame_parser *p_parser, ...)`는 상태 객체 참조이고,
 디코더의 `struct radar_measurement *out_measurement`는 결과 출력입니다.
 읽기 전용 입력에는 가능한 경우 `const`를 붙입니다.
 배열로 선언한 지역 송신 버퍼는 일반 변수이며 `buffer`처럼 표기합니다.
 헤더 선언과 구현의 매개변수 이름도 일치시킵니다.
+
+새 공개 C 함수는 `모듈_동작` 순서를 권장합니다(`frame_parser_feed`, `measurement_message_decode`).
+외부 센서 시각과 보드 uptime, 측정과 추정, 프레임과 payload를 이름에서 구분합니다.
+시간에는 단위뿐 아니라 기준 시점도 드러냅니다(`estimate_timestamp_ms`, `received_at_ms`).
+자동 테스트는 `test_...`, 수동 송신 도구는 `..._sender.py`처럼 역할을 표시합니다.
+기존 예외와 변경 영향은 [구조·이름 점검](naming-review.md)에 있으며 이 권장 규칙을 적었다고 기존 코드를 변경한 것은 아닙니다.
 
 ## 중괄호와 공백
 
@@ -111,7 +117,8 @@ Zephyr API에서 받은 오류는 의미가 맞으면 원래 음수 errno를 그
 
 ## 타입·단위·직렬화
 
-- wire 필드에는 고정 폭 정수 타입을 사용하고, 메모리 버퍼 크기·인덱스에는
+- wire 정수 필드에는 고정 폭 정수 타입을 사용합니다. TRACK_REPORT의 실수 필드는 IEEE 754 binary32와 big-endian을 명시하고 `write_f32_be()`로 비트 표현을 직렬화합니다. C `float`의 크기·표현 전제는 정적 assert로 확인합니다.
+- 메모리 버퍼 크기·인덱스에는
   범위에 맞는 타입을 사용합니다. 일반 버퍼 크기는 `size_t`, 오류 반환은 `int`를 사용합니다.
 - `uint8_t` 링 인덱스처럼 의도적으로 작은 타입을 사용하면 최대 버퍼 크기 제약을
   문서화하고 정적 검증으로 지킵니다. 버퍼 크기 변경 시 인덱스 범위도 함께 확인합니다.

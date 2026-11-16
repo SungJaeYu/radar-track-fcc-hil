@@ -27,7 +27,7 @@ CMake가 생성하는 `compile_commands.json`을 사용합니다.
    [RX](../../fcc_app/tests/test_uart_rx/README.md),
    [handler](../../fcc_app/tests/test_frame_handler/README.md),
    [TX](../../fcc_app/tests/test_uart_tx/README.md),
-   [Tracking](../../fcc_app/tests/test_kalman/README.md)의 명령을 따릅니다.
+   [Tracking](../../fcc_app/tests/test_tracking/README.md)의 명령을 따릅니다.
 3. 로컬 C/C++ 설정의 `compileCommands`에 생성된 데이터베이스 경로를 연결합니다.
    기본 펌웨어 분석은 일반 빌드, 디버그 전용 분석은 debug.conf 빌드의 데이터베이스를 선택합니다.
 
@@ -45,6 +45,14 @@ CMake가 생성하는 `compile_commands.json`을 사용합니다.
 다른 빌드 디렉터리를 사용하면 경로도 맞춰 변경합니다. 일반·디버그 설정을 동시에
 하나의 기준으로 해석하지 않고, 현재 분석할 펌웨어 구성을 명확히 선택합니다.
 디버그 빌드 방법과 로그 레벨은 [로깅 안내](../../docs/logging.md)를 참고합니다.
+
+## 파일 추가·이동 후 갱신
+
+C 소스를 추가하거나 이름을 바꾸면 펌웨어와 해당 host suite의 CMake 소스 목록을 함께 수정하고 다시 구성·빌드합니다.
+현재 `application/radar_processor.c`, `report_sender.c`, `protocol/track_message.c`도 이 목록에 포함됩니다.
+생성된 `compile_commands.json`의 source 경로가 실제 파일과 일치하는지 확인합니다. 제품 C를 직접 include하는 fixture는 별도 번역 단위가 아니므로 항목이 없을 수 있습니다.
+시험 폴더 자체를 옮겨 CMake cache에 옛 source 경로가 남으면 새 build 디렉터리로 구성하고 로컬 `compileCommands` 연결도 바꿉니다.
+이 작업을 위해 개인 `.vscode/`를 Git에 추가하지 않습니다.
 
 ## 펌웨어와 host 환경 구분
 
@@ -70,3 +78,8 @@ Kconfig는 C/C++ 파일이 아닙니다. `luveti.kconfig` 설치 후 `Kconfig`, 
 생성되고 컴파일 데이터베이스의 `-imacros`로 적용됩니다. Kconfig/prj.conf 변경 후에는
 다시 빌드합니다. 생성 헤더를 직접 수정하거나 동일한 값을 에디터의 `defines`에 복사하지 않습니다.
 host 테스트는 Kconfig를 실행하지 않고 각 CMake target에서 필요한 설정값을 전달합니다.
+
+2026-11-17 이름 변경: Tracking 테스트 소스는 `fcc_app/tests/test_tracking/`입니다.
+기존 `build_tracking`에는 `cmake --fresh`로 새 소스 경로·host 옵션·컴파일러/SDK와
+`CMAKE_EXPORT_COMPILE_COMMANDS=ON`을 다시 지정했습니다. build 디렉터리 이름은 유지하므로
+기존 로컬 VS Code 데이터베이스 연결은 그대로 사용할 수 있습니다.

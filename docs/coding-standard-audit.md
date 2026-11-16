@@ -5,6 +5,9 @@
 초기 스타일 정리에서는 assert를 제외했으며, 이후 적용 상태는 아래 assert 항목을 따릅니다.
 테스트 코드는 참조 변경과 검증에 필요한 부분만 수정했습니다.
 
+2026-11-16 후속 점검: 아래의 초기 적용 이력과 현재 이름의 적절성은 별개입니다.
+TRACK_REPORT·processor 분리 뒤 이름 후보를 검토했고 2026-11-17 적용했습니다. [변경 전후와 남은 설계 과제](naming-review.md)에 정리했습니다.
+
 ## 완료된 항목
 
 ### 오류 반환·API 계약
@@ -21,10 +24,10 @@
 | 위치 | 적용한 이름 |
 | --- | --- |
 | protocol_frame_encode 출력 | `out_buffer` |
-| decode_radar_measurement 출력 | `out_measurement` |
+| measurement_message_decode 출력 | `out_measurement` |
 | ring_pop 출력 | `out_byte` |
 | rx_frame_processor_get_stats 출력 | `out_stats` |
-| handle_frame / handle_radar_measurement / uart_tx_submit | 선언·정의 모두 `p_frame` |
+| frame_handler_process / 당시 handle_radar_measurement / uart_tx_submit | 선언·정의 모두 `p_frame`; 측정 처리는 현재 `radar_processor_process_measurement`로 분리 |
 | FrameType / ParserState / ParserResult | `FRAME_TYPE_*` / `PARSER_STATE_*` / `PARSER_RESULT_*` |
 | TrackState / RxOverflowPolicy | `TRACK_STATE_*` / `RX_OVERFLOW_POLICY_*` |
 
@@ -48,15 +51,15 @@
 | 책임 | 현재 구현 |
 |---|---|
 | 공통 데이터 | [`protocol_frame.h`](../fcc_app/src/protocol/protocol_frame.h)의 `struct protocol_frame`: TYPE·payload 길이·payload |
-| 공통 기본 검증 | [`protocol_frame.c`](../fcc_app/src/protocol/protocol_frame.c)의 `protocol_frame_is_valid()`: NULL 및 payload 길이 1..32 |
-| RX 전용 메타데이터 | [`frame_handler.h`](../fcc_app/src/application/frame_handler.h)의 `received_frame.received_at_ms`: parser 완료/제출 시점의 보드 uptime |
+| 공통 기본 검증 | [`protocol_frame.c`](../fcc_app/src/protocol/protocol_frame.c)의 `protocol_frame_has_valid_length()`: NULL 및 payload 길이 1..32 |
+| RX 전용 메타데이터 | [`frame_handler.h`](../fcc_app/src/application/frame_handler.h)의 `rx_frame.received_at_ms`: parser 완료/제출 시점의 보드 uptime |
 | RX 제출 | [`frame_handler_submit()`](../fcc_app/src/application/frame_handler.c): 바깥 포인터 NULL 검사 → 공통 검증 → `frame_queue`에 복사 |
 | TX 제출 | [`uart_tx_submit()`](../fcc_app/src/transport/uart_tx.c): 바깥 포인터 NULL 검사 → 공통 검증 → `tx_queue`에 복사 |
 
 두 submit은 무대기 제출이며 잘못된 인자는 `-EINVAL`, 큐 포화는 `-ENOMSG`를 반환합니다.
 바깥 구조체의 NULL 검사는 `&p_frame->frame`에 접근하기 전에 필요하므로 각 API에 유지합니다.
 이 짧은 검사와 큐 호출을 합치기 위한 `void *` 공통 submit은 만들지 않습니다.
-`send_frame`은 현재 공통 프레임만 감싸지만 TX 요청 타입으로 유지할 수 있습니다.
+`tx_frame`은 현재 공통 프레임만 감싸지만 TX 요청 타입으로 유지할 수 있습니다.
 이를 제거하는 것은 선택적 API 단순화이며 이 공통화 작업의 미완료 조건이 아닙니다.
 
 기본 검증은 TYPE 지원 여부·payload 의미·수신 CRC까지 검증하는 함수가 아닙니다.
@@ -95,7 +98,8 @@ host 테스트는 공통 어댑터로 assert를 항상 검사합니다.
 - [ ] uart_irq_update 및 큐/세마포어의 예상 밖 실패에 대한 추가 복구 정책.
   RX 50ms 대기 만료는 정상 제어 흐름임을 주석으로 명시.
 - [x] RX 큐 드롭 로그는 첫 발생 및 매 100회로 출력 제한.
-- [ ] 전체 로그의 모듈·레벨·출력 제한과 버퍼 유실 정책, TX 완료/실패 통계.
+- [x] 다섯 로그 모듈·INFO/DEBUG 레벨·비차단 새 로그 폐기와 기본/포화 실보드 검증. [로깅](logging.md).
+- [ ] 나머지 반복 경고 출력 제한·TX 완료/실패 통계·TRACK 추가 후 부하 재검증.
 - [ ] 스레드 스택 실측. 현재 RX/TX 1024, handler 2048바이트와 우선순위 5/7/6,
   큐 깊이 8은 기존 설정을 유지하며 충분성을 이번 host 테스트로 입증하지 않음.
   실보드에서 최악 입력·오류 로그 부하를 걸고 스택 사용량을 측정한 후 조정.

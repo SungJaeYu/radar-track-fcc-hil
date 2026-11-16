@@ -54,7 +54,7 @@ FRAME_TYPE_INIT=1은 이전 트랙을 초기화합니다. payload 길이 0은 �
 IRQ 잠금 안에서는 overflow 확인과 한 바이트 pop만 수행합니다.
 잠금을 해제한 뒤 `rx_frame_processor_feed()`로 파싱하고, 정상 프레임을 handler 큐에 복사합니다.
 안쪽 배출 루프가 끝나면 부분 프레임 timeout을 검사합니다.
-별도 handler 스레드가 큐를 받아 `handle_frame()`을 호출하고 측정 timeout을 검사합니다.
+별도 handler 스레드가 큐를 받아 `frame_handler_process()`을 호출하고 측정 timeout을 검사합니다.
 
 ### 버퍼와 overflow
 
@@ -73,7 +73,11 @@ ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overfl
 
 ## 4. 측정과 추적
 
-`decode_radar_measurement()`와 `validate_radar_measurement()`를 통과한 측정은
+`frame_handler`는 TYPE을 분기하고 `radar_processor_process_measurement()`에 측정을 전달합니다.
+트랙·마지막 유효 수신 시각·감시 상태는 `frame_handler.radar`에 있으며 `radar_processor`가 갱신합니다.
+별도 스레드를 만든 것이 아니라 기존 handler 스레드 안에서 책임을 분리한 것입니다.
+
+`measurement_message_decode()`와 `measurement_message_validate()`를 통과한 측정은
 보드 uptime 기반 마지막 수신 시각을 갱신합니다. 송신 timestamp와 보드 uptime은 서로 다른 시계입니다.
 
 - EMPTY이면 `track_start()`로 필터를 초기화하고 TENTATIVE가 됩니다.
@@ -85,7 +89,7 @@ ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overfl
 
 ## 5. 무수신 timeout
 
-정상 레이더 측정을 처리한 이후 `CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS`(기본 1000ms) 이상 새 정상 측정이 없으면 handler를 초기화합니다.
+정상 레이더 측정을 처리한 이후 `CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS`(기본 1000ms) 이상 새 정상 측정이 없으면 radar processor의 트랙·감시 상태를 초기화합니다. 보고 순번은 보존합니다.
 첫 정상 측정 전에는 감시하지 않으며, timeout 후에는 다음 정상 측정까지 감시를 해제합니다.
 STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 게이트 또는 timestamp 검사에서 거부된 측정도 decode·validate를 통과했다면 수신 시각은 갱신합니다.
@@ -95,18 +99,18 @@ STATUS나 잘못된 패킷은 수신 시각을 갱신하지 않습니다.
 
 Python 테스트는 프레임 바이트·단위 변환·송신 순서·시나리오 CLI와 GUI 모델을 검증합니다.
 GUI 의존성을 설치하면 offscreen Qt·모사 serial로 시작·중지·재시작·오류·포트 해제도 검사합니다.
-`fcc_app/tests/test_kalman`은 C 필터·게이팅·추적 정책 등의 별도 테스트입니다.
+`fcc_app/tests/test_tracking`은 C 필터·게이팅·추적 정책 등의 별도 테스트입니다.
 [UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계를 drain 24·discard 21, 총 45회 실행으로 검증합니다.
 UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
 이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
-현재 보드는 이진 트랙 응답을 송신하지 않으므로 PC의 폐루프 RMSE 계산은 아직 없습니다.
+펌웨어의 측정별 TRACK_REPORT 경로는 구현됐지만 PC 해석·폐루프 RMSE와 새 결과 경로의 실보드 검증은 아직 없습니다.
 구버전 LCD·다중 트랙 문서는 제거했으며 과거 기록은 Git 이력에서 확인할 수 있습니다.
 
 
 ## 7. STATUS 응답 송신
 
 `rx_frame_processor.c`가 CRC·길이 오류·부분 프레임 timeout·큐 드롭의 atomic
-카운터를 소유합니다. STATUS는 처리 스레드에서 지역 `stats`로 값을 복사해
+카운터를 소유합니다. `report_sender_submit_status()`는 처리 스레드에서 지역 `stats`로 값을 복사해
 이진 응답에 사용하고 콘솔에는 큐 접수 여부만 DEBUG로 기록합니다. 개별 값은 안전하게 읽지만 전체 항목을 같은 순간에
 고정하지는 않습니다. 조회·parser reset·INIT/RESET은 누적 카운터를 지우지 않습니다.
 `uart_rx.c`는 overflow 진입 횟수·ISR 폐기 바이트·복구 시 링 폐기 바이트를 별도로 소유합니다.
@@ -121,33 +125,30 @@ timeout·큐 드롭·링 overflow 횟수·ISR 폐기 바이트·복구 폐기 �
 `status_client.py`는 CLI 왕복을, GUI의 STATUS 탭은 기존 worker를 통한 수동 조회를 제공합니다.
 둘 다 host 모사 시험을 통과했으며 [확장 STATUS 실보드 시험](docs/hardware-test-2026-11-14-status-extended.md)에서 CLI·GUI STATUS 왕복도 확인했습니다.
 TX host 테스트 4개와 CRC/인코더 상호운용 29개를 통과했으며 실보드 STATUS 송신도 확인했습니다. TX 포화·최대 부하는 별도 검증 대상입니다.
-handler host 테스트 17개는 STATUS 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향을 검증합니다.
+handler host 테스트 29개는 STATUS·TRACK 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향 및 processor 계약을 검증합니다.
 host 통계 snapshot은 모사합니다. 실보드에서는 CRC/LEN/부분 프레임 timeout 집계와
 INIT/RESET 후 보존을 확인했습니다. 강제 overflow·큐 포화 동시성 검증은 남아 있습니다.
 
+## 8. TRACK_REPORT 결과 송신
 
-## 2026-11-14 Kconfig 실보드 회귀
+`radar_processor_process_measurement()`가 유효 payload를 처리하면 입력 시각과 처리 결과를 반환합니다.
+`frame_handler`는 `report_sender_submit_track()`을 호출하고, sender가 추적 상태를 32바이트
+`track_report`로 구성해 `track_message_encode()` → `uart_tx_submit()`에 전달합니다.
+게이트/시각 거부도 보고하며 payload 자체가 무효이면 보고하지 않습니다.
 
-`1e956c5`의 DRAIN·DISCARD 펌웨어를 각각 플래시하고 UART·STATUS·오류 처리 16개 조건씩 통과했습니다.
-기본 DRAIN으로 복원하고 STATUS 응답까지 확인했습니다.
-[결과와 원시 로그](docs/hardware-test-2026-11-14-kconfig.md).
-강제 링 overflow의 정책별 동작·UART 하드웨어 오류·부하 시험은 미검증이며 GUI는 이번에 재검증하지 않았습니다.
+추정값은 TENTATIVE/CONFIRMED/COASTING에서만 유효합니다. EMPTY/LOST이면 추정 시각·수치 필드를 0으로
+채우고 ESTIMATE_VALID를 지웁니다. 0이라는 숫자만 보고 유효성을 판단하면 안 됩니다.
+순번은 제출 시도마다 증가하므로 인코딩·큐 실패도 소모합니다. INIT/RESET·무수신 timeout은 순번을 보존합니다.
+큐 접수는 실제 송신 완료나 PC 수신을 보장하지 않습니다.
 
+현재 INIT/RESET·무수신 timeout은 이벤트 보고를 생성하지 않습니다. PC TRACK 디코더·그래프·평가는
+아직 없습니다. [정확한 배치·플래그·결과 규격](docs/requirements-traceability.md#spec-track-report)을 참고하세요.
 
-## fmodf·수치 보호 검증 (2026-11-14)
+## 9. 설정과 검증 기록
 
-각도 정규화는 fmodf와 범위 보정으로 (-π, π]를 유지합니다.
-비정상 s는 일반 if로 보정을 생략하며, 내부 유한성 assert는 디버그에서 활성화합니다.
-[최신 보드 시험](docs/hardware-test-2026-11-14-fmodf.md).
-후속 변경으로 [로깅 기반](docs/logging.md)을 구현했습니다. [일반·디버그 기본 실보드 회귀](docs/hardware-test-2026-11-14-logging.md)는 완료했고 강제 포화/유실·최악 수신 영향 검증은 남아 있습니다.
+게이트는 Kconfig의 거리/각도 상한을 모두 포함 경계로 검사합니다. π는 `common/math_constants.h`를 공유합니다.
+각도 정규화는 `fmodf`와 범위 보정으로 (-π, π]를 유지하며 비정상 innovation covariance는 보정을 생략합니다.
+내부 유한성 assert는 디버그에서 활성화합니다. [설정](README.md#주요-설정) · [로깅](docs/logging.md).
 
-## 게이트 설정 및 공통 각도 상수
-
-`CONFIG_RADAR_RANGE_GATE_M`(기본 100, 범위 1–65535 m),
-`CONFIG_RADAR_AZIMUTH_GATE_DEG`(기본 10, 범위 1–180 정수 degree)는
-`fcc_app/Kconfig`에서 정의하고 `prj.conf`에서 선택합니다. 두 inclusive half-width를 모두 검사합니다.
-π는 `common/math_constants.h`에서 공유하며 설정값이 아닙니다.
-기존 Tracking 17개에 host 설정 조합 20개가 추가되었습니다.
-주석 보완 및 파일별 점검 결과는 [주석 점검표](docs/comment-audit.md)에 기록했습니다.
-
-2026-11-14 `610e01e` 게이트 설정 실보드: 100 m/10° 및 250 m/30° 각각 UART 16개·게이트 14개 통과. 기본값/DRAIN으로 복원. [결과](docs/hardware-test-2026-11-14-gating.md).
+날짜·commit별 실보드 결과와 원시 로그는 [검증 이력](docs/verification-history.md)에 모읍니다.
+과거 STATUS·로그 부하 시험이 현재 TRACK_REPORT 경로의 실보드 검증을 대신하지 않습니다.

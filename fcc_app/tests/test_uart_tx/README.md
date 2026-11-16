@@ -17,7 +17,7 @@ The test doubles simulate queue storage, readiness, and UART byte output.
 The real worker runs synchronously until the queue becomes empty; `longjmp`
 returns to the test at the point where the worker would block. No threads are
 scheduled. These tests do not prove semaphore blocking, IRQ behavior, Zephyr
-queue concurrency, UART timing, or physical delivery. STATUS submission is covered separately by test_frame_handler. PC response handling is covered by Python parser/CLI/GUI tests.
+queue concurrency, UART timing, or physical delivery. STATUS/TRACK submission is covered separately by test_frame_handler. PC STATUS response handling is covered by Python parser/CLI/GUI tests; PC TRACK decoding is not implemented.
 Basic physical STATUS delivery was verified on revision 2aa57d9; see
 [board evidence](../../../docs/hardware-test-2026-11-12-status.md). Queue concurrency
 and saturation on hardware remain outside that verification.

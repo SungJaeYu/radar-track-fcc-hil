@@ -1,5 +1,10 @@
 # 펌웨어 주석 점검 — 2026-11-14
 
+아래 표는 당시 31개 파일의 점검 기록입니다. 2026-11-16 추가·분리된
+`radar_processor`, `report_sender`, `track_message`까지 포함한 현재 이름·계약 검토는 [후속 점검](naming-review.md)을 참고하세요.
+2026-11-17 `radar_message`는 `measurement_message`로 이름을 변경했다. 아래 표의 옛 이름은 당시 기록이다.
+게이팅 처리 주석은 현재 `radar_processor.c`로 이동했고, `byte_order.h`는 float32 비트 쓰기를 위해 표준 float/string 헤더도 사용합니다.
+
 범위: `fcc_app/src`의 C/헤더 31개. 주석 없는 줄 수가 아니라 API 계약, 단위, 소유권,
 오류/상태 전이의 설명 유무를 점검했다. 영어 `//` 규칙을 유지한다.
 단순 대입·자명한 함수는 헤더 계약으로 충분하며 줄마다 주석을 추가하지 않는다.

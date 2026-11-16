@@ -1,5 +1,8 @@
 # 파일 구성·처리 경계 검토 — 2026-11-14
 
+이 문서는 당시 구조 판단입니다. 현재는 TRACK_REPORT 측정 보고와 radar_processor/report_sender 분리가 추가됐습니다.
+최신 변경 후보는 [구조·이름 점검](naming-review.md), 구현 순서는 [README v1 기준](../README.md#v1-acceptance)을 따릅니다.
+
 이번 검토는 모듈 배치, RX→handler→TX 소유권·검증 경계, 로깅 시험 격리,
 문서의 현재/과거 결과 구분을 중심으로 수행했습니다. 모든 경쟁 조건이나 수치 알고리즘의 정형 검증은 아닙니다.
 
