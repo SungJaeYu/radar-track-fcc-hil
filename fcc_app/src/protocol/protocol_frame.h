@@ -21,6 +21,7 @@ typedef enum {
     FRAME_TYPE_COMMAND        = 0x04,
     FRAME_TYPE_RESET          = 0x05,
     FRAME_TYPE_STATUS_REPORT  = 0x06,
+    FRAME_TYPE_TRACK_REPORT   = 0x07,
 } FrameType;
 
 // In-memory frame representation, not a packed wire structure.

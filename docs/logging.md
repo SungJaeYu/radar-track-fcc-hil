@@ -11,7 +11,7 @@ USART6의 이진 프로토콜과 STATUS_REPORT 규격은 변경하지 않는다.
 | main.c | radar_main | RADAR_MAIN |
 | transport/uart_rx.c | uart_rx | RADAR_UART_RX |
 | transport/rx_frame_processor.c | rx_frame_processor | RADAR_RX_PROCESSOR |
-| application/frame_handler.c | frame_handler | RADAR_HANDLER |
+| application/frame_handler.c · application/radar_processor.c · application/report_sender.c | frame_handler | RADAR_HANDLER |
 | transport/uart_tx.c | uart_tx | RADAR_UART_TX |
 
 각 파일에서 `LOG_MODULE_REGISTER(name, CONFIG_RADAR_..._LOG_LEVEL)`로 등록한다.

@@ -4,16 +4,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "tracking/track.h"
+#include "application/radar_processor.h"
+#include "application/report_sender.h"
 #include "protocol/protocol_frame.h"
 
 // Processing-thread-owned state; access through the frame queue in normal operation.
 struct frame_handler {
-    struct track track;
-    // RX frame completion/submission uptime (ms) for the last validated measurement.
-    int64_t last_valid_rx_ms;
-    // Set by a valid radar measurement; cleared by initialization or timeout reset.
-    bool timeout_armed;
+    struct radar_processor radar;
+    // Report state is preserved across INIT, RESET, and measurement timeout.
+    struct report_sender report_sender;
 };
 
 struct received_frame {
@@ -23,6 +22,7 @@ struct received_frame {
 };
 
 // Require a non-NULL handler and exclusive access to its state.
+// Zero-initialize before first use; initialization/reset preserve report state.
 // Reset tracking and disarm timeout until the next valid measurement payload.
 // Does not purge queued frames or clear cumulative RX diagnostic counters.
 void frame_handler_init(struct frame_handler *p_handler);

@@ -9,6 +9,8 @@ target_sources(app PRIVATE
     src/protocol/frame_parser.c
     src/common/ring_buffer.c
     src/application/frame_handler.c
+    src/application/radar_processor.c
+    src/application/report_sender.c
     src/protocol/radar_message.c
     src/tracking/kalman_cv.c
     src/tracking/gating.c
@@ -19,6 +21,7 @@ target_sources(app PRIVATE
     src/protocol/protocol_frame.c
     src/common/crc16.c
     src/protocol/status_message.c
+    src/protocol/track_message.c
 )
 
 # Resolve module-qualified includes from the application source root.

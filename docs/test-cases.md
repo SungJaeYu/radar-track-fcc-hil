@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 160개 + subtest 9개, C host 103회 실행(RX drain 24·discard 21·handler 17·TX 4·Tracking 17·게이팅 설정 20)입니다.
+현재 합계는 Python 160개 + subtest 9개, C host 115회 실행(RX drain 24·discard 21·handler 29·TX 4·Tracking 17·게이팅 설정 20)입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -24,7 +24,7 @@
 | 게이팅 설정 행렬 | `fcc_app/tests/test_kalman/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
 | 필터·추적 | `fcc_app/tests/test_kalman` | 17 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
-| STATUS 처리 | `fcc_app/tests/test_frame_handler` | 17 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
+| STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 29 | host C, 통계 조회·TX 제출·printk·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **160개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
@@ -494,3 +494,14 @@ STATUS/오류/timeout을 확인하고 일반 펌웨어로 복원했다.
 일반 DEBUG의 단계별 측정 부하(최고 실측 평균 157.32Hz), 로그 유실·STATUS·복귀·timeout 판정.
 STATUS 총 122개 wire 재검사, RX 통계 0. 기본 INFO 복원.
 [결과와 제한](hardware-test-2026-11-14-log-stress.md). 기존 host 사례 개수에는 포함하지 않는다.
+
+## TRACK_REPORT 측정 경로 host 회귀 (2026-11-16)
+
+기존 handler 17개를 새 보고서 제출·로그 동작에 맞게 갱신하고 10개를 추가했다.
+[전체 사례와 검증 범위](../fcc_app/tests/test_frame_handler/README.md#track_report-host-coverage-2026-11-16).
+고정 wire/CRC와 float 비트 표현, 상태·결과·유효 플래그, 시각 거부·게이트 거부·소실·재시작,
+순번 순환/보존, encode/submit 실패 후 복귀를 확인한다. 기본 STATUS 회귀도 유지한다.
+INIT/RESET/timeout 이벤트 보고·PC TRACK 수신·실보드 왕복 검증은 포함하지 않는다.
+
+2026-11-16 레이더 처리 분리: 기존 27개 회귀와 processor API 2개, 총 29개 통과.
+무효 입력의 상태/출력 보존과 timeout 1회 반환·송신 비개입을 추가 검증했다.

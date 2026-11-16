@@ -9,7 +9,7 @@ cmake --build build_frame_handler
 ctest --test-dir build_frame_handler --output-on-failure
 ```
 
-Seventeen cases exercise the real handler, status payload encoder, protocol encoder,
+Twenty-nine cases exercise the real handler, STATUS/TRACK payload encoders, protocol encoder,
 parser, and tracking code:
 
 - Zero counters and one response submission per request.
@@ -80,3 +80,41 @@ host 모사는 DEBUG도 캡처하므로 실제 필터링·deferred 출력 검증
 
 최신 로깅 일반·디버그 실보드 회귀는 [별도 시험 기록](../../../docs/hardware-test-2026-11-14-logging.md)을 참고합니다.
 host 테스트의 로그 캡처와 실제 보드의 지연 출력 검증은 구분합니다.
+
+## TRACK_REPORT host coverage (2026-11-16)
+
+Ten additional cases verify the current measurement-report path:
+
+| Case | Evidence |
+|---|---|
+| `test_track_encode_wire` | Fixed Python-derived 37-byte frame/CRC, float positive/negative/fraction/negative-zero values, all offsets, guards and parser round trip |
+| `test_track_encode_invalid_arguments` | NULL rejection and unchanged output |
+| `test_track_started_updated_and_confirmed` | One report per valid measurement, corrected estimate, state/result/flags, distinct sender and board time |
+| `test_track_timestamp_rejection_report` | Duplicate/backward input retains estimate timestamp while echoing the rejected input timestamp |
+| `test_track_gate_rejection_empty_and_lost` | TENTATIVE rejection clears validity; COASTING remains valid; LOST clears values; next input resets and following input restarts |
+| `test_track_gap_reset_and_recovery` | Gap over 1000ms clears validity and next input restarts |
+| `test_track_sequence_wrap_and_timeout_preservation` | Sequence and sender timestamp wrap, timeout preserves sequence, restart continues it |
+| `test_track_submit_failure_and_recovery` | Queue-full/invalid/I/O failures consume sequence without immediate retry; next report succeeds |
+| `test_track_encode_failure_and_recovery` | Injected encoding failure consumes sequence without submission; next report succeeds |
+| `test_incoming_track_report_is_ignored` | Unexpected inbound report changes no handler state and causes no response |
+
+Existing INIT/RESET tests now verify sequence preservation and continued numbering;
+invalid measurements neither submit reports nor consume sequence numbers. Measurement
+log expectations include the new TX queue acceptance line. Encoder failures are injected
+only at the handler boundary; direct encoding tests call production code.
+
+All 29 cases pass. INIT/RESET/timeout event reports are not implemented or certified
+by these tests. PC TRACK decoding, GUI evaluation, actual UART delivery and queue
+scheduling remain outside this host suite. No firmware behavior was changed for these tests.
+
+Report composition and submission now live in `application/report_sender.c`;
+`frame_handler` owns its sender state and preserves it across resets. The fixture
+includes the real sender with encoder failure injection, then the real handler;
+wire/sequence/invalid-estimate expectations are unchanged by this extraction.
+The sender shares the handler logging module and adds no thread or queue.
+
+Radar processing now lives in a separately compiled `application/radar_processor.c`.
+The handler owns `radar` and `report_sender` states and connects processing to submission.
+Two processor API cases additionally check invalid-input output/state preservation
+and a one-shot timeout return with no report submission or sequence consumption.
+Existing 27 integration cases retain their wire and behavior expectations.

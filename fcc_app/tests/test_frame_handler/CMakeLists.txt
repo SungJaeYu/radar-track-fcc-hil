@@ -6,10 +6,12 @@ enable_testing()
 set(RADAR_MEASUREMENT_TIMEOUT_MS 1000 CACHE STRING "Timeout under test in milliseconds")
 
 add_executable(frame_handler_tests src/main.c
+    ../../src/application/radar_processor.c
     ../../src/tracking/track.c ../../src/tracking/kalman_cv.c ../../src/tracking/angle_utils.c
     ../../src/tracking/gating.c ../../src/protocol/radar_message.c
     ../../src/protocol/protocol_frame.c ../../src/common/crc16.c
-    ../../src/protocol/status_message.c ../../src/protocol/frame_parser.c)
+    ../../src/protocol/status_message.c ../../src/protocol/track_message.c
+    ../../src/protocol/frame_parser.c)
 target_include_directories(frame_handler_tests PRIVATE include ../common/include ../../src)
 target_compile_definitions(frame_handler_tests PRIVATE
     CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS=${RADAR_MEASUREMENT_TIMEOUT_MS}
@@ -19,6 +21,18 @@ target_compile_options(frame_handler_tests PRIVATE -Wall -Wextra -Werror -UNDEBU
 target_link_libraries(frame_handler_tests PRIVATE m)
 
 foreach(test_name IN ITEMS
+        test_processor_invalid_input_preserves_output
+        test_processor_timeout_event_once_without_transmission
+        test_track_encode_wire
+        test_track_encode_invalid_arguments
+        test_track_started_updated_and_confirmed
+        test_track_timestamp_rejection_report
+        test_track_gate_rejection_empty_and_lost
+        test_track_gap_reset_and_recovery
+        test_track_sequence_wrap_and_timeout_preservation
+        test_track_submit_failure_and_recovery
+        test_track_encode_failure_and_recovery
+        test_incoming_track_report_is_ignored
         test_init_command_resets_tracking
         test_reset_command_resets_tracking
         test_valid_measurements_arm_refresh_and_expire

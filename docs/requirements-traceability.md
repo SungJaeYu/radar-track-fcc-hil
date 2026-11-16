@@ -7,7 +7,7 @@
 ## 현재 기준 요약
 
 기능 기준: handler 보강 `658f2e6`, GUI STATUS `ed1f0bf`.
-Python 160개 + subtest 9개, Tracking 17개·게이트 설정 20개·handler 17개 통과. RX drain 24·discard 21·TX 4도 재검증 완료했다.
+Python 160개 + subtest 9개, Tracking 17개·게이트 설정 20개·handler 29개 통과. RX drain 24·discard 21·TX 4도 재검증 완료했다.
 PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료. 실보드 기본 왕복도 `2aa57d9`에서 확인했다.
 아래 단계별 구현 기록은 당시 상태이며 현재 판단은 이 요약과 요구사항 기준표를 우선한다.
 
@@ -57,10 +57,10 @@ TRACK_REPORT를 구현할 때는 필드/단위/시각·유효성·유실 관측 
 | REQ-TRK-003 | 중복·역행 시각을 거부하고 정상 wraparound를 허용하며 1000ms 초과 예측 간격은 트랙을 지워야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_predict` | [test_kalman](#tests-test_kalman) | 구현; timestamp 경계·복귀 host 검증 |
 | REQ-TRK-004 | hit/miss에 따라 트랙을 생성·확인·coasting·lost 처리하고 재시작해야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_start / track_hit / track_miss` | [test_kalman](#tests-test_kalman) | 구현; 상태 전이 host 검증 |
 | REQ-CTL-001 | INIT/RESET은 트랙과 측정 timeout 감시를 초기화하되 RX 누적 통계는 보존해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_frame / frame_handler_reset` | [Python](#tests-python)  [test_frame_handler](#tests-test_frame_handler) | 구현; 명령 경유 초기화·모사 통계 응답 보존 host 검증. 실보드 CRC/LEN/timeout 누적값 보존 확인; 큐·overflow 증가 후 통합 시험은 남음 |
-| REQ-CTL-002 | 첫 유효 측정 이후 1000ms 동안 유효 측정이 없으면 트랙을 한 번 초기화해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `frame_handler_check_timeout` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상/무효 측정·gate/timestamp 거부·경계·1회 만료 host 검증 완료 |
+| REQ-CTL-002 | 첫 유효 측정 이후 1000ms 동안 유효 측정이 없으면 트랙을 한 번 초기화해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `frame_handler_check_timeout` → [radar_processor.c](../fcc_app/src/application/radar_processor.c) · `radar_processor_check_timeout` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상/무효 측정·gate/timestamp 거부·경계·1회 만료 host 검증 완료 |
 | REQ-STA-001 | RX 오류 네 항목을 누적 집계하고 조회·파서 reset으로 초기화하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `rx_frame_processor_get_stats` | [test_uart_rx](#tests-test_uart_rx) | 구현; 개별 atomic 조회 host 검증. 동시 snapshot 보장은 요구하지 않음 |
-| REQ-STA-002 | STATUS 요청당 일곱 통계를 담은 28바이트 응답을 한 번 제출하고 트랙·측정 timeout은 변경하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_status_request` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상·반복 조회·인코딩·상태 보존 host 검증. 28바이트 CLI·GUI 왕복 확인; 아래 확장 STATUS 증거 참조 |
-| REQ-STA-003 | STATUS 인코딩·제출 실패를 기록하고 즉시 재시도하지 않으며 이후 요청을 처리할 수 있어야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_status_request` | [test_frame_handler](#tests-test_frame_handler) | 구현; 오류 주입·다음 요청 복귀 host 검증 |
+| REQ-STA-002 | STATUS 요청당 일곱 통계를 담은 28바이트 응답을 한 번 제출하고 트랙·측정 timeout은 변경하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [report_sender.c](../fcc_app/src/application/report_sender.c) · `report_sender_submit_status` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상·반복 조회·인코딩·상태 보존 host 검증. 28바이트 CLI·GUI 왕복 확인; 아래 확장 STATUS 증거 참조 |
+| REQ-STA-003 | STATUS 인코딩·제출 실패를 기록하고 즉시 재시도하지 않으며 이후 요청을 처리할 수 있어야 한다. | [SPEC-STATUS](#spec-status) | [report_sender.c](../fcc_app/src/application/report_sender.c) · `report_sender_submit_status` | [test_frame_handler](#tests-test_frame_handler) | 구현; 오류 주입·다음 요청 복귀 host 검증 |
 | REQ-STA-004 | 입력된 STATUS_REPORT에는 응답을 생성하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `handle_frame` | [test_frame_handler](#tests-test_frame_handler) | 구현; 반향 응답 방지 host 검증 |
 | REQ-STA-005 | 링 overflow 진입 횟수·ISR 폐기 바이트·복구 시 미소비 링 폐기 바이트를 누적 집계해야 한다. | [SPEC-RX](#spec-rx) / [SPEC-STATUS](#spec-status) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_get_stats` | [test_uart_rx](#tests-test_uart_rx) | 정책별 host 증가·누적·순환 검증, STATUS 전송 확인. 강제 overflow 실보드 증가 미검증 |
 | REQ-TX-001 | 유효 요청을 큐에 복사하고 FIFO 순서로 송신하며 포화·잘못된 요청은 errno로 반환해야 한다. | [SPEC-TX](#spec-tx) | [uart_tx.c](../fcc_app/src/transport/uart_tx.c) · `uart_tx_submit / uart_tx_thread` | [test_uart_tx](#tests-test_uart_tx) | 구현; 모사 큐·바이트 순서·복사 검증. 실제 큐 동시성 미검증 |
@@ -488,3 +488,14 @@ FUT-009 기본 레벨·문장 출력과 REQ-STA-002/REQ-CTL-001/002 통신 회�
 FUT-009의 로그 유실 관측과 부하 종료 후 복귀를 실보드에서 확인했다.
 STATUS 122개 wire 응답의 CRC·길이·7개 통계도 확인했다.
 [시험 조건·한계·원시 기록](hardware-test-2026-11-14-log-stress.md). 최대 지속 처리율 보장은 아니다.
+
+## TRACK_REPORT 측정 경로 host 시험 추가 (2026-11-16)
+
+FUT-003 / V1-1의 일부인 측정 결과 인코딩·handler 제출 경로에
+[10개 host 사례](../fcc_app/tests/test_frame_handler/README.md#track_report-host-coverage-2026-11-16)를 추가했다.
+handler 전체 27개 통과. 이는 진행 중인 구현의 검증이며 v1 결과 왕복 완료 판정이 아니다.
+제어/timeout 이벤트 보고·PC 수신·GUI/정량 평가·실보드 검증은 남아 있다.
+
+레이더 처리 상태는 `frame_handler.radar`가 소유하며 `radar_processor`에서만 갱신한다.
+측정 결과와 timeout 발생 여부를 반환하고 보고서 송신 연결은 handler가 담당한다.
+분리 후 host 29개 통과; 제어/timeout 이벤트 송신 기능은 추가하지 않았다.
