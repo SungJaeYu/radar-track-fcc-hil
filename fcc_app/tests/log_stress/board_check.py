@@ -15,23 +15,37 @@ import serial
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 from pc_sim.frame_parser import FrameParser, ParserState
-from pc_sim.protocol import build_init_frame, build_measurement_frame, decode_status_payload
+from pc_sim.protocol import (FRAME_TYPE_STATUS_REPORT, FRAME_TYPE_TRACK_REPORT,
+                             build_init_frame, build_measurement_frame, decode_status_payload)
 from pc_sim.status_client import request_status
 
 
 def check_wire(records, expected_responses):
-    """Check every captured response, including malformed frames a client may skip."""
+    """Check captured envelopes and STATUS counters, not TRACK values or delivery rate."""
     parser = FrameParser()
     frames = []
     for record in records:
         if 'rx' in record:
             frames.extend(parser.feed(bytes.fromhex(record['rx'])))
-    return (len(frames) == expected_responses > 0
-            and parser.crc_errors == parser.length_errors == 0
-            and parser.state == ParserState.WAIT_STX
-            and all(frame.frame_type == 6 and len(frame.payload) == 28
-                    and all(value == 0 for value in decode_status_payload(frame.payload).values())
-                    for frame in frames))
+    if (parser.crc_errors or parser.length_errors
+            or parser.state != ParserState.WAIT_STX):
+        return False
+
+    status_responses = 0
+    for frame in frames:
+        if frame.frame_type == FRAME_TYPE_STATUS_REPORT:
+            if (len(frame.payload) != 28
+                    or any(decode_status_payload(frame.payload).values())):
+                return False
+            status_responses += 1
+        elif frame.frame_type == FRAME_TYPE_TRACK_REPORT:
+            # Measurement reports share the UART but are not STATUS query replies.
+            # CRC and exact payload size are checked; value/sequence validation is separate.
+            if len(frame.payload) != 32:
+                return False
+        else:
+            return False
+    return status_responses == expected_responses > 0
 
 
 def main():

@@ -10,6 +10,8 @@ FRAME_TYPE_COMMAND = 0x04
 FRAME_TYPE_RESET = 0x05
 # Firmware diagnostic response decoded by the PC STATUS client.
 FRAME_TYPE_STATUS_REPORT = 0x06
+# Recognized by bench tools; TRACK payload decoding and GUI display are separate work.
+FRAME_TYPE_TRACK_REPORT = 0x07
 
 
 def crc16(data):

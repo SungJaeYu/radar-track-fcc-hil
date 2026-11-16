@@ -55,7 +55,7 @@ int encode_status_test(unsigned char *out_wire, size_t capacity) {
 int frame_type_constant(int index) {
     const int types[] = {FRAME_TYPE_INIT, FRAME_TYPE_MEAS_REPORT,
         FRAME_TYPE_STATUS_REQUEST, FRAME_TYPE_COMMAND, FRAME_TYPE_RESET,
-        FRAME_TYPE_STATUS_REPORT};
+        FRAME_TYPE_STATUS_REPORT, FRAME_TYPE_TRACK_REPORT};
     return types[index];
 }
 static struct frame_parser parser;
@@ -182,7 +182,8 @@ def test_encoder_capacity_boundary(parser_lib):
 
 def test_frame_type_values_match_firmware(parser_lib):
     names = ('FRAME_TYPE_INIT', 'FRAME_TYPE_MEAS_REPORT', 'FRAME_TYPE_STATUS_REQUEST',
-             'FRAME_TYPE_COMMAND', 'FRAME_TYPE_RESET', 'FRAME_TYPE_STATUS_REPORT')
+             'FRAME_TYPE_COMMAND', 'FRAME_TYPE_RESET', 'FRAME_TYPE_STATUS_REPORT',
+             'FRAME_TYPE_TRACK_REPORT')
     parser_lib.frame_type_constant.argtypes = [ctypes.c_int]
     parser_lib.frame_type_constant.restype = ctypes.c_int
     for index, name in enumerate(names):
