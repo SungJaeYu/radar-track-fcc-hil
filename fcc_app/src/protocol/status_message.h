@@ -23,6 +23,6 @@ struct status_report {
 // Set STATUS_REPORT type and the 28-byte payload length; no source counters are reset.
 // Return 0 on success or -EINVAL for NULL input/output.
 // Leave the output unchanged on failure.
-int status_message_encode(const struct status_report *p_stats, struct protocol_frame *out_frame);
+int status_message_encode(const struct status_report *p_report, struct protocol_frame *out_frame);
 
 #endif

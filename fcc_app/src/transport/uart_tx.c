@@ -17,7 +17,7 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3);
 K_SEM_DEFINE(tx_ready_sem, 0, 1);
 
 // The queue stores complete request copies; the TX thread alone emits their bytes.
-K_MSGQ_DEFINE(tx_queue, sizeof(struct send_frame), 8, 4);
+K_MSGQ_DEFINE(tx_queue, sizeof(struct tx_frame), 8, 4);
 
 K_THREAD_DEFINE(uart_tx_tid, 1024, uart_tx_thread, NULL, NULL, NULL, 7, 0, 0);
 
@@ -34,9 +34,9 @@ int uart_tx_init(void)
     return 0;
 }
 
-int uart_tx_submit(const struct send_frame *p_frame)
+int uart_tx_submit(const struct tx_frame *p_frame)
 {
-    if (p_frame == NULL || !protocol_frame_is_valid(&p_frame->frame)) {
+    if (p_frame == NULL || !protocol_frame_has_valid_length(&p_frame->frame)) {
         return -EINVAL;
     }
 
@@ -49,7 +49,7 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
     ARG_UNUSED(p_arg2);
     ARG_UNUSED(p_arg3);
 
-    struct send_frame request;
+    struct tx_frame request;
 
     // Wait until UART initialization succeeds.
     k_sem_take(&tx_ready_sem, K_FOREVER);

@@ -4,7 +4,7 @@
 
 static bool frame_crc_is_valid(const struct frame_parser *p_parser);
 
-void parser_init(struct frame_parser *p_parser)
+void frame_parser_init(struct frame_parser *p_parser)
 {
     __ASSERT(p_parser != NULL, "Parser pointer is NULL");
 
@@ -14,7 +14,7 @@ void parser_init(struct frame_parser *p_parser)
     p_parser->payload_index = 0;
 }
 
-ParserResult parser_feed(struct frame_parser *p_parser, uint8_t byte)
+ParserResult frame_parser_feed(struct frame_parser *p_parser, uint8_t byte)
 {
     __ASSERT(p_parser != NULL, "Parser pointer is NULL");
 
@@ -76,7 +76,7 @@ ParserResult parser_feed(struct frame_parser *p_parser, uint8_t byte)
     }
     default:
         __ASSERT(0, "Invalid parser state: %d", (int)p_parser->state);
-        parser_init(p_parser);
+        frame_parser_init(p_parser);
         break;
     }
     return PARSER_RESULT_INCOMPLETE;

@@ -15,7 +15,7 @@ struct frame_handler {
     struct report_sender report_sender;
 };
 
-struct received_frame {
+struct rx_frame {
     struct protocol_frame frame;
     // Board uptime at RX parser completion/submission, not ISR arrival or handler execution.
     int64_t received_at_ms;
@@ -35,12 +35,13 @@ void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms
 
 // Process a non-NULL, assembled frame against a non-NULL handler in its owner context.
 // The RX path has already checked length and CRC; measurement decoding/gating happen here.
-// STATUS_REQUEST queues a STATUS_REPORT; COMMAND is not implemented.
-void handle_frame(struct frame_handler *p_handler, const struct received_frame *p_frame);
+// Valid measurements queue TRACK_REPORT; STATUS_REQUEST queues STATUS_REPORT.
+// COMMAND is not implemented; incoming reports are ignored.
+void frame_handler_process(struct frame_handler *p_handler, const struct rx_frame *p_frame);
 
 // Copy a received frame and its timestamp into the eight-entry queue without waiting.
 // Return 0 when queued, -EINVAL for NULL or invalid payload length, or -ENOMSG if full.
 // Success means queued, not processed; the caller may reuse its object on return.
-int frame_handler_submit(const struct received_frame *p_frame);
+int frame_handler_submit(const struct rx_frame *p_frame);
 
 #endif

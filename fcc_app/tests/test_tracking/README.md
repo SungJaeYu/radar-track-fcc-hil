@@ -1,6 +1,6 @@
 # Tracking C regression tests
 
-현재 `kalman_cv`, `angle_utils`, `gating`, `track`, `radar_message` 구현을 직접
+현재 `kalman_cv`, `angle_utils`, `gating`, `track`, `measurement_message` 구현을 직접
 컴파일합니다. 예전 Cartesian `kalman_state` 테스트를 대체합니다.
 
 검증 범위:
@@ -15,7 +15,7 @@
 저장소 루트에서:
 
 ```sh
-cmake -G Ninja -S fcc_app/tests/test_kalman -B /tmp/radar-track-tests -DTRACK_TEST_HOST=ON
+cmake -G Ninja -S fcc_app/tests/test_tracking -B /tmp/radar-track-tests -DTRACK_TEST_HOST=ON
 cmake --build /tmp/radar-track-tests
 ctest --test-dir /tmp/radar-track-tests --output-on-failure
 ```
@@ -30,7 +30,7 @@ ctest --test-dir /tmp/radar-track-tests --output-on-failure
 `native_sim`을 지원하는 Zephyr 환경에서:
 
 ```sh
-west build -b native_sim fcc_app/tests/test_kalman -d /tmp/radar-track-ztest
+west build -b native_sim fcc_app/tests/test_tracking -d /tmp/radar-track-ztest
 west build -d /tmp/radar-track-ztest -t run
 ```
 

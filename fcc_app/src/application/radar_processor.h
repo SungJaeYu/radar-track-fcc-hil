@@ -33,9 +33,9 @@ void radar_processor_reset(struct radar_processor *p_processor);
 // Return false on invalid payload without modifying processor or output result.
 // Return true for valid payloads, including gate/time rejection; fill the result.
 // Does not submit reports, consume report sequence numbers, or access UART/queues.
-bool radar_processor_process(struct radar_processor *p_processor,
-                             const struct protocol_frame *p_frame, int64_t received_at_ms,
-                             struct radar_process_result *out_result);
+bool radar_processor_process_measurement(struct radar_processor *p_processor,
+                                         const struct protocol_frame *p_frame, int64_t received_at_ms,
+                                         struct radar_process_result *out_result);
 
 // Use board uptime in ms. Return true only on the call that expires an armed timeout.
 // Clear the track, disarm monitoring, and log once; do not transmit an event report.

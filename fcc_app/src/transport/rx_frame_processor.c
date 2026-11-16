@@ -28,14 +28,14 @@ void rx_frame_processor_reset(void)
 {
     // PARSER_STATE_WAIT_STX disables timeout checks until another byte updates the processing time.
     // Preserve cumulative diagnostics and do not treat this as a UART FIFO reset.
-    parser_init(&parser);
+    frame_parser_init(&parser);
 }
 
 void rx_frame_processor_feed(uint8_t byte)
 {
     last_byte_processed_ms = k_uptime_get();
 
-    const ParserResult result = parser_feed(&parser, byte);
+    const ParserResult result = frame_parser_feed(&parser, byte);
 
     process_parser_result(result);
 }
@@ -54,7 +54,7 @@ void rx_frame_processor_check_timeout(int64_t now_ms)
     atomic_inc(&frame_timeout_count);
 }
 
-void rx_frame_processor_get_stats(struct rx_frame_stats *out_stats)
+void rx_frame_processor_get_stats(struct rx_frame_processor_stats *out_stats)
 {
     out_stats->crc_errors = atomic_get(&crc_error_count);
     out_stats->length_errors = atomic_get(&length_error_count);
@@ -85,7 +85,7 @@ static void submit_parsed_frame(void)
 {
     // Copy the completed parser frame before the next feed can overwrite it.
     // This timestamp marks completion/submission, not physical byte arrival.
-    const struct received_frame received = {
+    const struct rx_frame received = {
         .frame = parser.frame,
         .received_at_ms = k_uptime_get(),
     };

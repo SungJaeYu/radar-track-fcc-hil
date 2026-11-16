@@ -14,7 +14,7 @@ _Static_assert(RING_BUFFER_SIZE >= 9, "Overflow fixtures require at least eight 
 _Static_assert(RING_BUFFER_SIZE <= UINT8_MAX + 1U, "Ring indices must represent every slot");
 
 static unsigned int submitted;
-static struct received_frame last_frame;
+static struct rx_frame last_frame;
 static int submit_result;
 static unsigned int submit_attempts;
 static bool inject_during_submit;
@@ -43,7 +43,7 @@ static void receive_overflow(const uint8_t *p_bytes, size_t size, size_t offset)
     assert(atomic_get(&rx_overflow) == 1);
 }
 
-int frame_handler_submit(const struct received_frame *p_frame)
+int frame_handler_submit(const struct rx_frame *p_frame)
 {
     assert(!irq_locked);
     submit_attempts++;
@@ -380,7 +380,7 @@ static void test_explicit_reset_cancels_partial_timeout(void)
 static void test_stats_snapshot_and_reset(void)
 {
     reset_test();
-    struct rx_frame_stats snapshot;
+    struct rx_frame_processor_stats snapshot;
     rx_frame_processor_get_stats(&snapshot);
     assert(snapshot.crc_errors == 0 && snapshot.length_errors == 0);
     assert(snapshot.frame_timeouts == 0 && snapshot.queue_drops == 0);
@@ -403,7 +403,7 @@ static void test_stats_snapshot_and_reset(void)
     assert(snapshot.frame_timeouts == 1 && snapshot.queue_drops == 1);
     submit_result = 0;
     feed_bytes(radar_frame, sizeof(radar_frame));
-    struct rx_frame_stats after;
+    struct rx_frame_processor_stats after;
     rx_frame_processor_get_stats(&after);
     assert(after.crc_errors == snapshot.crc_errors);
     assert(after.length_errors == snapshot.length_errors);

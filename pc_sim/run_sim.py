@@ -6,10 +6,10 @@ import random
 import time
 
 if __package__:
-    from .protocol import build_init_frame, build_radar_frame_from_radians
+    from .protocol import build_init_frame, build_measurement_frame_from_radians
     from .targets import RadarSensorModel, SCENARIOS
 else:
-    from protocol import build_init_frame, build_radar_frame_from_radians
+    from protocol import build_init_frame, build_measurement_frame_from_radians
     from targets import RadarSensorModel, SCENARIOS
 
 
@@ -35,7 +35,7 @@ def run(ser, scenario_name, dt, duration, pd, clutter_rate, seed,
         print(f"step={step} t={timestamp_ms} ms measurements={len(measurements)}")
         for meas in measurements:
             try:
-                frame = build_radar_frame_from_radians(
+                frame = build_measurement_frame_from_radians(
                     meas.timestamp_ms, meas.range_m, meas.azimuth_rad)
             except ValueError as error:
                 # wire에 표현할 수 없는 측정을 조용히 잘라내거나 보정하지 않는다.

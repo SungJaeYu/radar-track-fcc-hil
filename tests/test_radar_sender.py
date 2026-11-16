@@ -20,14 +20,14 @@ class RadarSenderTest(unittest.TestCase):
         writes = serial.Serial.return_value.__enter__.return_value.write.call_args_list
         self.assertEqual([call.args[0] for call in writes], [
             bytes.fromhex("7e 01 01 00 c8 9d"),
-            sender.build_radar_frame(0, 1000, 178956971),
-            sender.build_radar_frame(100, 998, 178956971),
+            sender.build_measurement_frame(0, 1000, 178956971),
+            sender.build_measurement_frame(100, 998, 178956971),
         ])
         sleep.assert_called_once_with(0.1)
 
     def test_big_endian_signed_azimuth_and_checksum(self):
         self.assertEqual(
-            sender.build_radar_frame(100, 1000, -1073741824),
+            sender.build_measurement_frame(100, 1000, -1073741824),
             bytes.fromhex('7e 0a 02 00 00 00 64 03 e8 c0 00 00 00 0f b1'),
         )
 
@@ -36,7 +36,7 @@ class RadarSenderTest(unittest.TestCase):
                                (0, '00000000'),
                                (2147483647, '7fffffff')]:
             with self.subTest(value=value):
-                frame = sender.build_radar_frame(0, 1000, value)
+                frame = sender.build_measurement_frame(0, 1000, value)
                 self.assertEqual(frame[1], 10)
                 self.assertEqual(frame[9:13], bytes.fromhex(encoded))
 

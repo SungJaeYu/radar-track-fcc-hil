@@ -34,7 +34,7 @@ static void test_tx_init(void)
 static void test_tx_invalid_submit(void)
 {
     reset_test();
-    struct send_frame request = {.frame = {.type = FRAME_TYPE_STATUS_REQUEST}};
+    struct tx_frame request = {.frame = {.type = FRAME_TYPE_STATUS_REQUEST}};
     assert(uart_tx_submit(NULL) == -EINVAL);
     const uint8_t lengths[] = {0, PROTOCOL_MAX_PAYLOAD + 1, UINT8_MAX};
     for (size_t i = 0; i < sizeof(lengths); ++i) {
@@ -48,7 +48,7 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
 {
     reset_test();
     assert(uart_tx_init() == 0);
-    struct send_frame request = {
+    struct tx_frame request = {
         .frame = {.type = FRAME_TYPE_STATUS_REQUEST, .payload_length = 1},
     };
     for (unsigned i = 0; i < 8; ++i) {
@@ -60,10 +60,10 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
     run_worker();
     assert(sent_count == 8 * 6 && tx_queue.count == 0);
     struct frame_parser parser;
-    parser_init(&parser);
+    frame_parser_init(&parser);
     unsigned frames = 0;
     for (size_t i = 0; i < sent_count; ++i) {
-        ParserResult result = parser_feed(&parser, sent[i]);
+        ParserResult result = frame_parser_feed(&parser, sent[i]);
         if (result == PARSER_RESULT_FRAME_READY) {
             assert(parser.frame.type == FRAME_TYPE_STATUS_REQUEST &&
                    parser.frame.payload_length == 1);
@@ -73,7 +73,7 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
         }
     }
     assert(frames == 8);
-    request = (struct send_frame){.frame = {.type = FRAME_TYPE_INIT, .payload_length = 1}};
+    request = (struct tx_frame){.frame = {.type = FRAME_TYPE_INIT, .payload_length = 1}};
     assert(uart_tx_submit(&request) == 0);
     assert(uart_tx_init() == 0);
     sent_count = 0;
@@ -86,7 +86,7 @@ static void test_tx_encode_error_continues(void)
 {
     reset_test();
     assert(uart_tx_init() == 0);
-    struct send_frame request = {.frame = {.type = FRAME_TYPE_INIT, .payload_length = 0}};
+    struct tx_frame request = {.frame = {.type = FRAME_TYPE_INIT, .payload_length = 0}};
     // Bypass submit validation solely to exercise the worker's defensive path.
     assert(k_msgq_put(&tx_queue, &request, K_NO_WAIT) == 0);
     request.frame.payload_length = 1;

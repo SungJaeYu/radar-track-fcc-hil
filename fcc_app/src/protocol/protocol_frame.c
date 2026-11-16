@@ -9,7 +9,7 @@
 _Static_assert(PROTOCOL_MAX_PAYLOAD >= 1, "Protocol requires a nonempty payload");
 _Static_assert(PROTOCOL_MAX_PAYLOAD <= UINT8_MAX, "Payload length must fit in one byte");
 
-bool protocol_frame_is_valid(const struct protocol_frame *p_frame)
+bool protocol_frame_has_valid_length(const struct protocol_frame *p_frame)
 {
     return p_frame != NULL && p_frame->payload_length > 0 && p_frame->payload_length <= PROTOCOL_MAX_PAYLOAD;
 }
@@ -31,7 +31,7 @@ uint16_t protocol_frame_crc(const struct protocol_frame *p_frame)
 
 int protocol_frame_encode(const struct protocol_frame *p_frame, uint8_t *out_buffer, size_t capacity)
 {
-    if (!protocol_frame_is_valid(p_frame) || out_buffer == NULL) {
+    if (!protocol_frame_has_valid_length(p_frame) || out_buffer == NULL) {
         return -EINVAL;
     }
 

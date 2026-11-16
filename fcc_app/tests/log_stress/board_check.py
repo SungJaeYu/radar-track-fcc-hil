@@ -15,7 +15,7 @@ import serial
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 from pc_sim.frame_parser import FrameParser, ParserState
-from pc_sim.protocol import build_init_frame, build_radar_frame, decode_status_payload
+from pc_sim.protocol import build_init_frame, build_measurement_frame, decode_status_payload
 from pc_sim.status_client import request_status
 
 
@@ -121,7 +121,7 @@ def main():
                             now = time.monotonic()
                             if now >= next_measurement:
                                 stamp = int((now - measurement_origin) * 1000)
-                                port.write(build_radar_frame(stamp, 1000, 0))
+                                port.write(build_measurement_frame(stamp, 1000, 0))
                                 results['last_measurement_ms'] = stamp
                                 sent += 1
                                 next_measurement = now + 1 / rate

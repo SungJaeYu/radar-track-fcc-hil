@@ -24,7 +24,7 @@ struct ring_buffer {
 void ring_init(struct ring_buffer *p_rb);
 // Require a non-NULL ring. Return true if stored, or false if full.
 // On full, preserve existing bytes and discard the new byte.
-bool ring_push(struct ring_buffer *p_rb, uint8_t c);
+bool ring_push(struct ring_buffer *p_rb, uint8_t byte);
 // Require non-NULL ring and output pointers. Return true if a byte was read.
 // Return false if empty, leaving the output unchanged.
 bool ring_pop(struct ring_buffer *p_rb, uint8_t *out_byte);

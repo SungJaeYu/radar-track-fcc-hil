@@ -11,7 +11,7 @@
 static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s, bool is_angle);
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle);
 
-void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float initial_value_rate, float p00, float p01, float p10, float p11, float process_noise, float measurement_noise)
+void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float initial_value_rate, float p00, float p01, float p10, float p11, float process_noise_variance, float measurement_noise_variance)
 {
     __ASSERT(p_kf != NULL, "Kalman filter pointer is NULL");
     __ASSERT(isfinite(initial_value), "Initial value must be finite");
@@ -21,12 +21,12 @@ void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float in
     __ASSERT(isfinite(p10), "p10 value must be finite");
     __ASSERT(isfinite(p11) && p11 >= 0.0f, "p11 value must be finite and nonnegative: %f", (double)p11);
     __ASSERT(
-        isfinite(process_noise) && process_noise >= 0.0f,
-        "Process noise must be finite and nonnegative: %f", (double)process_noise
+        isfinite(process_noise_variance) && process_noise_variance >= 0.0f,
+        "Process noise must be finite and nonnegative: %f", (double)process_noise_variance
     );
     __ASSERT(
-        isfinite(measurement_noise) && measurement_noise > 0.0f,
-        "Measurement noise must be finite and positive: %f", (double)measurement_noise
+        isfinite(measurement_noise_variance) && measurement_noise_variance > 0.0f,
+        "Measurement noise must be finite and positive: %f", (double)measurement_noise_variance
     );
 
     p_kf->estimate = initial_value;
@@ -35,8 +35,8 @@ void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float in
     p_kf->p01 = p01;
     p_kf->p10 = p10;
     p_kf->p11 = p11;
-    p_kf->process_noise = process_noise;
-    p_kf->measurement_noise = measurement_noise;
+    p_kf->process_noise_variance = process_noise_variance;
+    p_kf->measurement_noise_variance = measurement_noise_variance;
 }
 
 void kalman_cv_predict(struct kalman_cv_filter *p_kf, float dt_s)
@@ -82,7 +82,7 @@ static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s
     const float old_p01 = p_kf->p01;
     const float old_p10 = p_kf->p10;
     const float old_p11 = p_kf->p11;
-    const float q = p_kf->process_noise;
+    const float q = p_kf->process_noise_variance;
 
     p_kf->p00 =
         old_p00 +
@@ -118,7 +118,7 @@ static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float valu
     }
 
     // Innovation covariance
-    const float s = p_kf->p00 + p_kf->measurement_noise;
+    const float s = p_kf->p00 + p_kf->measurement_noise_variance;
 
     // Skip correction for nonfinite or near-zero/nonpositive innovation covariance.
     // Preserve the prior filter state; this does not repair an already invalid covariance.

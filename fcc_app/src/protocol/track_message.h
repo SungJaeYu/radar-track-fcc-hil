@@ -33,10 +33,10 @@ typedef enum {
 
 
 // Encode track report data in the declaration order above.
-// Set TRACK_REPORT type and the 32-byte payload length; no source counters are reset.
+// Set TRACK_REPORT type and the 32-byte payload length; the source report is unchanged.
 // Return 0 on success or -EINVAL for NULL input/output.
 // Leave the output unchanged on failure.
-int track_message_encode(const struct track_report *p_track, struct protocol_frame *out_frame);
+int track_message_encode(const struct track_report *p_report, struct protocol_frame *out_frame);
 
 
 #endif

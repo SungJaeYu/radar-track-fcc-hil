@@ -126,11 +126,11 @@ class MainWindow(QMainWindow):
         fields.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.inputs = {}
         definitions = [
-            ('range_m', '초기 거리 (m)', 1, 65535, 1000, 1),
-            ('rate_mps', '거리 변화율 (m/s)', -1000, 1000, -20, 1),
+            ('initial_range_m', '초기 거리 (m)', 1, 65535, 1000, 1),
+            ('range_rate_mps', '거리 변화율 (m/s)', -1000, 1000, -20, 1),
             ('azimuth_deg', '방위각 (°)', -180, 180, 15, 1),
-            ('noise_m', '거리 잡음 σ (m)', 0, 1000, 5, 1),
-            ('hz', '송신 주기 (Hz)', 1, 50, 10, 0),
+            ('range_noise_std_m', '거리 잡음 σ (m)', 0, 1000, 5, 1),
+            ('sample_rate_hz', '송신 주기 (Hz)', 1, 50, 10, 0),
             ('duration_s', '실행 시간 (s)', 1, 3600, 30, 0),
         ]
         for key, label, low, high, default, decimals in definitions:
@@ -335,7 +335,7 @@ class MainWindow(QMainWindow):
         self.sample_count = 0
         for curve in (self.truth_curve, self.measured_curve, self.truth_point, self.measured_points):
             curve.setData([], [])
-        extent = settings.range_m * 1.2
+        extent = settings.initial_range_m * 1.2
         self.map_plot.setRange(xRange=(-extent, extent), yRange=(-extent, extent), padding=0)
         self.start_button.setEnabled(False)
         self.settings_form.setEnabled(False)
@@ -357,7 +357,7 @@ class MainWindow(QMainWindow):
         self.sample_count += 1
         verb = 'UART write' if self.mode.currentIndex() else '미리보기 생성'
         self.metrics.setText(f'{verb}  {self.sample_count}개  ·  {sample.timestamp_ms / 1000:.1f} s'
-                             f'  ·  실제 {sample.truth_m:.1f} m  ·  측정 {sample.measured_m} m')
+                             f'  ·  실제 {sample.truth_range_m:.1f} m  ·  측정 {sample.measured_range_m} m')
         self.event_text.appendPlainText(f'{sample.timestamp_ms:>7} ms  {verb}  {sample.frame.hex(" ")}')
 
     def draw_samples(self):
@@ -365,14 +365,14 @@ class MainWindow(QMainWindow):
             return
         values = list(self.samples)
         times = [s.timestamp_ms / 1000 for s in values]
-        self.truth_curve.setData(times, [s.truth_m for s in values])
-        self.measured_curve.setData(times, [s.measured_m for s in values])
+        self.truth_curve.setData(times, [s.truth_range_m for s in values])
+        self.measured_curve.setData(times, [s.measured_range_m for s in values])
         last = values[-1]
-        self.truth_point.setData([last.truth_m * math.sin(last.azimuth_rad)],
-                                 [last.truth_m * math.cos(last.azimuth_rad)])
+        self.truth_point.setData([last.truth_range_m * math.sin(last.azimuth_rad)],
+                                 [last.truth_range_m * math.cos(last.azimuth_rad)])
         trail = values[-100:]
-        self.measured_points.setData([s.measured_m * math.sin(s.azimuth_rad) for s in trail],
-                                     [s.measured_m * math.cos(s.azimuth_rad) for s in trail])
+        self.measured_points.setData([s.measured_range_m * math.sin(s.azimuth_rad) for s in trail],
+                                     [s.measured_range_m * math.cos(s.azimuth_rad) for s in trail])
 
     def append_console(self, text):
         cursor = self.console_text.textCursor()

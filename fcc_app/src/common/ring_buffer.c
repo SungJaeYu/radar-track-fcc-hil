@@ -15,7 +15,7 @@ void ring_init(struct ring_buffer *p_rb)
     p_rb->tail = 0;
 }
 
-bool ring_push(struct ring_buffer *p_rb, uint8_t c)
+bool ring_push(struct ring_buffer *p_rb, uint8_t byte)
 {
     __ASSERT(p_rb != NULL, "Ring buffer pointer is NULL");
 
@@ -23,7 +23,7 @@ bool ring_push(struct ring_buffer *p_rb, uint8_t c)
     if ((p_rb->head + 1) % RING_BUFFER_SIZE == p_rb->tail) {
         return false;
     }
-    p_rb->data[p_rb->head] = c;
+    p_rb->data[p_rb->head] = byte;
     p_rb->head = (p_rb->head + 1) % RING_BUFFER_SIZE;
     return true;
 }

@@ -35,7 +35,7 @@ def build_init_frame():
     return encode_frame(FRAME_TYPE_INIT, b"\x00")
 
 
-def build_radar_frame(timestamp_ms, range_m, azimuth_sc):
+def build_measurement_frame(timestamp_ms, range_m, azimuth_sc):
     """Encode int32 semicircle azimuth (radians = azimuth_sc * pi / 2**31)."""
     payload = struct.pack(
         ">IHi",
@@ -47,7 +47,7 @@ def build_radar_frame(timestamp_ms, range_m, azimuth_sc):
     return encode_frame(FRAME_TYPE_MEAS_REPORT, payload)
 
 
-def build_radar_frame_from_radians(timestamp_ms, range_m, azimuth_rad):
+def build_measurement_frame_from_radians(timestamp_ms, range_m, azimuth_rad):
     """시나리오의 실수 거리·라디안을 현재 wire 단위로 변환한다."""
     if not math.isfinite(range_m) or not math.isfinite(azimuth_rad):
         raise ValueError("range and azimuth must be finite")
@@ -58,7 +58,7 @@ def build_radar_frame_from_radians(timestamp_ms, range_m, azimuth_rad):
     wrapped = (azimuth_rad + math.pi) % (2 * math.pi) - math.pi
     semicircle = round(wrapped * (2**31 / math.pi))
     semicircle = (semicircle + 2**31) % 2**32 - 2**31
-    return build_radar_frame(timestamp_ms, distance, semicircle)
+    return build_measurement_frame(timestamp_ms, distance, semicircle)
 
 
 # Wire order, CLI label, GUI label. All fields are unsigned 32-bit counters.

@@ -14,10 +14,10 @@ LOG_MODULE_DECLARE(frame_handler, CONFIG_RADAR_HANDLER_LOG_LEVEL);
 
 void report_sender_submit_status(void)
 {
-    struct rx_frame_stats stats;
+    struct rx_frame_processor_stats stats;
     rx_frame_processor_get_stats(&stats);
 
-    struct send_frame request;
+    struct tx_frame request;
     struct uart_rx_stats uart_stats;
     uart_rx_get_stats(&uart_stats);
     // Each owner supplies cumulative counters; this is not a simultaneous snapshot.
@@ -51,7 +51,7 @@ void report_sender_submit_status(void)
 void report_sender_submit_track(struct report_sender *p_sender, const struct track *p_track,
                                 uint32_t input_timestamp_ms, TrackReportResult result)
 {
-    struct send_frame request;
+    struct tx_frame request;
 
     const bool estimate_valid =
         p_track->state == TRACK_STATE_TENTATIVE ||
@@ -59,7 +59,7 @@ void report_sender_submit_track(struct report_sender *p_sender, const struct tra
         p_track->state == TRACK_STATE_COASTING;
 
     struct track_report report = {
-        .report_sequence = p_sender->report_sequence++,
+        .report_sequence = p_sender->next_track_report_sequence++,
         .input_timestamp_ms = input_timestamp_ms,
         .state = p_track->state,
         .result = result,
@@ -69,7 +69,7 @@ void report_sender_submit_track(struct report_sender *p_sender, const struct tra
 
     // Invalid estimates retain zero-valued fields without reading stale filters.
     if (estimate_valid) {
-        report.estimate_timestamp_ms = p_track->last_measurement_time_ms;
+        report.estimate_timestamp_ms = p_track->estimate_timestamp_ms;
         report.range_m = p_track->range_filter.estimate;
         report.azimuth_rad = p_track->azimuth_filter.estimate;
         report.range_rate_mps = p_track->range_filter.rate;

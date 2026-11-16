@@ -6,7 +6,7 @@
 #include "tracking/angle_utils.h"
 #include "tracking/gating.h"
 #include "tracking/kalman_cv.h"
-#include "protocol/radar_message.h"
+#include "protocol/measurement_message.h"
 #include "tracking/track.h"
 
 #ifdef TRACK_TEST_HOST
@@ -103,7 +103,7 @@ TEST(test_correction_rejects_invalid_innovation_covariance)
         kalman_cv_init(&filter, 10, 2, 1, 0, 0, 1, 0, 1);
         // Inject internal corruption after valid initialization; exercise the release guard.
         filter.p00 = values[i];
-        filter.measurement_noise = 0.0f;
+        filter.measurement_noise_variance = 0.0f;
         unsigned char before[sizeof(filter)];
         memcpy(before, &filter, sizeof(filter));
         kalman_cv_correct(&filter, 12);
@@ -180,28 +180,28 @@ TEST(test_decode_semicircle)
 {
     uint8_t payload[] = {0, 0, 0, 100, 0x03, 0xe8, 0x40, 0, 0, 0};
     struct radar_measurement m;
-    CHECK(decode_radar_measurement(payload, sizeof payload, &m));
+    CHECK(measurement_message_decode(payload, sizeof payload, &m));
     CHECK(m.timestamp_ms == 100);
     NEAR(m.range_m, 1000);
     NEAR(m.azimuth_rad, PI_F / 2);
-    CHECK(validate_radar_measurement(&m));
+    CHECK(measurement_message_validate(&m));
     payload[6] = 0xc0;
-    CHECK(decode_radar_measurement(payload, sizeof payload, &m));
+    CHECK(measurement_message_decode(payload, sizeof payload, &m));
     NEAR(m.azimuth_rad, -PI_F / 2);
     payload[6] = 0x80;
-    CHECK(decode_radar_measurement(payload, sizeof payload, &m));
+    CHECK(measurement_message_decode(payload, sizeof payload, &m));
     NEAR(m.azimuth_rad, -PI_F);
-    CHECK(validate_radar_measurement(&m));
+    CHECK(measurement_message_validate(&m));
     payload[6] = 0x7f;
     payload[7] = payload[8] = payload[9] = 0xff;
-    CHECK(decode_radar_measurement(payload, sizeof payload, &m));
+    CHECK(measurement_message_decode(payload, sizeof payload, &m));
     NEAR(m.azimuth_rad, PI_F);
-    CHECK(validate_radar_measurement(&m));
-    CHECK(!decode_radar_measurement(payload, 8, &m));
-    CHECK(!decode_radar_measurement(NULL, 10, &m));
-    CHECK(!decode_radar_measurement(payload, 10, NULL));
+    CHECK(measurement_message_validate(&m));
+    CHECK(!measurement_message_decode(payload, 8, &m));
+    CHECK(!measurement_message_decode(NULL, 10, &m));
+    CHECK(!measurement_message_decode(payload, 10, NULL));
     m.range_m = 0;
-    CHECK(!validate_radar_measurement(&m));
+    CHECK(!measurement_message_validate(&m));
 }
 
 TEST(test_timestamp_rejection)
@@ -222,12 +222,12 @@ TEST(test_elapsed_time_and_wraparound)
     t.range_filter.rate = 20;
     CHECK(track_predict(&t, 400));
     NEAR(t.range_filter.estimate, 1006);
-    CHECK(t.last_measurement_time_ms == 400);
+    CHECK(t.estimate_timestamp_ms == 400);
     t = new_track(UINT32_MAX - 49);
     t.range_filter.rate = 20;
     CHECK(track_predict(&t, 50));
     NEAR(t.range_filter.estimate, 1002);
-    CHECK(t.last_measurement_time_ms == 50);
+    CHECK(t.estimate_timestamp_ms == 50);
 }
 
 TEST(test_long_gap_and_restart)

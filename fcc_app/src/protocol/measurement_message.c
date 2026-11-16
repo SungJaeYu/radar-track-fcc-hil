@@ -1,4 +1,4 @@
-#include "protocol/radar_message.h"
+#include "protocol/measurement_message.h"
 
 #include <stddef.h>
 
@@ -11,7 +11,7 @@ _Static_assert(RADAR_MEAS_PAYLOAD_LENGTH <= PROTOCOL_MAX_PAYLOAD, "Radar measure
 
 #define SEMICIRCLE_SCALE 2147483648.0f
 
-bool decode_radar_measurement(
+bool measurement_message_decode(
     const uint8_t *p_payload,
     uint8_t payload_length,
     struct radar_measurement *out_measurement)
@@ -53,7 +53,7 @@ bool decode_radar_measurement(
     return true;
 }
 
-bool validate_radar_measurement(
+bool measurement_message_validate(
     const struct radar_measurement *p_measurement)
 {
     if (p_measurement->range_m == 0.0f) {

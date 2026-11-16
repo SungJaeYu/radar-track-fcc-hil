@@ -11,26 +11,26 @@ _Static_assert(sizeof(struct track_report) == TRACK_REPORT_PAYLOAD_LENGTH,
 _Static_assert(TRACK_REPORT_PAYLOAD_LENGTH <= PROTOCOL_MAX_PAYLOAD, "Track report exceeds payload capacity");
 
 
-int track_message_encode(const struct track_report *p_track, struct protocol_frame *out_frame)
+int track_message_encode(const struct track_report *p_report, struct protocol_frame *out_frame)
 {
-    if (p_track == NULL || out_frame == NULL) {
+    if (p_report == NULL || out_frame == NULL) {
         return -EINVAL;
     }
 
     out_frame->type = FRAME_TYPE_TRACK_REPORT;
     out_frame->payload_length = TRACK_REPORT_PAYLOAD_LENGTH;
 
-    write_u32_be(p_track->report_sequence, &out_frame->payload[0]);
-    write_u32_be(p_track->input_timestamp_ms, &out_frame->payload[4]);
-    write_u32_be(p_track->estimate_timestamp_ms, &out_frame->payload[8]);
-    write_f32_be(p_track->range_m, &out_frame->payload[12]);
-    write_f32_be(p_track->azimuth_rad, &out_frame->payload[16]);
-    write_f32_be(p_track->range_rate_mps, &out_frame->payload[20]);
-    write_f32_be(p_track->azimuth_rate_radps, &out_frame->payload[24]);
-    out_frame->payload[28] = p_track->state;
-    out_frame->payload[29] = p_track->result;
-    out_frame->payload[30] = p_track->flags;
-    out_frame->payload[31] = p_track->reserved;
+    write_u32_be(p_report->report_sequence, &out_frame->payload[0]);
+    write_u32_be(p_report->input_timestamp_ms, &out_frame->payload[4]);
+    write_u32_be(p_report->estimate_timestamp_ms, &out_frame->payload[8]);
+    write_f32_be(p_report->range_m, &out_frame->payload[12]);
+    write_f32_be(p_report->azimuth_rad, &out_frame->payload[16]);
+    write_f32_be(p_report->range_rate_mps, &out_frame->payload[20]);
+    write_f32_be(p_report->azimuth_rate_radps, &out_frame->payload[24]);
+    out_frame->payload[28] = p_report->state;
+    out_frame->payload[29] = p_report->result;
+    out_frame->payload[30] = p_report->flags;
+    out_frame->payload[31] = p_report->reserved;
 
     return 0;
 }

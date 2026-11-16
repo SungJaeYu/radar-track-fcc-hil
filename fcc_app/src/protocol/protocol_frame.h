@@ -34,7 +34,7 @@ struct protocol_frame {
 
 // Return true for a non-NULL frame with a payload length in 1..PROTOCOL_MAX_PAYLOAD.
 // Does not validate TYPE support, payload semantics, or a received CRC.
-bool protocol_frame_is_valid(const struct protocol_frame *p_frame);
+bool protocol_frame_has_valid_length(const struct protocol_frame *p_frame);
 
 // Require a non-NULL frame with a valid payload length and a one-byte TYPE.
 // Compute CRC over LEN, TYPE, and payload, excluding PROTOCOL_STX and the CRC bytes.

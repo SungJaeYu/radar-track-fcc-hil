@@ -2,7 +2,7 @@
 
 #include <zephyr/logging/log.h>
 
-#include "protocol/radar_message.h"
+#include "protocol/measurement_message.h"
 #include "tracking/gating.h"
 
 // Processing stays in the handler thread and shares its logging configuration.
@@ -42,23 +42,23 @@ bool radar_processor_check_timeout(struct radar_processor *p_processor, int64_t 
     return true;
 }
 
-bool radar_processor_process(struct radar_processor *p_processor,
-                             const struct protocol_frame *p_frame, int64_t received_at_ms,
-                             struct radar_process_result *out_result)
+bool radar_processor_process_measurement(struct radar_processor *p_processor,
+                                         const struct protocol_frame *p_frame, int64_t received_at_ms,
+                                         struct radar_process_result *out_result)
 {
-    struct radar_measurement rm;
+    struct radar_measurement measurement;
 
-    if (!decode_radar_measurement(
+    if (!measurement_message_decode(
             p_frame->payload,
             p_frame->payload_length,
-            &rm)) {
+            &measurement)) {
         LOG_WRN("Invalid radar payload: length=%u", (unsigned int)p_frame->payload_length);
         return false;
     }
 
-    if (!validate_radar_measurement(&rm)) {
+    if (!measurement_message_validate(&measurement)) {
         LOG_WRN("Invalid radar measurement: range=%.2f m, azimuth=%.4f rad",
-                (double)rm.range_m, (double)rm.azimuth_rad);
+                (double)measurement.range_m, (double)measurement.azimuth_rad);
         return false;
     }
 
@@ -68,10 +68,10 @@ bool radar_processor_process(struct radar_processor *p_processor,
     p_processor->timeout_armed = true;
 
     LOG_DBG("Measurement: t=%u ms, range=%.2f m, azimuth=%.4f rad",
-            (unsigned int)rm.timestamp_ms, (double)rm.range_m, (double)rm.azimuth_rad);
+            (unsigned int)measurement.timestamp_ms, (double)measurement.range_m, (double)measurement.azimuth_rad);
 
     const TrackState previous_state = p_processor->track.state;
-    const TrackReportResult result = update_track_from_measurement(&p_processor->track, &rm);
+    const TrackReportResult result = update_track_from_measurement(&p_processor->track, &measurement);
 
     // Startup has its own log; report other state transitions only when they occur.
     if (previous_state != TRACK_STATE_EMPTY && previous_state != p_processor->track.state) {
@@ -79,7 +79,7 @@ bool radar_processor_process(struct radar_processor *p_processor,
                 track_state_name(previous_state), track_state_name(p_processor->track.state));
     }
 
-    out_result->input_timestamp_ms = rm.timestamp_ms;
+    out_result->input_timestamp_ms = measurement.timestamp_ms;
     out_result->result = result;
     return true;
 }
@@ -98,7 +98,7 @@ static TrackReportResult update_track_from_measurement(struct track *p_track, co
 
         // Prediction may clear a lost/stale track. A later measurement starts it anew;
         // this measurement is not reused for startup after prediction returns false.
-        const uint32_t previous_time_ms = p_track->last_measurement_time_ms;
+        const uint32_t previous_time_ms = p_track->estimate_timestamp_ms;
         if (!track_predict(p_track, p_measurement->timestamp_ms)) {
             LOG_DBG("Prediction skipped: previous_t=%u ms, received_t=%u ms, state=%s",
                     (unsigned int)previous_time_ms,

@@ -9,7 +9,7 @@
 // Owned by the handler thread. Zero-initialize once, not on INIT/RESET/timeout.
 struct report_sender {
     // Consume a sequence for every report attempt, including encode/TX failures.
-    uint32_t report_sequence;
+    uint32_t next_track_report_sequence;
 };
 
 // Read independently atomic RX counters, encode STATUS, and submit a copied frame.

@@ -35,9 +35,9 @@ int main(int argc, char **argv) {
     if (argv[1][0] == 'r') ring_init(NULL);
     if (argv[1][0] == 'p') {
         struct frame_parser parser;
-        parser_init(&parser);
+        frame_parser_init(&parser);
         parser.state = 99;
-        parser_feed(&parser, 0);
+        frame_parser_feed(&parser, 0);
     }
     if (argv[1][0] == 'k') {
         struct kalman_cv_filter filter;

@@ -8,7 +8,7 @@ import subprocess
 
 import pytest
 from pc_sim import protocol
-from pc_sim.protocol import crc16, encode_frame, build_init_frame, build_radar_frame
+from pc_sim.protocol import crc16, encode_frame, build_init_frame, build_measurement_frame
 
 
 def test_crc_standard_check_vector():
@@ -59,8 +59,8 @@ int frame_type_constant(int index) {
     return types[index];
 }
 static struct frame_parser parser;
-void reset_parser(void) { parser_init(&parser); }
-int feed_byte(unsigned char b) { return parser_feed(&parser, b); }
+void reset_parser(void) { frame_parser_init(&parser); }
+int feed_byte(unsigned char b) { return frame_parser_feed(&parser, b); }
 int frame_type(void) { return parser.frame.type; }
 int payload_size(void) { return parser.frame.payload_length; }
 int payload_byte(int i) { return parser.frame.payload[i]; }
@@ -100,7 +100,7 @@ def test_firmware_crc_standard_check_vector(parser_lib):
     assert parser_lib.crc_check_vector() == 0x29b1
 
 
-@pytest.mark.parametrize('frame', [build_init_frame(), build_radar_frame(100, 1000, -1073741824),
+@pytest.mark.parametrize('frame', [build_init_frame(), build_measurement_frame(100, 1000, -1073741824),
                                   encode_frame(5, b'r'), encode_frame(3, bytes(range(32)))])
 def test_python_frames_accepted_by_firmware(parser_lib, frame):
     parser_lib.reset_parser()
@@ -113,7 +113,7 @@ def test_python_frames_accepted_by_firmware(parser_lib, frame):
 @pytest.mark.parametrize('offset', [2, 3, -2, -1])
 def test_corrupted_frame_rejected_then_next_frame_accepted(parser_lib, offset):
     parser_lib.reset_parser()
-    frame = bytearray(build_radar_frame(100, 1000, -1073741824))
+    frame = bytearray(build_measurement_frame(100, 1000, -1073741824))
     frame[offset] ^= 1
     assert feed(parser_lib, frame)[-1] == 2  # PARSER_RESULT_CRC_ERROR
     assert feed(parser_lib, build_init_frame())[-1] == 1
@@ -135,7 +135,7 @@ def test_crc_low_byte_required_for_completion(parser_lib):
 
 def test_plausible_corrupted_length_does_not_report_ready(parser_lib):
     parser_lib.reset_parser()
-    frame = bytearray(build_radar_frame(100, 1000, -1073741824))
+    frame = bytearray(build_measurement_frame(100, 1000, -1073741824))
     frame[1] = 9
     results = feed(parser_lib, frame)
     assert 1 not in results
@@ -189,8 +189,8 @@ def test_frame_type_values_match_firmware(parser_lib):
         assert parser_lib.frame_type_constant(index) == getattr(protocol, name) == index + 1
 
 
-def test_reserved_status_report_framing(parser_lib):
-    # Synthetic payload only: no STATUS_REPORT payload schema is defined yet.
+def test_status_report_framing(parser_lib):
+    # Synthetic one-byte payload checks framing only, not the STATUS payload schema.
     frame = encode_frame(protocol.FRAME_TYPE_STATUS_REPORT, b'\x00')
     parser_lib.reset_parser()
     assert feed(parser_lib, frame)[-1] == 1

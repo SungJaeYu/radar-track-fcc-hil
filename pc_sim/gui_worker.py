@@ -148,5 +148,5 @@ class SessionWorker(QThread):
                         self._write(data, sample.frame)
                         self.sample.emit(sample)
                         # Never send catch-up bursts after a delayed write/read.
-                        next_sample = time.monotonic() + 1 / settings.hz
+                        next_sample = time.monotonic() + 1 / settings.sample_rate_hz
             self.msleep(5)

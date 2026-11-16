@@ -26,7 +26,7 @@ struct track {
     uint32_t miss_count;
 
     // Sender timestamp of the current filter state, including prediction-only updates.
-    uint32_t last_measurement_time_ms;
+    uint32_t estimate_timestamp_ms;
 };
 
 // All track APIs require a non-NULL object owned by the calling processing context.

@@ -17,7 +17,7 @@ void rx_frame_processor_feed(uint8_t byte);
 // Idle PARSER_STATE_WAIT_STX is not monitored.
 void rx_frame_processor_check_timeout(int64_t now_ms);
 
-struct rx_frame_stats {
+struct rx_frame_processor_stats {
     uint32_t crc_errors;
     uint32_t length_errors;
     uint32_t frame_timeouts;
@@ -28,6 +28,6 @@ struct rx_frame_stats {
 // Require a non-NULL output. Copy cumulative counters without resetting them.
 // May be read from another thread; each atomic field is read independently,
 // so the result is not a simultaneous snapshot of all counters.
-void rx_frame_processor_get_stats(struct rx_frame_stats *out_stats);
+void rx_frame_processor_get_stats(struct rx_frame_processor_stats *out_stats);
 
 #endif

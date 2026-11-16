@@ -5,9 +5,9 @@ import time
 import random
 
 if __package__:
-    from .protocol import build_init_frame, build_radar_frame
+    from .protocol import build_init_frame, build_measurement_frame
 else:
-    from protocol import build_init_frame, build_radar_frame
+    from protocol import build_init_frame, build_measurement_frame
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     parser.add_argument("--rate", type=float, default=-20.0)
     parser.add_argument("--noise", type=float, default=5.0)
     parser.add_argument("--azimuth", type=int, default=178956971,
-                        help="int32 semicircle azimuth (default: 178956971, about 30 degrees)")
+                        help="int32 semicircle azimuth (default: 178956971, about 15 degrees)")
     parser.add_argument("--hz", type=float, default=10.0)
     parser.add_argument("--count", type=int, default=20)
 
@@ -63,7 +63,7 @@ def main():
             if not 1 <= measured_range_int <= 65535:
                 parser.error("generated range must be 1..65535 metres")
 
-            frame = build_radar_frame(
+            frame = build_measurement_frame(
                 timestamp_ms,
                 measured_range_int,
                 args.azimuth

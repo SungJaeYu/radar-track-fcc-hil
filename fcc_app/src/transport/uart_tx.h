@@ -4,7 +4,7 @@
 #include "protocol/protocol_frame.h"
 
 // Queue-owned copy of a frame to encode and transmit; no caller buffer is retained.
-struct send_frame {
+struct tx_frame {
     struct protocol_frame frame;
 };
 
@@ -18,6 +18,6 @@ int uart_tx_init(void);
 // or -ENOMSG when the queue is full. Success does not mean transmission completed.
 // Submission does not check device readiness; queued requests wait for successful TX init.
 // The caller may reuse the request after this call returns.
-int uart_tx_submit(const struct send_frame *p_frame);
+int uart_tx_submit(const struct tx_frame *p_frame);
 
 #endif

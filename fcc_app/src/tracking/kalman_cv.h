@@ -3,7 +3,7 @@
 
 // Constant-velocity state [value, rate] with covariance matrix [[p00, p01], [p10, p11]].
 // Range mode uses m and m/s; angle mode uses rad and rad/s.
-// process_noise is acceleration variance; measurement_noise is value variance.
+// process_noise_variance is acceleration variance; measurement_noise_variance is value variance.
 // Covariance units follow the corresponding state products.
 struct kalman_cv_filter {
     float estimate;
@@ -14,8 +14,8 @@ struct kalman_cv_filter {
     float p10;
     float p11;
 
-    float process_noise;
-    float measurement_noise;
+    float process_noise_variance;
+    float measurement_noise_variance;
 };
 
 // Initialize a non-NULL filter with caller-selected state, covariance, and noise.
@@ -27,8 +27,8 @@ void kalman_cv_init(
     float initial_value_rate,
     float p00, float p01,
     float p10, float p11,
-    float process_noise,
-    float measurement_noise
+    float process_noise_variance,
+    float measurement_noise_variance
 );
 
 // Predict a non-NULL initialized linear filter forward by dt_s seconds.

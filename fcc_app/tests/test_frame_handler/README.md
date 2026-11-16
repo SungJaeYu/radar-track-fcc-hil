@@ -57,7 +57,7 @@ validation was performed.
 
 ## Measurement and control coverage
 
-Seven additional cases enter through handle_frame(), using distinct sender and board
+Seven additional cases enter through frame_handler_process(), using distinct sender and board
 receive timestamps. They check INIT/RESET, first valid measurement arming, refresh,
 exact timeout boundaries, one-shot expiry, invalid payload rejection, and receive
 refresh after gate/timestamp rejection. No production firmware source was changed.
@@ -75,7 +75,7 @@ STATUS combines four processor counters and three UART counters. Both owners are
 real counter increments are tested separately by the UART suite.
 
 로그 정리 회귀: STATUS 성공은 큐 접수 한 줄이며 실패 시 성공 로그를 내지 않는다.
-정상 갱신은 입력·예측·결과 3줄, 상태 변화 시 이름을 기록하고 상태가 같으면 전이 로그를 내지 않는다.
+기존 트랙의 정상 갱신은 입력·예측·결과 3줄과 TRACK 큐 접수 1줄을 확인한다. 상태 변화 시 이름을 기록하고 상태가 같으면 전이 로그를 내지 않는다.
 host 모사는 DEBUG도 캡처하므로 실제 필터링·deferred 출력 검증은 별도다.
 
 최신 로깅 일반·디버그 실보드 회귀는 [별도 시험 기록](../../../docs/hardware-test-2026-11-14-logging.md)을 참고합니다.
@@ -116,5 +116,7 @@ The sender shares the handler logging module and adds no thread or queue.
 Radar processing now lives in a separately compiled `application/radar_processor.c`.
 The handler owns `radar` and `report_sender` states and connects processing to submission.
 Two processor API cases additionally check invalid-input output/state preservation
-and a one-shot timeout return with no report submission or sequence consumption.
+and a one-shot timeout return with no report submission or sequence consumption:
+`test_processor_invalid_input_preserves_output` and
+`test_processor_timeout_event_once_without_transmission`.
 Existing 27 integration cases retain their wire and behavior expectations.

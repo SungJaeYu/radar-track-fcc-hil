@@ -49,7 +49,7 @@ class Target:
         """수평면 기준 앙각. 표적이 동고도(z=0)이면 0."""
         return 0.0
 
-    def radial_velocity(self) -> float:
+    def radial_velocity_mps(self) -> float:
         """시선 방향 속도 (양수=멀어짐, 도플러)."""
         r = self.range_m
         if r < 1e-6:
@@ -99,7 +99,7 @@ class RadarSensorModel:
             r   = tgt.range_m        + rng.gauss(0, self.sigma_range_m)
             az  = tgt.azimuth_rad    + rng.gauss(0, self.sigma_azimuth_rad)
             el  = tgt.elevation_rad  # elevation 노이즈는 생략 (2D 시나리오)
-            dop = tgt.radial_velocity() + rng.gauss(0, self.sigma_doppler_mps)
+            dop = tgt.radial_velocity_mps() + rng.gauss(0, self.sigma_doppler_mps)
 
             measurements.append(Measurement(
                 timestamp_ms=timestamp_ms,

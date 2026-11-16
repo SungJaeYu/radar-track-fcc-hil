@@ -25,10 +25,10 @@ static int test_track_encode(const struct track_report *p_report,
 static char output[2048];
 static size_t output_size;
 static unsigned int stats_reads;
-static struct rx_frame_stats source_stats;
+static struct rx_frame_processor_stats source_stats;
 static struct uart_rx_stats source_uart_stats;
 static unsigned int uart_stats_reads;
-static struct send_frame submitted_frame;
+static struct tx_frame submitted_frame;
 static unsigned int submit_calls;
 static int submit_result;
 static int encode_result;
@@ -55,7 +55,7 @@ static int test_status_encode(const struct status_report *p_stats,
 
 // Capture a copy, never a pointer to the handler's local request. Queue scheduling
 // and physical UART transmission belong to the separate TX/board test layers.
-int uart_tx_submit(const struct send_frame *p_frame)
+int uart_tx_submit(const struct tx_frame *p_frame)
 {
     assert(p_frame != NULL);
     submit_calls++;
@@ -76,7 +76,7 @@ int printk(const char *p_format, ...)
 
 // Processor counter behavior is covered by test_uart_rx; this fixture supplies
 // distinct values so field swaps and accidental repeated reads are observable.
-void rx_frame_processor_get_stats(struct rx_frame_stats *out_stats)
+void rx_frame_processor_get_stats(struct rx_frame_processor_stats *out_stats)
 {
     stats_reads++;
     *out_stats = source_stats;
@@ -103,11 +103,11 @@ static void reset_test(struct frame_handler *p_handler)
 
 static void request_status(struct frame_handler *p_handler)
 {
-    const struct received_frame frame = {
+    const struct rx_frame frame = {
         .frame = {.type = FRAME_TYPE_STATUS_REQUEST, .payload_length = 1, .payload = {0}},
         .received_at_ms = 900,
     };
-    handle_frame(p_handler, &frame);
+    frame_handler_process(p_handler, &frame);
 }
 
 static void test_status_zero(void)
@@ -127,7 +127,7 @@ static void test_status_snapshot(void)
 {
     struct frame_handler handler;
     reset_test(&handler);
-    source_stats = (struct rx_frame_stats){1, 23, 456, UINT32_MAX};
+    source_stats = (struct rx_frame_processor_stats){1, 23, 456, UINT32_MAX};
     source_uart_stats = (struct uart_rx_stats){7, 0x80000000U, UINT32_MAX};
     request_status(&handler);
     assert(strcmp(output,
@@ -204,9 +204,9 @@ static void test_status_encode_wire(void)
     assert(stats.frame_timeouts == 1U && stats.queue_drops == UINT32_MAX);
 
     struct frame_parser parser;
-    parser_init(&parser);
+    frame_parser_init(&parser);
     for (size_t i = 0; i < sizeof(expected); ++i) {
-        const ParserResult result = parser_feed(&parser, wire[i]);
+        const ParserResult result = frame_parser_feed(&parser, wire[i]);
         assert(result ==
                (i + 1 == sizeof(expected) ? PARSER_RESULT_FRAME_READY : PARSER_RESULT_INCOMPLETE));
     }
@@ -286,21 +286,21 @@ static void test_incoming_status_report_is_ignored(void)
     reset_test(&handler);
     unsigned char before[sizeof(handler)];
     memcpy(before, &handler, sizeof(handler));
-    const struct received_frame frame = {
+    const struct rx_frame frame = {
         .frame = {.type = FRAME_TYPE_STATUS_REPORT, .payload_length = 16},
         .received_at_ms = 900,
     };
-    handle_frame(&handler, &frame);
+    frame_handler_process(&handler, &frame);
     assert(stats_reads == 0 && submit_calls == 0);
     assert(strcmp(output, "STATUS_REPORT ignored: unexpected input\n") == 0);
     assert(memcmp(before, &handler, sizeof(handler)) == 0);
 }
 
 // Keep sender timestamps distinct from board receive times in timeout tests.
-static struct received_frame measurement(uint32_t timestamp_ms, uint16_t range_m,
+static struct rx_frame measurement(uint32_t timestamp_ms, uint16_t range_m,
                                          int64_t received_at_ms)
 {
-    struct received_frame frame = {
+    struct rx_frame frame = {
         .frame = {.type = FRAME_TYPE_MEAS_REPORT, .payload_length = 10},
         .received_at_ms = received_at_ms,
     };
@@ -318,16 +318,16 @@ static void check_control_reset(FrameType type)
 {
     struct frame_handler handler;
     reset_test(&handler);
-    struct received_frame frame = measurement(100, 1000, 5000);
-    handle_frame(&handler, &frame);
+    struct rx_frame frame = measurement(100, 1000, 5000);
+    frame_handler_process(&handler, &frame);
     assert(handler.radar.timeout_armed && handler.radar.track.state == TRACK_STATE_TENTATIVE);
-    source_stats = (struct rx_frame_stats){1, 2, 3, 4};
+    source_stats = (struct rx_frame_processor_stats){1, 2, 3, 4};
     request_status(&handler);
     const struct protocol_frame before = submitted_frame.frame;
 
     frame.frame.type = type;
     frame.frame.payload_length = 1;
-    handle_frame(&handler, &frame);
+    frame_handler_process(&handler, &frame);
 
     assert(handler.radar.track.state == TRACK_STATE_EMPTY);
     assert(handler.radar.track.hit_count == 0 && handler.radar.track.miss_count == 0);
@@ -339,14 +339,14 @@ static void check_control_reset(FrameType type)
     assert(memcmp(submitted_frame.frame.payload, before.payload, before.payload_length) == 0);
     assert(stats_reads == 2 && uart_stats_reads == 2 && submit_calls == 3);
 
-    assert(handler.report_sender.report_sequence == 1);
+    assert(handler.report_sender.next_track_report_sequence == 1);
 
     // A new valid measurement rearms monitoring after either command.
     frame = measurement(0, 2000, 30000);
-    handle_frame(&handler, &frame);
+    frame_handler_process(&handler, &frame);
     assert(handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 30000);
     assert(handler.radar.track.state == TRACK_STATE_TENTATIVE);
-    assert(handler.report_sender.report_sequence == 2);
+    assert(handler.report_sender.next_track_report_sequence == 2);
     assert(submitted_frame.frame.payload[3] == 1);
 }
 
@@ -368,14 +368,14 @@ static void test_valid_measurements_arm_refresh_and_expire(void)
     assert(!handler.radar.timeout_armed);
     assert(strstr(output, "Radar measurement timeout") == NULL);
 
-    struct received_frame frame = measurement(100, 1000, 5000);
-    handle_frame(&handler, &frame);
+    struct rx_frame frame = measurement(100, 1000, 5000);
+    frame_handler_process(&handler, &frame);
     assert(handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 5000);
     assert(handler.radar.track.state == TRACK_STATE_TENTATIVE);
     output_size = 0;
     output[0] = '\0';
     frame = measurement(200, 1000, 5500);
-    handle_frame(&handler, &frame);
+    frame_handler_process(&handler, &frame);
     assert(handler.radar.last_valid_rx_ms == 5500);
     assert(handler.radar.track.hit_count == 2);
     // Input, prediction, result, and TX queue acceptance; unchanged state is silent.
@@ -405,16 +405,16 @@ static void test_invalid_measurements_do_not_arm_timeout(void)
     for (int invalid_length = 0; invalid_length < 2; ++invalid_length) {
         struct frame_handler handler;
         reset_test(&handler);
-        struct received_frame frame = measurement(100, invalid_length ? 1000 : 0, 5000);
+        struct rx_frame frame = measurement(100, invalid_length ? 1000 : 0, 5000);
         if (invalid_length) {
             frame.frame.payload_length = 9;
         }
-        handle_frame(&handler, &frame);
+        frame_handler_process(&handler, &frame);
         assert(strstr(output, invalid_length ? "Invalid radar payload"
                                              : "Invalid radar measurement") != NULL);
         assert(!handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 0);
         assert(handler.radar.track.state == TRACK_STATE_EMPTY);
-        assert(submit_calls == 0 && handler.report_sender.report_sequence == 0);
+        assert(submit_calls == 0 && handler.report_sender.next_track_report_sequence == 0);
         frame_handler_check_timeout(&handler, 10000);
         assert(strstr(output, "Radar measurement timeout") == NULL);
     }
@@ -425,18 +425,18 @@ static void test_invalid_measurements_do_not_refresh_timeout(void)
     for (int invalid_length = 0; invalid_length < 2; ++invalid_length) {
         struct frame_handler handler;
         reset_test(&handler);
-        struct received_frame frame = measurement(100, 1000, 5000);
-        handle_frame(&handler, &frame);
+        struct rx_frame frame = measurement(100, 1000, 5000);
+        frame_handler_process(&handler, &frame);
         unsigned char before[sizeof(handler.radar.track)];
         memcpy(before, &handler.radar.track, sizeof(before));
         frame = measurement(200, invalid_length ? 1000 : 0, 5900);
         if (invalid_length) {
             frame.frame.payload_length = 11;
         }
-        handle_frame(&handler, &frame);
+        frame_handler_process(&handler, &frame);
         assert(handler.radar.last_valid_rx_ms == 5000 && handler.radar.timeout_armed);
         assert(memcmp(before, &handler.radar.track, sizeof(before)) == 0);
-        assert(submit_calls == 1 && handler.report_sender.report_sequence == 1);
+        assert(submit_calls == 1 && handler.report_sender.next_track_report_sequence == 1);
         frame_handler_check_timeout(&handler, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
         assert(handler.radar.timeout_armed);
         frame_handler_check_timeout(&handler, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
@@ -449,13 +449,13 @@ static void test_gate_rejection_refreshes_receive_timeout(void)
     struct frame_handler handler;
     reset_test(&handler);
     for (uint32_t i = 0; i < 3; ++i) {
-        struct received_frame frame = measurement(100 + i * 100, 1000, 5000 + i * 100);
-        handle_frame(&handler, &frame);
+        struct rx_frame frame = measurement(100 + i * 100, 1000, 5000 + i * 100);
+        frame_handler_process(&handler, &frame);
     }
     assert(handler.radar.track.state == TRACK_STATE_CONFIRMED);
     assert(strstr(output, "Track state: TENTATIVE -> CONFIRMED") != NULL);
-    struct received_frame frame = measurement(400, 2000, 5900);
-    handle_frame(&handler, &frame);
+    struct rx_frame frame = measurement(400, 2000, 5900);
+    frame_handler_process(&handler, &frame);
     assert(strstr(output, "Measurement rejected by gate") != NULL);
     assert(strstr(output, "Track state: CONFIRMED -> COASTING") != NULL);
     assert(handler.radar.track.state == TRACK_STATE_COASTING && handler.radar.track.miss_count == 1);
@@ -472,12 +472,12 @@ static void test_timestamp_rejection_refreshes_receive_timeout(void)
     for (size_t i = 0; i < sizeof(timestamps) / sizeof(timestamps[0]); ++i) {
         struct frame_handler handler;
         reset_test(&handler);
-        struct received_frame frame = measurement(100, 1000, 5000);
-        handle_frame(&handler, &frame);
+        struct rx_frame frame = measurement(100, 1000, 5000);
+        frame_handler_process(&handler, &frame);
         unsigned char before[sizeof(handler.radar.track)];
         memcpy(before, &handler.radar.track, sizeof(before));
         frame = measurement(timestamps[i], 1000, 5900);
-        handle_frame(&handler, &frame);
+        frame_handler_process(&handler, &frame);
         assert(strstr(output, "Prediction skipped: previous_t=100 ms") != NULL);
         assert(memcmp(before, &handler.radar.track, sizeof(before)) == 0);
         assert(handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 5900);
@@ -520,8 +520,8 @@ static void feed_measurement(struct frame_handler *p_handler, uint32_t timestamp
     // Keep each action's log separate; do not hide per-action buffer overruns.
     output_size = 0;
     output[0] = '\0';
-    const struct received_frame frame = measurement(timestamp_ms, range_m, 5000 + timestamp_ms);
-    handle_frame(p_handler, &frame);
+    const struct rx_frame frame = measurement(timestamp_ms, range_m, 5000 + timestamp_ms);
+    frame_handler_process(p_handler, &frame);
 }
 
 static void test_track_encode_wire(void)
@@ -547,9 +547,9 @@ static void test_track_encode_wire(void)
     assert(wire[0] == 0xa5 && wire[38] == 0xa5);
     assert(memcmp(&wire[1], expected, sizeof(expected)) == 0);
     struct frame_parser parser;
-    parser_init(&parser);
+    frame_parser_init(&parser);
     for (size_t i = 0; i < sizeof(expected); ++i) {
-        assert(parser_feed(&parser, wire[i + 1]) ==
+        assert(frame_parser_feed(&parser, wire[i + 1]) ==
                (i == 36 ? PARSER_RESULT_FRAME_READY : PARSER_RESULT_INCOMPLETE));
     }
     assert(parser.frame.type == FRAME_TYPE_TRACK_REPORT);
@@ -587,7 +587,7 @@ static void test_track_started_updated_and_confirmed(void)
     assert(report_u32(12) == corrected_bits);
     feed_measurement(&handler, 300, 1010);
     check_track_report(2, 300, 300, TRACK_STATE_CONFIRMED, TRACK_REPORT_RESULT_UPDATED, true);
-    assert(submit_calls == 3 && handler.report_sender.report_sequence == 3);
+    assert(submit_calls == 3 && handler.report_sender.next_track_report_sequence == 3);
 }
 
 static void test_track_timestamp_rejection_report(void)
@@ -644,14 +644,14 @@ static void test_track_sequence_wrap_and_timeout_preservation(void)
 {
     struct frame_handler handler;
     reset_test(&handler);
-    handler.report_sender.report_sequence = UINT32_MAX;
+    handler.report_sender.next_track_report_sequence = UINT32_MAX;
     feed_measurement(&handler, UINT32_MAX - 49U, 1000);
     check_track_report(UINT32_MAX, UINT32_MAX - 49U, UINT32_MAX - 49U,
                        TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_STARTED, true);
     feed_measurement(&handler, 50, 1000);
     check_track_report(0, 50, 50, TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_UPDATED, true);
     frame_handler_check_timeout(&handler, handler.radar.last_valid_rx_ms + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
-    assert(handler.radar.track.state == TRACK_STATE_EMPTY && handler.report_sender.report_sequence == 1);
+    assert(handler.radar.track.state == TRACK_STATE_EMPTY && handler.report_sender.next_track_report_sequence == 1);
     feed_measurement(&handler, 150, 1000);
     check_track_report(1, 150, 150, TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_STARTED, true);
 }
@@ -664,7 +664,7 @@ static void test_track_submit_failure_and_recovery(void)
         reset_test(&handler);
         submit_result = errors[i];
         feed_measurement(&handler, 100, 1000);
-        assert(submit_calls == 1 && handler.report_sender.report_sequence == 1);
+        assert(submit_calls == 1 && handler.report_sender.next_track_report_sequence == 1);
         assert(handler.radar.track.state == TRACK_STATE_TENTATIVE);
         assert(strstr(output, "TRACK submit failed:") != NULL);
         assert(strstr(output, "TRACK report queued:") == NULL);
@@ -672,7 +672,7 @@ static void test_track_submit_failure_and_recovery(void)
         submit_result = 0;
         feed_measurement(&handler, 200, 1000);
         check_track_report(1, 200, 200, TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_UPDATED, true);
-        assert(submit_calls == 2 && handler.report_sender.report_sequence == 2);
+        assert(submit_calls == 2 && handler.report_sender.next_track_report_sequence == 2);
         assert(strstr(output, "TRACK report queued:") != NULL);
     }
 }
@@ -683,7 +683,7 @@ static void test_track_encode_failure_and_recovery(void)
     reset_test(&handler);
     track_encode_result = -EINVAL;
     feed_measurement(&handler, 100, 1000);
-    assert(submit_calls == 0 && handler.report_sender.report_sequence == 1);
+    assert(submit_calls == 0 && handler.report_sender.next_track_report_sequence == 1);
     assert(strstr(output, "TRACK encode failed:") != NULL);
     assert(strstr(output, "TRACK report queued:") == NULL);
     track_encode_result = 0;
@@ -698,10 +698,10 @@ static void test_incoming_track_report_is_ignored(void)
     reset_test(&handler);
     unsigned char before[sizeof(handler)];
     memcpy(before, &handler, sizeof(before));
-    const struct received_frame frame = {
+    const struct rx_frame frame = {
         .frame = {.type = FRAME_TYPE_TRACK_REPORT, .payload_length = 32},
     };
-    handle_frame(&handler, &frame);
+    frame_handler_process(&handler, &frame);
     assert(submit_calls == 0 && stats_reads == 0);
     assert(memcmp(before, &handler, sizeof(before)) == 0);
     assert(strcmp(output, "TRACK_REPORT ignored: unexpected input\n") == 0);
@@ -716,10 +716,10 @@ static void test_processor_invalid_input_preserves_output(void)
     };
     unsigned char before[sizeof(handler.radar)];
     memcpy(before, &handler.radar, sizeof(before));
-    struct received_frame frame = measurement(100, 0, 5000);
-    assert(!radar_processor_process(&handler.radar, &frame.frame, frame.received_at_ms, &result));
+    struct rx_frame frame = measurement(100, 0, 5000);
+    assert(!radar_processor_process_measurement(&handler.radar, &frame.frame, frame.received_at_ms, &result));
     frame.frame.payload_length = 9;
-    assert(!radar_processor_process(&handler.radar, &frame.frame, frame.received_at_ms, &result));
+    assert(!radar_processor_process_measurement(&handler.radar, &frame.frame, frame.received_at_ms, &result));
     assert(memcmp(before, &handler.radar, sizeof(before)) == 0);
     assert(result.input_timestamp_ms == 1234 && result.result == TRACK_REPORT_RESULT_UPDATED);
     assert(submit_calls == 0);
@@ -730,9 +730,9 @@ static void test_processor_timeout_event_once_without_transmission(void)
     struct frame_handler handler;
     reset_test(&handler);
     assert(!radar_processor_check_timeout(&handler.radar, 4000));
-    const struct received_frame frame = measurement(100, 1000, 5000);
+    const struct rx_frame frame = measurement(100, 1000, 5000);
     struct radar_process_result result;
-    assert(radar_processor_process(&handler.radar, &frame.frame, frame.received_at_ms, &result));
+    assert(radar_processor_process_measurement(&handler.radar, &frame.frame, frame.received_at_ms, &result));
     assert(result.input_timestamp_ms == 100 && result.result == TRACK_REPORT_RESULT_STARTED);
     assert(!radar_processor_check_timeout(&handler.radar, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1));
     assert(radar_processor_check_timeout(&handler.radar, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS));
@@ -740,7 +740,7 @@ static void test_processor_timeout_event_once_without_transmission(void)
     assert(!radar_processor_check_timeout(&handler.radar, 5001 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS));
     assert(output_size == log_size);
     assert(handler.radar.track.state == TRACK_STATE_EMPTY && !handler.radar.timeout_armed);
-    assert(submit_calls == 0 && handler.report_sender.report_sequence == 0);
+    assert(submit_calls == 0 && handler.report_sender.next_track_report_sequence == 0);
 }
 
 static const struct test_case cases[] = {

@@ -36,11 +36,11 @@ struct frame_parser {
 
 // Require a non-NULL parser. Reset assembly state, length, type, and payload index.
 // Does not erase the payload array or received_crc; they are overwritten as needed.
-void parser_init(struct frame_parser *p_parser);
+void frame_parser_init(struct frame_parser *p_parser);
 // Feed one byte in stream order into an initialized, non-NULL parser.
 // Use parser.frame only on PARSER_RESULT_FRAME_READY and copy it before feeding more bytes.
 // Length/CRC errors discard that frame; later bytes are searched for a new PROTOCOL_STX.
 // Does not validate payload semantics or handle inactivity timeouts.
-ParserResult parser_feed(struct frame_parser *p_parser, uint8_t byte);
+ParserResult frame_parser_feed(struct frame_parser *p_parser, uint8_t byte);
 
 #endif

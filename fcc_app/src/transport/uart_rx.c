@@ -108,9 +108,9 @@ static void uart_callback(const struct device *p_dev, void *p_user_data)
     while (uart_irq_is_pending(p_dev)) {
         // if UART Interrupt Receive Ready
         if (uart_irq_rx_ready(p_dev)) {
-            uint8_t c;
+            uint8_t byte;
             // UART FIFO Read
-            while (uart_fifo_read(p_dev, &c, 1) == 1) {
+            while (uart_fifo_read(p_dev, &byte, 1) == 1) {
                 // Keep draining the hardware FIFO during recovery, but discard new bytes.
                 // Drain recovery requires the buffer to contain only bytes received before the first loss.
                 if (atomic_get(&rx_overflow) != 0) {
@@ -118,7 +118,7 @@ static void uart_callback(const struct device *p_dev, void *p_user_data)
                     continue;
                 }
 
-                if (!ring_push(&rx_ring, c)) {
+                if (!ring_push(&rx_ring, byte)) {
                     atomic_inc(&ring_overflow_events);
                     atomic_inc(&rx_dropped_bytes);
                     // Drop the byte that could not be stored and mark recovery as required.
@@ -147,7 +147,7 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
         k_sem_take(&rx_sem, K_MSEC(50));
 
         while (1) {
-            uint8_t c;
+            uint8_t byte;
 
             // Protect the overflow check and single-byte ring pop from the UART ISR.
             // Parsing and queue submission run after interrupts are restored.
@@ -171,14 +171,14 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
                 break;
             }
 
-            if (!ring_pop(&rx_ring, &c)) {
+            if (!ring_pop(&rx_ring, &byte)) {
                 irq_unlock(key);
                 break;
             }
 
             irq_unlock(key);
 
-            rx_frame_processor_feed(c);
+            rx_frame_processor_feed(byte);
         }
 
         rx_frame_processor_check_timeout(k_uptime_get());
@@ -193,13 +193,13 @@ static void rx_recover_discard_all(void)
 
 static void rx_recover_drain_buffer(void)
 {
-    uint8_t c;
+    uint8_t byte;
 
     // While overflow is set, the ISR does not store bytes; only this thread accesses the buffer.
     // Preserve parser state to complete frames using bytes received before the loss.
     // New bytes arriving during processing are dropped by the ISR; recovery is not lossless.
-    while (ring_pop(&rx_ring, &c)) {
-        rx_frame_processor_feed(c);
+    while (ring_pop(&rx_ring, &byte)) {
+        rx_frame_processor_feed(byte);
     }
 
     // Discard any incomplete frame remaining after the buffer has been drained.

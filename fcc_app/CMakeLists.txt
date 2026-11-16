@@ -11,7 +11,7 @@ target_sources(app PRIVATE
     src/application/frame_handler.c
     src/application/radar_processor.c
     src/application/report_sender.c
-    src/protocol/radar_message.c
+    src/protocol/measurement_message.c
     src/tracking/kalman_cv.c
     src/tracking/gating.c
     src/tracking/angle_utils.c
