@@ -157,7 +157,7 @@ GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 C
 | 0x04 | `FRAME_TYPE_COMMAND` | 명령 예약, 동작 미구현 |
 | 0x05 | `FRAME_TYPE_RESET` | FCC 추적 리셋 |
 | 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 28바이트 payload; PC는 구형 16바이트 응답도 지원 |
-| 0x07 | `FRAME_TYPE_TRACK_REPORT` | FCC → PC 추적 보고, 32바이트 payload; PC 전용 디코더·표시는 미구현 |
+| 0x07 | `FRAME_TYPE_TRACK_REPORT` | FCC → PC 추적 보고, 32바이트 payload; PC 디코더·GUI 표시 지원 |
 
 기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
 `protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는
@@ -172,7 +172,10 @@ big-endian uint32 일곱 개(총 28바이트)를 담습니다.
 ## TRACK_REPORT 지원 상태
 
 펌웨어는 유효 측정마다 TYPE=7을 TX 큐에 제출합니다. [32바이트 배치와 동작](../docs/requirements-traceability.md#spec-track-report)은 펌웨어에 구현되어 host 검증을 마쳤습니다.
-PC는 TYPE=7 상수를 공유하며 로그 부하 시험기는 TRACK의 CRC·32바이트 길이를 확인합니다. 공통 파서는 TYPE 값에 관계없이 프레임을 조립하지만, STATUS CLI·GUI worker는 TYPE=6만 처리합니다. TRACK payload 디코더·결과 보존·그래프·평가는 아직 없습니다.
+`protocol.decode_track_payload()`는 32바이트를 immutable `TrackReport`로 해석합니다. Python enum은 `TrackState`, `TrackReportResult`, `TrackReportFlag`이며 C wire 값과 일치합니다.
+길이·미지원 enum·reserved byte/bit·비유한 float·상태/유효 플래그 불일치·무효 추정값의 비영 필드를 거부합니다. 플래그가 있으면 timestamp/추정값 0도 유효합니다.
+GUI worker는 하나의 지속 파서로 STATUS와 TRACK을 TYPE별로 분기합니다. STATUS 요청/timeout 때 TRACK 부분 프레임을 지우지 않습니다. [GUI 표시·STALE 정책](GUI.md#track-수신과-유효성).
+로그 부하 시험기는 TRACK의 CRC·길이만 검사합니다. STATUS CLI는 TYPE=6만 조회하며 TRACK 수집 도구가 아닙니다. TRACK 수집 CLI·파일 저장·정량 평가는 아직 없습니다.
 `radar_sender.py`와 `run_sim.py`는 송신 도구이며 반환 결과를 수집하지 않습니다. 기존 도구의 실행 성공은 TRACK 왕복 성공을 뜻하지 않습니다.
 과거 설정별 보드 결과는 [검증 이력](../docs/verification-history.md)을 참고하세요.
 

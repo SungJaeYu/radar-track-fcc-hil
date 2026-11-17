@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 172개 + subtest 9개, C host 115회 실행(RX drain 24·discard 21·handler 29·TX 4·Tracking 17·게이팅 설정 20)입니다.
+현재 합계는 Python 221개 + subtest 9개, C host 115회 실행(RX drain 24·discard 21·handler 29·TX 4·Tracking 17·게이팅 설정 20)입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -14,12 +14,13 @@
 | 수동 송신기·INIT/RESET | `tests/test_frame_sender.py` | 6 | Python, serial 모사 |
 | PC STATUS CLI | `tests/test_status_client.py` | 23 | Python, serial·monotonic clock 모사 |
 | PC 수신 프레임 파서 | `tests/test_frame_parser.py` | 16 | Python, serial I/O 없음 |
+| PC TRACK payload | `tests/test_track_report.py` | 35 | Python, 고정 wire·의미 검증 |
 | 프로토콜·단위 변환 | `tests/test_protocol.py` | 43 | Python |
 | 연속 측정 송신기 | `tests/test_radar_sender.py` | 5 + 내부 subtest 9 | Python, serial·sleep 모사 |
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
-| GUI 측정 모델 | `tests/test_gui_model.py` | 7 | Python |
-| GUI 화면·통신 작업부 | `tests/test_gui.py` | 10 | offscreen Qt, serial 모사 |
-| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 29 | Python + 실제 C 파서 host 컴파일 |
+| GUI 측정·TRACK 표시 모델 | `tests/test_gui_model.py` | 10 | Python |
+| GUI 화면·통신 작업부 | `tests/test_gui.py` | 16 | offscreen Qt, serial 모사 |
+| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 34 | Python + 실제 C 파서 host 컴파일 |
 | 로그 부하 wire 판정 | `tests/test_log_stress.py` | 12 | Python, 기록 바이트열만 검사; flash/serial 없음 |
 | 내부 assert | `tests/test_firmware_assertions.py` | 6 | 실제 C host 자식 프로세스의 SIGABRT·메시지 검증 |
 | 게이팅 설정 행렬 | `fcc_app/tests/test_tracking/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
@@ -28,7 +29,7 @@
 | STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 29 | host C, 통계 조회·TX 제출·로그 캡처·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **172개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **221개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest의 `tracking`에서 17개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
 UART C는 정책별 실행을 CTest에 따로 등록하므로 45개로 표시됩니다. 공통 사례 19개는 두 번 실행합니다.
 `pc_sim/frame_sender.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
@@ -531,3 +532,25 @@ INIT/RESET/timeout 이벤트 보고·PC TRACK 수신·실보드 왕복 검증은
 2026-11-16 레이더 처리 분리: 기존 27개 회귀와 processor API 2개, 총 29개 통과.
 `test_processor_invalid_input_preserves_output`은 무효 입력의 상태/출력 보존을,
 `test_processor_timeout_event_once_without_transmission`은 timeout 1회 반환·송신 비개입을 검증했다.
+
+
+## PC TRACK 수신·GUI 회귀 (2026-11-17)
+
+연결 요구사항: REQ-PC-003 / REQ-GUI-002 / REQ-RPT-001. Python 전체 **221개 + subtest 9개** 통과.
+아래 49개를 추가했으며 펌웨어 소스·C host suite·보드 flash는 변경/실행하지 않았다.
+`test_crc_interop`는 실제 C 인코더를 host에서 컴파일하여 Python 수신 경로와 연결했다.
+
+| 테스트 | 추가 사례 | 확인 범위 |
+| --- | ---: | --- |
+| [test_track_report.py](../tests/test_track_report.py) | 35 | 고정 BE/float wire, 32바이트 제한, 알려진 state/result/flags, reserved, NaN/Inf, 플래그·상태 일치, 무효 추정 0, timestamp 0과 signed zero |
+| `test_firmware_track_decodes_in_python` | 5 | 실제 C 인코더·프레임 CRC → PC 파서/디코더, C/Python 상태·결과 enum 값과 필드 순서 |
+| `test_track_monitor_freshness_duplicates_wrap_and_discontinuity` | 1 | 2초 경계, 중복은 신선도 미갱신, uint32 순번 순환/공백·역행 불연속 |
+| `test_track_history_uses_estimate_time_and_breaks_on_invalid_report` | 1 | 입력/추정 시각 분리, 해당 PC 실행 시각에 없는 추정 제외, 무효 결과 곡선 단절 |
+| `test_track_monitor_bounds_history` | 1 | 최근 보고 2000개 제한 |
+| `test_worker_preserves_track_fragments_across_status_operations` | 3 | STATUS 대기 없음·요청 시작·timeout 모두 TRACK 부분 조립 유지 |
+| `test_worker_demultiplexes_track_and_status_and_skips_bad_track` | 1 | 혼합 TYPE 분기, CRC/길이/의미 오류 제외 후 다음 정상 보고 처리 |
+| `test_gui_board_track_graph_status_and_stale_display` | 1 | 모사 UART 송신→TRACK 그래프, STATUS 병행, 송신 중지 후 STALE·위치 숨김·상태 보존, 무효 추정·재시작 |
+| `test_gui_track_tab_and_preview_have_no_fabricated_board_estimate` | 1 | TRACK 탭·작은 창 접근, 미리보기에서 보드 값 미생성 |
+
+1280×850 / 1000×650 offscreen 화면을 캡처해 TRACK 탭·세로 그래프·오른쪽 콘솔의 배치를 확인했다.
+모사 응답·offscreen 화면 검증은 실제 보드 TRACK 왕복·정량 정확도·지연·TX 부하를 증명하지 않는다.

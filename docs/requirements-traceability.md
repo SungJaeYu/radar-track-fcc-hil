@@ -7,8 +7,8 @@
 ## 현재 기준 요약
 
 기능 기준: TRACK_REPORT·radar_processor/report_sender 분리 `87006b0`, 이름·경로 정리 `fd96c17`, 로그 시험기 판정 `838aca6`.
-현재 등록 사례는 Python 172개 + subtest 9개, C host 115회 실행(Tracking 17·게이트 설정 20·handler 29·RX drain 24/discard 21·TX 4)이다.
-TRACK 추가·분리 작업과 2026-11-17 이름 변경 후 host 회귀 및 일반/디버그 빌드를 확인했다. 최종 Python 172개 + subtest 9개, C host 115회 통과이며 보드 시험은 수행하지 않았다. [실행 이력](verification-history.md).
+현재 등록 사례는 Python 221개 + subtest 9개, C host 115회 실행(Tracking 17·게이트 설정 20·handler 29·RX drain 24/discard 21·TX 4)이다.
+TRACK 추가·분리와 이름 변경 당시 C host 115회·일반/디버그 빌드를 확인했다. 이후 PC TRACK 디코더·GUI 작업은 Python 221개 + subtest 9개를 통과했다. 이번 PC 변경에서 펌웨어 빌드·C suite 재실행·보드 시험은 수행하지 않았다. [실행 이력](verification-history.md).
 PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료. 실보드 기본 왕복도 `2aa57d9`에서 확인했다.
 아래 단계별 구현 기록은 당시 상태이며 현재 판단은 이 요약과 요구사항 기준표를 우선한다.
 
@@ -16,7 +16,7 @@ PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료
 
 v1의 완료 판정은 [README V1-1~5](../README.md#v1-acceptance)를 따릅니다. 단일표적 결과 반환·RMSE·시간/자원·오류 복귀·재현 자료가 필수이며, 다중표적·BIT·COMMAND/Lock On과 모든 하드웨어 오류 시험의 완성은 후속 범위입니다. 이 절은 release 범위 결정이며 아래 요구사항 ID·구현 상태·과거 시험 결과를 완료로 바꾸지 않습니다.
 
-TRACK_REPORT 측정 경로는 아래 REQ-RPT-001~003 및 SPEC-TRACK-REPORT에 연결합니다. PC 수신·평가, 이벤트 보고 정책과 실보드 왕복은 FUT-003의 남은 범위입니다.
+TRACK_REPORT 측정 경로는 아래 REQ-RPT-001~003 및 SPEC-TRACK-REPORT에 연결합니다. PC 수신·GUI 표시는 REQ-PC-003 / REQ-GUI-002로 연결했습니다. 원시 로그·정량 평가, 이벤트 보고 정책과 실보드 왕복은 FUT-003의 남은 범위입니다.
 
 ## 읽는 방법과 범위
 
@@ -66,12 +66,14 @@ TRACK_REPORT 측정 경로는 아래 REQ-RPT-001~003 및 SPEC-TRACK-REPORT에 �
 | REQ-STA-005 | 링 overflow 진입 횟수·ISR 폐기 바이트·복구 시 미소비 링 폐기 바이트를 누적 집계해야 한다. | [SPEC-RX](#spec-rx) / [SPEC-STATUS](#spec-status) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_get_stats` | [test_uart_rx](#tests-test_uart_rx) | 정책별 host 증가·누적·순환 검증, STATUS 전송 확인. 강제 overflow 실보드 증가 미검증 |
 | REQ-TX-001 | 유효 요청을 큐에 복사하고 FIFO 순서로 송신하며 포화·잘못된 요청은 errno로 반환해야 한다. | [SPEC-TX](#spec-tx) | [uart_tx.c](../fcc_app/src/transport/uart_tx.c) · `uart_tx_submit / uart_tx_thread` | [test_uart_tx](#tests-test_uart_tx) | 구현; 모사 큐·바이트 순서·복사 검증. 실제 큐 동시성 미검증 |
 | REQ-TX-002 | 장치 초기화 성공 후 송신을 시작하고 인코딩 실패 요청만 버린 뒤 다음 요청을 처리해야 한다. | [SPEC-TX](#spec-tx) | [uart_tx.c](../fcc_app/src/transport/uart_tx.c) · `uart_tx_init / uart_tx_thread` | [test_uart_tx](#tests-test_uart_tx) | 구현; host 검증. 기본 UART 전달 확인. 대기 경합·송신 완료 통지·부하 검증은 별도 |
-| REQ-RPT-001 | TRACK_REPORT를 정의된 32바이트 배치·float32/BE·상태/결과 값으로 인코딩해야 한다. | [SPEC-TRACK-REPORT](#spec-track-report) | [track_message.c](../fcc_app/src/protocol/track_message.c) · `track_message_encode` | [test_frame_handler](#tests-test_frame_handler) | 구현; 고정 wire/CRC·float 비트·NULL/출력 보존 host 검증. PC 디코딩·실보드 왕복 미검증 |
-| REQ-RPT-002 | 유효 측정 처리마다 결과를 보고하고 입력/추정 시각과 추정 유효성을 구분해야 한다. 무효 payload와 수신 보고 TYPE은 추가 보고를 만들지 않아야 한다. | [SPEC-TRACK-REPORT](#spec-track-report) | [radar_processor.c](../fcc_app/src/application/radar_processor.c) · `radar_processor_process_measurement`, [report_sender.c](../fcc_app/src/application/report_sender.c) · `report_sender_submit_track` | [test_frame_handler](#tests-test_frame_handler) | 구현; 시작·확정·거부·소실·재시작 host 검증. 제어/timeout 이벤트와 PC stale 정책은 별도 |
+| REQ-RPT-001 | TRACK_REPORT를 정의된 32바이트 배치·float32/BE·상태/결과 값으로 인코딩해야 한다. | [SPEC-TRACK-REPORT](#spec-track-report) | [track_message.c](../fcc_app/src/protocol/track_message.c) · `track_message_encode` | [test_frame_handler](#tests-test_frame_handler) | 구현; 고정 wire/CRC·float 비트·NULL/출력 보존 host 검증. C→PC 디코딩 host 검증 추가; 실보드 왕복 미검증 |
+| REQ-RPT-002 | 유효 측정 처리마다 결과를 보고하고 입력/추정 시각과 추정 유효성을 구분해야 한다. 무효 payload와 수신 보고 TYPE은 추가 보고를 만들지 않아야 한다. | [SPEC-TRACK-REPORT](#spec-track-report) | [radar_processor.c](../fcc_app/src/application/radar_processor.c) · `radar_processor_process_measurement`, [report_sender.c](../fcc_app/src/application/report_sender.c) · `report_sender_submit_track` | [test_frame_handler](#tests-test_frame_handler) | 구현; 시작·확정·거부·소실·재시작 host 검증. 제어/timeout 이벤트는 후속; PC stale 정책은 REQ-GUI-002 |
 | REQ-RPT-003 | 보고 시도 순번을 순환 증가시키고 실패 시 소모하며 INIT/RESET·무수신 timeout에서 보존해야 한다. 실패 후 즉시 재시도 없이 다음 측정을 처리해야 한다. | [SPEC-TRACK-REPORT](#spec-track-report) | [report_sender.c](../fcc_app/src/application/report_sender.c) · `report_sender_submit_track`, [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `frame_handler_reset` | [test_frame_handler](#tests-test_frame_handler) | 구현; 순환·초기화 보존·encode/submit 실패 후 복귀 host 검증. TX 실제 완료·유실 위치 식별은 미보장 |
 | REQ-PC-001 | 송신 도구는 공통 wire 규격을 사용하고 연속 송신 시작마다 INIT을 보내야 한다. | [SPEC-PC](#spec-pc) | [protocol.py](../pc_sim/protocol.py) · `encode_frame` | [Python](#tests-python) | 구현; Python 송신·상호운용 시험 연결 |
 | REQ-PC-002 | UART 시나리오는 단일표적으로 제한하고 지원하지 않는 다중 측정 설정을 거부해야 한다. | [SPEC-PC](#spec-pc) | [run_sim.py](../pc_sim/run_sim.py) · `UART scenario validation` | [Python](#tests-python) | 구현; Python 시나리오 시험 연결 |
-| REQ-GUI-001 | GUI는 설정 접근·시작/중지/재시작·포트 정리를 제공하고 PC 합성값과 보드 결과를 구분해야 한다. | [SPEC-PC](#spec-pc) | [gui.py](../pc_sim/gui.py) · `GUI / worker lifecycle` | [Python](#tests-python) | 구현; Qt·모사 serial 시험, 이전 보드 GUI 기록. 보드 추정값 표시는 미구현 |
+| REQ-GUI-001 | GUI는 설정 접근·시작/중지/재시작·포트 정리를 제공하고 PC 합성값과 보드 결과를 구분해야 한다. | [SPEC-PC](#spec-pc) | [gui.py](../pc_sim/gui.py) · `GUI / worker lifecycle` | [Python](#tests-python) | 구현; Qt·모사 serial 시험, 이전 보드 GUI 기록. 보드 추정값 표시는 REQ-GUI-002로 추가 검증 |
+| REQ-PC-003 | PC는 32바이트 TRACK payload의 필드·enum·flags·reserved·유한 수치·무효 필드 0을 검증하고 STATUS와 독립적으로 수신해야 한다. | [SPEC-TRACK-REPORT](#spec-track-report) / [SPEC-PC](#spec-pc) | [protocol.py](../pc_sim/protocol.py) · `decode_track_payload`, [gui_worker.py](../pc_sim/gui_worker.py) | [Python](#tests-python) | 구현; 고정 wire·C 인코더 상호운용·혼합/분할 UART 모사 통과. 실보드 미검증 |
+| REQ-GUI-002 | PC 합성값과 보드 추정을 구분하고 추정 시각·유효 플래그로 표시하며, 2초 무수신을 PC STALE로 표시해야 한다. | [SPEC-PC](#spec-pc) | [gui_model.py](../pc_sim/gui_model.py) · `TrackMonitor`, [gui.py](../pc_sim/gui.py) | [Python](#tests-python) | 구현; 순번 wrap/중복/불연속·무효·STALE·모사 UART/Qt 검증. 파일 저장·정량 평가 미구현 |
 
 ## 상세 규격
 
@@ -172,7 +174,7 @@ INIT/RESET은 트랙과 감시를 지우고 RX 통계는 지우지 않는다. ST
 
 현재 펌웨어의 TYPE=7, payload 32바이트·전체 wire 37바이트 규격이다.
 `track_message_encode()`가 필드별로 직렬화하며 C 구조체 메모리를 그대로 전송하지 않는다.
-PC에 TRACK TYPE 상수와 로그 부하 시험기의 CRC/길이 검사는 있으며 payload 디코더·평가는 아직 없다.
+PC payload 디코더·GUI 표시는 구현했고 C 인코더 상호운용 및 모사 UART로 검증했다. 로그 부하 시험기는 CRC/길이만 검사하며 정량 평가는 아직 없다.
 
 | payload offset | 크기 | 표현 | 필드·의미 |
 | --- | --- | --- | --- |
@@ -203,8 +205,8 @@ PC에 TRACK TYPE 상수와 로그 부하 시험기의 CRC/길이 검사는 있�
 - `track_message_encode()`는 성공 0, NULL 입력/출력은 `-EINVAL`이며 실패 시 출력을 보존한다.
   필드 의미 검증은 수행하지 않는다. 현재 sender가 유효성·reserved 정책을 적용한다.
 - 큐 접수는 물리 송신이나 PC 수신 완료가 아니다. 큐가 차면 새 보고를 거부하며 우선순위·완료 통계는 미정이다.
-- INIT/RESET·무수신 timeout 자체는 현재 보고를 만들지 않는다. 이벤트 표현·PC stale 판정은 후속 설계 대상이다.
-  따라서 마지막 유효 보고만 보존하는 PC가 무수신 후에도 트랙을 계속 유효하다고 표시하지 않도록 별도 정책이 필요하다.
+- INIT/RESET·무수신 timeout 자체는 현재 보고를 만들지 않는다. 이벤트 표현은 후속 설계 대상이다. PC stale 판정은 SPEC-PC를 따른다.
+  PC는 별도의 STALE 정책으로 무수신 후 마지막 위치를 숨기며, 이벤트 보고 없이 보드의 실제 초기화 시점까지 확정할 수는 없다.
 - 상태 숫자는 현재 `TrackState` 선언 순서에 의존한다. 외부 규격으로 사용하므로 변경 시 명시적 값 또는 매핑과 C/Python 회귀가 필요하다.
 
 <a id="spec-status"></a>
@@ -252,7 +254,14 @@ submit 성공은 큐 접수 성공이며 송신 완료·PC 수신·ACK 성공을
 측정 wire 생성은 [protocol.py](../pc_sim/protocol.py)를 공유한다.
 UART 시나리오는 단일표적·클러터 없음으로 제한하고 다중표적 생성은 PC 출력용으로 남긴다.
 GUI는 설정 탭·스크롤 접근, 시작/중지/재시작·연결 종료·실패 시 포트 정리를 제공한다.
-그래프는 PC 정답/측정값이며 보드 추정값 또는 수신 ACK로 표시하지 않는다.
+PC 합성 실제값·측정값과 TYPE=7의 보드 추정값을 구분한다. 미리보기는 보드 추정을 만들지 않는다.
+하나의 수신 파서를 STATUS/TRACK이 공유하고 STATUS 요청/timeout 때문에 부분 TRACK 조립을 초기화하지 않는다.
+TRACK payload는 32바이트, 알려진 enum/flag, reserved 0, 유한 float, 상태/유효성 일치와 무효 추정 필드 0을 요구한다. INPUT_PRESENT=0일 때 입력 timestamp는 0이어야 한다. 검증 실패는 해당 보고만 제외한다.
+거리 그래프는 추정 시각이 보관한 PC 측정 timestamp와 일치할 때만 대응한다. 무효/대응 불가 보고는 곡선을 끊는다. 무효 추정은 현재 위치에서 숨기고 수치 대신 `—`로 표시한다.
+PC monotonic 수신 시각부터 2초 이상 새 순번 보고가 없으면 STALE로 표시하고 현재 위치는 숨기며 이력은 흐리게 유지한다. 마지막 보드 state를 LOST로 바꾸지 않는다.
+순번은 uint32 wrap을 허용하고 전진 간격의 누락 개수를 집계한다. 중복은 신선도를 갱신하지 않으며, 역행/반주기 이상 간격은 불연속으로 표시하고 이력만 새로 시작한다. 유실 위치나 재부팅 원인은 확정하지 않는다.
+새 연결/시뮬레이션 시작은 PC 이력을 초기화한다. 세션 ID·INIT ACK가 없어 이전 실행의 대기 보고와 재사용 timestamp를 완전히 구분할 수는 없다. UART write 성공은 수신 ACK가 아니다.
+모델과 GUI 상세 정책은 [GUI 안내](../pc_sim/GUI.md#track-수신과-유효성)를 따른다.
 
 ## 테스트 역추적
 
@@ -365,14 +374,15 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 
 | 테스트 소스 | 연결 요구사항 | 검증 경계 |
 | --- | --- | --- |
-| [test_crc_interop.py](../tests/test_crc_interop.py) | REQ-PRO-001, REQ-PRO-002, REQ-PRO-003 | CRC 기준값, C/Python 호환, 변조·길이 오류·복귀, CRC 마지막 바이트, encode 인자·용량, TYPE 값 |
+| [test_crc_interop.py](../tests/test_crc_interop.py) | REQ-PRO-001, REQ-PRO-002, REQ-PRO-003, REQ-PC-003, REQ-RPT-001 | TRACK C 인코더→PC decode·state/result 값, CRC 기준값, C/Python 호환, 변조·길이 오류·복귀, CRC 마지막 바이트, encode 인자·용량, TYPE 값 |
+| [test_track_report.py](../tests/test_track_report.py) | REQ-PC-003 | 고정 payload·길이·의미 검증; UART/GUI 제외 |
 | [test_protocol.py](../tests/test_protocol.py) | REQ-SYS-001, REQ-PRO-001, REQ-MEA-001, REQ-PC-001 | INIT/측정 wire, 길이 제한, semicircle·거리 입력 경계 |
 | [test_frame_sender.py](../tests/test_frame_sender.py) | REQ-PC-001, REQ-CTL-001 | INIT/RESET 요청 생성·송신만 검증; handler의 reset 효과는 검증하지 않음 |
 | [test_radar_sender.py](../tests/test_radar_sender.py) | REQ-PC-001, REQ-MEA-001 | 연속 송신·간격·단위·설정 오류 |
 | [test_scenarios.py](../tests/test_scenarios.py) | REQ-SYS-001, REQ-PC-001, REQ-PC-002 | 단일 UART, 다중표적 제한, 미탐지, 포트 정리 |
-| [test_gui_model.py](../tests/test_gui_model.py) | REQ-GUI-001, REQ-MEA-001 | 그래프 모델·wire·설정·거리 범위 |
+| [test_gui_model.py](../tests/test_gui_model.py) | REQ-GUI-001, REQ-GUI-002, REQ-MEA-001 | 그래프 모델·wire·설정·거리 범위, 순번/STALE/추정 시각 |
 | [test_log_stress.py](../tests/test_log_stress.py) | FUT-009, REQ-PRO-001, REQ-PRO-002 | 수집된 STATUS/TRACK framing·길이와 STATUS 개수/0 통계만 검증; TRACK 수치·실보드 부하는 제외 |
-| [test_gui.py](../tests/test_gui.py) | REQ-GUI-001, REQ-PC-001 | 화면 접근·worker·재시작·오류 시 정리·동일 포트 거부 |
+| [test_gui.py](../tests/test_gui.py) | REQ-GUI-001, REQ-GUI-002, REQ-PC-001, REQ-PC-003 | 화면 접근·worker·재시작·오류 정리, STATUS/TRACK 혼합·부분 조립·STALE 표시 |
 
 ## 실행 증거와 완료 판정
 
@@ -398,7 +408,7 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 | --- | --- | --- |
 | FUT-001 | PC가 STATUS 응답의 TYPE·길이·CRC를 검증하고 일곱 통계를 표시한다 | 파서·CLI·GUI 수동 조회 구현 및 host 검증 완료. 물리 왕복은 FUT-002 |
 | FUT-002 | 현재 STATUS 응답을 실제 USART6에서 수신해 host 기대값과 일치함을 확인한다 | 완료: 28바이트 CLI·GUI 왕복·오류 통계·추적 병행. [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md) |
-| FUT-003 | 보드 추적 결과를 PC로 보내 정답과 비교한다 | TYPE=7·32바이트 측정 보고와 host 검증 완료(REQ-RPT-001~003). 제어/timeout 이벤트·PC 디코더/그래프·평가·실보드 왕복·TX 포화 관측 남음 |
+| FUT-003 | 보드 추적 결과를 PC로 보내 정답과 비교한다 | TYPE=7·32바이트 측정 보고와 host 검증 완료(REQ-RPT-001~003). PC 디코더/GUI·2초 STALE도 host 검증 완료. 제어/timeout 이벤트·원시 로그·정량 평가·실보드 왕복·TX 포화 관측 남음 |
 | FUT-004 | 링 overflow·손실·UART 오류를 구분해 집계·복구한다 | 링 overflow·ISR/복구 폐기 집계와 STATUS 전송 구현. 하드웨어 오류 API·복구와 실제 overflow/overrun 재현은 남음 |
 | FUT-005 | 제어 요청과 오래된 측정의 큐 처리 정책을 정의한다 | INIT/RESET 우선순위·reset 이전 대기 데이터·최대 허용 지연 TBD |
 | FUT-006 | 다중 측정·트랙을 연관하고 펌웨어 자체 ID로 관리한다 | 스캔 규격·최대 표적 수·트랙 수명·교차/클러터 평가. 정답 ID 입력 금지 |

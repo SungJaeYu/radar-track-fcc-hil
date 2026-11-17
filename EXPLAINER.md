@@ -20,7 +20,7 @@
 `gui_model.py`는 단일표적 설정·측정 생성, `gui_worker.py`는 작업 스레드에서 포트 소유·송신·STATUS 수신·콘솔 읽기를 담당합니다.
 `gui.py`는 signal로 전달된 데이터를 화면에 표시합니다. 미리보기는 시리얼 포트를 열지 않습니다.
 송신을 중지해도 콘솔 연결은 유지하며, 재시작할 때 INIT을 먼저 보냅니다.
-그래프는 합성 실제값·PC 측정값이며 보드 추정값은 아직 그래프로 반환하지 않습니다.
+GUI는 합성 실제값·PC 측정값과 TRACK_REPORT로 받은 보드 추정값을 구분해 표시합니다. 미리보기에서는 보드 추정값을 만들지 않습니다.
 설치·실행·검증 한계는 [GUI 안내](pc_sim/GUI.md)에 정리했습니다.
 
 ## 2. 통신 규격
@@ -103,7 +103,7 @@ GUI 의존성을 설치하면 offscreen Qt·모사 serial로 시작·중지·재
 [UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계를 drain 24·discard 21, 총 45회 실행으로 검증합니다.
 UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
 이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
-펌웨어의 측정별 TRACK_REPORT 경로는 구현됐지만 PC 해석·폐루프 RMSE와 새 결과 경로의 실보드 검증은 아직 없습니다.
+펌웨어의 측정별 TRACK_REPORT 경로를 구현했고 PC 해석·GUI 비교는 모사 UART로 확인했습니다. 원시 로그·정량 RMSE와 새 결과 경로의 실보드 검증은 아직 없습니다.
 구버전 LCD·다중 트랙 문서는 제거했으며 과거 기록은 Git 이력에서 확인할 수 있습니다.
 
 
@@ -141,8 +141,8 @@ INIT/RESET 후 보존을 확인했습니다. 강제 overflow·큐 포화 동시�
 순번은 제출 시도마다 증가하므로 인코딩·큐 실패도 소모합니다. INIT/RESET·무수신 timeout은 순번을 보존합니다.
 큐 접수는 실제 송신 완료나 PC 수신을 보장하지 않습니다.
 
-현재 INIT/RESET·무수신 timeout은 이벤트 보고를 생성하지 않습니다. PC TRACK 디코더·그래프·평가는
-아직 없습니다. [정확한 배치·플래그·결과 규격](docs/requirements-traceability.md#spec-track-report)을 참고하세요.
+현재 INIT/RESET·무수신 timeout은 이벤트 보고를 생성하지 않습니다. PC TRACK 디코더·그래프는 구현했고, 새 보고가 2초 동안 없으면 PC STALE로 표시합니다.
+이는 보드 LOST 판정과 별개이며 원시 로그·정량 평가는 아직 없습니다. [정확한 배치·플래그·결과 규격](docs/requirements-traceability.md#spec-track-report)을 참고하세요.
 
 ## 9. 설정과 검증 기록
 

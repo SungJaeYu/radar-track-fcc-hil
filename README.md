@@ -6,15 +6,72 @@ PC가 합성 표적·측정값을 생성하고 STM32가 추적 결과를 반환�
 > **개발 방식**  
 > 문제 정의, 요구사항, 시스템 구조와 검증 기준을 직접 설계하고, STM32/Zephyr 펌웨어는 직접 작성하며 학습하고 있습니다. PC 시뮬레이터와 GUI 구현에는 AI 코딩 에이전트를 활용하며, 결과를 검토하고 실제 보드와 연결해 검증합니다. 이 저장소는 합성 측정 데이터를 사용하는 실험용 HIL 시스템이며 실제 군 운용 데이터나 내부 시스템 정보를 사용하지 않습니다.
 
-```text
-pc_sim (Python 측정 생성)
-  → CRC-16 프레임 / USB-UART
-  → STM32 RX: uart_rx → rx_frame_processor → frame_parser
-  → 메시지 큐 → frame_handler 스레드 → radar_processor → track / Kalman
-  → report_sender → TX 큐 → uart_tx → STATUS_REPORT / TRACK_REPORT
-  → PC: STATUS 조회 지원, TRACK_REPORT 해석·평가는 구현 예정
-  + ST-Link 콘솔: 별도 진단 로그
+## 입출력과 시스템 연결
+
+PC는 측정 입력을 만들고, STM32는 추적 계산을 수행해 결과를 반환합니다.
+아래는 GUI 보드 모드의 현재 연결입니다. 합성 실제값은 비교 기준으로 PC에만 남습니다.
+
+```mermaid
+flowchart LR
+    subgraph PC["PC · pc_sim"]
+        Model["표적 운동 / 센서 잡음<br/>gui_model"]
+        Worker["SessionWorker<br/>시리얼 포트 소유 · 송수신"]
+        Decode["FrameParser → protocol<br/>CRC 확인 · STATUS/TRACK 해석"]
+        GUI["GUI<br/>실제값 · 측정값 · 보드 추정값"]
+        Model -->|측정 프레임| Worker
+        Model -->|합성 실제값 · 측정값| GUI
+        Worker -->|수신 바이트| Decode --> GUI
+    end
+    Board["STM32 · Zephyr<br/>수신 → 단일 트랙 추적 → 보고"]
+    Worker -->|"USB-UART → USART6 RX<br/>MEAS_REPORT / INIT / STATUS_REQUEST"| Board
+    Board -->|"USART6 TX → USB-UART<br/>TRACK_REPORT / STATUS_REPORT"| Worker
+    Board -.->|"진단 텍스트 · USART1 / ST-Link VCP"| Console["GUI 콘솔 또는 별도 터미널"]
 ```
+
+데이터와 진단 콘솔은 별도 포트입니다. GUI와 CLI가 같은 포트를 동시에 열지 않습니다.
+CLI 송신기(`radar_sender`, `run_sim`)는 측정 송신만 수행하며 TRACK 수집은 GUI에서 지원합니다.
+
+## 펌웨어 내부 처리 흐름
+
+실선은 데이터 전달, 점선은 알림·진단 통계 조회를 나타냅니다. ISR은 바이트를 저장하고 RX 스레드를 깨우며,
+파싱·추적 계산·보고서 구성은 스레드 문맥에서 수행합니다.
+
+```mermaid
+flowchart TD
+    RXPin["USART6 RX · 하드웨어 FIFO"] --> ISR["UART ISR · uart_callback<br/>uart_fifo_read → ring_push"]
+    ISR --> Ring["rx_ring · 256바이트 배열<br/>실제 저장 용량 255바이트"]
+    ISR -.->|"k_sem_give · 데이터 도착/overflow 알림"| Sem["rx_sem"]
+    subgraph RX["RX 스레드 · uart_rx_thread"]
+        Drain["ring_pop<br/>overflow 복구 · 부분 프레임 timeout"]
+        Parser["rx_frame_processor → frame_parser<br/>LEN/CRC 검사 · 프레임 조립"]
+        Drain --> Parser
+    end
+    Ring --> Drain
+    Sem -.->|"k_sem_take · 최대 50ms 대기"| Drain
+    Parser -->|"frame_handler_submit · 프레임 + 수신 완료 시각 복사"| RXQueue["frame_queue · 8개"]
+    subgraph Handler["처리 스레드 · frame_handler_thread"]
+        Dispatch["frame_handler_process<br/>TYPE 분기 · INIT/RESET"]
+        Radar["radar_processor<br/>측정 해석 → 예측 → 게이팅 → 보정<br/>track / kalman_cv · 무수신 감시"]
+        Report["report_sender<br/>STATUS 통계 / TRACK 추정값 구성"]
+        Dispatch -->|MEAS_REPORT| Radar
+        Radar -->|처리 결과| Report
+        Dispatch -->|STATUS_REQUEST| Report
+    end
+    RXQueue -->|k_msgq_get| Dispatch
+    Stats["uart_rx / rx_frame_processor<br/>누적 오류·드롭 통계"] -.->|atomic 개별 조회| Report
+    Report -->|"uart_tx_submit · 보고서 프레임 복사"| TXQueue["tx_queue · 8개"]
+    subgraph TX["TX 스레드 · uart_tx_thread"]
+        Encode["protocol_frame_encode<br/>STX + LEN + TYPE + payload + CRC"]
+        Send["uart_poll_out<br/>프레임 바이트 순서대로 송신"]
+        Encode --> Send
+    end
+    TXQueue -->|k_msgq_get| Encode
+    Send --> TXPin["USART6 TX → PC"]
+```
+
+트랙과 보고 순번은 처리 스레드가 소유합니다. 큐는 구조체를 복사하고, 세마포어는 바이트를 전달하지 않습니다.
+RX/handler는 입력이 없어도 주기적으로 깨어 timeout을 확인합니다. TX는 현재 polling 방식이며 TX ISR/DMA를 사용하지 않습니다.
+큐 접수·UART write 성공은 상대 수신 ACK가 아닙니다. INIT/RESET·무수신 timeout의 이벤트 보고는 아직 연결하지 않았습니다.
 
 ## 시스템 역할
 
@@ -24,10 +81,10 @@ pc_sim (Python 측정 생성)
 - `pc_sim`: 합성 표적에서 시간·거리·방위각 측정을 생성합니다. 실제 RF 신호처리를 구현하지 않습니다.
 - 펌웨어: 예측·게이팅·칼만 필터·트랙 상태 관리를 담당합니다.
   다중표적 확장 시 측정-트랙 연관과 `track_id` 부여도 펌웨어에서 구현합니다.
-- GUI: 시험 제어와 PC 합성값·보드 로그 표시를 담당합니다.
+- GUI: 시험 제어와 PC 합성값·보드 추정값 비교, STATUS 통계·진단 로그 표시를 담당합니다.
 - PC의 정답 `target_id`는 내부 시뮬레이션·향후 평가용이며 측정 payload로 보내지 않습니다.
 
-현재는 단일 트랙입니다. **측정 경로의 TRACK_REPORT 송신은 펌웨어에 구현됐고 host 검증을 마쳤습니다.** PC 해석·그래프·평가와 새 결과 경로의 실보드 왕복은 남아 있습니다. 다중표적 연관·트랙 ID 관리는 미구현입니다.
+현재는 단일 트랙입니다. **측정 경로의 TRACK_REPORT 송신은 펌웨어에 구현됐고 host 검증을 마쳤습니다.** PC TRACK 디코더·GUI 비교 그래프도 구현하고 모사 UART로 검증했습니다. 정량 평가·원시 로그 저장과 새 결과 경로의 실보드 왕복은 남아 있습니다. 다중표적 연관·트랙 ID 관리는 미구현입니다.
 역할 경계와 ID 정책은 [시스템 역할 문서](docs/system-roles.md)를 기준으로 합니다.
 
 2026-11-15 계획 조정: **단일표적 결과 반환·오차 비교·시간/자원 측정·오류 복구까지 확인한 v1**을 먼저 완성합니다. 다중표적은 v2 후보이며 현재 구현 여부와 별개입니다. [v1 검증 및 완료 기준](#v1-acceptance)을 완료 범위의 기준으로 사용합니다.
@@ -78,7 +135,7 @@ python -m pc_sim.gui
 ```
 
 미리보기·실제 UART 송신, 실시간 표적/거리 그래프, ST-Link 콘솔을 지원합니다.
-[GUI 실행 안내](pc_sim/GUI.md)를 참고하세요. 그래프는 PC 생성값이며 보드 추정 결과가 아닙니다.
+[GUI 실행 안내](pc_sim/GUI.md)를 참고하세요. 초록색은 합성 실제값, 노란색은 PC 측정값, 파란색은 수신한 보드 추정값입니다. 미리보기에는 보드 추정값이 없습니다. 아래 이미지는 이전 미리보기 화면입니다.
 
 ![Radar Lab GUI 미리보기: PC 합성 실제값과 측정값](docs/images/radar-gui-preview.png)
 
@@ -122,7 +179,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6, TRACK_REPORT=7.
 - INIT/RESET은 트랙을 초기화합니다. STATUS는 누적 통계를 이진 응답으로 반환하며 DEBUG 로그에는 큐 접수만 기록합니다. COMMAND는 미구현이라 무시 이유를 경고합니다.
   STATUS 통계는 28바이트 STATUS_REPORT(일곱 uint32)로 TX 큐에 제출합니다. PC는 구형 16바이트 응답도 읽으며 없는 필드는 미지원으로 표시합니다.
-- TRACK_REPORT는 32바이트 payload(전체 37바이트)로 순번·입력/추정 시각·거리/방위각·변화율·상태/결과·유효 플래그를 반환합니다. 유효 측정 payload마다 한 번 제출하며 게이트/시각 거부도 보고합니다. 제어 명령·무수신 timeout 이벤트 보고와 PC TRACK 해석은 아직 없습니다. [필드와 동작 규격](docs/requirements-traceability.md#spec-track-report).
+- TRACK_REPORT는 32바이트 payload(전체 37바이트)로 순번·입력/추정 시각·거리/방위각·변화율·상태/결과·유효 플래그를 반환합니다. 유효 측정 payload마다 한 번 제출하며 게이트/시각 거부도 보고합니다. PC 디코더·GUI는 구현했으며 제어 명령·무수신 timeout 이벤트 보고는 아직 없습니다. [필드와 동작 규격](docs/requirements-traceability.md#spec-track-report).
 
 ## RX 버퍼와 overflow 복구
 
@@ -168,8 +225,8 @@ pc_sim/
     gui_worker.py      시리얼 소유·송수신·콘솔 작업 스레드
     frame_parser.py    PC 수신 프레임 조립·CRC 검증
     status_client.py   STATUS 요청·응답 CLI
-    gui_model.py       GUI 설정·단일표적 측정 생성
-    protocol.py        공통 프레임 생성·단위 변환·STATUS 해석
+    gui_model.py       설정·측정 생성·TRACK 이력/수신 신선도
+    protocol.py        공통 프레임 생성·단위 변환·STATUS/TRACK 해석
     radar_sender.py    간단한 거리 변화 측정 송신
     frame_sender.py 단일 프레임 송신·수동 INIT
     targets.py         표적·센서 모델
@@ -185,11 +242,11 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 | 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리·부분 프레임 timeout | 스캔 단위 다중 측정 규격 |
 | 실행 구조 | RX → 복사 큐 → handler → TX 복사 큐 → TX 스레드, RX 큐 포화 시 드롭 집계 | 실제 큐 동시성·부하 검증 |
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
-| 결과 보고 | 측정 처리별 32바이트 TRACK_REPORT 인코딩·TX 제출, 순번·유효성, host 29개 회귀 | 제어/timeout 이벤트 보고, PC TRACK 수신·평가·실보드 왕복 |
+| 결과 보고 | 측정 처리별 32바이트 TRACK_REPORT 인코딩·TX 제출, 순번·유효성, host 29개 회귀 | 제어/timeout 이벤트 보고, 정량 평가·실보드 왕복 |
 | 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출, PC CLI 수신 | TX 부하·장애 검증·BIT·Lock On 미완료 |
 | 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
 | PC 시뮬레이터 | 측정·잡음 생성, PC 출력용 다중표적·미탐지·클러터 시나리오 | 실제 UART 모드는 단일표적·클러터 0으로 제한 |
-| GUI·평가 | 송신 제어, PC 합성값 그래프, 보드 콘솔 | 다중표적 GUI, 보드 추정값 그래프, 폐루프 RMSE·트랙 연속성 평가 |
+| GUI·평가 | 송신 제어, 합성 실제값·측정값·보드 추정값 그래프, STATUS/TRACK·STALE 표시, 콘솔 | 다중표적 GUI, 원시 로그 저장, RMSE·트랙 연속성 평가 |
 
 실제 RF 송수신·ADC/IQ·FFT 신호처리와 완성된 레이더 운용 시스템은 프로젝트 범위 밖입니다.
 EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에는 포함하지 않습니다.
@@ -240,7 +297,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [x] 합성 표적 운동·잡음·미탐지·클러터 모델; 다중표적 시나리오는 PC 출력 전용
 - [x] GUI 포트·표적 설정, 연결·시작·중지·재시작과 포트 정리
 - [x] 설정 탭·스크롤, 표적 위치·거리 이력, 보드 콘솔·송신 로그 배치
-  - [ ] v1: 단일표적 보드 추정값·정답·측정 비교와 로그 저장
+  - [x] v1: 단일표적 보드 추정값·정답·측정 비교 그래프, TRACK 상태·순번·STALE 표시와 모사 UART 시험
+  - [ ] v1: 원시 결과 로그 저장·정량 평가·실보드 비교 검증
   - [ ] v2 선택: 다중표적 UART·GUI
 
 ### 4. 테스트·실보드 검증·문서
@@ -285,7 +343,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 - [ ] 추적 결과 왕복·PC 비교
   - [x] TYPE=7, 32바이트 TRACK_REPORT와 공통 프레임·CRC 인코더 재사용, 측정별 제출·순번/유효성 및 host 검증
   - [ ] INIT/RESET·무수신 timeout 이벤트 보고 여부·표현과 PC 상태 유지 정책 확정
-  - [ ] PC TRACK 디코더·CLI/GUI·원시 로그·정량 평가 및 실보드 왕복
+  - [x] PC TRACK 디코더·GUI 수신, STATUS 혼합 스트림·순번 관측·2초 STALE 정책, C 인코더 상호운용
+  - [ ] PC TRACK 수집 CLI·원시 로그·정량 평가 및 실보드 왕복
   - [ ] TX 완료/실패 통계·순번 누락 관측 방식 정의
   - [ ] TX 큐 포화 정책 확장: 현재 새 요청 거부 방식에서 추적 결과·제어 응답의 우선순위·보존·폐기 기준과 오류 집계 정의
 - [ ] v2 선택 — COMMAND/Lock On: 트랙 선택·해제·대상 소실 정책
@@ -302,14 +361,14 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 ### 고정 범위
 
 - STM32F746G-DISCO + Zephyr, 기존 UART RX/handler/TX와 단일 트랙 CV·고정 게이트·상태 전이를 사용합니다.
-- PC 입력 `MEAS_REPORT`, 보드 추정 출력 `TRACK_REPORT`, 진단 `STATUS_REPORT`는 서로 다른 의미를 갖습니다. TRACK_REPORT의 TYPE=7·32바이트 배치·유효 측정별 제출은 펌웨어에 구현했습니다. [현재 규격](docs/requirements-traceability.md#spec-track-report)을 PC에 연결하고 제어/timeout 이벤트 정책을 확정해야 합니다.
+- PC 입력 `MEAS_REPORT`, 보드 추정 출력 `TRACK_REPORT`, 진단 `STATUS_REPORT`는 서로 다른 의미를 갖습니다. TRACK_REPORT의 TYPE=7·32바이트 배치·유효 측정별 제출은 펌웨어에 구현했습니다. [현재 규격](docs/requirements-traceability.md#spec-track-report)의 PC 디코더·GUI를 연결했으며 제어/timeout 이벤트 정책과 실보드 왕복 검증이 남았습니다.
 - 기존 동작을 깨뜨리는 단위·시각·메모리·상태/복구 결함은 수정합니다. 알고리즘과 통신 기술의 종류를 늘리는 것을 완료 조건으로 삼지 않습니다.
 
 ### 완료 체크리스트
 
 | Gate | 끝내기 위해 필요한 증거 | 현재 상태 |
 | --- | --- | --- |
-| V1-1 결과 왕복 | 추정 거리·방위각·트랙 상태·기준 시각/유효성 반환. PC에서 정답·측정·보드 추정을 대응시켜 그래프와 원시 로그로 보존 | 펌웨어 측정 결과 송신·host 검증 완료. PC 연결·평가·실보드 왕복 미완료 |
+| V1-1 결과 왕복 | 추정 거리·방위각·트랙 상태·기준 시각/유효성 반환. PC에서 정답·측정·보드 추정을 대응시켜 그래프와 원시 로그로 보존 | 펌웨어 송신·PC 디코더·GUI 비교 및 host 검증 완료. 원시 로그·정량 평가·실보드 왕복 미완료 |
 | V1-2 추적 평가 | 고정 seed의 정상·잡음·연속 누락 시나리오. 최신 측정값 baseline 대비 거리/방위각 RMSE, 상태 전이·복귀 기록. 평가 시각·warm-up·각도 wrap 처리 명시 | 보드 정량 평가 미완료 |
 | V1-3 오류 복구 | CRC/부분 프레임, RX/TX 단선·복원, 기본 DRAIN의 강제 링 overflow 및 RX/TX 큐 포화 후 정상 추적 재개. 유실 집계와 INIT/RESET 전후 순서·재개 절차 명시 | 기존 부분 시험 있음. 결과 반환을 포함한 최종 회귀·강제 overflow/TX 포화 남음 |
 | V1-4 시간·자원 | 선언한 부하의 30분 실행 로그. 보드 지연 분포·예산 초과 횟수, 송수신/처리/폐기 대응, 큐 최대 점유·스레드 스택 여유, 빌드 메모리 사용량 | 지속 부하·보드 지연/자원 실측 미완료 |
@@ -339,8 +398,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 끝점 |
 | --- | --- | --- |
-| 1 | TRACK_REPORT 남은 정책 확정 | 구현된 측정 보고 규격을 기준으로 제어/timeout 이벤트·유실 관측·PC 상태 유지 결정 |
-| 2 | 보드→PC 결과와 평가 | PC 디코더·수신 연결과 실보드 왕복,  정답/측정/추정 그래프·로그, 고정 시나리오 RMSE |
+| 1 | TRACK_REPORT 남은 정책 확정 | INIT/RESET·무수신 timeout 이벤트 보고 연결; PC의 2초 STALE·순번 관측은 구현됨 |
+| 2 | 보드→PC 결과와 평가 | 구현된 디코더·GUI로 실보드 왕복 확인, 원시 로그 수집과 고정 시나리오 RMSE |
 | 3 | 결과 경로를 포함한 오류 복귀 | 기본 정책 overflow·RX/TX 포화·단선·CRC/부분 프레임·INIT/RESET 확인 |
 | 4 | 선언 부하의 지속 측정 | 지연 예산·손실·큐·스택/메모리 및 30분 결과 |
 | 5 | v1 자료 정리 | 재현 명령·설계 판단·로그/그래프·짧은 시연을 확인하고 v1 종료 |

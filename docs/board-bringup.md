@@ -5,7 +5,7 @@
 현재 소스에 LCD 표시는 없으며 이진 TRACK_REPORT 측정 결과 송신은 구현되어 있습니다. PC 해석과 새 결과 경로의 실보드 검증은 남아 있습니다.
 
 STATUS 요청과 유효 측정 처리에는 각각 STATUS_REPORT·TRACK_REPORT 송신 경로가 있습니다.
-PC STATUS 디코더·CLI·GUI는 구현했고 TRACK 해석·평가는 미구현입니다. STATUS 기본 실보드 왕복은 `2aa57d9`에서 확인했습니다.
+PC STATUS 디코더·CLI·GUI와 TRACK 디코더·GUI는 구현했으며 정량 평가는 미구현입니다. STATUS 기본 실보드 왕복은 `2aa57d9`에서 확인했습니다.
 
 ## 배선과 통신 설정
 
@@ -16,7 +16,7 @@ PC STATUS 디코더·CLI·GUI는 구현했고 TRACK 해석·평가는 미구현�
 | USB-UART | STM32 핀 | 역할 |
 | --- | --- | --- |
 | TXD | PC7 / USART6_RX | PC 측정·제어 요청 입력 |
-| RXD | PC6 / USART6_TX | STATUS_REPORT·TRACK_REPORT 출력; PC TRACK 해석은 미구현 |
+| RXD | PC6 / USART6_TX | STATUS_REPORT·TRACK_REPORT 출력; PC 디코더·GUI 지원; TRACK 실보드 왕복 미검증 |
 | GND | GND | 공통 접지 |
 | VCC / 5V / 3V3 | 연결하지 않음 | 보드와 어댑터는 각자 USB로 급전 |
 
@@ -129,11 +129,11 @@ GUI 시험은 CLI 종료 후 STATUS 탭에서 별도로 수행합니다.
 ## TRACK_REPORT 추가 후 검증 경계
 
 현재 펌웨어는 유효 측정 payload마다 TYPE=7을 제출합니다. STATUS CLI는 다른 TYPE을 건너뛰고,
-GUI worker도 TRACK 결과를 표시·저장하지 않습니다. 따라서 기존 STATUS 명령 성공만으로
+GUI worker는 TRACK 결과를 해석·표시하지만 원시 파일 저장은 지원하지 않습니다. 따라서 기존 STATUS 명령 성공만으로
 측정 결과 반환을 검증했다고 판정하지 않습니다.
 
 다음 실보드 시험에서는 [TRACK_REPORT 규격](requirements-traceability.md#spec-track-report)에 맞는
-PC 디코더·원시 프레임 수집을 먼저 연결하고, 값·시각·순번·유효성·오류 후 복귀를 확인해야 합니다.
+구현된 PC 디코더·GUI에 원시 프레임 수집을 추가하고, 값·시각·순번·유효성·오류 후 복귀를 확인해야 합니다.
 [로그 부하 실행기](../fcc_app/tests/log_stress/README.md)는 STATUS/TRACK 혼합의 CRC·길이를 검사하도록 수정했습니다. TRACK 수치·순번·전달률을 평가하는 도구는 아니며 수정 후 실보드 재시험은 남아 있습니다.
 
 날짜별 Kconfig·각도·게이트·STATUS·로깅 시험은 [검증 이력](verification-history.md)에 모았습니다.
