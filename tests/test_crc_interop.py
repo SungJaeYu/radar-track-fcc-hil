@@ -36,6 +36,8 @@ def parser_lib(tmp_path_factory):
 #include "protocol/frame_parser.h"
 #include "common/crc16.h"
 #include "protocol/status_message.h"
+#include "protocol/track_message.h"
+#include "tracking/track.h"
 #include <string.h>
 int encode_test(unsigned char type, const unsigned char *p_data,
                 unsigned char length, unsigned char *p_out, size_t capacity,
@@ -50,6 +52,25 @@ int encode_status_test(unsigned char *out_wire, size_t capacity) {
     };
     struct protocol_frame frame;
     int ret = status_message_encode(&report, &frame);
+    return ret ? ret : protocol_frame_encode(&frame, out_wire, capacity);
+}
+int encode_track_test(unsigned char *out_wire, size_t capacity, int index) {
+    const int states[] = {TRACK_STATE_EMPTY, TRACK_STATE_TENTATIVE, TRACK_STATE_CONFIRMED,
+                         TRACK_STATE_COASTING, TRACK_STATE_LOST};
+    const int results[] = {TRACK_REPORT_RESULT_STARTED, TRACK_REPORT_RESULT_UPDATED,
+                          TRACK_REPORT_RESULT_GATE_REJECTED, TRACK_REPORT_RESULT_TIME_REJECTED,
+                          TRACK_REPORT_RESULT_RESET};
+    const int valid = index > 0 && index < 4;
+    const struct track_report report = {
+        .report_sequence = 0xffffffffU, .input_timestamp_ms = 300U,
+        .estimate_timestamp_ms = valid ? 200U : 0U,
+        .range_m = valid ? 1000.0f : 0.0f, .azimuth_rad = valid ? -0.5f : 0.0f,
+        .range_rate_mps = valid ? -20.0f : 0.0f, .azimuth_rate_radps = valid ? 0.25f : 0.0f,
+        .state = states[index], .result = results[index],
+        .flags = TRACK_REPORT_FLAG_INPUT_PRESENT | (valid ? TRACK_REPORT_FLAG_ESTIMATE_VALID : 0),
+    };
+    struct protocol_frame frame;
+    int ret = track_message_encode(&report, &frame);
     return ret ? ret : protocol_frame_encode(&frame, out_wire, capacity);
 }
 int frame_type_constant(int index) {
@@ -79,7 +100,8 @@ int crc_check_vector(void) {
                     '-shared', '-fPIC', '-I', str(src),
                     '-I', str(src.parent / 'tests/common/include'), str(wrapper),
                     str(src / 'protocol/frame_parser.c'), str(src / 'protocol/protocol_frame.c'),
-                    str(src / 'common/crc16.c'), str(src / 'protocol/status_message.c'), '-o', str(library)], check=True)
+                    str(src / 'common/crc16.c'), str(src / 'protocol/status_message.c'),
+                    str(src / 'protocol/track_message.c'), '-o', str(library)], check=True)
     lib = ctypes.CDLL(str(library))
     lib.reset_parser.restype = None
     lib.feed_byte.argtypes = [ctypes.c_ubyte]
@@ -88,8 +110,29 @@ int crc_check_vector(void) {
                                 ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
     lib.encode_status_test.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
     lib.encode_status_test.restype = ctypes.c_int
+    lib.encode_track_test.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
+    lib.encode_track_test.restype = ctypes.c_int
     lib.encode_test.restype = ctypes.c_int
     return lib
+
+
+@pytest.mark.parametrize('index', range(5))
+def test_firmware_track_decodes_in_python(parser_lib, index):
+    from pc_sim.frame_parser import FrameParser
+    wire = ctypes.create_string_buffer(37)
+    assert parser_lib.encode_track_test(wire, len(wire), index) == 37
+    frames = FrameParser().feed(wire.raw)
+    assert len(frames) == 1 and frames[0].frame_type == protocol.FRAME_TYPE_TRACK_REPORT
+    report = protocol.decode_track_payload(frames[0].payload)
+    assert report.report_sequence == 0xffffffff
+    assert report.state is list(protocol.TrackState)[index]
+    assert report.result is list(protocol.TrackReportResult)[index]
+    assert report.input_present and report.input_timestamp_ms == 300
+    assert report.estimate_valid == (0 < index < 4)
+    if report.estimate_valid:
+        assert report.estimate_timestamp_ms == 200
+        assert (report.range_m, report.azimuth_rad, report.range_rate_mps,
+                report.azimuth_rate_radps) == (1000, -0.5, -20, 0.25)
 
 
 def feed(lib, frame):

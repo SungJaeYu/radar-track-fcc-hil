@@ -3,6 +3,7 @@ from collections import deque
 import math
 from datetime import datetime
 import sys
+import time
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QTextCursor
@@ -14,7 +15,7 @@ from PySide6.QtWidgets import (
 import pyqtgraph as pg
 from serial.tools import list_ports
 
-from .gui_model import Settings
+from .gui_model import Settings, TrackMonitor
 from .gui_worker import SessionWorker
 from .protocol import STATUS_FIELDS
 
@@ -33,7 +34,7 @@ QPushButton#primary:disabled { background: #20413e; border-color: #305550; color
 QPushButton:disabled { color: #647788; background: #1b2935; border-color: #293c4c; }
 QPlainTextEdit { background: #0c131b; border: 1px solid #293c4c;
     font-family: Menlo, monospace; font-size: 12px; }
-QTabBar::tab { background: #1a2b39; padding: 8px 18px; }
+QTabBar::tab { background: #1a2b39; padding: 8px 10px; }
 QTabBar::tab:selected { background: #305064; }
 QSplitter::handle { background: #293c4c; }
 '''
@@ -48,6 +49,7 @@ class MainWindow(QMainWindow):
         self.status_pending = False
         self.samples = deque(maxlen=2000)
         self.sample_count = 0
+        self.track_monitor = TrackMonitor()
         self.setWindowTitle('Radar Lab · HIL Console')
         self.resize(1280, 850)
         self.setMinimumSize(950, 600)
@@ -62,7 +64,7 @@ class MainWindow(QMainWindow):
         title = QLabel('RADAR LAB  /  HIL CONSOLE')
         title.setObjectName('title')
         layout.addWidget(title)
-        subtitle = QLabel('단일표적 시뮬레이터  ·  115200 baud / 8N1  ·  PC 생성값과 보드 로그를 구분합니다')
+        subtitle = QLabel('단일표적 시뮬레이터  ·  115200 baud / 8N1  ·  PC 합성값 / 보드 추정값 / 진단 로그')
         subtitle.setObjectName('subtitle')
         subtitle.setWordWrap(True)
         layout.addWidget(subtitle)
@@ -113,7 +115,7 @@ class MainWindow(QMainWindow):
         self.connection_label.setWordWrap(True)
         controls.addWidget(self.connection_label)
         controls.addStretch()
-        self.controls_scroll, controls = tab_page('표적 설정')
+        self.controls_scroll, controls = tab_page('설정')
         scope_note = QLabel('단일표적 · 고정 방위각 / 일정 거리 변화율')
         scope_note.setWordWrap(True)
         controls.addWidget(scope_note)
@@ -170,6 +172,33 @@ class MainWindow(QMainWindow):
         status_layout.addWidget(note)
         status_layout.addStretch()
 
+        self.track_scroll, track_layout = tab_page('TRACK')
+        self.track_message = QLabel('보드 TRACK 수신 대기')
+        self.track_message.setWordWrap(True)
+        track_layout.addWidget(self.track_message)
+        track_form = QFormLayout()
+        self.track_values = {}
+        for key, label in (
+            ('report_sequence', '보고 순번'), ('state', '마지막 보드 상태'),
+            ('result', '처리 결과'), ('input_timestamp_ms', '입력 시각 (ms)'),
+            ('estimate_timestamp_ms', '추정 시각 (ms)'), ('range_m', '거리 (m)'),
+            ('azimuth_rad', '방위각 (rad)'), ('range_rate_mps', '거리 변화율 (m/s)'),
+            ('azimuth_rate_radps', '방위각 변화율 (rad/s)'),
+            ('sequence_gaps', '관측 순번 공백'), ('discontinuities', '순번 역행 / 불연속'),
+        ):
+            value = QLabel('—')
+            value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            self.track_values[key] = value
+            track_form.addRow(label, value)
+        track_layout.addLayout(track_form)
+        note = QLabel('STALE: 새 TRACK 수신 없이 2초 경과. 보드 LOST와 다릅니다.\n'
+                      '순번 공백은 유실 위치·원인을 확정하지 않습니다.\n'
+                      '거리 이력은 PC 측정 시각과 일치하는 추정 시각만 표시합니다.')
+        note.setWordWrap(True)
+        note.setObjectName('subtitle')
+        track_layout.addWidget(note)
+        track_layout.addStretch()
+
         self.start_button = QPushButton('▶  시작')
         self.start_button.setObjectName('primary')
         self.start_button.clicked.connect(self.start_simulation)
@@ -190,7 +219,7 @@ class MainWindow(QMainWindow):
         self.plots_split = plots = QSplitter(Qt.Orientation.Vertical)
         plots.setChildrenCollapsible(False)
         split.addWidget(plots)
-        self.map_plot = pg.PlotWidget(title='표적 위치 · PC 생성값')
+        self.map_plot = pg.PlotWidget(title='표적 위치')
         self.map_plot.setLabel('bottom', '동쪽', units='m')
         self.map_plot.setLabel('left', '북쪽', units='m')
         self.map_plot.setAspectLocked(True)
@@ -202,14 +231,18 @@ class MainWindow(QMainWindow):
                                               symbolBrush='#3ce0b1', name='실제값 (합성)')
         self.measured_points = self.map_plot.plot([], [], pen=None, symbol='+', symbolSize=10,
                                                   symbolPen='#f4bf65', name='측정값 (PC)')
+        self.estimated_point = self.map_plot.plot([], [], pen=None, symbol='d', symbolSize=12,
+                                                  symbolBrush='#75bfff', name='추정값 (보드)')
         plots.addWidget(self.map_plot)
-        self.range_plot = pg.PlotWidget(title='거리 이력 · PC 생성값')
+        self.range_plot = pg.PlotWidget(title='거리 이력 · 센서 시각 기준')
         self.range_plot.setLabel('bottom', '시간', units='s')
         self.range_plot.setLabel('left', '거리', units='m')
         self.range_plot.showGrid(x=True, y=True, alpha=0.2)
         self.range_plot.addLegend(offset=(10, 10))
         self.truth_curve = self.range_plot.plot(pen=pg.mkPen('#3ce0b1', width=2), name='실제값 (합성)')
         self.measured_curve = self.range_plot.plot(pen=pg.mkPen('#f4bf65', width=1), name='측정값 (PC)')
+        self.estimated_curve = self.range_plot.plot(pen=pg.mkPen('#75bfff', width=2),
+                                                     connect='finite', name='추정값 (보드)')
         plots.addWidget(self.range_plot)
         plots.setSizes([360, 300])
         plots.setStretchFactor(0, 1)
@@ -226,7 +259,7 @@ class MainWindow(QMainWindow):
         split.setSizes([460, 440])
         split.setStretchFactor(0, 1)
         split.setStretchFactor(1, 1)
-        self.board_note = QLabel('보드 추정값 그래프는 아직 없습니다. 수신·처리 여부는 실제 콘솔 로그로 확인하세요.')
+        self.board_note = QLabel('보드 TRACK 수신 대기 · 미리보기에서는 보드 추정값을 생성하지 않습니다.')
         self.board_note.setWordWrap(True)
         self.board_note.setObjectName('subtitle')
         right.addWidget(self.board_note)
@@ -275,6 +308,7 @@ class MainWindow(QMainWindow):
             self.show_error('데이터와 콘솔에 같은 포트를 사용할 수 없습니다.')
             return
         self.worker = SessionWorker(data, console, self)
+        self.worker.track_received.connect(self.on_track_received)
         self.worker.status_received.connect(self.on_status_received)
         self.worker.status_failed.connect(self.on_status_failed)
         self.worker.connected.connect(self.on_connected)
@@ -299,8 +333,9 @@ class MainWindow(QMainWindow):
         self.status_updated.setText('마지막 성공 조회: —')
         self.status_message.setText('조회 대기' if board else '미리보기에서는 조회할 수 없습니다.')
         self.console_text.clear()
+        self.reset_track_display()
         if not self.worker.console_port:
-            self.console_text.setPlainText('콘솔 포트가 연결되지 않았습니다.\n보드 수신·추적 결과를 확인하려면 ST-Link 콘솔을 선택하세요.\n')
+            self.console_text.setPlainText('콘솔 포트가 연결되지 않았습니다.\n진단 로그는 ST-Link 콘솔, 추정 결과는 데이터 포트의 TRACK으로 수신합니다.\n')
         self.update_controls()
 
     def request_status(self):
@@ -326,6 +361,55 @@ class MainWindow(QMainWindow):
         self.status_message.setText(message)
         self.status_button.setEnabled(self.connected and self.mode.currentIndex() == 1)
 
+    def reset_track_display(self):
+        self.track_monitor.reset()
+        for value in self.track_values.values():
+            value.setText('—')
+        self.estimated_curve.setData([], [])
+        self.estimated_point.setData([], [])
+        self.draw_track()
+
+    def on_track_received(self, report, received_at):
+        if not self.connected or not self.track_monitor.receive(report, received_at):
+            return
+        self.track_values['report_sequence'].setText(str(report.report_sequence))
+        self.track_values['state'].setText(report.state.name)
+        self.track_values['result'].setText(report.result.name)
+        self.track_values['input_timestamp_ms'].setText(
+            str(report.input_timestamp_ms) if report.input_present else '—')
+        self.track_values['estimate_timestamp_ms'].setText(
+            str(report.estimate_timestamp_ms) if report.estimate_valid else '—')
+        for key in ('range_m', 'azimuth_rad', 'range_rate_mps', 'azimuth_rate_radps'):
+            self.track_values[key].setText(f'{getattr(report, key):.3f}' if report.estimate_valid else '—')
+        self.track_values['sequence_gaps'].setText(str(self.track_monitor.sequence_gaps))
+        self.track_values['discontinuities'].setText(str(self.track_monitor.discontinuities))
+        self.draw_track()
+
+    def draw_track(self):
+        monitor = self.track_monitor
+        report = monitor.latest
+        stale = monitor.is_stale(time.monotonic())
+        live = self.connected and not stale and report is not None and report.estimate_valid
+        if live:
+            self.estimated_point.setData([report.range_m * math.sin(report.azimuth_rad)],
+                                         [report.range_m * math.cos(report.azimuth_rad)])
+        else:
+            self.estimated_point.setData([], [])
+        times, ranges = monitor.range_history(self.samples)
+        self.estimated_curve.setData(times, ranges)
+        self.estimated_curve.setOpacity(1.0 if self.connected and not stale else 0.35)
+        if report is None:
+            message = ('보드 TRACK 수신 대기' if self.mode.currentIndex() == 1 else
+                       '미리보기 · 보드 추정값 없음')
+        else:
+            age = max(0.0, time.monotonic() - monitor.received_at)
+            freshness = ('연결 해제 · 이전 결과' if not self.connected else
+                         'STALE · 오래된 결과' if stale else '수신 중')
+            validity = '추정 유효' if report.estimate_valid else '추정 무효'
+            message = f'{freshness} · #{report.report_sequence} · {age:.1f}초 전 · {validity}'
+        self.track_message.setText(message)
+        self.board_note.setText(message)
+
     def start_simulation(self):
         if not self.connected:
             return
@@ -333,6 +417,7 @@ class MainWindow(QMainWindow):
         settings.validate()
         self.samples.clear()
         self.sample_count = 0
+        self.reset_track_display()
         for curve in (self.truth_curve, self.measured_curve, self.truth_point, self.measured_points):
             curve.setData([], [])
         extent = settings.initial_range_m * 1.2
@@ -361,6 +446,8 @@ class MainWindow(QMainWindow):
         self.event_text.appendPlainText(f'{sample.timestamp_ms:>7} ms  {verb}  {sample.frame.hex(" ")}')
 
     def draw_samples(self):
+        # Freshness must still update when simulation is stopped or no samples exist.
+        self.draw_track()
         if not self.samples:
             return
         values = list(self.samples)
@@ -387,6 +474,7 @@ class MainWindow(QMainWindow):
 
     def disconnect(self):
         self.connected = False
+        self.draw_track()
         self.connect_button.setEnabled(False)
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(False)

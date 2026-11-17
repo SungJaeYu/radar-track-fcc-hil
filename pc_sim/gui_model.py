@@ -1,10 +1,11 @@
-"""Single-target GUI settings and wire samples, independent of Qt."""
+"""Single-target samples and board report display policy, independent of Qt."""
+from collections import deque
 from dataclasses import dataclass
 import math
 import random
 import struct
 
-from .protocol import build_measurement_frame_from_radians
+from .protocol import TrackReport, build_measurement_frame_from_radians
 
 
 @dataclass(frozen=True)
@@ -48,3 +49,60 @@ def make_sample(settings, timestamp_ms, rng: random.Random):
         math.radians(settings.azimuth_deg))
     _, measured, semicircle = struct.unpack('>IHi', frame[3:-2])
     return Sample(timestamp_ms, truth, measured, semicircle * math.pi / 2**31, frame)
+
+
+class TrackMonitor:
+    """Bounded report history and PC reception freshness, not board track lifetime."""
+
+    STALE_AFTER_S = 2.0
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        """Start a new PC display session without sending a firmware command."""
+        self.reports = deque(maxlen=2000)
+        self.latest = None
+        self.received_at = None
+        self.sequence_gaps = 0
+        self.discontinuities = 0
+
+    def receive(self, report: TrackReport, received_at: float) -> bool:
+        """Ignore duplicates; count forward gaps modulo uint32.
+
+        A backwards/ambiguous jump may mean reboot or reordered input. Start a
+        new history segment without claiming a reset cause or a huge loss count.
+        """
+        if self.latest is not None:
+            delta = (report.report_sequence - self.latest.report_sequence) & 0xffffffff
+            if delta == 0:
+                return False
+            if delta < 0x80000000:
+                self.sequence_gaps += delta - 1
+            else:
+                self.discontinuities += 1
+                self.reports.clear()
+        self.latest = report
+        self.received_at = received_at
+        self.reports.append(report)
+        return True
+
+    def is_stale(self, now: float) -> bool:
+        return self.received_at is None or now - self.received_at >= self.STALE_AFTER_S
+
+    def range_history(self, samples):
+        """Align estimates with retained PC sensor timestamps, never receive time.
+
+        Invalid or unmatched reports break the curve instead of plotting zero or
+        attaching a report to the most recently generated measurement.
+        """
+        timestamps = {sample.timestamp_ms for sample in samples}
+        times, ranges = [], []
+        for report in self.reports:
+            if report.estimate_valid and report.estimate_timestamp_ms in timestamps:
+                times.append(report.estimate_timestamp_ms / 1000)
+                ranges.append(report.range_m)
+            elif times:
+                times.append(times[-1])
+                ranges.append(math.nan)
+        return times, ranges

@@ -318,3 +318,154 @@ def test_gui_extended_and_legacy_status_fields(app):
     finally:
         window.connected = False
         window.close()
+
+
+@pytest.mark.parametrize('interrupt_status', ['none', 'request', 'timeout'])
+def test_worker_preserves_track_fragments_across_status_operations(app, monkeypatch, interrupt_status):
+    from types import SimpleNamespace
+    from pc_sim import gui_worker
+    from pc_sim.protocol import encode_frame
+    wire = encode_frame(7, bytes.fromhex(
+        '00000001 00000064 00000064 447a0000 00000000 c1a00000 00000000 02 01 03 00'))
+    reports, failures = [], []
+    clock = [0.0]
+    worker = SessionWorker('fake')
+    worker.track_received.connect(lambda report, received_at: reports.append((report, received_at)))
+    worker.status_failed.connect(failures.append)
+    if interrupt_status == 'timeout':
+        worker.request_status()
+
+    class FragmentPort(FakeSerial):
+        def __init__(self):
+            super().__init__()
+            self.in_waiting = 4096
+            self.parts = [wire[:13], wire[13:]]
+
+        def read(self, size):
+            raw = self.parts.pop(0)
+            if self.parts:
+                if interrupt_status == 'request':
+                    worker.request_status()
+            else:
+                clock[0] = 3.0 if interrupt_status == 'timeout' else 0.1
+            return raw
+
+    port = FragmentPort()
+    monkeypatch.setattr(gui_worker, 'time', SimpleNamespace(monotonic=lambda: clock[0]))
+    monkeypatch.setattr(worker, 'isInterruptionRequested', lambda: not port.parts)
+    monkeypatch.setattr(worker, 'msleep', lambda _: None)
+    worker._loop(port, None)
+    assert len(reports) == 1
+    assert reports[0][0].report_sequence == 1
+    assert reports[0][1] == clock[0]
+    assert len(failures) == (1 if interrupt_status == 'timeout' else 0)
+
+
+def test_worker_demultiplexes_track_and_status_and_skips_bad_track(app, monkeypatch):
+    from pc_sim.protocol import encode_frame
+    good = encode_frame(7, bytes.fromhex(
+        '00000009 00000064 00000064 447a0000 00000000 c1a00000 00000000 02 01 03 00'))
+    corrupt = bytearray(good)
+    corrupt[-1] ^= 1
+    bad_payload = bytearray(good[3:-2])
+    bad_payload[31] = 1
+    raw = (bytes(corrupt) + encode_frame(7, bad_payload) + encode_frame(7, b'\0')
+           + good + encode_frame(6, bytes(28)) + good)
+    port = FakeSerial()
+    port.in_waiting = len(raw)
+    chunks = [raw]
+    monkeypatch.setattr(port, 'read', lambda _: chunks.pop())
+    worker = SessionWorker('fake')
+    reports, stats, events = [], [], []
+    worker.track_received.connect(lambda report, _: reports.append(report))
+    worker.status_received.connect(stats.append)
+    worker.event.connect(events.append)
+    worker.request_status()
+    monkeypatch.setattr(worker, 'isInterruptionRequested', lambda: not chunks)
+    monkeypatch.setattr(worker, 'msleep', lambda _: None)
+    worker._loop(port, None)
+    assert [r.report_sequence for r in reports] == [9, 9]
+    assert len(stats) == 1 and stats[0]['crc_errors'] == 0
+    assert not worker.status_pending.is_set()
+    assert sum('TRACK' in event for event in events) == 2
+
+
+def test_gui_board_track_graph_status_and_stale_display(app, monkeypatch):
+    import struct
+    from types import SimpleNamespace
+    from pc_sim import gui
+    from pc_sim.protocol import encode_frame, decode_track_payload
+
+    class TrackingSerial(StatusSerial):
+        def __init__(self):
+            super().__init__()
+            self.sequence = 0
+
+        def write(self, frame):
+            result = super().write(frame)
+            if frame[2] == 2:
+                stamp, distance, _ = struct.unpack('>IHi', frame[3:-2])
+                payload = struct.pack('>IIIffffBBBB', self.sequence, stamp, stamp,
+                                      distance + 0.5, 0.25, -20, 0, 2, 1, 3, 0)
+                self.sequence += 1
+                self.buffer.extend(encode_frame(7, payload))
+                self.in_waiting = len(self.buffer)
+            return result
+
+    port = TrackingSerial()
+    monkeypatch.setattr(gui, 'SessionWorker', lambda data, console, parent:
+        SessionWorker(data, console, parent, serial_factory=lambda *a, **kw: port))
+    window = MainWindow()
+    window.show()
+    try:
+        window.mode.setCurrentIndex(1)
+        window.data_port.addItem('fake', 'fake')
+        window.data_port.setCurrentIndex(window.data_port.count() - 1)
+        window.connect_button.click()
+        wait_for(app, lambda: window.connected)
+        window.start_button.click()
+        wait_for(app, lambda: window.track_monitor.latest is not None)
+        window.draw_samples()
+        assert window.track_values['state'].text() == 'CONFIRMED'
+        assert len(window.estimated_curve.getData()[0]) >= 1
+        assert len(window.estimated_point.getData()[0]) == 1
+        window.request_status()
+        wait_for(app, lambda: window.status_message.text() == '조회 성공')
+        window.stop_button.click()
+        wait_for(app, lambda: window.start_button.isEnabled() and not port.buffer)
+        # UI freshness uses the worker's monotonic receive time, not simulation time.
+        stale_at = window.track_monitor.received_at + 2.0
+        monkeypatch.setattr(gui, 'time', SimpleNamespace(monotonic=lambda: stale_at))
+        window.draw_samples()
+        assert 'STALE' in window.track_message.text()
+        assert window.estimated_point.getData()[0] is None
+        assert window.track_values['state'].text() == 'CONFIRMED'
+        assert len(window.estimated_curve.getData()[0]) >= 1  # Historical evidence stays visible.
+        report = decode_track_payload(struct.pack(
+            '>IIIffffBBBB', port.sequence, 999, 0, 0, 0, 0, 0, 0, 4, 1, 0))
+        window.on_track_received(report, time.monotonic())
+        assert window.track_values['range_m'].text() == '—'
+        assert window.track_values['state'].text() == 'EMPTY'
+        window.start_button.click()
+        assert window.track_monitor.latest is None
+        assert window.estimated_curve.getData()[0] is None
+    finally:
+        window.close()
+        wait_for(app, lambda: window.worker is None)
+    assert port.closed
+
+
+def test_gui_track_tab_and_preview_have_no_fabricated_board_estimate(app):
+    window = MainWindow()
+    window.resize(1000, 650)
+    window.show()
+    try:
+        window.control_tabs.setCurrentIndex(3)
+        app.processEvents()
+        window.draw_samples()
+        assert window.control_tabs.tabText(3) == 'TRACK'
+        assert window.track_values['state'].text() == '—'
+        assert window.estimated_point.getData()[0] is None
+        assert window.height() <= 650
+    finally:
+        window.close()

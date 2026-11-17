@@ -11,11 +11,13 @@ import serial
 
 from .gui_model import make_sample
 from .frame_parser import FrameParser
-from .protocol import (build_init_frame, encode_frame, decode_status_payload,
-                       FRAME_TYPE_STATUS_REQUEST, FRAME_TYPE_STATUS_REPORT)
+from .protocol import (build_init_frame, encode_frame, decode_status_payload, decode_track_payload,
+                       FRAME_TYPE_STATUS_REQUEST, FRAME_TYPE_STATUS_REPORT, FRAME_TYPE_TRACK_REPORT)
 
 
 class SessionWorker(QThread):
+    # Capture freshness at reception, before queued GUI delivery can be delayed.
+    track_received = Signal(object, float)
     status_received = Signal(object)
     status_failed = Signal(str)
     STATUS_TIMEOUT_S = 2.0
@@ -89,8 +91,7 @@ class SessionWorker(QThread):
             except queue.Empty:
                 command = None
             if command == 'status':
-                # Reset assembly only; never flush the shared serial input buffer.
-                parser.reset()
+                # STATUS and unsolicited TRACK share one persistent receive stream.
                 status_deadline = time.monotonic() + self.STATUS_TIMEOUT_S
                 self._write(data, encode_frame(FRAME_TYPE_STATUS_REQUEST, b"\x00"))
             elif command == 'stop':
@@ -111,10 +112,17 @@ class SessionWorker(QThread):
                 raw = data.read(min(data.in_waiting, 4096))
                 if status_deadline is not None and time.monotonic() >= status_deadline:
                     status_deadline = None
-                    parser.reset()
                     self.status_pending.clear()
                     self.status_failed.emit('STATUS 응답 시간 초과')
                 for frame in parser.feed(raw):
+                    if frame.frame_type == FRAME_TYPE_TRACK_REPORT:
+                        try:
+                            report = decode_track_payload(frame.payload)
+                        except ValueError as error:
+                            self.event.emit(f'TRACK 폐기: {error}')
+                        else:
+                            self.track_received.emit(report, time.monotonic())
+                        continue
                     if status_deadline is None or frame.frame_type != FRAME_TYPE_STATUS_REPORT:
                         continue
                     try:
