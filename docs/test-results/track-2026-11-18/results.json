@@ -1,0 +1,612 @@
+{
+  "revision": "e66515e",
+  "checks": [
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "INIT event",
+      "passed": true
+    },
+    {
+      "name": "no timeout before first measurement",
+      "passed": true
+    },
+    {
+      "name": "single STATUS reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "STARTED at timestamp zero",
+      "passed": true
+    },
+    {
+      "name": "constant range decoded",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "CONFIRMED after three hits",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "duplicate timestamp rejected preserving estimate",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "backward timestamp rejected preserving estimate",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "gate rejection coasts",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "gate recovery",
+      "passed": true
+    },
+    {
+      "name": "invalid semantic payload has no report",
+      "passed": true
+    },
+    {
+      "name": "invalid payload size has no report",
+      "passed": true
+    },
+    {
+      "name": "one timeout event",
+      "passed": true
+    },
+    {
+      "name": "no repeat timeout event",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "measurement restarts after timeout",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "RESET event",
+      "passed": true
+    },
+    {
+      "name": "RESET disarms timeout",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "long sensor gap RESET keeps input flag",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "next measurement starts after gap",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "INIT clears active track",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "five gate misses LOST",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "LOST prediction resets",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "restart after LOST reset",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "bad CRC no TRACK",
+      "passed": true
+    },
+    {
+      "name": "bad LEN no TRACK",
+      "passed": true
+    },
+    {
+      "name": "partial frame timeout no TRACK",
+      "passed": true
+    },
+    {
+      "name": "single STATUS reply",
+      "passed": true
+    },
+    {
+      "name": "CRC counter +1",
+      "passed": true
+    },
+    {
+      "name": "length counter +1",
+      "passed": true
+    },
+    {
+      "name": "partial frame timeout counter +1",
+      "passed": true
+    },
+    {
+      "name": "no queue or overflow drops",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "receive recovery after malformed frames",
+      "passed": true
+    },
+    {
+      "name": "mixed TRACK and STATUS",
+      "passed": true
+    },
+    {
+      "name": "mixed report values",
+      "passed": true
+    },
+    {
+      "name": "single TRACK reply",
+      "passed": true
+    },
+    {
+      "name": "all observed TRACK sequences consecutive",
+      "passed": true
+    },
+    {
+      "name": "PC receive framing errors zero",
+      "passed": true
+    },
+    {
+      "name": "no repeat final RESET",
+      "passed": true
+    }
+  ],
+  "reports": [
+    {
+      "report_sequence": 0,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 0,
+      "result": 4,
+      "flags": 0
+    },
+    {
+      "report_sequence": 1,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 0,
+      "flags": 3
+    },
+    {
+      "report_sequence": 2,
+      "input_timestamp_ms": 100,
+      "estimate_timestamp_ms": 100,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 1,
+      "flags": 3
+    },
+    {
+      "report_sequence": 3,
+      "input_timestamp_ms": 200,
+      "estimate_timestamp_ms": 200,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 2,
+      "result": 1,
+      "flags": 3
+    },
+    {
+      "report_sequence": 4,
+      "input_timestamp_ms": 200,
+      "estimate_timestamp_ms": 200,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 2,
+      "result": 3,
+      "flags": 3
+    },
+    {
+      "report_sequence": 5,
+      "input_timestamp_ms": 150,
+      "estimate_timestamp_ms": 200,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 2,
+      "result": 3,
+      "flags": 3
+    },
+    {
+      "report_sequence": 6,
+      "input_timestamp_ms": 300,
+      "estimate_timestamp_ms": 300,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 3,
+      "result": 2,
+      "flags": 3
+    },
+    {
+      "report_sequence": 7,
+      "input_timestamp_ms": 400,
+      "estimate_timestamp_ms": 400,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 2,
+      "result": 1,
+      "flags": 3
+    },
+    {
+      "report_sequence": 8,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 0,
+      "result": 4,
+      "flags": 0
+    },
+    {
+      "report_sequence": 9,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 0,
+      "flags": 3
+    },
+    {
+      "report_sequence": 10,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 0,
+      "result": 4,
+      "flags": 0
+    },
+    {
+      "report_sequence": 11,
+      "input_timestamp_ms": 100,
+      "estimate_timestamp_ms": 100,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 0,
+      "flags": 3
+    },
+    {
+      "report_sequence": 12,
+      "input_timestamp_ms": 1101,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 0,
+      "result": 4,
+      "flags": 1
+    },
+    {
+      "report_sequence": 13,
+      "input_timestamp_ms": 1201,
+      "estimate_timestamp_ms": 1201,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 0,
+      "flags": 3
+    },
+    {
+      "report_sequence": 14,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 0,
+      "result": 4,
+      "flags": 0
+    },
+    {
+      "report_sequence": 15,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 0,
+      "flags": 3
+    },
+    {
+      "report_sequence": 16,
+      "input_timestamp_ms": 100,
+      "estimate_timestamp_ms": 100,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 1,
+      "flags": 3
+    },
+    {
+      "report_sequence": 17,
+      "input_timestamp_ms": 200,
+      "estimate_timestamp_ms": 200,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 2,
+      "result": 1,
+      "flags": 3
+    },
+    {
+      "report_sequence": 18,
+      "input_timestamp_ms": 300,
+      "estimate_timestamp_ms": 300,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 3,
+      "result": 2,
+      "flags": 3
+    },
+    {
+      "report_sequence": 19,
+      "input_timestamp_ms": 400,
+      "estimate_timestamp_ms": 400,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 3,
+      "result": 2,
+      "flags": 3
+    },
+    {
+      "report_sequence": 20,
+      "input_timestamp_ms": 500,
+      "estimate_timestamp_ms": 500,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 3,
+      "result": 2,
+      "flags": 3
+    },
+    {
+      "report_sequence": 21,
+      "input_timestamp_ms": 600,
+      "estimate_timestamp_ms": 600,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 3,
+      "result": 2,
+      "flags": 3
+    },
+    {
+      "report_sequence": 22,
+      "input_timestamp_ms": 700,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 4,
+      "result": 2,
+      "flags": 1
+    },
+    {
+      "report_sequence": 23,
+      "input_timestamp_ms": 800,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 0,
+      "result": 4,
+      "flags": 1
+    },
+    {
+      "report_sequence": 24,
+      "input_timestamp_ms": 900,
+      "estimate_timestamp_ms": 900,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 0,
+      "flags": 3
+    },
+    {
+      "report_sequence": 25,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 0,
+      "result": 4,
+      "flags": 0
+    },
+    {
+      "report_sequence": 26,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 0,
+      "flags": 3
+    },
+    {
+      "report_sequence": 27,
+      "input_timestamp_ms": 100,
+      "estimate_timestamp_ms": 100,
+      "range_m": 1000.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 1,
+      "result": 1,
+      "flags": 3
+    },
+    {
+      "report_sequence": 28,
+      "input_timestamp_ms": 0,
+      "estimate_timestamp_ms": 0,
+      "range_m": 0.0,
+      "azimuth_rad": 0.0,
+      "range_rate_mps": 0.0,
+      "azimuth_rate_radps": 0.0,
+      "state": 0,
+      "result": 4,
+      "flags": 0
+    }
+  ],
+  "duration_s": 11.848340999975335
+}

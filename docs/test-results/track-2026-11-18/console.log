@@ -1,0 +1,23 @@
+[00:01:14.912,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:01:16.377,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:01:16.629,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:01:17.014,000] [0m<inf> frame_handler: Track state: CONFIRMED -> COASTING[0m
+[00:01:17.145,000] [0m<inf> frame_handler: Track state: COASTING -> CONFIRMED[0m
+[00:01:17.271,000] [1;33m<wrn> frame_handler: Invalid radar measurement: range=0.00 m, azimuth=0.0000 rad[0m
+[00:01:17.399,000] [1;33m<wrn> frame_handler: Invalid radar payload: length=9[0m
+[00:01:18.151,000] [1;33m<wrn> frame_handler: Radar measurement timeout: track cleared[0m
+[00:01:19.930,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:01:20.061,000] [0m<inf> frame_handler: RESET: track and measurement monitoring reset[0m
+[00:01:21.393,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=100 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:01:21.520,000] [0m<inf> frame_handler: Track state: TENTATIVE -> EMPTY[0m
+[00:01:21.647,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=1201 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:01:21.778,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:01:21.903,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:01:22.162,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:01:22.291,000] [0m<inf> frame_handler: Track state: CONFIRMED -> COASTING[0m
+[00:01:22.802,000] [0m<inf> frame_handler: Track state: COASTING -> LOST[0m
+[00:01:22.931,000] [0m<inf> frame_handler: Track state: LOST -> EMPTY[0m
+[00:01:23.056,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=900 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:01:23.185,000] [0m<inf> frame_handler: RESET: track and measurement monitoring reset[0m
+[00:01:24.921,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:01:25.260,000] [0m<inf> frame_handler: RESET: track and measurement monitoring reset[0m

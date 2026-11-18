@@ -410,7 +410,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 실보드에서 검증했습니다. RX/TX 데이터 선 단절·복원도 확인했습니다.
 host 회귀 테스트와 일반·디버그 펌웨어 빌드도 확인했습니다.
 로깅 전환 후 일반/디버그 회귀와 강제 로그 포화·측정 부하 시험을 완료했고, 기본 INFO 펌웨어로 복원했습니다.
-2026-11-16 `87006b0`의 TRACK_REPORT·레이더 처리 분리본은 handler host 29개와 일반/디버그 빌드를 확인했습니다. 이후 2026-11-17 이름·경로 정리 및 로그 시험기 판정을 갱신했습니다. 최신 검증 범위는 [검증 이력](docs/verification-history.md)을 따르며 TRACK 경로의 flash·실보드 왕복은 남아 있습니다.
+2026-11-18 `e66515e`의 일반 빌드·flash와 기본 TRACK 실보드 왕복을 확인했습니다. [시험 결과](docs/hardware-test-2026-11-18-track.md)는 64개 확인 항목·29개 TRACK 수신을 기록하며 GUI·부하·정량 성능은 제외합니다. 이전 버전의 host·일반/디버그 빌드 및 실보드 결과는 [검증 이력](docs/verification-history.md)을 따릅니다.
 최신 파일 구성·이름 검토는 [구조·이름 점검](docs/naming-review.md), 이전 구조 판단은 [2026-11-14 기록](docs/structure-review-2026-11-14.md)에 정리했습니다.
 시험마다 대상 버전과 범위가 다르며, 강제 링버퍼 overflow·UART 하드웨어 오류·TX 부하·장시간 시험은 남아 있습니다.
 상세 결과와 원시 로그는 [검증 기록](docs/verification-history.md)을 참고하세요.
