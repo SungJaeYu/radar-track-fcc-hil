@@ -9,6 +9,10 @@
 #include "protocol/track_message.h"
 #include "protocol/frame_parser.h"
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+#include "diagnostics/perf_monitor.h"
+#endif
+
 // Only the handler call is wrapped for failure injection; successful calls use
 // the real encoder linked separately. No production source is changed.
 static int test_status_encode(const struct status_report *p_stats,
@@ -802,7 +806,59 @@ static void test_stale_measurement_boundary_and_stats(void)
     assert(handler.radar.track.state == TRACK_STATE_TENTATIVE);
 }
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+static void test_perf_measurement_paths(void)
+{
+    struct frame_handler handler;
+    reset_test(&handler);
+    struct rx_frame frame = measurement(100, 1000, 5000);
+    test_now_ms = 5007;
+    frame_handler_process(&handler, &frame);
+    struct perf_stats stats;
+    assert(perf_monitor_get_stats(&stats) == 0);
+    assert(stats.measurements == 1 && stats.queue_wait.total_ms == 7);
+    assert(stats.rx_to_submit.count == 1 && stats.rx_to_submit.total_ms == 7);
+
+    frame = measurement(200, 1000, 5100);
+    test_now_ms += CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS;
+    frame_handler_process(&handler, &frame);
+    frame = measurement(300, 0, 7000);
+    frame_handler_process(&handler, &frame);
+    frame = measurement(400, 1000, 7100);
+    track_encode_result = -EINVAL;
+    frame_handler_process(&handler, &frame);
+    track_encode_result = 0;
+    frame = measurement(500, 1000, 7200);
+    submit_result = -ENOMSG;
+    frame_handler_process(&handler, &frame);
+    submit_result = 0;
+    frame = measurement(600, 1000, 7300);
+    frame_handler_process(&handler, &frame);
+
+    frame_handler_handle_timeout(&handler, 7300 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
+    frame.frame.type = FRAME_TYPE_RESET;
+    frame_handler_process(&handler, &frame);
+    frame.frame.type = FRAME_TYPE_INIT;
+    frame_handler_process(&handler, &frame);
+    frame.frame.type = FRAME_TYPE_STATUS_REQUEST;
+    frame_handler_process(&handler, &frame);
+    assert(perf_monitor_get_stats(&stats) == 0);
+    assert(stats.measurements == 6 && stats.without_submit == 3);
+    assert(stats.track_submit_failed == 1 && stats.rx_to_submit.count == 2);
+    assert(stats.invalid_timestamps == 0);
+
+    assert(frame_handler_submit(NULL) == -EINVAL);
+    assert(frame_handler_submit(&frame) == -ENOMSG);
+    assert(perf_monitor_get_stats(&stats) == 0);
+    assert(stats.queues[PERF_QUEUE_RX].rejected == 1);
+    assert(stats.queues[PERF_QUEUE_RX].observed_max_used == 8);
+}
+#endif
+
 static const struct test_case cases[] = {
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    TEST_CASE(test_perf_measurement_paths),
+#endif
     TEST_CASE(test_stale_measurement_boundary_and_stats),
     TEST_CASE(test_processor_invalid_input_preserves_output),
     TEST_CASE(test_processor_timeout_query_preserves_state),

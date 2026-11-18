@@ -88,6 +88,21 @@ module-str = Radar frame handler
 source "subsys/logging/Kconfig.template.log_config"
 endmenu
 
+config RADAR_PERF_MONITOR
+    bool "Enable application performance measurements"
+    depends on LOG
+    select INIT_STACKS
+    select THREAD_STACK_INFO
+    default n
+    help
+        Collect measurement queue wait, processing and RX-to-TX-submit
+        timing, queue submission counts and sampled occupancy, and TX
+        polling completion counts. Main prints cumulative summaries and
+        sampled RX/handler/TX stack headroom every five seconds.
+        Enable with perf.conf in a separate build. Instrumentation and
+        logging add overhead; this does not prove physical transmission
+        completion, peer receipt, or worst-case execution time.
+
 config RADAR_LOG_STRESS_TEST
     bool "Run a bounded log saturation test after boot"
     depends on LOG_MODE_DEFERRED && LOG_PROCESS_THREAD && ASSERT

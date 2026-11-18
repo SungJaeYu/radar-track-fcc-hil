@@ -2,6 +2,9 @@
 
 #include "transport/uart_tx.c"
 #include "protocol/frame_parser.h"
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+#include "diagnostics/perf_monitor.h"
+#endif
 
 static void reset_test(void)
 {
@@ -42,11 +45,21 @@ static void test_tx_invalid_submit(void)
         assert(uart_tx_submit(&request) == -EINVAL);
     }
     assert(put_calls == 0 && tx_queue.count == 0 && sent_count == 0);
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    struct perf_stats stats;
+    assert(perf_monitor_get_stats(&stats) == 0);
+    assert(stats.queues[PERF_QUEUE_TX].accepted == 0);
+    assert(stats.queues[PERF_QUEUE_TX].rejected == 0);
+#endif
 }
 
 static void test_tx_queue_copy_fifo_full_and_recovery(void)
 {
     reset_test();
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    struct perf_stats before;
+    assert(perf_monitor_get_stats(&before) == 0);
+#endif
     assert(uart_tx_init() == 0);
     struct tx_frame request = {
         .frame = {.type = FRAME_TYPE_STATUS_REQUEST, .payload_length = 1},
@@ -73,6 +86,15 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
         }
     }
     assert(frames == 8);
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    struct perf_stats stats;
+    assert(perf_monitor_get_stats(&stats) == 0);
+    assert(stats.queues[PERF_QUEUE_TX].accepted - before.queues[PERF_QUEUE_TX].accepted == 8);
+    assert(stats.queues[PERF_QUEUE_TX].rejected - before.queues[PERF_QUEUE_TX].rejected == 1);
+    assert(stats.queues[PERF_QUEUE_TX].observed_max_used == 8);
+    assert(stats.tx_poll_completed - before.tx_poll_completed == 8 &&
+           stats.tx_encode_failed == before.tx_encode_failed);
+#endif
     request = (struct tx_frame){.frame = {.type = FRAME_TYPE_INIT, .payload_length = 1}};
     assert(uart_tx_submit(&request) == 0);
     assert(uart_tx_init() == 0);
@@ -85,6 +107,10 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
 static void test_tx_encode_error_continues(void)
 {
     reset_test();
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    struct perf_stats before;
+    assert(perf_monitor_get_stats(&before) == 0);
+#endif
     assert(uart_tx_init() == 0);
     struct tx_frame request = {.frame = {.type = FRAME_TYPE_INIT, .payload_length = 0}};
     // Bypass submit validation solely to exercise the worker's defensive path.
@@ -93,6 +119,12 @@ static void test_tx_encode_error_continues(void)
     assert(uart_tx_submit(&request) == 0);
     run_worker();
     assert(strstr(log_output, "TX encode failed:") != NULL);
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    struct perf_stats stats;
+    assert(perf_monitor_get_stats(&stats) == 0);
+    assert(stats.tx_poll_completed - before.tx_poll_completed == 1 &&
+           stats.tx_encode_failed - before.tx_encode_failed == 1);
+#endif
     const uint8_t expected[] = {0x7e, 1, 1, 0, 0xc8, 0x9d};
     assert(sent_count == sizeof(expected) && memcmp(sent, expected, sizeof(expected)) == 0);
 }

@@ -36,8 +36,13 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - 다중표적 데이터 연관·LCD는 현재 실행 경로에 없습니다.
 - 기존 XOR 인코더는 CRC-16/IBM-3740으로 변경했습니다. 과거 구현은 Git 이력에 남아 있습니다.
 
+## 선택적 성능 계측
+
+`perf.conf`는 `diagnostics/perf_monitor.c/.h`의 지연·큐·송신 집계와 `perf_reporter.c`의 5초 요약·스택 조회를 켭니다. 일반/debug 빌드에는 제외됩니다. [측정 계약](docs/performance-monitoring.md)을 따르며 성능 목표 달성은 실보드 증거로 별도 판정합니다. 계측 구현을 완료해도 30분 부하·MCU 내부 지연/스택 실측은 미완료입니다.
+
 ## 검증
 
+- [성능 계측 host 테스트](fcc_app/tests/test_perf_monitor/README.md): collector/reporter 9 + 계측 활성화 handler 31/TX 4회. 기존 C 116회와 합쳐 160회 실행(CTest 144개)입니다.
 - `python -m pytest`: GUI 의존성 설치 시 231개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 24·discard 21, 총 45회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [handler host 테스트](fcc_app/tests/test_frame_handler/README.md): STATUS·TRACK·실패 복귀·INIT/RESET·측정 timeout·processor·stale 계약 30개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.

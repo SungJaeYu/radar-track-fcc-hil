@@ -7,6 +7,10 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+#include "diagnostics/perf_monitor.h"
+#endif
+
 LOG_MODULE_REGISTER(uart_tx, CONFIG_RADAR_UART_TX_LOG_LEVEL);
 
 static const struct device *p_uart = DEVICE_DT_GET(DT_NODELABEL(usart6));
@@ -40,7 +44,11 @@ int uart_tx_submit(const struct tx_frame *p_frame)
         return -EINVAL;
     }
 
-    return k_msgq_put(&tx_queue, p_frame, K_NO_WAIT);
+    const int ret = k_msgq_put(&tx_queue, p_frame, K_NO_WAIT);
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    perf_monitor_record_queue(PERF_QUEUE_TX, ret, k_msgq_num_used_get(&tx_queue));
+#endif
+    return ret;
 }
 
 static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
@@ -64,6 +72,9 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
             const int length = protocol_frame_encode(&request.frame, buffer, sizeof(buffer));
 
             if (length < 0) {
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+                perf_monitor_record_tx(false);
+#endif
                 LOG_ERR("TX encode failed: %d", length);
                 continue;
             }
@@ -73,6 +84,9 @@ static void uart_tx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
             for (int i = 0; i < length; ++i) {
                 uart_poll_out(p_uart, buffer[i]);
             }
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+            perf_monitor_record_tx(true);
+#endif
         }
     }
 }

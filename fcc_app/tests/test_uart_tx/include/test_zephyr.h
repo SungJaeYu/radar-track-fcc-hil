@@ -52,6 +52,13 @@ struct k_msgq {
     unsigned char name##_data[(size) * (count)];                                                   \
     struct k_msgq name = {name##_data, size, count, 0, 0}
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+static inline uint32_t k_msgq_num_used_get(const struct k_msgq *p_queue)
+{
+    return p_queue->count;
+}
+#endif
+
 static jmp_buf worker_exit;
 static unsigned put_calls;
 static int k_msgq_put(struct k_msgq *p_queue, const void *p_data, int timeout)

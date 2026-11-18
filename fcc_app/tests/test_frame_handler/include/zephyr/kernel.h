@@ -31,4 +31,12 @@ static int k_msgq_put(int *p_queue, const void *p_data, int timeout)
     return -ENOMSG;
 }
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+static inline uint32_t k_msgq_num_used_get(int *p_queue)
+{
+    (void)p_queue;
+    return 8;
+}
+#endif
+
 #endif

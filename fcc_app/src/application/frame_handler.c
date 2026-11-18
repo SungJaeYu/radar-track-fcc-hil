@@ -5,6 +5,10 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+#include "diagnostics/perf_monitor.h"
+#endif
+
 static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3);
 
 LOG_MODULE_REGISTER(frame_handler, CONFIG_RADAR_HANDLER_LOG_LEVEL);
@@ -65,6 +69,13 @@ void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_m
 
 void frame_handler_process(struct frame_handler *p_handler, const struct rx_frame *p_frame)
 {
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    if (p_frame->frame.type == FRAME_TYPE_MEAS_REPORT) {
+        // Use board RX completion time, including time spent waiting in the queue.
+        perf_monitor_begin_measurement(p_frame->received_at_ms, k_uptime_get());
+    }
+#endif
+
     switch (p_frame->frame.type) {
     case FRAME_TYPE_INIT:
         LOG_INF("INIT: track and measurement monitoring reset");
@@ -116,6 +127,12 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
         LOG_WRN("Frame ignored: unsupported type=0x%02X", p_frame->frame.type);
         break;
     }
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    if (p_frame->frame.type == FRAME_TYPE_MEAS_REPORT) {
+        // Clear context even when stale/invalid input or encode failure produced no submission.
+        perf_monitor_end_measurement();
+    }
+#endif
 }
 
 int frame_handler_submit(const struct rx_frame *p_frame)
@@ -124,5 +141,9 @@ int frame_handler_submit(const struct rx_frame *p_frame)
         return -EINVAL;
     }
 
-    return k_msgq_put(&frame_queue, p_frame, K_NO_WAIT);
+    const int ret = k_msgq_put(&frame_queue, p_frame, K_NO_WAIT);
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    perf_monitor_record_queue(PERF_QUEUE_RX, ret, k_msgq_num_used_get(&frame_queue));
+#endif
+    return ret;
 }

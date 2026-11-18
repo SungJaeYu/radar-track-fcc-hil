@@ -51,3 +51,14 @@ foreach(test_name IN ITEMS
         test_incoming_status_report_is_ignored)
     add_test(NAME ${test_name} COMMAND frame_handler_tests ${test_name})
 endforeach()
+
+# Re-run the same behavior tests with the real performance collector enabled.
+option(PERF_TEST_ENABLED "Exercise optional performance hooks" OFF)
+if(PERF_TEST_ENABLED)
+    find_package(Threads REQUIRED)
+    target_sources(frame_handler_tests PRIVATE ../../src/diagnostics/perf_monitor.c)
+    target_include_directories(frame_handler_tests PRIVATE ../test_perf_monitor/include)
+    target_compile_definitions(frame_handler_tests PRIVATE CONFIG_RADAR_PERF_MONITOR=1)
+    target_link_libraries(frame_handler_tests PRIVATE Threads::Threads)
+    add_test(NAME test_perf_measurement_paths COMMAND frame_handler_tests test_perf_measurement_paths)
+endif()

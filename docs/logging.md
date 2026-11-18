@@ -13,8 +13,9 @@ USART6의 이진 프로토콜과 STATUS_REPORT 규격은 변경하지 않는다.
 | transport/rx_frame_processor.c | rx_frame_processor | RADAR_RX_PROCESSOR |
 | application/frame_handler.c · application/radar_processor.c · application/report_sender.c | frame_handler | RADAR_HANDLER |
 | transport/uart_tx.c | uart_tx | RADAR_UART_TX |
+| diagnostics/perf_reporter.c (perf 전용) | radar_perf | 고정 INFO; RADAR_PERF_MONITOR로 포함 여부 선택 |
 
-각 로그 모듈은 한 파일에서 `LOG_MODULE_REGISTER(name, CONFIG_RADAR_..._LOG_LEVEL)`로 등록한다.
+기본 다섯 로그 모듈은 한 파일에서 `LOG_MODULE_REGISTER(name, CONFIG_RADAR_..._LOG_LEVEL)`로 등록한다.
 `radar_processor.c`와 `report_sender.c`는 `LOG_MODULE_DECLARE(frame_handler, ...)`로 기존 모듈을 공유하며 별도 스레드나 Kconfig 레벨을 추가하지 않는다.
 일반 빌드는 다섯 모듈 모두 INFO, debug.conf는 DEBUG다.
 ERR는 초기화·인코딩·예상 밖 제출 실패, WRN은 overflow·큐 드롭·무수신·잘못된 외부 입력,
@@ -36,6 +37,7 @@ STATUS 통계는 wire 응답으로 조회하며 콘솔에 중복 출력하지 �
 - `module`: 생성할 심볼 접두사, `module-str`: 설정 화면에 표시할 설명이다.
 - `fcc_app/prj.conf`: 일반 빌드의 값을 선택한다.
 - `fcc_app/debug.conf`: `-DEXTRA_CONF_FILE=debug.conf`로 지정하면 일반 설정 위에 적용한다.
+- `fcc_app/perf.conf`: 성능 계측 전용. main에서 5초마다 누적 요약과 스택 조회를 출력한다. DEBUG/인위적 부하 overlay와 섞지 않는다. [계측 계약·한계](performance-monitoring.md).
 - 최종 값은 빌드 디렉터리의 `zephyr/.config`와 생성된 `autoconf.h`에 저장된다.
   생성 파일을 직접 수정하지 않는다. 설정 변경 후 다시 빌드한다.
 

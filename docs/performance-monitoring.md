@@ -1,0 +1,85 @@
+# 보드 성능 계측
+
+`perf.conf`는 v1 지속 부하 시험을 준비하는 별도 펌웨어 구성이다. 시간·큐·송신 통계와 스택 여유를 수집하며 main이 5초마다 ST-Link 콘솔에 누적 `PERF` 요약을 출력한다. UART 프로토콜과 STATUS_REPORT는 변경하지 않는다. 일반·debug 빌드에는 계측 코드가 포함되지 않는다.
+
+현재는 host 회귀와 펌웨어 빌드까지 검증했다. 계측 이미지를 플래시한 실보드 결과, 50Hz·30분 성능 판정은 아직 없다.
+
+## 빌드와 원복
+
+```sh
+cd ~/zephyrproject
+west build -d <repo>/build_perf -b stm32f746g_disco <repo>/fcc_app -- -DEXTRA_CONF_FILE=perf.conf -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+# 실제 측정할 때만 플래시한다.
+west flash -d <repo>/build_perf --runner openocd
+# 시험을 마친 뒤 일반 이미지를 다시 빌드하고 복원한다.
+west build -d <repo>/build -b stm32f746g_disco <repo>/fcc_app -- -DEXTRA_CONF_FILE=
+west flash -d <repo>/build --runner openocd
+```
+
+`<repo>`는 저장소의 절대 경로로 바꾼다. `debug.conf`, `log_stress.conf`, `transport_stress.conf`와 섞지 않는다. DEBUG 프레임 로그나 강제 소비 스레드 정지는 측정 부하 자체를 바꾼다.
+
+| 설정 | 의미 |
+|---|---|
+| `CONFIG_RADAR_PERF_MONITOR=y` | collector·reporter와 호출 지점 활성화. LOG에 의존하며 스택 조회에 필요한 두 설정을 선택한다 |
+| `CONFIG_INIT_STACKS=y` | 시작할 때 스택을 패턴으로 채워 사용 흔적을 조회할 수 있게 한다 |
+| `CONFIG_THREAD_STACK_INFO=y` | 스레드 스택 범위 정보를 보관한다 |
+| `CONFIG_RADAR_LOG_STRESS_TEST=n` | 합성 로그 폭주 제외 |
+| `CONFIG_RADAR_TRANSPORT_STRESS_TEST=n` | RX/handler/TX 강제 정지 제외 |
+
+최종 설정은 `build_perf/zephyr/.config`에서 확인한다. 현재 보드 구성의 kernel tick은 10,000Hz지만 `k_uptime_get()`으로 저장하는 계측 값의 단위는 정수 ms다. 1ms 미만 차이를 세밀하게 구분하지 못하며 tick/cycle 기반 처리시간이나 CPU 점유율 측정이 아니다.
+
+## 시간 기준과 대상
+
+```text
+RX 파서 완료              handler process 진입           uart_tx_submit 반환
+received_at_ms (t0)       k_uptime_get() (t1)              k_uptime_get() (t2)
+        └──── queue_wait ──────┘
+                                └──── processing ──────────┘
+        └──────────────── rx_to_submit ───────────────────┘
+```
+
+- `queue_wait`: handler가 받은 **모든 MEAS_REPORT**의 `t1-t0`. 오래된/무효 측정도 포함한다. RX 큐에 들어오지 못한 프레임은 제외한다.
+- `processing`: 해당 측정의 TRACK이 TX 큐에 **성공적으로 등록된 경우**의 `t2-t1`.
+- `rx_to_submit`: 같은 성공 집합의 `t2-t0`. 게이트/시각 거부 결과도 TRACK을 성공 제출했다면 포함한다.
+- `t0`는 기존 보드 RX 완료 시각이다. 첫/마지막 바이트 ISR 시각이나 센서 `input_timestamp_ms`가 아니다.
+- `t2`는 송신 큐 제출 반환 직후, 제출 결과 로그 전에 기록한다. `uart_tx_submit()` 내부 계측 비용도 포함한다. UART 실제 전송·PC 수신까지의 지연은 아니다.
+- 처리 시간에는 선점·대기와 계측 자체의 비용도 포함된다. 순수 필터 실행 시간이나 WCET라고 해석하지 않는다.
+
+각 시간 통계는 `n`, `total_ms`, `max_ms`, `over20`, 히스토그램을 유지한다. 평균은 `total_ms / n`으로 계산하며 n=0이면 표본이 없다. 부팅 이후 누적값이고 5초 구간별 통계가 아니다.
+
+히스토그램은 0..20ms 각각 한 구간과 **>20ms 구간 21**로 구성된다. 로그의 `p50_bin`, `p95_bin`, `p99_bin`은 nearest-rank 방식의 구간 번호다. 예를 들어 `p99_bin=21 max_ms=40`이면 p99는 **20ms 초과**, 관측 최대는 40ms라는 뜻이며 p99=21ms라는 뜻이 아니다. 초과 구간의 정확한 백분위가 필요하면 후속 시험에서 더 넓거나 세밀한 계측을 추가해야 한다. `over20`은 엄격한 `>20ms`이며 20ms는 포함하지 않는다.
+
+## 카운터·소유권·집계 범위
+
+| 필드/로그 | 의미 |
+|---|---|
+| `measurements` | handler에 진입한 MEAS_REPORT 수 |
+| `without_submit` | 측정 처리 종료까지 TRACK 제출 호출이 없던 수. stale·무효 payload·TRACK 인코딩 실패를 포함하며 세 원인은 기존 로그/STATUS로 구분 |
+| `submit_failed` | 측정 TRACK의 `uart_tx_submit()` 실패 수. 성공 시간 분포에서 제외 |
+| `invalid_time` | 음수·역행 보드 시각 때문에 시간 표본을 제외한 수. 정상 uptime 흐름에서는 0 기대 |
+| `queue rx/tx accepted/rejected` | 유효 submit 인자의 큐 등록 성공/실패. RX는 모든 프레임 TYPE, TX는 STATUS·제어 TRACK까지 포함 |
+| `observed_max_used` | 제출 직후 조회한 큐 점유 수의 최대. 소비자가 이미 꺼낼 수 있어 실제 최대 점유율의 하한 관측값 |
+| `tx poll_completed` | 프레임의 모든 `uart_poll_out()` 호출을 마친 수. 상대 수신 ACK나 마지막 stop bit 완료가 아님 |
+| `tx encode_failed` | TX 워커에서 wire 인코딩에 실패한 수 |
+| `stack rx/handler/tx unused/min_unused` | 스택 패턴 검사에서 관측한 미사용 바이트와 조회한 값들의 최솟값. 조회 실패는 `unavailable=<negative errno>` |
+
+collector의 짧은 `k_spinlock` 구간에서 카운터·snapshot을 보호한다. 그 안에서는 시계 조회·큐 API·스택 검사·로그를 실행하지 않는다. handler만 측정 begin/end를 호출하며 중첩 호출을 지원하지 않는다. 제출 여부와 무관하게 종료 지점에서 문맥을 해제한다. INIT/RESET·무수신 timeout의 입력 없는 TRACK은 측정 지연에 포함하지 않는다.
+
+카운터는 UINT32_MAX에서 포화한다. 시간 통계는 count가 포화되면 합계·히스토그램·최대값을 함께 동결한다. 한 시간 표본도 UINT32_MAX ms로 제한하여 uint64 누적 합계가 넘치지 않게 한다. INIT/RESET은 이 통계를 지우지 않는다. 새 run은 재부팅으로 시작한다.
+
+통계 구조체는 한 번의 잠금으로 복사하지만 여러 단계의 이벤트는 서로 다른 순간에 기록된다. 입력·처리·송신이 진행 중일 때 카운터가 즉시 일치하지 않을 수 있다. 스택 검사는 snapshot 이후 별도 조회이며 동시에 실행 중인 스레드의 사용을 샘플링한다. 무손실·완전한 peak 검출이나 stack overflow 부재를 보장하지 않는다.
+
+collector는 `src/diagnostics/perf_monitor.c/.h`, 출력·스택 조회는 `perf_reporter.c`에 둔다. 별도 계측 스레드를 만들지 않고 기존 main 루프를 사용한다. 큰 출력용 snapshot은 main 스택 대신 reporter의 정적 저장소에 둔다. 로그 모듈 `radar_perf`는 고정 INFO다. 요약은 여러 LOG 호출이므로 다른 로그와 섞이거나 버퍼 포화 시 일부가 누락될 수 있다.
+
+## 검증과 다음 보드 시험
+
+host 사례와 실행 명령은 [성능 계측 테스트](../fcc_app/tests/test_perf_monitor/README.md)에 정리했다. 요구사항은 [REQ-PERF-001](requirements-traceability.md#spec-perf)로 추적한다.
+
+1. `perf.conf`를 플래시하고 ST-Link 콘솔 원문을 저장한다. 처음에는 입력 없이 0 표본·세 스택 조회 결과를 확인한다.
+2. 짧은 정상 입력에서 queue_wait/processing/rx_to_submit 표본 증가, 20ms 초과 횟수, STATUS/TRACK PC 수신과 TX 집계를 대조한다.
+3. INIT/RESET·무수신 timeout 보고가 측정 표본을 추가하지 않는지, 오래된/무효 입력·큐 실패가 각 카운터에 반영되는지 확인한다.
+4. 별도 run에서 README의 선언 부하(초안: 50Hz 측정·50Hz 결과·1Hz STATUS)를 30분 적용한다. 시작/종료 설정·baud·프레임 수·마지막 누적 요약·RX STATUS·PC CSV를 함께 남긴다.
+5. 송신 중단 후 큐가 비워진 구간의 통계를 비교한다. timeout 이벤트 TRACK 등 입력 없는 보고도 TX 프레임 수에 포함해 설명한다. 계측 로그 유실/타임스탬프 이상이 있으면 유효한 성능 증거로 단정하지 않는다.
+6. 일반 이미지를 복원하고 기본 왕복을 확인한다.
+
+현재 완료 범위는 계측 구현·host 검증·일반/디버그/계측 빌드다. 실보드 내부 지연·스택 여유나 30분 부하 목표 달성을 주장하지 않는다.

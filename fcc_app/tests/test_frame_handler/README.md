@@ -138,3 +138,7 @@ STATUS now carries eight uint32 fields (32 payload / 37 wire bytes), including t
 handler-owned stale count at offset 28. RX snapshots remain mocked.
 Earlier dated counts describe earlier revisions; hardware queue delay injection
 is not covered by these synchronous tests.
+
+## Optional performance instrumentation
+
+Configure a separate build with `-DPERF_TEST_ENABLED=ON` to link the real collector and exercise the production hooks. The normal host build keeps instrumentation disabled. See [performance test commands and cases](../test_perf_monitor/README.md). The handler variant adds a measurement-path case; the TX variant adds counter assertions to its existing cases. These host checks do not measure board performance.

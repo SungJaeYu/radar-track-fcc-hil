@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 231개 + subtest 9개, C host 116회 실행(RX drain 24·discard 21·handler 30·TX 4·Tracking 17·게이팅 설정 20)입니다.
+현재 합계는 Python 231개 + subtest 9개, C host 160회 실행입니다. 기존 116회(RX drain 24·discard 21·handler 30·TX 4·Tracking 17·게이팅 설정 20)에 계측 구성 44회(monitor 9·handler 31·TX 4)를 더합니다. 중복 실행을 포함하며 CTest 등록 수는 144개입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -28,6 +28,8 @@
 | 필터·추적 | `fcc_app/tests/test_tracking` | 17 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 30 | host C, 통계 조회·TX 제출·로그 캡처·RTOS 모사 |
+| 성능 계측 | `fcc_app/tests/test_perf_monitor` | 9 | host C, mutex·스택/로그 모사 |
+| 계측 활성화 회귀 | handler/TX `PERF_TEST_ENABLED=ON` | 31 + 4 | 기존 동작 재실행 및 실제 계측 호출 검증 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
 Python은 매개변수 조합을 펼쳐 **231개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
@@ -581,3 +583,9 @@ GUI worker의 CSV 생성·종료 회귀도 추가했습니다. [고정 시나리
 ## TRACK 포화·제어 순서 후속 검증 — 2026-11-18
 
 실보드112개 확인 항목 통과: RX 큐 포화 시 INIT/RESET 유실, 접수된 제어/측정 FIFO 순서, TRACK TX 포화 후 순번 공백과 정상 추적 복귀를 확인했습니다. 일반 이미지 복원 완료. [결과·원시 증거·계약](hardware-test-2026-11-18-track-controls.md). 제어 우선 보존 정책은 추가하지 않았으며 다음은30분 부하·MCU 내부 지연·큐/스택 계측입니다.
+
+## 성능 계측 — 2026-11-18
+
+[전체 9개 사례·활성화 회귀 명령](../fcc_app/tests/test_perf_monitor/README.md). REQ-PERF-001을 검증한다.
+20ms 경계·지연 집합 분리·포화·이전 측정 문맥 해제·무효 시각·RX/TX 집계·NULL/snapshot·pthread 경쟁·백분위/스택 조회 오류 복귀를 확인한다. handler는 30개 기존 사례와 1개 통합 사례, TX는 4개 기존 사례에 계측 단언을 추가해 별도 구성으로 실행한다.
+실제 Zephyr IRQ 지연·스택 여유·UART 완료·30분 부하는 포함하지 않는다. [측정 계약과 보드 절차](performance-monitoring.md).

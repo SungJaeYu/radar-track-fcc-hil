@@ -2,8 +2,14 @@
 
 #include <errno.h>
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+#include <zephyr/kernel.h>
+#endif
 #include <zephyr/logging/log.h>
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+#include "diagnostics/perf_monitor.h"
+#endif
 #include "protocol/status_message.h"
 #include "transport/rx_frame_processor.h"
 #include "transport/uart_rx.h"
@@ -84,6 +90,12 @@ void report_sender_submit_track(struct report_sender *p_sender, const struct tra
         return;
     }
     ret = uart_tx_submit(&request);
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+    if (input_present) {
+        // Capture before diagnostic logging; failure is excluded from success latency.
+        perf_monitor_record_track_submit(k_uptime_get(), ret);
+    }
+#endif
     if (ret == -ENOMSG) {
         LOG_WRN("TRACK submit failed: %d (TX queue full)", ret);
         return;

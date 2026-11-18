@@ -5,6 +5,23 @@
 이 문서는 검증 증거의 진입점입니다. 날짜별 기록은 당시 소스·설정에 대한 결과이며,
 이전의 미검증 상태나 테스트 개수를 현재 상태로 해석하지 않습니다.
 
+## 선택적 성능 계측 — 2026-11-18
+
+`7618d3c` 이후 작업본에 `perf.conf`, collector/reporter, handler/TX 계측 호출을 추가했습니다. 지연 집계·큐 관측값·TX polling 완료·스택 조회를 제공하며 일반/debug 구성에서는 제외합니다. [측정 계약·실행 절차](performance-monitoring.md).
+
+- Python 231개 + subtest 9개 통과.
+- C host 160회 실행 통과: 기존 116회 + 계측 활성화 44회(monitor/reporter 9·handler 31·TX 4). CTest 등록 수는 144개이며 Tracking의 기본 17개 함수를 한 등록에서 실행합니다.
+- 시간 경계·실패/미제출 분리·문맥 해제·포화·동시 snapshot·백분위 구간·스택 조회 오류 복귀를 확인했습니다. pthread mutex와 모사 uptime/stack API이며 RTOS 타이밍 증거가 아닙니다.
+- STM32F746G-DISCO 일반·debug·perf 빌드 모두 통과. 최종 빌드에서 컴파일 경고는 없었습니다. 일반/debug 최종 설정에는 RADAR_PERF_MONITOR가 꺼져 있고 perf만 켜져 있습니다.
+
+| 구성 | FLASH bytes | RAM bytes |
+|---|---:|---:|
+| 일반 | 42,784 | 15,696 |
+| debug.conf | 58,784 | 16,976 |
+| perf.conf | 44,604 | 16,464 |
+
+perf의 일반 대비 증가는 FLASH 1,820바이트·RAM 768바이트입니다. 링커 영역 사용량이며 실행 중 스택 여유 실측이 아닙니다. 이 변경에서는 flash·실보드 시험·30분 부하 시험을 수행하지 않았습니다. 다음은 계측 이미지의 짧은 보드 검증 후 선언 부하 지속 시험입니다.
+
 ## 오래된 측정·CSV·실보드 평가 — 2026-11-18
 
 `da6ffe5` 이후 작업본에서 stale 큐 측정 폐기·포화 카운터, STATUS32바이트, GUI CSV·평가 CLI를 추가했습니다.

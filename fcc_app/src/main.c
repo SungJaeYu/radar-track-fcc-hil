@@ -1,6 +1,9 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+#include "diagnostics/perf_monitor.h"
+#endif
 #include "transport/uart_rx.h"
 #include "transport/uart_tx.h"
 
@@ -25,9 +28,14 @@ int main(void)
 
     LOG_INF("FCC ready: USART6 RX/TX initialized");
 
-    // Keep the existing idle loop; periodic heartbeat output adds no tracking evidence.
+    // Reuse main for low-rate diagnostics; normal builds keep the idle loop.
     while (1) {
+#if defined(CONFIG_RADAR_PERF_MONITOR)
+        k_sleep(K_SECONDS(5));
+        perf_monitor_log_summary();
+#else
         k_sleep(K_SECONDS(1));
+#endif
     }
 
     return 0;

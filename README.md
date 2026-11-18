@@ -158,6 +158,8 @@ TX host 테스트는 [TX 테스트 안내](fcc_app/tests/test_uart_tx/README.md)
 
 STATUS·TRACK 보고와 명령·측정 처리 테스트는 [handler 테스트 안내](fcc_app/tests/test_frame_handler/README.md)를 참고하세요.
 
+성능 계측은 별도 `perf.conf`로 켭니다. [계측 범위·빌드·보드 시험 절차](docs/performance-monitoring.md), [계측 host 테스트](fcc_app/tests/test_perf_monitor/README.md)를 참고하세요.
+
 ## 펌웨어 빌드·플래시
 
 ```bash
@@ -215,10 +217,12 @@ fcc_app/src/
     application/      frame_handler(큐·분기), radar_processor(추적), report_sender(보고서 구성·제출)
     tracking/         track, kalman_cv, gating, angle_utils
     common/           crc16, ring_buffer, math_constants, byte_order
+    diagnostics/      선택적 perf_monitor(집계), perf_reporter(요약·스택 조회)
 fcc_app/tests/
     test_uart_rx/      UART drain·링버퍼·부분 프레임 timeout
     test_frame_handler/ STATUS·TRACK·INIT/RESET·측정 timeout·processor 계약
     test_uart_tx/      TX 큐·인코딩·송신 순서
+    test_perf_monitor/ 시간·큐 통계, 동시 snapshot, 요약·스택 조회 모사
     test_tracking/       필터·게이팅·추적 C 회귀 테스트
     log_stress/        별도 로그 부하 시험 도구(대상 버전 확인 필요)
 tools/vscode/         선택적 VS Code 개발 환경 안내
@@ -377,7 +381,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 | V1-1 결과 왕복 | 추정 거리·방위각·트랙 상태·기준 시각/유효성 반환. PC에서 정답·측정·보드 추정을 대응시켜 그래프와 원시 로그로 보존 | 기본 실보드·GUI·CSV 검증 완료; [근거](docs/hardware-test-2026-11-18-evaluation.md) |
 | V1-2 추적 평가 | 고정 seed의 정상·잡음·연속 누락 시나리오. 최신 측정값 baseline 대비 거리/방위각 RMSE, 상태 전이·복귀 기록. 평가 시각·warm-up·각도 wrap 처리 명시 | 정상·거리 잡음·연속 누락 평가 완료. 각도 고정·각도 잡음 0 조건; 각도 기동 평가는 별도 |
 | V1-3 오류 복구 | CRC/부분 프레임, RX/TX 단선·복원, 기본 DRAIN의 강제 링 overflow 및 RX/TX 큐 포화 후 정상 추적 재개. 유실 집계와 INIT/RESET 전후 순서·재개 절차 명시 | DRAIN 링·RX 큐·STATUS/TRACK TX 포화·제어 유실/순서와 복귀 확인. 최종 구성의 오류 회귀 남음 |
-| V1-4 시간·자원 | 선언한 부하의 30분 실행 로그. 보드 지연 분포·예산 초과 횟수, 송수신/처리/폐기 대응, 큐 최대 점유·스레드 스택 여유, 빌드 메모리 사용량 | 지속 부하·보드 지연/자원 실측 미완료 |
+| V1-4 시간·자원 | 선언한 부하의 30분 실행 로그. 보드 지연 분포·예산 초과 횟수, 송수신/처리/폐기 대응, 큐 최대 점유 관측값·스레드 스택 여유, 빌드 메모리 사용량 | 선택적 계측 구현·host/빌드 검증 완료. 지속 부하·보드 실측 미완료 |
 | V1-5 재현·설명 | commit·보드/설정·빌드/실행 명령·로그·그래프·한계. 정상→오류→복귀의 2~3분 시연과 ISR/스레드·버퍼·상태 소유권 설명 | 최종 v1 자료 미완료 |
 
 ### 측정 조건과 판정
@@ -404,11 +408,13 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 끝점 |
 | --- | --- | --- |
-| 1 | 지속 시험 계측 준비 | MCU 내부 지연·큐 최대 점유·스택 여유, 입력/처리/송신/폐기 대응 |
+| 1 | 계측 이미지 실보드 확인 | [계측 구현·host 검증 완료](docs/performance-monitoring.md). 짧은 실행으로 지연·큐·스택 요약과 PC 송수신 집계 대조 |
 | 2 | 선언 부하의 지속 측정 | 지연 예산·손실·큐·스택/메모리 및 30분 결과 |
 | 3 | v1 자료 정리 | 재현 명령·설계 판단·로그/그래프·짧은 시연을 확인하고 v1 종료 |
 
 ## 검증 현황
+
+선택적 성능 계측을 추가하고 Python 231개+subtest 9개, C host 160회(기존 116회+계측 구성 44회)를 검증했습니다. 일반·debug·perf 빌드 결과는 [검증 이력](docs/verification-history.md)을 따릅니다. 계측 이미지 flash·실보드 지연/스택·30분 부하는 아직 미검증입니다.
 
 DRAIN 링·RX 큐·STATUS/TRACK TX 큐 포화, INIT/RESET 유실·FIFO 처리 순서와 정상 추적 복귀를 실보드에서 확인했습니다. [제어·TRACK 포화 결과](docs/hardware-test-2026-11-18-track-controls.md). 인위적인 소비 스레드 정지 시험이며 지속 부하·MCU 내부 지연·스택 검증은 남았습니다.
 
@@ -420,7 +426,7 @@ host 회귀 테스트와 일반·디버그 펌웨어 빌드도 확인했습니�
 로깅 전환 후 일반/디버그 회귀와 강제 로그 포화·측정 부하 시험을 완료했고, 기본 INFO 펌웨어로 복원했습니다.
 2026-11-18 `e66515e`의 일반 빌드·flash와 기본 TRACK 실보드 왕복을 확인했습니다. [시험 결과](docs/hardware-test-2026-11-18-track.md)는 64개 확인 항목·29개 TRACK 수신을 기록하며 GUI·부하·정량 성능은 제외합니다. 이전 버전의 host·일반/디버그 빌드 및 실보드 결과는 [검증 이력](docs/verification-history.md)을 따릅니다.
 최신 파일 구성·이름 검토는 [구조·이름 점검](docs/naming-review.md), 이전 구조 판단은 [2026-11-14 기록](docs/structure-review-2026-11-14.md)에 정리했습니다.
-시험마다 대상 버전과 범위가 다르며, DRAIN 강제 링 overflow·STATUS TX 포화는 후속 시험에서 확인했습니다. TRACK TX 포화·UART 하드웨어 오류·장시간 시험은 남아 있습니다.
+시험마다 대상 버전과 범위가 다르며 DRAIN 강제 링 overflow·STATUS/TRACK TX 포화는 후속 시험에서 확인했습니다. UART 하드웨어 오류·장시간 시험은 남아 있습니다.
 상세 결과와 원시 로그는 [검증 기록](docs/verification-history.md)을 참고하세요.
 
 ## HIL 통신 구조 · 배선

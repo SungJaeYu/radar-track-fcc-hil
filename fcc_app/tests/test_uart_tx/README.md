@@ -35,3 +35,7 @@ warnings. No board flash or HIL was performed.
 
 최신 로깅 일반·디버그 실보드 회귀는 [별도 시험 기록](../../../docs/hardware-test-2026-11-14-logging.md)을 참고합니다.
 host 테스트의 로그 캡처와 실제 보드의 지연 출력 검증은 구분합니다.
+
+## Optional performance instrumentation
+
+Configure a separate build with `-DPERF_TEST_ENABLED=ON` to link the real collector and exercise the production hooks. The normal host build keeps instrumentation disabled. See [performance test commands and cases](../test_perf_monitor/README.md). The handler variant adds a measurement-path case; the TX variant adds counter assertions to its existing cases. These host checks do not measure board performance.
