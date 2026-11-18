@@ -1,0 +1,75 @@
+-- west flash: rebuilding
+[0/1] Re-running CMake...
+Loading Zephyr default modules (Zephyr base (cached)).
+-- Application: /Users/yuseungjae/Desktop/radar-track-fcc-hil/fcc_app
+-- CMake version: 4.3.3
+-- Cache files will be written to: /Users/yuseungjae/Library/Caches/zephyr
+-- Zephyr version: 4.2.0 (/Users/yuseungjae/zephyrproject/zephyr)
+-- Found west (found suitable version "1.5.0", minimum required is "0.14.0")
+-- Board: stm32f746g_disco, qualifiers: stm32f746xx
+-- Found host-tools: zephyr 0.17.2 (/Users/yuseungjae/zephyr-sdk-0.17.2)
+-- Found toolchain: zephyr 0.17.2 (/Users/yuseungjae/zephyr-sdk-0.17.2)
+-- Found BOARD.dts: /Users/yuseungjae/zephyrproject/zephyr/boards/st/stm32f746g_disco/stm32f746g_disco.dts
+-- Found devicetree overlay: /Users/yuseungjae/Desktop/radar-track-fcc-hil/fcc_app/boards/stm32f746g_disco.overlay
+-- Generated zephyr.dts: /Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/zephyr.dts
+-- Generated pickled edt: /Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/edt.pickle
+-- Generated devicetree_generated.h: /Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/include/generated/zephyr/devicetree_generated.h
+/Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/zephyr.dts:1946.46-1952.4: Warning (unique_unit_address_if_enabled): /memory-placeholder@90000000: duplicate unit-address (also used in node /memory@90000000)
+Parsing /Users/yuseungjae/Desktop/radar-track-fcc-hil/fcc_app/Kconfig
+Loaded configuration '/Users/yuseungjae/zephyrproject/zephyr/boards/st/stm32f746g_disco/stm32f746g_disco_defconfig'
+Merged configuration '/Users/yuseungjae/Desktop/radar-track-fcc-hil/fcc_app/prj.conf'
+Configuration saved to '/Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/.config'
+No change to Kconfig header in '/Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/include/generated/zephyr/autoconf.h'
+-- Found gen_kobject_list: /Users/yuseungjae/zephyrproject/zephyr/scripts/build/gen_kobject_list.py
+-- Configuring done (5.1s)
+-- Generating done (0.2s)
+-- Build files have been written to: /Users/yuseungjae/Desktop/radar-track-fcc-hil/build
+[1/132] Generating misc/generated/syscalls.json, misc/generated/struct_tags.json
+[2/11] Generating linker_zephyr_pre0.cmd
+[3/11] Building C object CMakeFiles/app.dir/src/transport/rx_frame_processor.c.obj
+[4/11] Building C object CMakeFiles/app.dir/src/application/frame_handler.c.obj
+[5/11] Linking C static library app/libapp.a
+[6/11] Linking C executable zephyr/zephyr_pre0.elf; Logical command for additional byproducts on target: zephyr_pre0
+[7/11] Generating linker.cmd
+[8/11] Generating isr_tables.c, isr_tables_vt.ld, isr_tables_swi.ld
+[9/11] Building C object zephyr/CMakeFiles/zephyr_final.dir/isr_tables.c.obj
+[10/11] Linking C executable zephyr/zephyr.elf
+Memory region         Used Size  Region Size  %age Used
+           FLASH:       42784 B         1 MB      4.08%
+             RAM:       15696 B       256 KB      5.99%
+QSPI_PLACEHOLDER:          0 GB       256 MB      0.00%
+           SRAM0:          0 GB       256 KB      0.00%
+            DTCM:          0 GB        64 KB      0.00%
+          SDRAM1:          0 GB        16 MB      0.00%
+          EXTMEM:          0 GB        16 MB      0.00%
+        IDT_LIST:          0 GB        32 KB      0.00%
+Generating files from /Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/zephyr.elf for board: stm32f746g_disco
+-- west flash: using runner openocd
+-- runners.openocd: Flashing file: /Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/zephyr.hex
+Open On-Chip Debugger 0.12.0
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+Info : clock speed 2000 kHz
+Info : STLINK V2J25M14 (API v2) VID:PID 0483:374B
+Info : Target voltage: 3.221053
+Info : [stm32f7x.cpu] Cortex-M7 r0p1 processor detected
+Warn : [stm32f7x.cpu] Silicon bug: single stepping may enter pending exception handler!
+Info : [stm32f7x.cpu] target has 8 breakpoints, 4 watchpoints
+Info : starting gdb server for stm32f7x.cpu on 3333
+Info : Listening on port 3333 for gdb connections
+    TargetName         Type       Endian TapName            State       
+--  ------------------ ---------- ------ ------------------ ------------
+ 0* stm32f7x.cpu       hla_target little stm32f7x.cpu       running
+
+[stm32f7x.cpu] halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08003398 msp: 0x20013f40
+Info : device id = 0x10016449
+Info : flash size = 1024 KiB
+Info : Padding image section 0 at 0x0800900c with 4 bytes
+Info : Padding image section 1 at 0x080091bc with 4 bytes
+auto erase enabled
+wrote 65536 bytes from file /Users/yuseungjae/Desktop/radar-track-fcc-hil/build/zephyr/zephyr.hex in 1.244239s (51.437 KiB/s)
+
+shutdown command invoked

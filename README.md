@@ -248,7 +248,7 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
 | 결과 보고 | 측정 처리별 32바이트 TRACK_REPORT 인코딩·TX 제출, 순번·유효성, host 30개 회귀·기본 실보드 왕복 | 이벤트 원인별 구분, 장시간 부하 |
 | 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출, PC CLI 수신 | TX 부하·장애 검증·BIT·Lock On 미완료 |
-| 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
+| 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | DRAIN 강제 overflow 복귀 확인; 프레임 경계 행렬·UART overrun 미검증 |
 | PC 시뮬레이터 | 측정·잡음 생성, PC 출력용 다중표적·미탐지·클러터 시나리오 | 실제 UART 모드는 단일표적·클러터 0으로 제한 |
 | GUI·평가 | 송신 제어, 합성 실제값·측정값·보드 추정값 그래프, STATUS/TRACK·STALE 표시, 콘솔·CSV 저장·고정 시나리오 RMSE | 다중표적 GUI, 각도 기동·잡음 평가 및 장시간 연속성 |
 
@@ -272,7 +272,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] 링버퍼 overflow 횟수·ISR 폐기 바이트·복구 시 미소비 바이트 폐기 통계와 조회 API, 정책별 host 검증
   - [x] 새 UART 통계의 STATUS_REPORT·PC CLI·GUI 연결, 구형 응답 호환 및 host 검증
   - [x] 확장된 STATUS_REPORT의 실보드 CLI·GUI 왕복
-  - [ ] 강제 overflow로 새 카운터 증가·복구 실보드 확인
+  - [x] 기본 DRAIN 강제 overflow 카운터 증가·정상 추적 복귀 (소비 스레드 정지 주입)
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [x] 오래된 측정: MCU 수신 완료 후 경과가 측정 timeout 이상이면 폐기·포화 카운터 집계, 추적/감시/순번 유지
   - [ ] 큐 포화·제어 정책: INIT/RESET 유실, reset 전 대기 측정의 처리 순서·보존 기준
@@ -375,7 +375,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 | --- | --- | --- |
 | V1-1 결과 왕복 | 추정 거리·방위각·트랙 상태·기준 시각/유효성 반환. PC에서 정답·측정·보드 추정을 대응시켜 그래프와 원시 로그로 보존 | 기본 실보드·GUI·CSV 검증 완료; [근거](docs/hardware-test-2026-11-18-evaluation.md) |
 | V1-2 추적 평가 | 고정 seed의 정상·잡음·연속 누락 시나리오. 최신 측정값 baseline 대비 거리/방위각 RMSE, 상태 전이·복귀 기록. 평가 시각·warm-up·각도 wrap 처리 명시 | 정상·거리 잡음·연속 누락 평가 완료. 각도 고정·각도 잡음 0 조건; 각도 기동 평가는 별도 |
-| V1-3 오류 복구 | CRC/부분 프레임, RX/TX 단선·복원, 기본 DRAIN의 강제 링 overflow 및 RX/TX 큐 포화 후 정상 추적 재개. 유실 집계와 INIT/RESET 전후 순서·재개 절차 명시 | 기존 부분 시험 있음. 결과 반환을 포함한 최종 회귀·강제 overflow/TX 포화 남음 |
+| V1-3 오류 복구 | CRC/부분 프레임, RX/TX 단선·복원, 기본 DRAIN의 강제 링 overflow 및 RX/TX 큐 포화 후 정상 추적 재개. 유실 집계와 INIT/RESET 전후 순서·재개 절차 명시 | DRAIN 링·RX 큐·STATUS TX 포화 및 복귀 확인. TRACK TX 포화·제어 유실/순서·최종 회귀 남음 |
 | V1-4 시간·자원 | 선언한 부하의 30분 실행 로그. 보드 지연 분포·예산 초과 횟수, 송수신/처리/폐기 대응, 큐 최대 점유·스레드 스택 여유, 빌드 메모리 사용량 | 지속 부하·보드 지연/자원 실측 미완료 |
 | V1-5 재현·설명 | commit·보드/설정·빌드/실행 명령·로그·그래프·한계. 정상→오류→복귀의 2~3분 시연과 ISR/스레드·버퍼·상태 소유권 설명 | 최종 v1 자료 미완료 |
 
@@ -417,7 +417,7 @@ host 회귀 테스트와 일반·디버그 펌웨어 빌드도 확인했습니�
 로깅 전환 후 일반/디버그 회귀와 강제 로그 포화·측정 부하 시험을 완료했고, 기본 INFO 펌웨어로 복원했습니다.
 2026-11-18 `e66515e`의 일반 빌드·flash와 기본 TRACK 실보드 왕복을 확인했습니다. [시험 결과](docs/hardware-test-2026-11-18-track.md)는 64개 확인 항목·29개 TRACK 수신을 기록하며 GUI·부하·정량 성능은 제외합니다. 이전 버전의 host·일반/디버그 빌드 및 실보드 결과는 [검증 이력](docs/verification-history.md)을 따릅니다.
 최신 파일 구성·이름 검토는 [구조·이름 점검](docs/naming-review.md), 이전 구조 판단은 [2026-11-14 기록](docs/structure-review-2026-11-14.md)에 정리했습니다.
-시험마다 대상 버전과 범위가 다르며, 강제 링버퍼 overflow·UART 하드웨어 오류·TX 부하·장시간 시험은 남아 있습니다.
+시험마다 대상 버전과 범위가 다르며, DRAIN 강제 링 overflow·STATUS TX 포화는 후속 시험에서 확인했습니다. TRACK TX 포화·UART 하드웨어 오류·장시간 시험은 남아 있습니다.
 상세 결과와 원시 로그는 [검증 기록](docs/verification-history.md)을 참고하세요.
 
 ## HIL 통신 구조 · 배선
@@ -483,3 +483,7 @@ CONFIG_RADAR_AZIMUTH_GATE_DEG=10
 STATUS 규격은 수동 관리합니다. C의 `status_report`·인코더와 Python의
 `STATUS_FIELDS`를 함께 변경하면 CLI·GUI 표시가 필드 목록을 따라갑니다.
 코드 생성 스크립트나 별도 생성 단계는 없습니다. [필드 규격·호환성](pc_sim/README.md#status_report-payload).
+
+## 소비 스레드 정지 기반 포화 검증 — 2026-11-18
+
+기본 DRAIN 실보드에서 강제 링 overflow·RX 큐 포화/stale 폐기·STATUS TX 큐 포화와 각 단계 정상 추적 복귀를 확인했습니다. 일반 이미지로 복원했습니다. [결과·실패 이력·제한](docs/hardware-test-2026-11-18-transport-stress.md). TRACK TX 포화·제어 유실/순서·지속 부하/자원 시험은 남았습니다.

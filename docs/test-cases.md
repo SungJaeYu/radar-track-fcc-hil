@@ -573,3 +573,7 @@ handler가 초기화·로그·보고를 담당하며 INIT/RESET 및 timeout 보�
 
 프로토콜 시험은 STATUS의 추가 필드0/1/UINT32_MAX,16/28바이트 호환·미지원 표시를 확인하고 C golden/CRC를 32바이트로 갱신했습니다.
 GUI worker의 CSV 생성·종료 회귀도 추가했습니다. [고정 시나리오와 실제 UART GUI 증거](hardware-test-2026-11-18-evaluation.md)는 host 개수와 별도로 기록합니다.
+
+## 소비 스레드 정지 기반 포화 검증 — 2026-11-18
+
+기본 DRAIN 실보드에서 강제 링 overflow·RX 큐 포화/stale 폐기·STATUS TX 큐 포화와 각 단계 정상 추적 복귀를 확인했습니다. 일반 이미지로 복원했습니다. [결과·실패 이력·제한](hardware-test-2026-11-18-transport-stress.md). TRACK TX 포화·제어 유실/순서·지속 부하/자원 시험은 남았습니다.

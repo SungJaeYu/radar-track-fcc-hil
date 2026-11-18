@@ -1,0 +1,37 @@
+[00:00:08.000,000] [0m<inf> transport_stress: BENCH RX PAUSED[0m
+[00:00:12.000,000] [0m<inf> transport_stress: BENCH RX RESUMED[0m
+[00:00:12.001,000] [1;33m<wrn> uart_rx: RX overflow: recovery completed, events=1, ISR dropped=345 bytes, recovery discarded=0 bytes[0m
+[00:00:13.166,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:13.218,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:13.320,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:00:13.370,000] [0m<inf> frame_handler: RESET: track and measurement monitoring reset[0m
+[00:00:16.000,000] [0m<inf> transport_stress: BENCH HANDLER PAUSED[0m
+[00:00:17.115,000] [1;33m<wrn> rx_frame_processor: Frame queue drops: 1[0m
+[00:00:20.000,000] [0m<inf> transport_stress: BENCH HANDLER RESUMED[0m
+[00:00:20.000,000] [1;33m<wrn> frame_handler: Stale measurements dropped: 1[0m
+[00:00:21.167,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:21.220,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:21.322,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:00:21.372,000] [0m<inf> frame_handler: RESET: track and measurement monitoring reset[0m
+[00:00:24.000,000] [0m<inf> transport_stress: BENCH TX PAUSED[0m
+[00:00:25.110,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.121,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.131,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.141,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.151,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.162,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.172,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.182,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.192,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.202,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.212,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.225,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.235,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.245,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:25.257,000] [1;33m<wrn> frame_handler: STATUS submit failed: -35 (TX queue full)[0m
+[00:00:28.000,000] [0m<inf> transport_stress: BENCH TX RESUMED[0m
+[00:00:29.464,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:29.516,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.0000 rad[0m
+[00:00:29.618,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:00:29.667,000] [0m<inf> frame_handler: RESET: track and measurement monitoring reset[0m
+[00:00:32.000,000] [0m<inf> transport_stress: BENCH COMPLETE[0m

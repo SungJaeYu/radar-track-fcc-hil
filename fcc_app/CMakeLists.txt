@@ -29,3 +29,5 @@ target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Bench-only producer; excluded from normal and ordinary debug firmware.
 target_sources_ifdef(CONFIG_RADAR_LOG_STRESS_TEST app PRIVATE tests/log_stress/log_stress.c)
+
+target_sources_ifdef(CONFIG_RADAR_TRANSPORT_STRESS_TEST app PRIVATE tests/transport_stress/transport_stress.c)

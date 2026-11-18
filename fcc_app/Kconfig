@@ -97,4 +97,12 @@ config RADAR_LOG_STRESS_TEST
         to exercise log-buffer exhaustion while UART traffic continues.
         Do not enable in normal firmware. See tests/log_stress/README.md.
 
+config RADAR_TRANSPORT_STRESS_TEST
+    bool "Run bounded UART consumer suspension for bench testing"
+    depends on LOG_MODE_DEFERRED && LOG_PROCESS_THREAD
+    default n
+    help
+        Bench only: suspend RX, handler, and TX consumers in turn while
+        interrupts remain enabled. See tests/transport_stress/README.md.
+
 endmenu

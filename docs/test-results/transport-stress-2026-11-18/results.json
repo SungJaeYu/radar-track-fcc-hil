@@ -1,0 +1,201 @@
+{
+  "checks": [
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "BENCH RX PAUSED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH RX RESUMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "real ring overflow counted",
+      "passed": true
+    },
+    {
+      "name": "ISR discarded bytes counted",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "fresh tracking CONFIRMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "BENCH HANDLER PAUSED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH HANDLER RESUMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "RX queue drops counted",
+      "passed": true
+    },
+    {
+      "name": "old queued measurements dropped",
+      "passed": false
+    },
+    {
+      "name": "normal firmware STATUS restored",
+      "passed": true
+    }
+  ],
+  "failure": "AssertionError('old queued measurements dropped')",
+  "hex_sha256": {
+    "build": "f609e2f6482793fd1f3be68dbc43ae483c3ee00be665e674ff68799b28aa7ee6",
+    "build_transport_stress": "14199387bc64216feb5e66ccbf196d1b973aa7f48f206465198fddaf485bac4f"
+  }
+}
