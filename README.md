@@ -486,4 +486,3 @@ CONFIG_RADAR_AZIMUTH_GATE_DEG=10
 STATUS 규격은 수동 관리합니다. C의 `status_report`·인코더와 Python의
 `STATUS_FIELDS`를 함께 변경하면 CLI·GUI 표시가 필드 목록을 따라갑니다.
 코드 생성 스크립트나 별도 생성 단계는 없습니다. [필드 규격·호환성](pc_sim/README.md#status_report-payload).
-
