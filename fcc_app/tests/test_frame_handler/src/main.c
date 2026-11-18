@@ -164,7 +164,7 @@ static void test_status_does_not_arm_timeout(void)
     reset_test(&handler);
     request_status(&handler);
     assert(!handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 0);
-    frame_handler_check_timeout(&handler, 10000);
+    frame_handler_handle_timeout(&handler, 10000);
     assert(strstr(output, "track cleared") == NULL);
 }
 
@@ -176,9 +176,9 @@ static void test_status_does_not_refresh_timeout(void)
     handler.radar.timeout_armed = true;
     handler.radar.last_valid_rx_ms = 100;
     request_status(&handler);
-    frame_handler_check_timeout(&handler, 100 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
+    frame_handler_handle_timeout(&handler, 100 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
     assert(handler.radar.timeout_armed);
-    frame_handler_check_timeout(&handler, 100 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
+    frame_handler_handle_timeout(&handler, 100 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
     assert(!handler.radar.timeout_armed && handler.radar.track.state == TRACK_STATE_EMPTY);
     assert(strstr(output, "Radar measurement timeout: track cleared\n") != NULL);
 }
@@ -332,22 +332,31 @@ static void check_control_reset(FrameType type)
     assert(handler.radar.track.state == TRACK_STATE_EMPTY);
     assert(handler.radar.track.hit_count == 0 && handler.radar.track.miss_count == 0);
     assert(!handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 0);
-    frame_handler_check_timeout(&handler, 20000);
+    assert(submitted_frame.frame.type == FRAME_TYPE_TRACK_REPORT);
+    assert(submitted_frame.frame.payload[28] == TRACK_STATE_EMPTY);
+    assert(submitted_frame.frame.payload[29] == TRACK_REPORT_RESULT_RESET);
+    assert(submitted_frame.frame.payload[30] == 0);
+    for (size_t i = 4; i < 28; ++i) {
+        assert(submitted_frame.frame.payload[i] == 0);
+    }
+    const unsigned int before_timeout = submit_calls;
+    frame_handler_handle_timeout(&handler, 20000);
+    assert(submit_calls == before_timeout);
     assert(strstr(output, "Radar measurement timeout") == NULL);
     request_status(&handler);
     assert(submitted_frame.frame.payload_length == before.payload_length);
     assert(memcmp(submitted_frame.frame.payload, before.payload, before.payload_length) == 0);
-    assert(stats_reads == 2 && uart_stats_reads == 2 && submit_calls == 3);
+    assert(stats_reads == 2 && uart_stats_reads == 2 && submit_calls == 4);
 
-    assert(handler.report_sender.next_track_report_sequence == 1);
+    assert(handler.report_sender.next_track_report_sequence == 2);
 
     // A new valid measurement rearms monitoring after either command.
     frame = measurement(0, 2000, 30000);
     frame_handler_process(&handler, &frame);
     assert(handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 30000);
     assert(handler.radar.track.state == TRACK_STATE_TENTATIVE);
-    assert(handler.report_sender.next_track_report_sequence == 2);
-    assert(submitted_frame.frame.payload[3] == 1);
+    assert(handler.report_sender.next_track_report_sequence == 3);
+    assert(submitted_frame.frame.payload[3] == 2);
 }
 
 static void test_init_command_resets_tracking(void)
@@ -364,7 +373,7 @@ static void test_valid_measurements_arm_refresh_and_expire(void)
 {
     struct frame_handler handler;
     reset_test(&handler);
-    frame_handler_check_timeout(&handler, 4000);
+    frame_handler_handle_timeout(&handler, 4000);
     assert(!handler.radar.timeout_armed);
     assert(strstr(output, "Radar measurement timeout") == NULL);
 
@@ -387,15 +396,15 @@ static void test_valid_measurements_arm_refresh_and_expire(void)
     assert(strstr(output, "TRACK report queued: payload=32 bytes") != NULL);
     assert(strstr(output, "range_rate=") != NULL);
     assert(strstr(output, "Track state:") == NULL);
-    frame_handler_check_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS / 2);
+    frame_handler_handle_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS / 2);
     assert(handler.radar.timeout_armed);
-    frame_handler_check_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
+    frame_handler_handle_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
     assert(handler.radar.timeout_armed);
-    frame_handler_check_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
+    frame_handler_handle_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
     assert(!handler.radar.timeout_armed && handler.radar.track.state == TRACK_STATE_EMPTY);
     assert(strstr(output, "Radar measurement timeout: track cleared\n") != NULL);
     const size_t log_size = output_size;
-    frame_handler_check_timeout(&handler, 9000);
+    frame_handler_handle_timeout(&handler, 9000);
     assert(output_size == log_size);
 }
 
@@ -415,7 +424,7 @@ static void test_invalid_measurements_do_not_arm_timeout(void)
         assert(!handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 0);
         assert(handler.radar.track.state == TRACK_STATE_EMPTY);
         assert(submit_calls == 0 && handler.report_sender.next_track_report_sequence == 0);
-        frame_handler_check_timeout(&handler, 10000);
+        frame_handler_handle_timeout(&handler, 10000);
         assert(strstr(output, "Radar measurement timeout") == NULL);
     }
 }
@@ -437,9 +446,9 @@ static void test_invalid_measurements_do_not_refresh_timeout(void)
         assert(handler.radar.last_valid_rx_ms == 5000 && handler.radar.timeout_armed);
         assert(memcmp(before, &handler.radar.track, sizeof(before)) == 0);
         assert(submit_calls == 1 && handler.report_sender.next_track_report_sequence == 1);
-        frame_handler_check_timeout(&handler, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
+        frame_handler_handle_timeout(&handler, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
         assert(handler.radar.timeout_armed);
-        frame_handler_check_timeout(&handler, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
+        frame_handler_handle_timeout(&handler, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
         assert(!handler.radar.timeout_armed && handler.radar.track.state == TRACK_STATE_EMPTY);
     }
 }
@@ -460,9 +469,9 @@ static void test_gate_rejection_refreshes_receive_timeout(void)
     assert(strstr(output, "Track state: CONFIRMED -> COASTING") != NULL);
     assert(handler.radar.track.state == TRACK_STATE_COASTING && handler.radar.track.miss_count == 1);
     assert(handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 5900);
-    frame_handler_check_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
+    frame_handler_handle_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
     assert(handler.radar.timeout_armed);
-    frame_handler_check_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
+    frame_handler_handle_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
     assert(!handler.radar.timeout_armed && handler.radar.track.state == TRACK_STATE_EMPTY);
 }
 
@@ -481,9 +490,9 @@ static void test_timestamp_rejection_refreshes_receive_timeout(void)
         assert(strstr(output, "Prediction skipped: previous_t=100 ms") != NULL);
         assert(memcmp(before, &handler.radar.track, sizeof(before)) == 0);
         assert(handler.radar.timeout_armed && handler.radar.last_valid_rx_ms == 5900);
-        frame_handler_check_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
+        frame_handler_handle_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
         assert(handler.radar.timeout_armed);
-        frame_handler_check_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
+        frame_handler_handle_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
         assert(!handler.radar.timeout_armed);
     }
 }
@@ -650,10 +659,21 @@ static void test_track_sequence_wrap_and_timeout_preservation(void)
                        TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_STARTED, true);
     feed_measurement(&handler, 50, 1000);
     check_track_report(0, 50, 50, TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_UPDATED, true);
-    frame_handler_check_timeout(&handler, handler.radar.last_valid_rx_ms + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
-    assert(handler.radar.track.state == TRACK_STATE_EMPTY && handler.report_sender.next_track_report_sequence == 1);
+    frame_handler_handle_timeout(&handler, handler.radar.last_valid_rx_ms + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
+    assert(handler.radar.track.state == TRACK_STATE_EMPTY && handler.report_sender.next_track_report_sequence == 2);
+    assert(report_u32(0) == 1);
+    assert(submitted_frame.frame.payload[28] == TRACK_STATE_EMPTY);
+    assert(submitted_frame.frame.payload[29] == TRACK_REPORT_RESULT_RESET);
+    assert(submitted_frame.frame.payload[30] == 0);
+    for (size_t i = 4; i < 28; ++i) {
+        assert(submitted_frame.frame.payload[i] == 0);
+    }
+    const unsigned int before_timeout = submit_calls;
+    const size_t log_size = output_size;
+    frame_handler_handle_timeout(&handler, 100000);
+    assert(submit_calls == before_timeout && output_size == log_size);
     feed_measurement(&handler, 150, 1000);
-    check_track_report(1, 150, 150, TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_STARTED, true);
+    check_track_report(2, 150, 150, TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_STARTED, true);
 }
 
 static void test_track_submit_failure_and_recovery(void)
@@ -725,27 +745,32 @@ static void test_processor_invalid_input_preserves_output(void)
     assert(submit_calls == 0);
 }
 
-static void test_processor_timeout_event_once_without_transmission(void)
+static void test_processor_timeout_query_preserves_state(void)
 {
     struct frame_handler handler;
     reset_test(&handler);
-    assert(!radar_processor_check_timeout(&handler.radar, 4000));
+    assert(!radar_processor_is_timed_out(&handler.radar, 4000));
     const struct rx_frame frame = measurement(100, 1000, 5000);
     struct radar_process_result result;
     assert(radar_processor_process_measurement(&handler.radar, &frame.frame, frame.received_at_ms, &result));
     assert(result.input_timestamp_ms == 100 && result.result == TRACK_REPORT_RESULT_STARTED);
-    assert(!radar_processor_check_timeout(&handler.radar, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1));
-    assert(radar_processor_check_timeout(&handler.radar, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS));
+    const struct radar_processor *p_processor = &handler.radar;
+    unsigned char before[sizeof(handler.radar)];
+    memcpy(before, p_processor, sizeof(before));
     const size_t log_size = output_size;
-    assert(!radar_processor_check_timeout(&handler.radar, 5001 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS));
+    assert(!radar_processor_is_timed_out(p_processor, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1));
+    assert(radar_processor_is_timed_out(p_processor, 5000 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS));
+    assert(radar_processor_is_timed_out(p_processor, 5001 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS));
+    assert(memcmp(before, p_processor, sizeof(before)) == 0);
     assert(output_size == log_size);
-    assert(handler.radar.track.state == TRACK_STATE_EMPTY && !handler.radar.timeout_armed);
     assert(submit_calls == 0 && handler.report_sender.next_track_report_sequence == 0);
+    radar_processor_reset(&handler.radar);
+    assert(!radar_processor_is_timed_out(p_processor, 10000));
 }
 
 static const struct test_case cases[] = {
     TEST_CASE(test_processor_invalid_input_preserves_output),
-    TEST_CASE(test_processor_timeout_event_once_without_transmission),
+    TEST_CASE(test_processor_timeout_query_preserves_state),
     TEST_CASE(test_track_encode_wire),
     TEST_CASE(test_track_encode_invalid_arguments),
     TEST_CASE(test_track_started_updated_and_confirmed),

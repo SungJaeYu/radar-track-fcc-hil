@@ -71,7 +71,7 @@ flowchart TD
 
 트랙과 보고 순번은 처리 스레드가 소유합니다. 큐는 구조체를 복사하고, 세마포어는 바이트를 전달하지 않습니다.
 RX/handler는 입력이 없어도 주기적으로 깨어 timeout을 확인합니다. TX는 현재 polling 방식이며 TX ISR/DMA를 사용하지 않습니다.
-큐 접수·UART write 성공은 상대 수신 ACK가 아닙니다. INIT/RESET·무수신 timeout의 이벤트 보고는 아직 연결하지 않았습니다.
+큐 접수·UART write 성공은 상대 수신 ACK가 아닙니다. INIT/RESET·무수신 timeout은 무효 TRACK 초기화 보고를 한 번 제출합니다. 실보드 검증은 남아 있습니다.
 
 ## 시스템 역할
 
@@ -179,7 +179,7 @@ west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 - TYPE: INIT=1, MEAS_REPORT=2, STATUS_REQUEST=3, COMMAND=4, RESET=5, STATUS_REPORT=6, TRACK_REPORT=7.
 - INIT/RESET은 트랙을 초기화합니다. STATUS는 누적 통계를 이진 응답으로 반환하며 DEBUG 로그에는 큐 접수만 기록합니다. COMMAND는 미구현이라 무시 이유를 경고합니다.
   STATUS 통계는 28바이트 STATUS_REPORT(일곱 uint32)로 TX 큐에 제출합니다. PC는 구형 16바이트 응답도 읽으며 없는 필드는 미지원으로 표시합니다.
-- TRACK_REPORT는 32바이트 payload(전체 37바이트)로 순번·입력/추정 시각·거리/방위각·변화율·상태/결과·유효 플래그를 반환합니다. 유효 측정 payload마다 한 번 제출하며 게이트/시각 거부도 보고합니다. PC 디코더·GUI는 구현했으며 제어 명령·무수신 timeout 이벤트 보고는 아직 없습니다. [필드와 동작 규격](docs/requirements-traceability.md#spec-track-report).
+- TRACK_REPORT는 32바이트 payload(전체 37바이트)로 순번·입력/추정 시각·거리/방위각·변화율·상태/결과·유효 플래그를 반환합니다. 유효 측정 payload마다 한 번 제출하며 게이트/시각 거부도 보고합니다. PC 디코더·GUI는 구현했으며 INIT/RESET·무수신 timeout 이벤트 보고도 구현했습니다(실보드 미검증). [필드와 동작 규격](docs/requirements-traceability.md#spec-track-report).
 
 ## RX 버퍼와 overflow 복구
 
@@ -242,7 +242,7 @@ tests/                Python 프로토콜·송신기·시나리오 테스트
 | 수신·프로토콜 | UART ISR, 링버퍼, CRC-16·길이 검사, 수신 모듈 분리·부분 프레임 timeout | 스캔 단위 다중 측정 규격 |
 | 실행 구조 | RX → 복사 큐 → handler → TX 복사 큐 → TX 스레드, RX 큐 포화 시 드롭 집계 | 실제 큐 동시성·부하 검증 |
 | 단일표적 추적 | 거리·방위각 CV 칼만 필터, 게이팅, 트랙 상태·무수신 timeout | 다중 측정 연관, 트랙 테이블·자체 track_id·표적별 수명 관리 |
-| 결과 보고 | 측정 처리별 32바이트 TRACK_REPORT 인코딩·TX 제출, 순번·유효성, host 29개 회귀 | 제어/timeout 이벤트 보고, 정량 평가·실보드 왕복 |
+| 결과 보고 | 측정 처리별 32바이트 TRACK_REPORT 인코딩·TX 제출, 순번·유효성, host 29개 회귀 | 이벤트 원인별 구분, 정량 평가·실보드 왕복 |
 | 제어·상태 | INIT/RESET 초기화, STATUS로 RX 누적 통계 조회·로그·TX 제출, PC CLI 수신 | TX 부하·장애 검증·BIT·Lock On 미완료 |
 | 오류 복구 | drain/discard 정책, CRC·길이 오류 프레임 제외 | 실제 링버퍼 overflow 복구·UART overrun 추가 검증 필요 |
 | PC 시뮬레이터 | 측정·잡음 생성, PC 출력용 다중표적·미탐지·클러터 시나리오 | 실제 UART 모드는 단일표적·클러터 0으로 제한 |
@@ -342,7 +342,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] 실제 보드 → PC STATUS 송신 확인 — CLI·GUI 및 오류 주입 시험
 - [ ] 추적 결과 왕복·PC 비교
   - [x] TYPE=7, 32바이트 TRACK_REPORT와 공통 프레임·CRC 인코더 재사용, 측정별 제출·순번/유효성 및 host 검증
-  - [ ] INIT/RESET·무수신 timeout 이벤트 보고 여부·표현과 PC 상태 유지 정책 확정
+  - [x] INIT/RESET·무수신 timeout의 무효 TRACK 보고와 1회 처리 host 검증; PC STALE 정책 유지
   - [x] PC TRACK 디코더·GUI 수신, STATUS 혼합 스트림·순번 관측·2초 STALE 정책, C 인코더 상호운용
   - [ ] PC TRACK 수집 CLI·원시 로그·정량 평가 및 실보드 왕복
   - [ ] TX 완료/실패 통계·순번 누락 관측 방식 정의
@@ -398,7 +398,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 끝점 |
 | --- | --- | --- |
-| 1 | TRACK_REPORT 남은 정책 확정 | INIT/RESET·무수신 timeout 이벤트 보고 연결; PC의 2초 STALE·순번 관측은 구현됨 |
+| 1 | TRACK_REPORT 남은 정책 확정 | 이벤트 보고·2초 STALE·순번 관측 구현 완료. 원인별 구분·오래된 큐 측정 정책은 후속 |
 | 2 | 보드→PC 결과와 평가 | 구현된 디코더·GUI로 실보드 왕복 확인, 원시 로그 수집과 고정 시나리오 RMSE |
 | 3 | 결과 경로를 포함한 오류 복귀 | 기본 정책 overflow·RX/TX 포화·단선·CRC/부분 프레임·INIT/RESET 확인 |
 | 4 | 선언 부하의 지속 측정 | 지연 예산·손실·큐·스택/메모리 및 30분 결과 |

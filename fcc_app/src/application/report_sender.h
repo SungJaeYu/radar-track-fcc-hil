@@ -1,6 +1,7 @@
 #ifndef REPORT_SENDER_H
 #define REPORT_SENDER_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "protocol/track_message.h"
@@ -18,10 +19,11 @@ struct report_sender {
 void report_sender_submit_status(void);
 
 // Require non-NULL sender/track and exclusive handler-thread ownership.
-// Input time identifies the validated measurement, even if tracking rejected it.
+// With input_present, time identifies the validated measurement even if tracking rejected it.
+// Without input, encode a zero input timestamp for a reset event.
 // Report invalid estimates as zero; preserve the track and consume one sequence.
 // Log encode/TX failures without retrying. No pointers are retained after return.
 void report_sender_submit_track(struct report_sender *p_sender, const struct track *p_track,
-                                uint32_t input_timestamp_ms, TrackReportResult result);
+                                uint32_t input_timestamp_ms, bool input_present, TrackReportResult result);
 
 #endif

@@ -531,7 +531,9 @@ INIT/RESET/timeout 이벤트 보고·PC TRACK 수신·실보드 왕복 검증은
 
 2026-11-16 레이더 처리 분리: 기존 27개 회귀와 processor API 2개, 총 29개 통과.
 `test_processor_invalid_input_preserves_output`은 무효 입력의 상태/출력 보존을,
-`test_processor_timeout_event_once_without_transmission`은 timeout 1회 반환·송신 비개입을 검증했다.
+당시 timeout 시험은 1회 반환·송신 비개입을 검증했다. 2026-11-18에는
+`test_processor_timeout_query_preserves_state`로 변경하여 const 입력·반복 판정의 상태/로그/순번 보존을 검사한다.
+handler가 초기화·로그·보고를 담당하며 INIT/RESET 및 timeout 보고의 순번·중복 방지 기대값도 갱신했다. 29개 host 시험 통과.
 
 
 ## PC TRACK 수신·GUI 회귀 (2026-11-17)

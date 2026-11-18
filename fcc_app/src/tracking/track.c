@@ -49,17 +49,17 @@ void track_start(struct track *p_track, float initial_range_m, float initial_azi
     p_track->estimate_timestamp_ms = timestamp_ms;
 }
 
-bool track_predict(struct track *p_track, uint32_t timestamp_ms)
+TrackPredictResult track_predict(struct track *p_track, uint32_t timestamp_ms)
 {
     if (p_track->state == TRACK_STATE_EMPTY) {
-        return false;
+        return TRACK_PREDICT_RESULT_EMPTY;
     }
 
     // Discard a lost track before checking its old timestamp.
     // The caller starts a new track on the next measurement.
     if (p_track->state == TRACK_STATE_LOST) {
         track_init(p_track);
-        return false;
+        return TRACK_PREDICT_RESULT_RESET;
     }
 
     // Timestamp of the current filter state, including prediction-only updates.
@@ -68,13 +68,13 @@ bool track_predict(struct track *p_track, uint32_t timestamp_ms)
     // Reject duplicate or backward/ambiguous timestamps.
     // Unsigned subtraction allows normal uint32 timestamp wraparound.
     if (delta_ms == 0U || delta_ms >= UINT32_C(0x80000000)) {
-        return false;
+        return TRACK_PREDICT_RESULT_TIME_REJECTED;
     }
 
     // A long forward gap invalidates the current track.
     if (delta_ms > TRACK_MAX_PREDICT_INTERVAL_MS) {
         track_init(p_track);
-        return false;
+        return TRACK_PREDICT_RESULT_RESET;
     }
 
     const float dt_s = (float)delta_ms / 1000.0f;
@@ -91,7 +91,7 @@ bool track_predict(struct track *p_track, uint32_t timestamp_ms)
 
     p_track->estimate_timestamp_ms = timestamp_ms;
 
-    return true;
+    return TRACK_PREDICT_RESULT_PREDICTED;
 }
 
 void track_hit(struct track *p_track, float measured_range_m, float measured_azimuth_rad)

@@ -5,6 +5,14 @@
 이 문서는 검증 증거의 진입점입니다. 날짜별 기록은 당시 소스·설정에 대한 결과이며,
 이전의 미검증 상태나 테스트 개수를 현재 상태로 해석하지 않습니다.
 
+## Timeout·예측 결과 분리 — 2026-11-18
+
+- INIT/RESET·무수신 timeout의 입력 없는 RESET 보고를 연결하고 순번 소모·중복 방지를 host로 검증했습니다.
+- processor timeout 판정은 const 입력으로 상태를 보존하고 handler가 초기화·로그·보고를 담당합니다. RX timeout도 내부 판정과 공개 처리를 분리했습니다.
+- `track_predict()`는 내부 `TrackPredictResult`로 예측 성공·EMPTY·시각 거부·초기화를 구분합니다. 기존 추적 정책·wire enum 값은 유지합니다.
+- C host 115회(RX 45, handler 29, TX 4, Tracking 17+게이트 20), Python 221개 + subtest 9개 통과. 문서 링크 592개 검사 정상.
+- 일반 펌웨어 빌드 성공: FLASH 42,656 / RAM 15,696바이트. 이번에는 디버그 빌드·flash·실보드 시험을 수행하지 않았습니다.
+
 ## 최신 코드와 검증 경계 — PC TRACK·GUI, 2026-11-17
 
 - 기준: `cf63e15` 이후 PC/문서 변경. 펌웨어 소스는 수정하지 않았습니다.

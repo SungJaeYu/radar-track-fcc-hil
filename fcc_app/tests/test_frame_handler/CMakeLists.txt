@@ -22,7 +22,7 @@ target_link_libraries(frame_handler_tests PRIVATE m)
 
 foreach(test_name IN ITEMS
         test_processor_invalid_input_preserves_output
-        test_processor_timeout_event_once_without_transmission
+        test_processor_timeout_query_preserves_state
         test_track_encode_wire
         test_track_encode_invalid_arguments
         test_track_started_updated_and_confirmed

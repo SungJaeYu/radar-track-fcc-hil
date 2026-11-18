@@ -37,8 +37,9 @@ bool radar_processor_process_measurement(struct radar_processor *p_processor,
                                          const struct protocol_frame *p_frame, int64_t received_at_ms,
                                          struct radar_process_result *out_result);
 
-// Use board uptime in ms. Return true only on the call that expires an armed timeout.
-// Clear the track, disarm monitoring, and log once; do not transmit an event report.
-bool radar_processor_check_timeout(struct radar_processor *p_processor, int64_t now_ms);
+// Require a non-NULL processor in its owner context; use board uptime in ms.
+// Return whether armed monitoring has expired, without changing state or logging.
+// Remain true until the owner resets the processor or receives a valid measurement.
+bool radar_processor_is_timed_out(const struct radar_processor *p_processor, int64_t now_ms);
 
 #endif

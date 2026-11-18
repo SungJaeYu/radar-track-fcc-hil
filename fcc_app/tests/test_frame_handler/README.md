@@ -116,7 +116,13 @@ The sender shares the handler logging module and adds no thread or queue.
 Radar processing now lives in a separately compiled `application/radar_processor.c`.
 The handler owns `radar` and `report_sender` states and connects processing to submission.
 Two processor API cases additionally check invalid-input output/state preservation
-and a one-shot timeout return with no report submission or sequence consumption:
+and repeated timeout queries with no state change, logging, submission, or sequence consumption:
 `test_processor_invalid_input_preserves_output` and
-`test_processor_timeout_event_once_without_transmission`.
-Existing 27 integration cases retain their wire and behavior expectations.
+`test_processor_timeout_query_preserves_state`.
+Integration expectations include one no-input TRACK report for INIT/RESET and timeout.
+
+2026-11-18: timeout querying is side-effect-free and accepts a const processor.
+The handler owns reset, logging, and one no-input TRACK report per expiration.
+The 29 host cases pass, including repeated-query state preservation, repeated
+handler checks without duplicate reports, and INIT/RESET report sequence use.
+No firmware build, flash, or hardware test was performed for this change.

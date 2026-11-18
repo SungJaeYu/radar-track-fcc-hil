@@ -42,7 +42,7 @@ static struct track new_track(uint32_t timestamp)
 
 static void hit(struct track *p_track, uint32_t timestamp)
 {
-    CHECK(track_predict(p_track, timestamp));
+    CHECK(track_predict(p_track, timestamp) == TRACK_PREDICT_RESULT_PREDICTED);
     CHECK(gating_check(1000.0f, p_track->range_filter.estimate, RAD(30.0f),
                        p_track->azimuth_filter.estimate));
     track_hit(p_track, 1000.0f, RAD(30.0f));
@@ -211,7 +211,7 @@ TEST(test_timestamp_rejection)
         struct track t = new_track(100);
         unsigned char before[sizeof t];
         memcpy(before, &t, sizeof t);
-        CHECK(!track_predict(&t, rejected[i]));
+        CHECK(track_predict(&t, rejected[i]) == TRACK_PREDICT_RESULT_TIME_REJECTED);
         CHECK(memcmp(before, &t, sizeof t) == 0);
     }
 }
@@ -220,12 +220,12 @@ TEST(test_elapsed_time_and_wraparound)
 {
     struct track t = new_track(100);
     t.range_filter.rate = 20;
-    CHECK(track_predict(&t, 400));
+    CHECK(track_predict(&t, 400) == TRACK_PREDICT_RESULT_PREDICTED);
     NEAR(t.range_filter.estimate, 1006);
     CHECK(t.estimate_timestamp_ms == 400);
     t = new_track(UINT32_MAX - 49);
     t.range_filter.rate = 20;
-    CHECK(track_predict(&t, 50));
+    CHECK(track_predict(&t, 50) == TRACK_PREDICT_RESULT_PREDICTED);
     NEAR(t.range_filter.estimate, 1002);
     CHECK(t.estimate_timestamp_ms == 50);
 }
@@ -233,9 +233,9 @@ TEST(test_elapsed_time_and_wraparound)
 TEST(test_long_gap_and_restart)
 {
     struct track t = new_track(100);
-    CHECK(track_predict(&t, 1100));
+    CHECK(track_predict(&t, 1100) == TRACK_PREDICT_RESULT_PREDICTED);
     t = new_track(100);
-    CHECK(!track_predict(&t, 1101));
+    CHECK(track_predict(&t, 1101) == TRACK_PREDICT_RESULT_RESET);
     CHECK(t.state == TRACK_STATE_EMPTY);
     CHECK(t.hit_count == 0 && t.miss_count == 0);
     track_start(&t, 2000, RAD(-30), 1200);
@@ -252,13 +252,13 @@ TEST(test_confirmation_coasting_and_loss)
     CHECK(t.state == TRACK_STATE_TENTATIVE);
     hit(&t, 200);
     CHECK(t.state == TRACK_STATE_CONFIRMED);
-    CHECK(track_predict(&t, 300));
+    CHECK(track_predict(&t, 300) == TRACK_PREDICT_RESULT_PREDICTED);
     track_miss(&t);
     CHECK(t.state == TRACK_STATE_COASTING && t.hit_count == 0 && t.miss_count == 1);
     hit(&t, 400);
     CHECK(t.state == TRACK_STATE_CONFIRMED && t.miss_count == 0);
     for (unsigned i = 1; i <= 5; ++i) {
-        CHECK(track_predict(&t, 400 + i * 100));
+        CHECK(track_predict(&t, 400 + i * 100) == TRACK_PREDICT_RESULT_PREDICTED);
         track_miss(&t);
         CHECK(t.state == (i < 5 ? TRACK_STATE_COASTING : TRACK_STATE_LOST));
     }
@@ -273,7 +273,7 @@ TEST(test_tentative_miss_and_inactive_calls)
     memcpy(before, &t, sizeof t);
     track_hit(&t, 500, 0);
     track_miss(&t);
-    CHECK(!track_predict(&t, 100));
+    CHECK(track_predict(&t, 100) == TRACK_PREDICT_RESULT_EMPTY);
     CHECK(memcmp(before, &t, sizeof t) == 0);
 }
 
@@ -285,7 +285,7 @@ TEST(test_lost_restarts_for_any_timestamp)
         hit(&t, 100);
         hit(&t, 200);
         for (unsigned n = 1; n <= 5; ++n) {
-            CHECK(track_predict(&t, 400 + n * 100));
+            CHECK(track_predict(&t, 400 + n * 100) == TRACK_PREDICT_RESULT_PREDICTED);
             track_miss(&t);
         }
         CHECK(t.state == TRACK_STATE_LOST);
@@ -294,7 +294,7 @@ TEST(test_lost_restarts_for_any_timestamp)
         track_hit(&t, 500, 0);
         track_miss(&t);
         CHECK(memcmp(before, &t, sizeof t) == 0);
-        CHECK(!track_predict(&t, timestamps[i]));
+        CHECK(track_predict(&t, timestamps[i]) == TRACK_PREDICT_RESULT_RESET);
         CHECK(t.state == TRACK_STATE_EMPTY && t.hit_count == 0 && t.miss_count == 0);
         track_start(&t, 500, 0, timestamps[i] + 100);
         CHECK(t.state == TRACK_STATE_TENTATIVE && t.hit_count == 1);

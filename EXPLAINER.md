@@ -141,7 +141,7 @@ INIT/RESET 후 보존을 확인했습니다. 강제 overflow·큐 포화 동시�
 순번은 제출 시도마다 증가하므로 인코딩·큐 실패도 소모합니다. INIT/RESET·무수신 timeout은 순번을 보존합니다.
 큐 접수는 실제 송신 완료나 PC 수신을 보장하지 않습니다.
 
-현재 INIT/RESET·무수신 timeout은 이벤트 보고를 생성하지 않습니다. PC TRACK 디코더·그래프는 구현했고, 새 보고가 2초 동안 없으면 PC STALE로 표시합니다.
+INIT/RESET·무수신 timeout은 INPUT_PRESENT=0, ESTIMATE_VALID=0인 RESET 보고를 한 번 제출합니다. PC TRACK 디코더·그래프는 구현했고, 새 보고가 2초 동안 없으면 PC STALE로 표시합니다.
 이는 보드 LOST 판정과 별개이며 원시 로그·정량 평가는 아직 없습니다. [정확한 배치·플래그·결과 규격](docs/requirements-traceability.md#spec-track-report)을 참고하세요.
 
 ## 9. 설정과 검증 기록

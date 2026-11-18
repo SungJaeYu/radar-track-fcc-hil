@@ -32,7 +32,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - overflow 정책은 `fcc_app/Kconfig` choice와 `prj.conf`에서 선택하며 `uart_rx.c`에서 매핑합니다. 기본값은 DRAIN입니다.
 - overflow 복구 중 새 입력은 버리고 저장된 바이트로 완성 가능한 프레임만 처리한 뒤 링·파서를 초기화합니다.
 - 단일 트랙, CV Kalman, 게이팅, hit/miss 상태 전이, 정상 측정 수신 timeout이 있습니다.
-- TRACK_REPORT(TYPE=7)는 32바이트 payload이며 유효 측정마다 한 번 TX 제출합니다. PC 해석·GUI의 2초 STALE 정책은 구현했으며 제어/timeout 이벤트 보고는 미구현입니다. 상세 계약은 [SPEC-TRACK-REPORT](docs/requirements-traceability.md#spec-track-report)를 따릅니다.
+- TRACK_REPORT(TYPE=7)는 32바이트 payload이며 유효 측정마다 한 번 TX 제출합니다. PC 해석·GUI의 2초 STALE 정책은 구현했으며 INIT/RESET·무수신 timeout 이벤트 보고도 구현했으며 실보드 검증은 남아 있습니다. 상세 계약은 [SPEC-TRACK-REPORT](docs/requirements-traceability.md#spec-track-report)를 따릅니다.
 - 다중표적 데이터 연관·LCD는 현재 실행 경로에 없습니다.
 - 기존 XOR 인코더는 CRC-16/IBM-3740으로 변경했습니다. 과거 구현은 Git 이력에 남아 있습니다.
 

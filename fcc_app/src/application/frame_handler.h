@@ -29,9 +29,10 @@ void frame_handler_init(struct frame_handler *p_handler);
 // Same state reset as frame_handler_init(); pending queue contents are preserved.
 void frame_handler_reset(struct frame_handler *p_handler);
 // Check a non-NULL handler using board uptime in ms.
-// After CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS (default 1000 ms), reset and disarm once.
+// On expiration, reset/disarm, log, and attempt one no-input TRACK reset report.
+// Failed report submission is not retried by subsequent timeout checks.
 // Monitoring is inactive before the first valid measurement after init/reset.
-void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms);
+void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_ms);
 
 // Process a non-NULL, assembled frame against a non-NULL handler in its owner context.
 // The RX path has already checked length and CRC; measurement decoding/gating happen here.

@@ -49,7 +49,7 @@ void report_sender_submit_status(void)
 }
 
 void report_sender_submit_track(struct report_sender *p_sender, const struct track *p_track,
-                                uint32_t input_timestamp_ms, TrackReportResult result)
+                                uint32_t input_timestamp_ms, bool input_present, TrackReportResult result)
 {
     struct tx_frame request;
 
@@ -60,10 +60,10 @@ void report_sender_submit_track(struct report_sender *p_sender, const struct tra
 
     struct track_report report = {
         .report_sequence = p_sender->next_track_report_sequence++,
-        .input_timestamp_ms = input_timestamp_ms,
+        .input_timestamp_ms = input_present ? input_timestamp_ms : 0,
         .state = p_track->state,
         .result = result,
-        .flags = TRACK_REPORT_FLAG_INPUT_PRESENT,
+        .flags = input_present ? TRACK_REPORT_FLAG_INPUT_PRESENT : 0,
         .reserved = 0,
     };
 

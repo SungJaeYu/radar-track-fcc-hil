@@ -40,16 +40,20 @@ void rx_frame_processor_feed(uint8_t byte)
     process_parser_result(result);
 }
 
-void rx_frame_processor_check_timeout(int64_t now_ms)
+// Query RX-owned state without resetting assembly or changing diagnostics.
+static bool rx_frame_processor_is_timed_out(int64_t now_ms)
 {
-    if (parser.state == PARSER_STATE_WAIT_STX) {
+    return parser.state != PARSER_STATE_WAIT_STX &&
+           now_ms - last_byte_processed_ms >= CONFIG_RADAR_FRAME_RX_TIMEOUT_MS;
+}
+
+void rx_frame_processor_handle_timeout(int64_t now_ms)
+{
+    if (!rx_frame_processor_is_timed_out(now_ms)) {
         return;
     }
 
-    if (now_ms - last_byte_processed_ms < CONFIG_RADAR_FRAME_RX_TIMEOUT_MS) {
-        return;
-    }
-
+    // Returning to WAIT_STX prevents repeated expiration counting.
     rx_frame_processor_reset();
     atomic_inc(&frame_timeout_count);
 }

@@ -41,7 +41,7 @@ static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3)
             frame_handler_process(&handler, &frame);
         }
 
-        frame_handler_check_timeout(&handler, k_uptime_get());
+        frame_handler_handle_timeout(&handler, k_uptime_get());
     }
 }
 
@@ -50,10 +50,17 @@ void frame_handler_reset(struct frame_handler *p_handler)
     frame_handler_init(p_handler);
 }
 
-void frame_handler_check_timeout(struct frame_handler *p_handler, int64_t now_ms)
+void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_ms)
 {
-    // Event reporting is not connected yet; preserve the existing reset-only behavior.
-    (void)radar_processor_check_timeout(&p_handler->radar, now_ms);
+    if (!radar_processor_is_timed_out(&p_handler->radar, now_ms)) {
+        return;
+    }
+
+    // Disarm monitoring before reporting so subsequent checks do not repeat the event.
+    radar_processor_reset(&p_handler->radar);
+    LOG_WRN("Radar measurement timeout: track cleared");
+    report_sender_submit_track(&p_handler->report_sender, &p_handler->radar.track,
+                               0, false, TRACK_REPORT_RESULT_RESET);
 }
 
 void frame_handler_process(struct frame_handler *p_handler, const struct rx_frame *p_frame)
@@ -62,6 +69,7 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
     case FRAME_TYPE_INIT:
         LOG_INF("INIT: track and measurement monitoring reset");
         frame_handler_init(p_handler);
+        report_sender_submit_track(&p_handler->report_sender, &p_handler->radar.track, 0, false, TRACK_REPORT_RESULT_RESET);
         break;
 
     case FRAME_TYPE_MEAS_REPORT: {
@@ -69,7 +77,7 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
         if (radar_processor_process_measurement(&p_handler->radar, &p_frame->frame,
                                                p_frame->received_at_ms, &result)) {
             report_sender_submit_track(&p_handler->report_sender, &p_handler->radar.track,
-                                       result.input_timestamp_ms, result.result);
+                                       result.input_timestamp_ms, true, result.result);
         }
         break;
     }
@@ -85,6 +93,7 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
     case FRAME_TYPE_RESET:
         LOG_INF("RESET: track and measurement monitoring reset");
         frame_handler_reset(p_handler);
+        report_sender_submit_track(&p_handler->report_sender, &p_handler->radar.track, 0, false, TRACK_REPORT_RESULT_RESET);
         break;
     case FRAME_TYPE_STATUS_REPORT:
         LOG_WRN("STATUS_REPORT ignored: unexpected input");

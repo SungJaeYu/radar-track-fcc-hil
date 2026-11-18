@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-// reset/feed/check_timeout mutate shared parser state: call from the RX owner context
+// reset/feed/handle_timeout mutate shared parser state: call from the RX owner context
 // after startup initialization, not concurrently from other threads or the UART ISR.
 // Reset partial frame assembly without clearing diagnostic counters.
 void rx_frame_processor_reset(void);
@@ -15,7 +15,7 @@ void rx_frame_processor_feed(uint8_t byte);
 // Use board uptime in ms. Discard a partial frame after CONFIG_RADAR_FRAME_RX_TIMEOUT_MS
 // (default 1000 ms) since the last byte was processed here, not its hardware arrival.
 // Idle PARSER_STATE_WAIT_STX is not monitored.
-void rx_frame_processor_check_timeout(int64_t now_ms);
+void rx_frame_processor_handle_timeout(int64_t now_ms);
 
 struct rx_frame_processor_stats {
     uint32_t crc_errors;

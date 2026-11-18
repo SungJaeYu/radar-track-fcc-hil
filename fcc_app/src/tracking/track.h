@@ -16,6 +16,14 @@ typedef enum {
     TRACK_STATE_LOST
 } TrackState;
 
+// Internal prediction outcomes, independent of the wire report result values.
+typedef enum {
+    TRACK_PREDICT_RESULT_PREDICTED,
+    TRACK_PREDICT_RESULT_EMPTY,
+    TRACK_PREDICT_RESULT_TIME_REJECTED,
+    TRACK_PREDICT_RESULT_RESET,
+} TrackPredictResult;
+
 struct track {
     TrackState state;
 
@@ -44,11 +52,11 @@ void track_start(
     uint32_t timestamp_ms
 );
 
-// Return true after predicting to the supplied sender timestamp.
-// Return false for EMPTY, LOST, duplicate/backward time, or a forward gap > 1000 ms.
-// LOST and excessive forward gaps reset the track to EMPTY; other failures preserve it.
+// PREDICTED updates filters and the sender timestamp; EMPTY leaves an empty track unchanged.
+// TIME_REJECTED preserves state for duplicate/backward/ambiguous timestamps.
+// RESET clears a LOST track or a forward gap > 1000 ms to EMPTY.
 // Normal uint32 timestamp wraparound is supported. No new track is started here.
-bool track_predict(
+TrackPredictResult track_predict(
     struct track *p_track,
     uint32_t timestamp_ms
 );

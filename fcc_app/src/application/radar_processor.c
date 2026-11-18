@@ -21,25 +21,11 @@ void radar_processor_reset(struct radar_processor *p_processor)
     p_processor->timeout_armed = false;
 }
 
-bool radar_processor_check_timeout(struct radar_processor *p_processor, int64_t now_ms)
+bool radar_processor_is_timed_out(const struct radar_processor *p_processor, int64_t now_ms)
 {
-    // No timeout before the first valid measurement after initialization or reset.
-    if (!p_processor->timeout_armed) {
-        return false;
-    }
-
-    // Both times use board uptime in ms, not the sender's measurement timestamp.
-    const int64_t elapsed_ms = now_ms - p_processor->last_valid_rx_ms;
-
-    if (elapsed_ms < CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS) {
-        return false;
-    }
-
-    // Clear the stale track and disarm monitoring so this timeout is logged once.
-    radar_processor_reset(p_processor);
-
-    LOG_WRN("Radar measurement timeout: track cleared");
-    return true;
+    // Compare board uptime with RX completion time; querying has no side effects.
+    return p_processor->timeout_armed &&
+           now_ms - p_processor->last_valid_rx_ms >= CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS;
 }
 
 bool radar_processor_process_measurement(struct radar_processor *p_processor,
@@ -97,13 +83,15 @@ static TrackReportResult update_track_from_measurement(struct track *p_track, co
     } else {
 
         // Prediction may clear a lost/stale track. A later measurement starts it anew;
-        // this measurement is not reused for startup after prediction returns false.
+        // this measurement is not reused for startup after a reset result.
         const uint32_t previous_time_ms = p_track->estimate_timestamp_ms;
-        if (!track_predict(p_track, p_measurement->timestamp_ms)) {
+        const TrackPredictResult prediction = track_predict(p_track, p_measurement->timestamp_ms);
+        if (prediction != TRACK_PREDICT_RESULT_PREDICTED) {
             LOG_DBG("Prediction skipped: previous_t=%u ms, received_t=%u ms, state=%s",
                     (unsigned int)previous_time_ms,
                     (unsigned int)p_measurement->timestamp_ms, track_state_name(p_track->state));
-            return p_track->state == TRACK_STATE_EMPTY ? TRACK_REPORT_RESULT_RESET : TRACK_REPORT_RESULT_TIME_REJECTED;
+            return prediction == TRACK_PREDICT_RESULT_TIME_REJECTED ?
+                TRACK_REPORT_RESULT_TIME_REJECTED : TRACK_REPORT_RESULT_RESET;
         }
 
         const float predicted_range_m = p_track->range_filter.estimate;

@@ -84,3 +84,7 @@ Zephyr Ztest는 기존 17개를 기본 설정으로 실행하며 host 전용 행
 테스트 π 리터럴은 생산 상수와 독립적으로 유지합니다.
 
 2026-11-14: STM32용 Zephyr Ztest 앱도 빌드 성공했으며 기본 gate 설정이 생성된 `.config`에 반영됨을 확인했습니다. 이 앱의 보드 실행은 하지 않았습니다.
+
+2026-11-18: prediction assertions compare explicit `TrackPredictResult` values.
+They distinguish successful prediction, unchanged EMPTY/time rejection, and reset
+after LOST/excessive gaps while retaining state and numeric checks.
