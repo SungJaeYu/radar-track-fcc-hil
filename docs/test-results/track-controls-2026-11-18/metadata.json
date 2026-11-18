@@ -1,0 +1,15 @@
+{
+  "base_commit": "f42cc50",
+  "uncommitted_changes": "board_check.py adds --track-controls; firmware sources unchanged",
+  "sha256": {
+    "fcc_app/tests/transport_stress/board_check.py": "1374a66bde4fb8bc20cf8cd1e0bf61df023dcc222af9438f07b2717387af9320",
+    "fcc_app/tests/transport_stress/transport_stress.c": "713e47ca92acdf9ad82f3c965ba3154b718b281cc9358058fa1b5eb3c252823d",
+    "fcc_app/tests/transport_stress/stress.conf": "505a7abefc0ad0a518b44ab5176c105030fb9c77135a1716a2cedb77c7fdcc19",
+    "fcc_app/Kconfig": "55e83ffd86c693079e32272fee58dc77b4a50d60411f17599c678103d98119fa",
+    "fcc_app/CMakeLists.txt": "78b5d795d836fba653287d13e941e17415a44041a81e14af1c7146e65a967a45",
+    "build_transport_stress/zephyr/.config": "f6a1346b78a15c834767d76a00526df72bf42e38c6fc854f46934d8e684f2af8",
+    "build/zephyr/.config": "8f3a50027f0475af87f8ba8172c2f28758a357aeca1f9cbd570508333e641d47",
+    "build/zephyr/zephyr.hex": "f609e2f6482793fd1f3be68dbc43ae483c3ee00be665e674ff68799b28aa7ee6",
+    "build_transport_stress/zephyr/zephyr.hex": "cf5c60d4a12c31803809167b79a8a7bf45c51e196dacaa2fe2b449d08355eb48"
+  }
+}

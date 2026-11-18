@@ -413,9 +413,9 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 | --- | --- | --- |
 | FUT-001 | PC가 STATUS 응답의 TYPE·길이·CRC를 검증하고 여덟 통계를 표시한다 | 파서·CLI·GUI 수동 조회 구현 및 host 검증 완료. 물리 왕복은 FUT-002 |
 | FUT-002 | 현재 STATUS 응답을 실제 USART6에서 수신해 host 기대값과 일치함을 확인한다 | 완료: 과거28바이트 CLI·GUI 및 현재32바이트 평가 CLI·GUI 왕복. [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md) |
-| FUT-003 | 보드 추적 결과를 PC로 보내 정답과 비교한다 | TYPE=7·32바이트 측정 보고와 host 검증 완료(REQ-RPT-001~003). PC 디코더/GUI·2초 STALE도 host 검증 완료. CSV·고정 시나리오 평가·실보드 왕복 완료. 이벤트 원인별 구분·TX 포화 관측 남음 |
+| FUT-003 | 보드 추적 결과를 PC로 보내 정답과 비교한다 | TYPE=7·32바이트 측정 보고와 host 검증 완료(REQ-RPT-001~003). PC 디코더/GUI·2초 STALE도 host 검증 완료. CSV·고정 시나리오 평가·실보드 왕복 완료. TRACK TX 포화·순번 공백 확인. 이벤트 원인별 구분·완료 통계·지속 부하 남음 |
 | FUT-004 | 링 overflow·손실·UART 오류를 구분해 집계·복구한다 | 링 overflow·ISR/복구 폐기 집계와 STATUS 전송 구현. 하드웨어 오류 API·복구와 실제 overflow/overrun 재현은 남음 |
-| FUT-005 | 제어 요청과 오래된 측정의 큐 처리 정책을 정의한다 | 오래된 측정 경계 폐기 구현·host 검증 완료. INIT/RESET 우선순위·reset 이전 대기 데이터 정책 TBD |
+| FUT-005 | 제어 요청과 오래된 측정의 큐 처리 정책을 정의한다 | 오래된 측정 경계 폐기 구현·host 검증 완료. 현재 FIFO·새 요청 거부/큐 유지 계약 및 제어 유실·순서 실보드 확인. 우선 보존·큐 purge 정책 확장은 후속 |
 | FUT-006 | 다중 측정·트랙을 연관하고 펌웨어 자체 ID로 관리한다 | 스캔 규격·최대 표적 수·트랙 수명·교차/클러터 평가. 정답 ID 입력 금지 |
 | FUT-007 | COMMAND/Lock On과 BIT를 제공한다 | 명령 payload·선택/해제·소실 동작·자기진단 항목과 합격 기준 TBD |
 | FUT-009 | 로그를 모듈·레벨별로 관리하고 스레드 간 문장 섞임을 방지한다 | [다섯 모듈 deferred logging](logging.md)·일반 INFO/디버그 DEBUG·비차단 새 로그 폐기 구현. 일반/디버그 각 30조건 기본 실보드 회귀 완료. [강제 포화/유실·STATUS 유지 확인](hardware-test-2026-11-14-log-stress.md). 반복 WARN·최악 UART 영향·자원 측정은 남음 |
@@ -601,3 +601,7 @@ RX는 내부 `rx_frame_processor_is_timed_out()`으로 판정하고 공개 `rx_f
 ## 소비 스레드 정지 기반 포화 검증 — 2026-11-18
 
 기본 DRAIN 실보드에서 강제 링 overflow·RX 큐 포화/stale 폐기·STATUS TX 큐 포화와 각 단계 정상 추적 복귀를 확인했습니다. 일반 이미지로 복원했습니다. [결과·실패 이력·제한](hardware-test-2026-11-18-transport-stress.md). TRACK TX 포화·제어 유실/순서·지속 부하/자원 시험은 남았습니다.
+
+## TRACK 포화·제어 순서 후속 검증 — 2026-11-18
+
+실보드112개 확인 항목 통과: RX 큐 포화 시 INIT/RESET 유실, 접수된 제어/측정 FIFO 순서, TRACK TX 포화 후 순번 공백과 정상 추적 복귀를 확인했습니다. 일반 이미지 복원 완료. [결과·원시 증거·계약](hardware-test-2026-11-18-track-controls.md). 제어 우선 보존 정책은 추가하지 않았으며 다음은30분 부하·MCU 내부 지연·큐/스택 계측입니다.

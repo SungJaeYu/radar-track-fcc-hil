@@ -275,7 +275,8 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
   - [x] 기본 DRAIN 강제 overflow 카운터 증가·정상 추적 복귀 (소비 스레드 정지 주입)
   - [ ] UART 하드웨어 오류: overrun·framing·parity 감지·집계와 바이트 유실 후 복구
   - [x] 오래된 측정: MCU 수신 완료 후 경과가 측정 timeout 이상이면 폐기·포화 카운터 집계, 추적/감시/순번 유지
-  - [ ] 큐 포화·제어 정책: INIT/RESET 유실, reset 전 대기 측정의 처리 순서·보존 기준
+  - [x] 현재 FIFO·새 요청 거부 정책에서 INIT/RESET 유실·처리 순서 실보드 확인
+  - [ ] 제어 우선 보존/전용 ACK·reset 이전 큐 폐기 정책 확장 (후속 선택)
   - [x] overflow 정책 Kconfig 분리: DRAIN·DISCARD host 검증 및 두 펌웨어 실보드 UART 회귀
   - [x] timeout 설정 분리: 부분 프레임·측정 무수신 제한을 앱 Kconfig/prj.conf로 관리; 기본값/변경값 host 경계 시험 완료
 - [x] 공통 타입·인터페이스 및 코딩 규칙 정리 — [코딩 스탠다드](docs/coding-standard.md) · [적용 결과와 후속 과제](docs/coding-standard-audit.md)
@@ -375,7 +376,7 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 | --- | --- | --- |
 | V1-1 결과 왕복 | 추정 거리·방위각·트랙 상태·기준 시각/유효성 반환. PC에서 정답·측정·보드 추정을 대응시켜 그래프와 원시 로그로 보존 | 기본 실보드·GUI·CSV 검증 완료; [근거](docs/hardware-test-2026-11-18-evaluation.md) |
 | V1-2 추적 평가 | 고정 seed의 정상·잡음·연속 누락 시나리오. 최신 측정값 baseline 대비 거리/방위각 RMSE, 상태 전이·복귀 기록. 평가 시각·warm-up·각도 wrap 처리 명시 | 정상·거리 잡음·연속 누락 평가 완료. 각도 고정·각도 잡음 0 조건; 각도 기동 평가는 별도 |
-| V1-3 오류 복구 | CRC/부분 프레임, RX/TX 단선·복원, 기본 DRAIN의 강제 링 overflow 및 RX/TX 큐 포화 후 정상 추적 재개. 유실 집계와 INIT/RESET 전후 순서·재개 절차 명시 | DRAIN 링·RX 큐·STATUS TX 포화 및 복귀 확인. TRACK TX 포화·제어 유실/순서·최종 회귀 남음 |
+| V1-3 오류 복구 | CRC/부분 프레임, RX/TX 단선·복원, 기본 DRAIN의 강제 링 overflow 및 RX/TX 큐 포화 후 정상 추적 재개. 유실 집계와 INIT/RESET 전후 순서·재개 절차 명시 | DRAIN 링·RX 큐·STATUS/TRACK TX 포화·제어 유실/순서와 복귀 확인. 최종 구성의 오류 회귀 남음 |
 | V1-4 시간·자원 | 선언한 부하의 30분 실행 로그. 보드 지연 분포·예산 초과 횟수, 송수신/처리/폐기 대응, 큐 최대 점유·스레드 스택 여유, 빌드 메모리 사용량 | 지속 부하·보드 지연/자원 실측 미완료 |
 | V1-5 재현·설명 | commit·보드/설정·빌드/실행 명령·로그·그래프·한계. 정상→오류→복귀의 2~3분 시연과 ISR/스레드·버퍼·상태 소유권 설명 | 최종 v1 자료 미완료 |
 
@@ -403,11 +404,13 @@ EKF, Mahalanobis 게이팅, LCD 표시는 현재 미구현이며 우선 TODO에�
 
 | 순서 | 작업 | 끝점 |
 | --- | --- | --- |
-| 1 | 결과 경로를 포함한 오류 복귀 | 기본 정책 overflow·RX/TX 포화·단선·CRC/부분 프레임·INIT/RESET 확인 |
+| 1 | 지속 시험 계측 준비 | MCU 내부 지연·큐 최대 점유·스택 여유, 입력/처리/송신/폐기 대응 |
 | 2 | 선언 부하의 지속 측정 | 지연 예산·손실·큐·스택/메모리 및 30분 결과 |
 | 3 | v1 자료 정리 | 재현 명령·설계 판단·로그/그래프·짧은 시연을 확인하고 v1 종료 |
 
 ## 검증 현황
+
+DRAIN 링·RX 큐·STATUS/TRACK TX 큐 포화, INIT/RESET 유실·FIFO 처리 순서와 정상 추적 복귀를 실보드에서 확인했습니다. [제어·TRACK 포화 결과](docs/hardware-test-2026-11-18-track-controls.md). 인위적인 소비 스레드 정지 시험이며 지속 부하·MCU 내부 지연·스택 검증은 남았습니다.
 
 2026-11-18: 오래된 측정 폐기·STATUS 32바이트·CSV/평가 CLI를 추가했습니다. 정상/잡음/연속 누락 실보드 시나리오와 실제 UART GUI 13개 확인 항목을 통과했습니다. [평가·캡처·한계](docs/hardware-test-2026-11-18-evaluation.md).
 
@@ -484,6 +487,3 @@ STATUS 규격은 수동 관리합니다. C의 `status_report`·인코더와 Pyth
 `STATUS_FIELDS`를 함께 변경하면 CLI·GUI 표시가 필드 목록을 따라갑니다.
 코드 생성 스크립트나 별도 생성 단계는 없습니다. [필드 규격·호환성](pc_sim/README.md#status_report-payload).
 
-## 소비 스레드 정지 기반 포화 검증 — 2026-11-18
-
-기본 DRAIN 실보드에서 강제 링 overflow·RX 큐 포화/stale 폐기·STATUS TX 큐 포화와 각 단계 정상 추적 복귀를 확인했습니다. 일반 이미지로 복원했습니다. [결과·실패 이력·제한](docs/hardware-test-2026-11-18-transport-stress.md). TRACK TX 포화·제어 유실/순서·지속 부하/자원 시험은 남았습니다.

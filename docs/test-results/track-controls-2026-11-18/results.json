@@ -1,0 +1,458 @@
+{
+  "checks": [
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "BENCH RX PAUSED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH RX RESUMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "real ring overflow counted",
+      "passed": true
+    },
+    {
+      "name": "ISR discarded bytes counted",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "fresh tracking CONFIRMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "BENCH HANDLER PAUSED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH HANDLER RESUMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "RX queue drops counted",
+      "passed": true
+    },
+    {
+      "name": "old queued measurements dropped",
+      "passed": true
+    },
+    {
+      "name": "stale backlog emits no TRACK",
+      "passed": true
+    },
+    {
+      "name": "handler pressure did not overflow ring",
+      "passed": true
+    },
+    {
+      "name": "full RX queue rejects measurements plus both controls",
+      "passed": true
+    },
+    {
+      "name": "eight accepted measurements expire",
+      "passed": true
+    },
+    {
+      "name": "no dropped INIT or RESET event emitted",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "accepted measurement RESET measurement INIT measurement order",
+      "passed": true
+    },
+    {
+      "name": "post-control tracks use new measurements",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "fresh tracking CONFIRMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH TX PAUSED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "paused TX emits no TRACK",
+      "passed": true
+    },
+    {
+      "name": "BENCH TX RESUMED",
+      "passed": true
+    },
+    {
+      "name": "TRACK retains eight queued plus possible in-flight item",
+      "passed": true
+    },
+    {
+      "name": "retained TRACK input order",
+      "passed": true
+    },
+    {
+      "name": "retained TRACK sequence order",
+      "passed": true
+    },
+    {
+      "name": "TRACK queue full diagnosed",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "new INIT reports after TX drain",
+      "passed": true
+    },
+    {
+      "name": "sequence gap accounts for dropped measurements and optional timeout",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "fresh tracking CONFIRMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH COMPLETE",
+      "passed": true
+    },
+    {
+      "name": "received framing intact",
+      "passed": true
+    },
+    {
+      "name": "normal firmware STATUS restored",
+      "passed": true
+    }
+  ],
+  "failure": null,
+  "track_controls": true,
+  "hex_sha256": {
+    "build": "f609e2f6482793fd1f3be68dbc43ae483c3ee00be665e674ff68799b28aa7ee6",
+    "build_transport_stress": "cf5c60d4a12c31803809167b79a8a7bf45c51e196dacaa2fe2b449d08355eb48"
+  }
+}
