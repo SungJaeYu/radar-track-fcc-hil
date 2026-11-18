@@ -1,0 +1,14 @@
+{
+  "started_utc": "2026-11-18T14:52:18.150065+00:00",
+  "duration_s": 1800,
+  "measurement_hz": 50,
+  "status_hz": 1,
+  "baud": 115200,
+  "smoke": false,
+  "source_commit": "7caf59317b5453af31046370088e5c198d009992",
+  "script_sha256": "d871215be45ceb2ecda555ebaf8e551533e52f3e7ecb5d370cf59429f7bc15f8",
+  "data_port": "/dev/cu.usbserial-A5069RR4",
+  "console_port": "/dev/cu.usbmodem11203",
+  "build_perf_elf_sha256": "1c8d31306bf15d0a526da0a63d098abe8884e4860085cce65f143f02cc0314ec",
+  "build_elf_sha256": "f93582d48d4a8f8908b16ed7dea0ee86460e5053ea7d20c1b81b75347f2a6e58"
+}

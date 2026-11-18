@@ -38,7 +38,7 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 선택적 성능 계측
 
-`perf.conf`는 `diagnostics/perf_monitor.c/.h`의 지연·큐·송신 집계와 `perf_reporter.c`의 5초 요약·스택 조회를 켭니다. 일반/debug 빌드에는 제외됩니다. [측정 계약](docs/performance-monitoring.md)을 따르며 성능 목표 달성은 실보드 증거로 별도 판정합니다. [30분 실보드 관측](docs/hardware-test-2026-11-18-performance.md)에서 지연 최대1ms·오류0을 확인했으나 호스트 write 간격163.995ms가 기준100ms를 넘어 전체 판정은 실패입니다. 다음은 PC 시험기 지연 구간 분석이며 펌웨어 변경 근거는 아직 없습니다.
+`perf.conf`는 `diagnostics/perf_monitor.c/.h`의 지연·큐·송신 집계와 `perf_reporter.c`의 5초 요약·스택 조회를 켭니다. 일반/debug 빌드에는 제외됩니다. [측정 계약](docs/performance-monitoring.md)을 따르며 성능 목표 달성은 실보드 증거로 별도 판정합니다. [30분 실보드 관측](docs/hardware-test-2026-11-18-performance.md)에서 지연 최대1ms·오류0을 확인했으나 호스트 write 간격163.995ms가 기준100ms를 넘어 전체 판정은 실패입니다. PC 진행 집계는 카운터로 수정했고, [수정 후 재시험](docs/hardware-test-2026-11-19-performance.md)에서 분 경계 지연 해소를 확인했습니다. 별도137.581ms 공백으로 전체 실패를 유지합니다. 다음은 PC 루프 전체·I/O·기록·sleep 계측이며 펌웨어 변경 근거는 아직 없습니다.
 
 ## 검증
 

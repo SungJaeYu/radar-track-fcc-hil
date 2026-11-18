@@ -1,5 +1,7 @@
 # 성능 계측 실보드 시험 — 2026-11-18
 
+후속 [진행 집계 수정 후 재시험](hardware-test-2026-11-19-performance.md)을 별도로 기록했다. 이 문서의 이전 시험 판정은 변경하지 않는다.
+
 대상 펌웨어는 `25c8bb9`의 STM32F746G-DISCO `perf.conf` 구성이다. 펌웨어 수정 없이 계측 이미지로 시험하고 일반 이미지를 복원한다. 시험 스크립트는 [board_check.py](../fcc_app/tests/test_perf_monitor/board_check.py)이며 세션별 metadata에 실제 ELF·스크립트 SHA-256을 기록한다.
 
 ## 고정 조건과 수용 기준

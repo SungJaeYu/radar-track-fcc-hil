@@ -1,0 +1,58 @@
+[
+  {
+    "path": "session/reports.csv.gz",
+    "uncompressed_bytes": 7050511,
+    "uncompressed_sha256": "82c27e7f48105a8f273cf29229efe1184f880821747729d18bdf1e96641a03da",
+    "gzip_bytes": 1185913,
+    "gzip_sha256": "3985dea4bdc65795d6b3de1642c1e0a8117620883945a5ef7742da355d6157f0"
+  },
+  {
+    "path": "session/samples.csv.gz",
+    "uncompressed_bytes": 9546572,
+    "uncompressed_sha256": "02949829bd3e3c21486faf8e74e84af1acdec05980348c9cf2872f53eb676858",
+    "gzip_bytes": 1375691,
+    "gzip_sha256": "6e66d0616f6bc12b05165711be0aca80d96a13160e6a528a30ba77204f2a655e"
+  },
+  {
+    "path": "session/status.csv.gz",
+    "uncompressed_bytes": 60840,
+    "uncompressed_sha256": "4ea45aa966554eac2a7001d088cc4a42cc6407d942208dd4a79fc5d66bacc8fd",
+    "gzip_bytes": 10405,
+    "gzip_sha256": "606730650b69080731d537be40fbdeda990a8af45848f9e4f2175e620945c2ca"
+  },
+  {
+    "path": "session/wire.csv.gz",
+    "uncompressed_bytes": 13497869,
+    "uncompressed_sha256": "76853c0ce99f59d7db0579d444f21007777254bad17895525e275ba445fe9fd3",
+    "gzip_bytes": 2632818,
+    "gzip_sha256": "7c20705cfba7b0552fdf54b419e7d06a447c3838bc701b49e1225b4d73453b04"
+  },
+  {
+    "path": "console.log.gz",
+    "uncompressed_bytes": 402107,
+    "uncompressed_sha256": "0e551fe996bf7d11ad1f709fab867b8d69adc216b1e3123fab801ea5d4b82ffb",
+    "gzip_bytes": 28118,
+    "gzip_sha256": "f296555821c5d2ebb0137721bdc197110b32a2ad31482fc068a403f3ee0e932c"
+  },
+  {
+    "path": "perf-flash.log.gz",
+    "uncompressed_bytes": 1471,
+    "uncompressed_sha256": "f6f3bc7c22ee428b05e8f6733e99eb1031ee6f4daa4ed4a5fb99d05c08ea5362",
+    "gzip_bytes": 819,
+    "gzip_sha256": "bfcee8453f00b6f8e72453731fbd9f754867918eab446db307fe1cbb27ad0115"
+  },
+  {
+    "path": "restore-flash.log.gz",
+    "uncompressed_bytes": 1519,
+    "uncompressed_sha256": "04c982432c2fb1519d3e275af107d2d2069e2966d31b38c79415f472cbac7bd6",
+    "gzip_bytes": 824,
+    "gzip_sha256": "87b2f6ae26d8d25ffe5af40e21d9dac1c93da7b5a7ac3f3c5565208ea2d84fe9"
+  },
+  {
+    "path": "performance.json.gz",
+    "uncompressed_bytes": 418170,
+    "uncompressed_sha256": "8b9c2ef1b2ec53a1a985841c9b9ff1c4d661848f944ec5e8cc3028862fc68f6a",
+    "gzip_bytes": 16104,
+    "gzip_sha256": "068b7dff0140f19eaacd5e382f6aac4aae52632d396fcb8904b402b9ee10a7c3"
+  }
+]

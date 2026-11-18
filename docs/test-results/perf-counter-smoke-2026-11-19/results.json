@@ -1,0 +1,202 @@
+{
+  "load_elapsed_s": 10.0001267909538,
+  "load_measurements": 500,
+  "valid_measurements_total": 503,
+  "invalid_measurements": 1,
+  "status_requests": 11,
+  "status_responses": 11,
+  "track_reports": 508,
+  "actual_measurement_hz": 50.0,
+  "host_skipped_slots": 0,
+  "host_max_send_gap_ms": 45.05987500306219,
+  "pc_latency_ms": {
+    "p50": 5.490583018399775,
+    "p95": 6.70087500475347,
+    "p99": 8.185292012058198,
+    "max": 12.544207973405719
+  },
+  "performance_summary_count": 4,
+  "last_performance": {
+    "header": {
+      "uptime_ms": 20002,
+      "measurements": 504,
+      "without_submit": 1,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 504,
+      "total_ms": 25,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 503,
+      "total_ms": 63,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 503,
+      "total_ms": 88,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 519,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 519,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 519,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  "final_status": {
+    "crc_errors": 0,
+    "length_errors": 0,
+    "frame_timeouts": 0,
+    "queue_drops": 0,
+    "ring_overflow_events": 0,
+    "rx_dropped_bytes": 0,
+    "recovery_discarded_bytes": 0,
+    "stale_measurements": 0
+  },
+  "pc_crc_errors": 0,
+  "pc_length_errors": 0,
+  "failure": null,
+  "restore_failure": null,
+  "checks": [
+    {
+      "name": "idle performance summary",
+      "passed": true
+    },
+    {
+      "name": "idle timing has no samples",
+      "passed": true
+    },
+    {
+      "name": "idle stack queries available",
+      "passed": true
+    },
+    {
+      "name": "INIT reset report received",
+      "passed": true
+    },
+    {
+      "name": "initial STATUS zero",
+      "passed": true
+    },
+    {
+      "name": "one post-load timeout report",
+      "passed": true
+    },
+    {
+      "name": "tracking recovers after invalid input and RESET",
+      "passed": true
+    },
+    {
+      "name": "all measurements matched once",
+      "passed": true
+    },
+    {
+      "name": "all STATUS requests answered",
+      "passed": true
+    },
+    {
+      "name": "single firmware boot",
+      "passed": true
+    },
+    {
+      "name": "measurement count reconciles",
+      "passed": true
+    },
+    {
+      "name": "no submit failures or invalid times",
+      "passed": true
+    },
+    {
+      "name": "invalid measurement is counted without submission",
+      "passed": true
+    },
+    {
+      "name": "processing successful sample count",
+      "passed": true
+    },
+    {
+      "name": "rx_to_submit successful sample count",
+      "passed": true
+    },
+    {
+      "name": "queue wait count includes invalid input",
+      "passed": true
+    },
+    {
+      "name": "20ms board latency budget",
+      "passed": true
+    },
+    {
+      "name": "no queue rejection",
+      "passed": true
+    },
+    {
+      "name": "RX accepted frame count",
+      "passed": true
+    },
+    {
+      "name": "TX queued and polling counts match received frames",
+      "passed": true
+    },
+    {
+      "name": "no TX encoder failures",
+      "passed": true
+    },
+    {
+      "name": "all sampled stacks have headroom",
+      "passed": true
+    },
+    {
+      "name": "host delivered nominal 50Hz within one percent",
+      "passed": true
+    },
+    {
+      "name": "host measurement gaps stay below 100ms",
+      "passed": true
+    },
+    {
+      "name": "performance summaries remain continuous",
+      "passed": true
+    },
+    {
+      "name": "restored normal STATUS zero",
+      "passed": true
+    }
+  ],
+  "passed": true
+}
