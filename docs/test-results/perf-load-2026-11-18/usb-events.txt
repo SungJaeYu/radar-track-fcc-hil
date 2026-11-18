@@ -1,0 +1,11 @@
+Relevant macOS unified-log excerpts (local time, Asia/Seoul).
+Query: log show --last 10m --style compact --predicate 'eventMessage CONTAINS[c] "FTDI" OR eventMessage CONTAINS[c] "A5069RR4" OR eventMessage CONTAINS[c] "FT232"'
+
+2026-11-18 22:43:55.687 launchd: removing service: com.apple.DriverKit.AppleUSBFTDI-0x1000fe80c
+2026-11-18 22:43:55.688 icdd: [Removed] [USB][FT232R USB UART] @ 0x1130000
+2026-11-18 22:43:56.891 icdd: Added [USB][FT232R USB UART] @ 0x1130000
+2026-11-18 22:44:03.621 icdd: [Removed] [USB][FT232R USB UART] @ 0x1130000
+2026-11-18 22:44:03.717 icdd: Added [USB][FT232R USB UART] @ 0x1130000
+
+The operator reported moving the computer and possible cable interruption.
+This establishes host device removal/re-enumeration; it does not identify an electrical root cause.

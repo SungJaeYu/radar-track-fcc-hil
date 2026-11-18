@@ -1,0 +1,31 @@
+{
+  "failure": "SerialException('write failed: [Errno 6] Device not configured')",
+  "restore_failure": null,
+  "checks": [
+    {
+      "name": "idle performance summary",
+      "passed": true
+    },
+    {
+      "name": "idle timing has no samples",
+      "passed": true
+    },
+    {
+      "name": "idle stack queries available",
+      "passed": true
+    },
+    {
+      "name": "INIT reset report received",
+      "passed": true
+    },
+    {
+      "name": "initial STATUS zero",
+      "passed": true
+    },
+    {
+      "name": "restored normal STATUS zero",
+      "passed": true
+    }
+  ],
+  "passed": false
+}

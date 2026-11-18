@@ -7,7 +7,7 @@
 ## 현재 기준 요약
 
 기능 기준: TRACK_REPORT·radar_processor/report_sender 분리 `87006b0`, 이름·경로 정리 `fd96c17`, 로그 시험기 판정 `838aca6`.
-현재 등록 사례는 Python 231개 + subtest 9개, C host 160회 실행(기존 116회 + 계측 monitor 9·handler 31·TX 4)이다. CTest 등록은 144개이며 Tracking 기본 17개 함수를 하나의 CTest에서 실행한다.
+현재 등록 사례는 Python 239개 + subtest 9개, C host 160회 실행(기존 116회 + 계측 monitor 9·handler 31·TX 4)이다. CTest 등록은 144개이며 Tracking 기본 17개 함수를 하나의 CTest에서 실행한다.
 오래된 측정 폐기, STATUS 32바이트, CSV/평가를 추가했다. 기본 실보드 TRACK 왕복과 정상·잡음·연속 누락 평가, 실제 UART GUI를 확인했다. [실행 이력](verification-history.md).
 PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료. 실보드 기본 왕복도 `2aa57d9`에서 확인했다.
 아래 단계별 구현 기록은 당시 상태이며 현재 판단은 이 요약과 요구사항 기준표를 우선한다.
@@ -16,7 +16,7 @@ PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료
 
 v1의 완료 판정은 [README V1-1~5](../README.md#v1-acceptance)를 따릅니다. 단일표적 결과 반환·RMSE·시간/자원·오류 복귀·재현 자료가 필수이며, 다중표적·BIT·COMMAND/Lock On과 모든 하드웨어 오류 시험의 완성은 후속 범위입니다. 이 절은 release 범위 결정이며 아래 요구사항 ID·구현 상태·과거 시험 결과를 완료로 바꾸지 않습니다.
 
-TRACK_REPORT 측정 경로는 아래 REQ-RPT-001~003 및 SPEC-TRACK-REPORT에 연결합니다. PC 수신·GUI 표시는 REQ-PC-003 / REQ-GUI-002로 연결했습니다. 원시 로그·정량 평가·이벤트 보고와 기본 실보드 왕복을 확인했습니다. TX 포화·제어 유실/순서는 실보드에서 확인했고, 계측 실보드 확인·장시간 부하는 FUT-008의 남은 범위입니다.
+TRACK_REPORT 측정 경로는 아래 REQ-RPT-001~003 및 SPEC-TRACK-REPORT에 연결합니다. PC 수신·GUI 표시는 REQ-PC-003 / REQ-GUI-002로 연결했습니다. 원시 로그·정량 평가·이벤트 보고와 기본 실보드 왕복을 확인했습니다. TX 포화·제어 유실/순서는 실보드에서 확인했고, 계측 실보드 관측은 확보했지만 호스트 송신 간격 기준을 만족하는 장시간 재시험은 FUT-008의 남은 범위입니다.
 
 ## 읽는 방법과 범위
 
@@ -42,7 +42,7 @@ TRACK_REPORT 측정 경로는 아래 REQ-RPT-001~003 및 SPEC-TRACK-REPORT에 �
 
 | ID | 요구사항 / 수용 조건 | 상세 규격 | 구현 근거 | 테스트 연결 | 검증 상태·남은 사항 |
 | --- | --- | --- | --- | --- | --- |
-| REQ-PERF-001 | 선택적 계측은 보드 기준 지연·20ms 초과·성공/실패·큐 관측값·송신 집계를 구분하고 보호된 snapshot 및 스택 조회 결과를 주기적으로 제공해야 한다. 일반 빌드는 계측을 제외한다. | [SPEC-PERF](#spec-perf) | [perf_monitor.c](../fcc_app/src/diagnostics/perf_monitor.c), [perf_reporter.c](../fcc_app/src/diagnostics/perf_reporter.c) 및 handler/TX 호출 지점 | [9개 collector/reporter + handler/TX 회귀](../fcc_app/tests/test_perf_monitor/README.md) | host·일반/debug/perf 빌드 검증. 실보드 지연/스택·30분 부하는 미검증 |
+| REQ-PERF-001 | 선택적 계측은 보드 기준 지연·20ms 초과·성공/실패·큐 관측값·송신 집계를 구분하고 보호된 snapshot 및 스택 조회 결과를 주기적으로 제공해야 한다. 일반 빌드는 계측을 제외한다. | [SPEC-PERF](#spec-perf) | [perf_monitor.c](../fcc_app/src/diagnostics/perf_monitor.c), [perf_reporter.c](../fcc_app/src/diagnostics/perf_reporter.c) 및 handler/TX 호출 지점 | [9개 collector/reporter + handler/TX 회귀](../fcc_app/tests/test_perf_monitor/README.md) | host·일반/debug/perf 빌드·실보드 관측 검증. [30분 실행](hardware-test-2026-11-18-performance.md)은 보드 지연/오류 조건을 충족했으나 호스트 간격 기준 미달 |
 | REQ-SYS-001 | PC는 시간·거리·방위각의 탐지 측정을 보내고 정답 target ID는 보내지 않아야 한다. | [SPEC-MEAS](#spec-meas) | [measurement_message.c](../fcc_app/src/protocol/measurement_message.c) · `measurement_message_decode` | [test_tracking](#tests-test_tracking) / [Python](#tests-python) | 구현; payload·시나리오 제한 시험. 다중표적 연관은 별도 범위 |
 | REQ-IF-001 | 데이터 UART와 진단 콘솔을 분리하고 정해진 핀·baud로 연결해야 한다. | [SPEC-EXEC](#spec-exec) | [uart_rx.c](../fcc_app/src/transport/uart_rx.c) · `uart_rx_init` | [보드 기록](hardware-test-2026-11-01.md) · 소스 검토 | 구현; RX/TX 기본 왕복·물리 선 단절/복귀 확인. 부하 시험은 별도 |
 | REQ-PRO-001 | LEN 1..32와 STX/TYPE/payload/CRC 배치를 지키고 완성된 유효 프레임만 제출해야 한다. | [SPEC-WIRE](#spec-wire) | [frame_parser.c](../fcc_app/src/protocol/frame_parser.c) · `frame_parser_feed` | [test_uart_rx](#tests-test_uart_rx) / [test_frame_handler](#tests-test_frame_handler) / [Python](#tests-python) | 구현; host·Python/C 상호운용 연결 |
@@ -420,7 +420,7 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 | FUT-006 | 다중 측정·트랙을 연관하고 펌웨어 자체 ID로 관리한다 | 스캔 규격·최대 표적 수·트랙 수명·교차/클러터 평가. 정답 ID 입력 금지 |
 | FUT-007 | COMMAND/Lock On과 BIT를 제공한다 | 명령 payload·선택/해제·소실 동작·자기진단 항목과 합격 기준 TBD |
 | FUT-009 | 로그를 모듈·레벨별로 관리하고 스레드 간 문장 섞임을 방지한다 | [다섯 모듈 deferred logging](logging.md)·일반 INFO/디버그 DEBUG·비차단 새 로그 폐기 구현. 일반/디버그 각 30조건 기본 실보드 회귀 완료. [강제 포화/유실·STATUS 유지 확인](hardware-test-2026-11-14-log-stress.md). 반복 WARN·최악 UART 영향·자원 측정은 남음 |
-| FUT-008 | 설정·자원·지연을 반복 검증 가능한 기준으로 관리한다 | overflow·timeout·게이트 Kconfig와 host 검증 완료; 게이트 변경값·DRAIN 강제 overflow 실보드 확인. perf.conf 계측 구현·host/빌드 검증 완료; 스택·지연/처리량 실측 남음. 초기 50Hz·30분·보드 지연 예산 20ms는 [v1 목표](../README.md#v1-acceptance)이며 달성 증거는 아직 없음 |
+| FUT-008 | 설정·자원·지연을 반복 검증 가능한 기준으로 관리한다 | overflow·timeout·게이트 Kconfig와 host 검증 완료; 게이트 변경값·DRAIN 강제 overflow 실보드 확인. perf.conf 계측 구현·host/빌드 및 30분 스택·지연 관측 확보. 호스트 간격 기준 미달로 지속 부하 재시험 남음. 초기 50Hz·30분·보드 지연 예산 20ms는 [v1 목표](../README.md#v1-acceptance)이며 달성 증거는 아직 없음 |
 
 FUT-001은 구현·host 검증 완료, FUT-002 기본 실보드 왕복도 완료했다. CTL-002 측정 경유 검증은 완료했다.
 남은 host 공백은 CTL-001의 실제 RX 카운터와 명령 처리 통합, RX-004의 실제 큐 경계와 다른 errno 처리다.
@@ -613,3 +613,5 @@ RX는 내부 `rx_frame_processor_is_timed_out()`으로 판정하고 공개 `rx_f
 상세 계약은 [성능 계측](performance-monitoring.md)을 따른다. `CONFIG_RADAR_PERF_MONITOR`에서만 활성화하며 `received_at_ms` 기준 queue_wait와 성공 제출의 processing/rx_to_submit을 분리한다. INIT/RESET·timeout 보고는 지연 표본에서 제외하고 모든 측정 종료에서 문맥을 해제한다. 카운터·snapshot은 잠금으로 보호하며 계측 중의 로그/스택 조회는 잠금 밖에서 수행한다. 0..20ms 히스토그램과 >20ms 구간, 포화·실패 분리·관측 점유율/스택 한계를 문서화한다.
 
 역추적: [monitor 테스트의 모든 9개 함수](../fcc_app/tests/test_perf_monitor/README.md)는 REQ-PERF-001에 연결한다. [handler](../fcc_app/tests/test_frame_handler/src/main.c)의 `test_perf_measurement_paths`, [TX](../fcc_app/tests/test_uart_tx/src/main.c)의 `test_tx_invalid_submit`, `test_tx_queue_copy_fifo_full_and_recovery`, `test_tx_encode_error_continues`는 PERF_TEST_ENABLED 구성에서 같은 요구사항의 호출 연결·실패 분리도 검증한다. 일반/debug/perf 펌웨어 빌드는 실제 Zephyr API와 옵션 분리를 확인하며 실보드 성능 증거는 아니다.
+
+성능 실보드 시험기의 증거 파싱은 [Python 8개 사례](../tests/test_perf_monitor.py)로 REQ-PERF-001에 연결한다. 실제 시험·중단 이력·복원 여부는 [실보드 성능 기록](hardware-test-2026-11-18-performance.md)을 따른다.

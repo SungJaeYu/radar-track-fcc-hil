@@ -1,0 +1,1862 @@
+[
+  {
+    "header": {
+      "uptime_ms": 5000,
+      "measurements": 0,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 0,
+      "total_ms": 0,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 0,
+      "max_ms": 0,
+      "over20": 0
+    },
+    "processing": {
+      "n": 0,
+      "total_ms": 0,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 0,
+      "max_ms": 0,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 0,
+      "total_ms": 0,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 0,
+      "max_ms": 0,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 0,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 0,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "tx": {
+      "poll_completed": 0,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 808,
+      "min_unused": 808
+    },
+    "stack handler": {
+      "unused": 1704,
+      "min_unused": 1704
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 10001,
+      "measurements": 178,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 178,
+      "total_ms": 8,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 178,
+      "total_ms": 21,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 178,
+      "total_ms": 29,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 183,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 183,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 183,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 15001,
+      "measurements": 428,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 428,
+      "total_ms": 19,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 428,
+      "total_ms": 46,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 428,
+      "total_ms": 65,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 438,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 438,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 438,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 20002,
+      "measurements": 678,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 678,
+      "total_ms": 31,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 678,
+      "total_ms": 72,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 678,
+      "total_ms": 103,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 693,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 693,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 693,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 25002,
+      "measurements": 928,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 928,
+      "total_ms": 40,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 928,
+      "total_ms": 92,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 928,
+      "total_ms": 132,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 948,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 948,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 948,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 30003,
+      "measurements": 1179,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 1179,
+      "total_ms": 46,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 1179,
+      "total_ms": 118,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 1179,
+      "total_ms": 164,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 1204,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 1204,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 1203,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 35003,
+      "measurements": 1429,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 1429,
+      "total_ms": 53,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 1429,
+      "total_ms": 140,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 1429,
+      "total_ms": 193,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 1459,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 1459,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 1459,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 40004,
+      "measurements": 1679,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 1679,
+      "total_ms": 61,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 1679,
+      "total_ms": 167,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 1679,
+      "total_ms": 228,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 1714,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 1714,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 1714,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 45004,
+      "measurements": 1929,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 1929,
+      "total_ms": 68,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 1929,
+      "total_ms": 193,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 1929,
+      "total_ms": 261,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 1969,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 1969,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 1969,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 50005,
+      "measurements": 2179,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 2179,
+      "total_ms": 80,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 2179,
+      "total_ms": 212,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 2179,
+      "total_ms": 292,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 2224,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 2224,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 2224,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 55005,
+      "measurements": 2430,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 2430,
+      "total_ms": 91,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 2430,
+      "total_ms": 240,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 2430,
+      "total_ms": 331,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 2480,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 2480,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 2479,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 60006,
+      "measurements": 2680,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 2680,
+      "total_ms": 102,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 2680,
+      "total_ms": 264,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 2680,
+      "total_ms": 366,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 2735,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 2735,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 2735,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 65007,
+      "measurements": 2930,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 2930,
+      "total_ms": 113,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 2930,
+      "total_ms": 289,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 2930,
+      "total_ms": 402,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 2990,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 2990,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 2990,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 70007,
+      "measurements": 3180,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 3180,
+      "total_ms": 124,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 3180,
+      "total_ms": 315,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 3180,
+      "total_ms": 439,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 3245,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 3245,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 3245,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 75008,
+      "measurements": 3430,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 3430,
+      "total_ms": 133,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 3430,
+      "total_ms": 339,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 3430,
+      "total_ms": 472,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 3500,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 3500,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 3500,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 80008,
+      "measurements": 3678,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 3678,
+      "total_ms": 147,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 3678,
+      "total_ms": 363,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 3678,
+      "total_ms": 510,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 3753,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 3753,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 3753,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 85009,
+      "measurements": 3929,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 3929,
+      "total_ms": 152,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 3929,
+      "total_ms": 390,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 3929,
+      "total_ms": 542,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 4009,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 4009,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 4008,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 90009,
+      "measurements": 4179,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 4179,
+      "total_ms": 160,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 4179,
+      "total_ms": 421,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 4179,
+      "total_ms": 581,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 4264,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 4264,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 4264,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 95010,
+      "measurements": 4429,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 4429,
+      "total_ms": 170,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 4429,
+      "total_ms": 443,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 4429,
+      "total_ms": 613,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 4519,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 4519,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 4519,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 100010,
+      "measurements": 4679,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 4679,
+      "total_ms": 179,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 4679,
+      "total_ms": 465,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 4679,
+      "total_ms": 644,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 4774,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 4774,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 4774,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 105011,
+      "measurements": 4929,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 4929,
+      "total_ms": 190,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 4929,
+      "total_ms": 493,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 4929,
+      "total_ms": 683,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 5029,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 5029,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 5029,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 110011,
+      "measurements": 5180,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 5180,
+      "total_ms": 194,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 5180,
+      "total_ms": 519,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 5180,
+      "total_ms": 713,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 5285,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 5285,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 5284,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 115012,
+      "measurements": 5430,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 5430,
+      "total_ms": 199,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 5430,
+      "total_ms": 545,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 5430,
+      "total_ms": 744,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 5540,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 5540,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 5540,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 120012,
+      "measurements": 5680,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 5680,
+      "total_ms": 209,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 5680,
+      "total_ms": 571,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 5680,
+      "total_ms": 780,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 5795,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 5795,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 5795,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 125013,
+      "measurements": 5930,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 5930,
+      "total_ms": 219,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 5930,
+      "total_ms": 597,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 5930,
+      "total_ms": 816,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 6050,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 6050,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 6050,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 130013,
+      "measurements": 6180,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 6180,
+      "total_ms": 224,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 6180,
+      "total_ms": 624,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 6180,
+      "total_ms": 848,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 6305,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 6305,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 6305,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 135014,
+      "measurements": 6430,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 6430,
+      "total_ms": 230,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 6430,
+      "total_ms": 654,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 6430,
+      "total_ms": 884,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 6560,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 6560,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 6560,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 140014,
+      "measurements": 6681,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 6681,
+      "total_ms": 232,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 6681,
+      "total_ms": 682,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 6681,
+      "total_ms": 914,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 6816,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 6816,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 6816,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 145015,
+      "measurements": 6931,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 6931,
+      "total_ms": 246,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 6931,
+      "total_ms": 708,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 6931,
+      "total_ms": 954,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 7071,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 7071,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 7071,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  {
+    "header": {
+      "uptime_ms": 150015,
+      "measurements": 7181,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 7181,
+      "total_ms": 258,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 7181,
+      "total_ms": 729,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 7181,
+      "total_ms": 987,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 7326,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 7326,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 7326,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  }
+]

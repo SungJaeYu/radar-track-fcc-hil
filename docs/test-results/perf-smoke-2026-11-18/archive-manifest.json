@@ -1,0 +1,51 @@
+[
+  {
+    "path": "restore-flash.log.gz",
+    "uncompressed_bytes": 1519,
+    "uncompressed_sha256": "c2d112bdfba307876492a47d8aa00bd88ff112cc61ae3701cfd412d253bea3e0",
+    "gzip_bytes": 825,
+    "gzip_sha256": "b24650ba64a5051d271f3a56c59cf4b205066c31fae7f9dd3c2137db6bd78640"
+  },
+  {
+    "path": "console.log.gz",
+    "uncompressed_bytes": 5529,
+    "uncompressed_sha256": "0889d82170ab6d4e565f51224c555319c535d407923851363f89b69dff810794",
+    "gzip_bytes": 907,
+    "gzip_sha256": "a514bae37218ca622408ba57bca412d6c0e9050c3ce9140f975909a3d125d9cd"
+  },
+  {
+    "path": "perf-flash.log.gz",
+    "uncompressed_bytes": 1471,
+    "uncompressed_sha256": "dc92385a5cb2a09681b9d1ac18c401ea0ad406da6a974c8c13fcf8b99456fc9e",
+    "gzip_bytes": 820,
+    "gzip_sha256": "082f60a915a7d42ffd6e591da67d8a4be2667a92a8ed18cf68064e929c71bf57"
+  },
+  {
+    "path": "session/wire.csv.gz",
+    "uncompressed_bytes": 76284,
+    "uncompressed_sha256": "7347230aedb250ac9d6e5a280ca308d06fb8ac5751b2656f7f0e35fbec366121",
+    "gzip_bytes": 15154,
+    "gzip_sha256": "ec79f8aa87ab67cf0a7a61d0cbf4eed9458b98fffc8f2ab57438ea2063cbc241"
+  },
+  {
+    "path": "session/status.csv.gz",
+    "uncompressed_bytes": 518,
+    "uncompressed_sha256": "307f2f81bc35fcb6409749a42413c078f6b7014c396756dbca340b04a8f6ea94",
+    "gzip_bytes": 225,
+    "gzip_sha256": "ad34d37f574f77ac2cce9f5e095f758741fa302c00a892710a80d3f81f666893"
+  },
+  {
+    "path": "session/samples.csv.gz",
+    "uncompressed_bytes": 52205,
+    "uncompressed_sha256": "889f48ff3bec5e62306a70002a23b2857907c1a9fe637905ebb99c766b56e95f",
+    "gzip_bytes": 7807,
+    "gzip_sha256": "a95b2ffb412c2d532d4b326c8ceecdb253a548bbc318ac9c18756efc5210a725"
+  },
+  {
+    "path": "session/reports.csv.gz",
+    "uncompressed_bytes": 36220,
+    "uncompressed_sha256": "5305a46597cc456e1d3e1b1e998fdad91646ff7107e918e34d32b47f9f26ac76",
+    "gzip_bytes": 6666,
+    "gzip_sha256": "a19d0ebb73709f552c0720ce8642b21f5710112cb3e349c9422c85dc4bc6a66c"
+  }
+]

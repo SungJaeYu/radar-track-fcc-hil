@@ -1,0 +1,58 @@
+[
+  {
+    "path": "session/wire.csv.gz",
+    "uncompressed_bytes": 13494866,
+    "uncompressed_sha256": "911bf24ee740303204010943beaf11feb9b12f336ac51727ea4ed277ac188d63",
+    "gzip_bytes": 2638811,
+    "gzip_sha256": "6fd3cea2b3b657547b189248df4f4ce7f0efe0f9023964d934df6a8abe401838"
+  },
+  {
+    "path": "session/status.csv.gz",
+    "uncompressed_bytes": 60860,
+    "uncompressed_sha256": "de485ef1e9956fdb0bec31f724c210b42ddd958ad51987cfc32913a388c72326",
+    "gzip_bytes": 10510,
+    "gzip_sha256": "7839535111b957d3af9703729d57d309ce8f5446f26f0d418b1245f045ec58df"
+  },
+  {
+    "path": "session/samples.csv.gz",
+    "uncompressed_bytes": 9544897,
+    "uncompressed_sha256": "bc7665136820e2844da9a8604be657c935e5f8e69a8e04f6203b344489562a4b",
+    "gzip_bytes": 1376511,
+    "gzip_sha256": "3035ddf485a9bbd1ca1f159dccf2fde60dd174d74055be3faa637b8c1cc1a557"
+  },
+  {
+    "path": "session/reports.csv.gz",
+    "uncompressed_bytes": 7049327,
+    "uncompressed_sha256": "90451398f8792bfe92c7aa81eb32ebee4ed0166e87293f514f8272b8443f0d83",
+    "gzip_bytes": 1185099,
+    "gzip_sha256": "44ba37e887b4fdaa3acdea9211145e336a428e462317e0fadc8d368d922d6d36"
+  },
+  {
+    "path": "performance.json.gz",
+    "uncompressed_bytes": 418170,
+    "uncompressed_sha256": "6b2cb9b65ff5dd288178695f2f6d1b7364088aae5f2a884c7a99a7faa5da761c",
+    "gzip_bytes": 16074,
+    "gzip_sha256": "50ab50efdf5374df23e6ccf4086698bcd5859cec381d6f0700524bc266984502"
+  },
+  {
+    "path": "restore-flash.log.gz",
+    "uncompressed_bytes": 1519,
+    "uncompressed_sha256": "dffa2701a5adf14c589176e500ed3126ade7b9bf3e2dfaf8346639f3a1933883",
+    "gzip_bytes": 825,
+    "gzip_sha256": "67ce7071dd030776d36d1d7bda70f6185cd2fa1dadb05fa21717c348d21aba1f"
+  },
+  {
+    "path": "console.log.gz",
+    "uncompressed_bytes": 402107,
+    "uncompressed_sha256": "a971bc2c5fe928cf42378a69ec21aa7cbffec090a75068fa5855f0a2af225a53",
+    "gzip_bytes": 27906,
+    "gzip_sha256": "6ecccc55ebff9fed1bb43477fa0cb4e642aad3af7a67cb3f82ba4bc3fc232ec5"
+  },
+  {
+    "path": "perf-flash.log.gz",
+    "uncompressed_bytes": 1471,
+    "uncompressed_sha256": "6816ccf238efbecdc327a00965e2dc1d2588c283d8926b8e7e0a070e1d892533",
+    "gzip_bytes": 819,
+    "gzip_sha256": "e34c3cbaee8d2bc65fa7b7e9f757ab737cf477c1263a2a6eec916b6b8e35bbfc"
+  }
+]

@@ -4,7 +4,7 @@
 
 STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 현재는 PC 측정 송신 → STM32 단일 트랙 처리 → STATUS/TRACK 이진 보고 송신 구조입니다. PC는 STATUS/TRACK을 해석하고 GUI에 보드 추정값을 표시합니다. GUI/CLI 세션 CSV와 고정 시나리오 RMSE 평가를 지원합니다. ST-Link는 별도 진단 콘솔입니다.
-단일표적 기본 결과 왕복·고정 시나리오 평가는 확인했고 지속 부하·보드 내부 지연/자원 검증은 남았습니다. v1의 범위와 완료 판정은 [README v1 검증 및 완료 기준](README.md#v1-acceptance)을 따릅니다. 다중표적·CT/IMM·BIT·Lock On은 v2 선택이며 v1 완료를 미루는 필수 작업으로 복원하지 않습니다. 계획 변경을 펌웨어 구현·시험 완료로 표시하지 않습니다.
+단일표적 기본 왕복·고정 시나리오 평가와 30분 지연/스택 관측을 확인했습니다. 호스트 송신 간격 기준 미달로 지속 부하 전체 판정은 미완료입니다. v1의 범위와 완료 판정은 [README v1 검증 및 완료 기준](README.md#v1-acceptance)을 따릅니다. 다중표적·CT/IMM·BIT·Lock On은 v2 선택이며 v1 완료를 미루는 필수 작업으로 복원하지 않습니다. 계획 변경을 펌웨어 구현·시험 완료로 표시하지 않습니다.
 
 ## 개발 환경
 
@@ -38,12 +38,12 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 
 ## 선택적 성능 계측
 
-`perf.conf`는 `diagnostics/perf_monitor.c/.h`의 지연·큐·송신 집계와 `perf_reporter.c`의 5초 요약·스택 조회를 켭니다. 일반/debug 빌드에는 제외됩니다. [측정 계약](docs/performance-monitoring.md)을 따르며 성능 목표 달성은 실보드 증거로 별도 판정합니다. 계측 구현을 완료해도 30분 부하·MCU 내부 지연/스택 실측은 미완료입니다.
+`perf.conf`는 `diagnostics/perf_monitor.c/.h`의 지연·큐·송신 집계와 `perf_reporter.c`의 5초 요약·스택 조회를 켭니다. 일반/debug 빌드에는 제외됩니다. [측정 계약](docs/performance-monitoring.md)을 따르며 성능 목표 달성은 실보드 증거로 별도 판정합니다. [30분 실보드 관측](docs/hardware-test-2026-11-18-performance.md)에서 지연 최대1ms·오류0을 확인했으나 호스트 write 간격163.995ms가 기준100ms를 넘어 전체 판정은 실패입니다. 다음은 PC 시험기 지연 구간 분석이며 펌웨어 변경 근거는 아직 없습니다.
 
 ## 검증
 
 - [성능 계측 host 테스트](fcc_app/tests/test_perf_monitor/README.md): collector/reporter 9 + 계측 활성화 handler 31/TX 4회. 기존 C 116회와 합쳐 160회 실행(CTest 144개)입니다.
-- `python -m pytest`: GUI 의존성 설치 시 231개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
+- `python -m pytest`: GUI 의존성 설치 시 239개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 24·discard 21, 총 45회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [handler host 테스트](fcc_app/tests/test_frame_handler/README.md): STATUS·TRACK·실패 복귀·INIT/RESET·측정 timeout·processor·stale 계약 30개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.
 - [TX host 테스트](fcc_app/tests/test_uart_tx/README.md): 초기화·요청 검증·복사 큐·송신 순서·실패 후 복귀 4개 사례.
@@ -77,4 +77,4 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - 2026-11-17 파일·API·변수 이름 변경을 적용했습니다. [변경 전후와 남은 설계 과제](docs/naming-review.md)를 참고합니다.
 - 과거 `docs/test-results/` 스크립트는 당시 revision용입니다. 현재 API로 재사용할 때 호환성을 확인하며 원시 증거를 덮어쓰지 않습니다.
 
-2026-11-18: stale 큐 측정은 MCU 나이가 측정 timeout 이상이면 폐기하고 handler 포화 통계에 집계합니다. CSV·고정 시나리오 실보드 RMSE·실제 UART GUI 확인 범위는 [최신 결과](docs/hardware-test-2026-11-18-evaluation.md)를 따릅니다. 30분 부하·MCU 내부 지연·스택은 미검증입니다.
+2026-11-18: stale 큐 측정은 MCU 나이가 측정 timeout 이상이면 폐기하고 handler 포화 통계에 집계합니다. CSV·고정 시나리오 실보드 RMSE·실제 UART GUI 확인 범위는 [최신 결과](docs/hardware-test-2026-11-18-evaluation.md)를 따릅니다. 30분 계측과 호스트 간격 기준 미달은 [성능 시험 기록](docs/hardware-test-2026-11-18-performance.md)을 따릅니다.

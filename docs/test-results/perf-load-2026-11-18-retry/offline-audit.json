@@ -1,0 +1,101 @@
+{
+  "passed": true,
+  "measurement_timestamps_match_in_order": 89971,
+  "contiguous_track_reports": 89973,
+  "status_zero_responses": 1801,
+  "wire_frames_by_type": {
+    "tx": {
+      "1": 1,
+      "3": 1801,
+      "2": 89971
+    },
+    "rx": {
+      "7": 89973,
+      "6": 1801
+    }
+  },
+  "wire_bytes": {
+    "tx": 1360377,
+    "rx": 3395638
+  },
+  "state_sequence": "TENTATIVE for first two measurements, then CONFIRMED",
+  "wire_crc_length_errors": 0,
+  "wire_partial_tails": 0,
+  "note": "Wire/counter replay passed; this does not override the host pacing failure in results.json",
+  "duration_target_s": 1800,
+  "first_to_last_measurement_s": 1799.9800353749306,
+  "actual_measurement_hz": 49.98388888888889,
+  "skipped_host_slots": 29,
+  "host_max_send_gap_ms": 163.99458301020786,
+  "host_gaps_over_100ms": 1,
+  "pc_latency_ms": {
+    "p50": 6.391000002622604,
+    "p95": 6.640625011641532,
+    "p99": 8.041208027862012,
+    "max": 164.12762500112876
+  },
+  "performance_summary_count": 362,
+  "summaries_continuous": true,
+  "last_performance": {
+    "header": {
+      "uptime_ms": 1810182,
+      "measurements": 89971,
+      "without_submit": 0,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 89971,
+      "total_ms": 3480,
+      "p50_bin": 0,
+      "p95_bin": 0,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 89971,
+      "total_ms": 9268,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 89971,
+      "total_ms": 12748,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 91773,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 91774,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 91774,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  }
+}

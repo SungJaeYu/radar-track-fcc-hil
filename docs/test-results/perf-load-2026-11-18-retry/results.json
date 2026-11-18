@@ -1,0 +1,103 @@
+{
+  "failure": "AssertionError('host measurement gaps stay below 100ms')",
+  "restore_failure": null,
+  "checks": [
+    {
+      "name": "idle performance summary",
+      "passed": true
+    },
+    {
+      "name": "idle timing has no samples",
+      "passed": true
+    },
+    {
+      "name": "idle stack queries available",
+      "passed": true
+    },
+    {
+      "name": "INIT reset report received",
+      "passed": true
+    },
+    {
+      "name": "initial STATUS zero",
+      "passed": true
+    },
+    {
+      "name": "one post-load timeout report",
+      "passed": true
+    },
+    {
+      "name": "all measurements matched once",
+      "passed": true
+    },
+    {
+      "name": "all STATUS requests answered",
+      "passed": true
+    },
+    {
+      "name": "single firmware boot",
+      "passed": true
+    },
+    {
+      "name": "measurement count reconciles",
+      "passed": true
+    },
+    {
+      "name": "no submit failures or invalid times",
+      "passed": true
+    },
+    {
+      "name": "invalid measurement is counted without submission",
+      "passed": true
+    },
+    {
+      "name": "processing successful sample count",
+      "passed": true
+    },
+    {
+      "name": "rx_to_submit successful sample count",
+      "passed": true
+    },
+    {
+      "name": "queue wait count includes invalid input",
+      "passed": true
+    },
+    {
+      "name": "20ms board latency budget",
+      "passed": true
+    },
+    {
+      "name": "no queue rejection",
+      "passed": true
+    },
+    {
+      "name": "RX accepted frame count",
+      "passed": true
+    },
+    {
+      "name": "TX queued and polling counts match received frames",
+      "passed": true
+    },
+    {
+      "name": "no TX encoder failures",
+      "passed": true
+    },
+    {
+      "name": "all sampled stacks have headroom",
+      "passed": true
+    },
+    {
+      "name": "host delivered nominal 50Hz within one percent",
+      "passed": true
+    },
+    {
+      "name": "host measurement gaps stay below 100ms",
+      "passed": false
+    },
+    {
+      "name": "restored normal STATUS zero",
+      "passed": true
+    }
+  ],
+  "passed": false
+}
