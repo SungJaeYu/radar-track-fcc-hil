@@ -14,7 +14,7 @@ PC 프레임 파서·CLI·GUI STATUS 수동 조회는 구현·host 검증 완료
 
 ## v1 완료 범위 — 2026-11-15 계획 조정
 
-v1의 완료 판정은 [README V1-1~5](../README.md#v1-acceptance)를 따릅니다. 단일표적 결과 반환·RMSE·시간/자원·오류 복귀·재현 자료가 필수이며, 다중표적·BIT·COMMAND/Lock On과 모든 하드웨어 오류 시험의 완성은 후속 범위입니다. 이 절은 release 범위 결정이며 아래 요구사항 ID·구현 상태·과거 시험 결과를 완료로 바꾸지 않습니다.
+v1의 완료 판정은 [로드맵 V1-1~5](roadmap.md#v1-acceptance)를 따릅니다. 단일표적 결과 반환·RMSE·시간/자원·오류 복귀·재현 자료가 필수이며, 다중표적·BIT·COMMAND/Lock On과 모든 하드웨어 오류 시험의 완성은 후속 범위입니다. 이 절은 release 범위 결정이며 아래 요구사항 ID·구현 상태·과거 시험 결과를 완료로 바꾸지 않습니다.
 
 TRACK_REPORT 측정 경로는 아래 REQ-RPT-001~003 및 SPEC-TRACK-REPORT에 연결합니다. PC 수신·GUI 표시는 REQ-PC-003 / REQ-GUI-002로 연결했습니다. 원시 로그·정량 평가·이벤트 보고와 기본 실보드 왕복을 확인했습니다. TX 포화·제어 유실/순서는 실보드에서 확인했고, 계측 실보드 관측은 확보했지만 호스트 송신 간격 기준을 만족하는 장시간 재시험은 FUT-008의 남은 범위입니다.
 
@@ -171,7 +171,7 @@ INIT/RESET은 트랙과 감시를 지우고 RX 통계는 지우지 않는다. ST
 - delta=0 또는 unsigned delta>=`0x80000000`은 거부한다. 정상 uint32 wraparound는 허용한다.
 - LOST 또는 긴 간격은 predict에서 EMPTY로 만들고 TRACK_PREDICT_RESULT_RESET을 반환한다.
   radar_processor는 해당 측정을 재사용해 시작하지 않으며 다음 측정에서 새 트랙을 시작한다.
-- RMSE 비교 방법과 초기 부하/지연 목표는 [v1 기준](../README.md#v1-acceptance)을 따른다. 최종 지원 부하와 실측 정확도·연속성은 아직 검증하지 않았다.
+- RMSE 비교 방법과 초기 부하/지연 목표는 [v1 기준](roadmap.md#v1-acceptance)을 따른다. 최종 지원 부하와 실측 정확도·연속성은 아직 검증하지 않았다.
 
 <a id="spec-track-report"></a>
 ### SPEC-TRACK-REPORT — 단일 트랙 측정 결과
@@ -420,7 +420,7 @@ Python의 개별 함수·매개변수 사례는 [테스트 목록](test-cases.md
 | FUT-006 | 다중 측정·트랙을 연관하고 펌웨어 자체 ID로 관리한다 | 스캔 규격·최대 표적 수·트랙 수명·교차/클러터 평가. 정답 ID 입력 금지 |
 | FUT-007 | COMMAND/Lock On과 BIT를 제공한다 | 명령 payload·선택/해제·소실 동작·자기진단 항목과 합격 기준 TBD |
 | FUT-009 | 로그를 모듈·레벨별로 관리하고 스레드 간 문장 섞임을 방지한다 | [다섯 모듈 deferred logging](logging.md)·일반 INFO/디버그 DEBUG·비차단 새 로그 폐기 구현. 일반/디버그 각 30조건 기본 실보드 회귀 완료. [강제 포화/유실·STATUS 유지 확인](hardware-test-2026-11-14-log-stress.md). 반복 WARN·최악 UART 영향·자원 측정은 남음 |
-| FUT-008 | 설정·자원·지연을 반복 검증 가능한 기준으로 관리한다 | overflow·timeout·게이트 Kconfig와 host 검증 완료; 게이트 변경값·DRAIN 강제 overflow 실보드 확인. perf.conf 계측 구현·host/빌드 및 30분 스택·지연 관측 확보. 호스트 간격 기준 미달로 지속 부하 재시험 남음. 초기 50Hz·30분·보드 지연 예산 20ms는 [v1 목표](../README.md#v1-acceptance)이며 달성 증거는 아직 없음 |
+| FUT-008 | 설정·자원·지연을 반복 검증 가능한 기준으로 관리한다 | overflow·timeout·게이트 Kconfig와 host 검증 완료; 게이트 변경값·DRAIN 강제 overflow 실보드 확인. perf.conf 계측 구현·host/빌드 및 30분 스택·지연 관측 확보. 호스트 간격 기준 미달로 지속 부하 재시험 남음. 초기 50Hz·30분·보드 지연 예산 20ms는 [v1 목표](roadmap.md#v1-acceptance)이며 달성 증거는 아직 없음 |
 
 FUT-001은 구현·host 검증 완료, FUT-002 기본 실보드 왕복도 완료했다. CTL-002 측정 경유 검증은 완료했다.
 남은 host 공백은 CTL-001의 실제 RX 카운터와 명령 처리 통합, RX-004의 실제 큐 경계와 다른 errno 처리다.
