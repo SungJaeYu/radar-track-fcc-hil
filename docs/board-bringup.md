@@ -2,10 +2,10 @@
 
 현재 실행 경로는 USART6 수신 → rx_frame_processor → 메시지 큐 → handler 스레드의 radar_processor입니다.
 보고는 report_sender → TX 큐 → uart_tx → USART6로 나가며 ST-Link는 별도 진단 로그입니다.
-현재 소스에 LCD 표시는 없으며 이진 TRACK_REPORT 측정 결과 송신은 구현되어 있습니다. PC 해석과 새 결과 경로의 실보드 검증은 남아 있습니다.
+현재 소스에 LCD 표시는 없으며 이진 TRACK_REPORT 측정 결과 송신은 구현되어 있습니다. PC 해석·CSV·기본 실보드 왕복을 확인했습니다.
 
 STATUS 요청과 유효 측정 처리에는 각각 STATUS_REPORT·TRACK_REPORT 송신 경로가 있습니다.
-PC STATUS 디코더·CLI·GUI와 TRACK 디코더·GUI는 구현했으며 정량 평가는 미구현입니다. STATUS 기본 실보드 왕복은 `2aa57d9`에서 확인했습니다.
+PC STATUS 디코더·CLI·GUI와 TRACK 디코더·GUI는 구현했으며 고정 시나리오 정량 평가 CLI도 구현했습니다. STATUS 기본 실보드 왕복은 `2aa57d9`에서 확인했습니다.
 
 ## 배선과 통신 설정
 
@@ -16,7 +16,7 @@ PC STATUS 디코더·CLI·GUI와 TRACK 디코더·GUI는 구현했으며 정량 
 | USB-UART | STM32 핀 | 역할 |
 | --- | --- | --- |
 | TXD | PC7 / USART6_RX | PC 측정·제어 요청 입력 |
-| RXD | PC6 / USART6_TX | STATUS_REPORT·TRACK_REPORT 출력; PC 디코더·GUI 지원; TRACK 실보드 왕복 미검증 |
+| RXD | PC6 / USART6_TX | STATUS_REPORT·TRACK_REPORT 출력; PC 디코더·GUI 지원; TRACK 기본 실보드 왕복 확인 |
 | GND | GND | 공통 접지 |
 | VCC / 5V / 3V3 | 연결하지 않음 | 보드와 어댑터는 각자 USB로 급전 |
 
@@ -44,7 +44,7 @@ west flash -d <repo>/build --runner openocd
   macOS는 각각 `cu.usbmodem...`, `cu.usbserial...` 등의 실제 장치명을 확인합니다.
 
 일반 빌드는 INFO 이상만 출력합니다. 아래 측정·예측 로그를 확인하는 절차는
-`debug.conf` 빌드가 필요합니다. STATUS의 일곱 통계는 일반 빌드에서도 wire로 조회합니다.
+`debug.conf` 빌드가 필요합니다. STATUS의 여덟 통계는 일반 빌드에서도 wire로 조회합니다.
 [로깅 빌드 방법](logging.md).
 
 ## 3. 자동 INIT과 측정 송신
@@ -71,7 +71,7 @@ python -m pc_sim.run_sim --port /dev/ttyUSB0 --duration 10 --noise 0 --azimuth-n
 
 기본값은 단일 접근 표적입니다. 다중표적·클러터는 PC 출력 전용이며 UART로 보내지 않습니다.
 재실행 시 INIT이 자동 전송되므로 보드를 재부팅하거나 별도로 수동 INIT을 보낼 필요가 없습니다.
-이진 트랙 응답과 폐루프 RMSE 검증은 아직 구현되지 않았습니다.
+이진 응답 수집·RMSE는 `python -m pc_sim.evaluate run --port /dev/ttyUSB0 --scenario noisy`를 사용합니다. run_sim은 송신 전용입니다.
 
 ## 5. Overflow 보드 시험 (추후 수행)
 
@@ -97,7 +97,7 @@ STATUS의 overflow 횟수·ISR 폐기 바이트·복구 폐기 바이트를 시�
 Python 테스트, UART/Tracking host C 테스트, 펌웨어 빌드, flash, 실제 보드 로그를 별도 결과로 남깁니다.
 통합 도구의 테스트 통과만으로 새 보드 HIL까지 통과했다고 기록하지 않습니다.
 
-STATUS 왕복 결과: [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 이후 로그 부하 시험과 최신 host/build 결과는 [검증 기록](verification-history.md)을 따릅니다. TRACK_REPORT 추가본의 실보드 왕복은 아직 검증하지 않았습니다. 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
+STATUS 왕복 결과: [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 이후 로그 부하 시험과 최신 host/build 결과는 [검증 기록](verification-history.md)을 따릅니다. [TRACK 실보드](hardware-test-2026-11-18-track.md)와 [CSV·평가·GUI](hardware-test-2026-11-18-evaluation.md)를 확인했습니다. 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
 
 ### 에디터 분석 설정
 
@@ -119,8 +119,8 @@ python -m pc_sim.status_client --port /dev/ttyUSB0 --timeout 2
 통계는 CLI/GUI의 이진 응답으로 확인합니다. 디버그 콘솔의 `STATUS report queued`는 큐 접수만 의미합니다.
 CRC 오류·잘못된 길이·부분 프레임 중단을 주입한 뒤 재조회하고, INIT/RESET 후에도
 누적값이 유지되는지 확인합니다. STATUS만 보내도 측정 무수신 timeout은 계속 동작해야 합니다.
-펌웨어는 통계를 28바이트 STATUS_REPORT로 구성해 TX 큐에 복사 제출합니다.
-CLI는 응답 TYPE·길이·CRC를 검사한 뒤 일곱 통계를 출력합니다.
+펌웨어는 통계를 32바이트 STATUS_REPORT로 구성해 TX 큐에 복사 제출합니다.
+CLI는 응답 TYPE·길이·CRC를 검사한 뒤 여덟 통계를 출력합니다.
 GUI·다른 송신기를 닫아 포트를 단독 사용하고 PC6 TX → 어댑터 RXD 배선도 확인합니다.
 정상 조회·반복 조회·오류 주입 후 통계 증가·추적 중 조회를 확인하고 로그와 펌웨어 버전을 남깁니다.
 GUI 시험은 CLI 종료 후 STATUS 탭에서 별도로 수행합니다.
@@ -128,12 +128,12 @@ GUI 시험은 CLI 종료 후 STATUS 탭에서 별도로 수행합니다.
 
 ## TRACK_REPORT 추가 후 검증 경계
 
-현재 펌웨어는 유효 측정 payload마다 TYPE=7을 제출합니다. STATUS CLI는 다른 TYPE을 건너뛰고,
-GUI worker는 TRACK 결과를 해석·표시하지만 원시 파일 저장은 지원하지 않습니다. 따라서 기존 STATUS 명령 성공만으로
+현재 펌웨어는 신선한 유효 측정 payload마다 TYPE=7을 제출합니다. STATUS CLI는 다른 TYPE을 건너뛰고,
+GUI worker와 evaluate CLI는 TRACK 결과와 원시 wire CSV를 저장합니다. 다만 기존 STATUS 명령 성공만으로
 측정 결과 반환을 검증했다고 판정하지 않습니다.
 
-다음 실보드 시험에서는 [TRACK_REPORT 규격](requirements-traceability.md#spec-track-report)에 맞는
-구현된 PC 디코더·GUI에 원시 프레임 수집을 추가하고, 값·시각·순번·유효성·오류 후 복귀를 확인해야 합니다.
+지속 부하·오류 복귀 후속 시험에서는 [TRACK_REPORT 규격](requirements-traceability.md#spec-track-report)에 맞는
+구현된 PC 디코더·GUI·CSV 수집기로, 값·시각·순번·유효성·오류 후 복귀를 확인해야 합니다.
 [로그 부하 실행기](../fcc_app/tests/log_stress/README.md)는 STATUS/TRACK 혼합의 CRC·길이를 검사하도록 수정했습니다. TRACK 수치·순번·전달률을 평가하는 도구는 아니며 수정 후 실보드 재시험은 남아 있습니다.
 
 날짜별 Kconfig·각도·게이트·STATUS·로깅 시험은 [검증 이력](verification-history.md)에 모았습니다.

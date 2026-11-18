@@ -21,6 +21,7 @@ target_compile_options(frame_handler_tests PRIVATE -Wall -Wextra -Werror -UNDEBU
 target_link_libraries(frame_handler_tests PRIVATE m)
 
 foreach(test_name IN ITEMS
+        test_stale_measurement_boundary_and_stats
         test_processor_invalid_input_preserves_output
         test_processor_timeout_query_preserves_state
         test_track_encode_wire

@@ -157,3 +157,35 @@ Tracking의 한 항목 안에서 17개를 실행하므로 C 논리 사례 합계
 로그 시험기 수정 `838aca6` 후 Python은 12개가 추가되어 172개 + subtest 9개를 통과했다.
 일반/디버그 빌드와 여섯 compile database의 현재 경로도 확인했다.
 [검증 기록](verification-history.md)에 명령·빌드 메모리·한계를 정리했다. flash·실보드 검증은 수행하지 않았다.
+
+## 전체 Markdown 재검토 — 2026-11-18
+
+기존 Markdown33개와 새 평가 보고서1개를 검토했습니다. 현재 안내의 STATUS32바이트·handler stale 정책·CSV/평가·검증 범위를 갱신했습니다. 날짜별 과거 수치와 당시 미구현 기록은 역사적 증거로 보존했습니다.
+이전 이름 변경 표와 당시 테스트 개수도 소급 수정하지 않습니다. 최신 실행 결과는 [검증 이력](verification-history.md), 다음 작업은 [README](../README.md#다음-구현-순서)를 따릅니다.
+
+| 문서 | 이번 판단 |
+|---|---|
+| README.md | 현재 구현 범위·TODO·다이어그램·V1-1/2 검증 상태 갱신 |
+| CLAUDE.md / EXPLAINER.md | handler 소유 통계·기준 시각·보고/평가 경로와 최신 시험 개수 갱신 |
+| pc_sim/README.md / GUI.md | 16/28/32 호환·CSV 파일·실행 명령·warm-up·정렬·실보드 캡처 추가 |
+| docs/requirements-traceability.md | REQ-MEA-002/PC-004, SPEC-TIME/STATUS/EVAL, handler30개 역추적 추가 |
+| docs/test-cases.md / verification-history.md | 현재 개수·추가 회귀·최신 실보드 근거 연결 |
+| docs/board-bringup.md / system-roles.md | TRACK/CSV/평가 미구현이라는 오래된 안내 수정 |
+| docs/logging.md | stale 폐기 경고 제한과 handler 카운터 소유권 반영 |
+| fcc_app/tests/test_frame_handler/README.md | 30개 사례, 32바이트 STATUS와 경계 테스트 설명 |
+| fcc_app/tests/test_uart_tx/README.md | PC TRACK 디코더 미구현 문구 수정 |
+| fcc_app/tests/log_stress/README.md | 과거28·현재32바이트 STATUS 캡처 호환, 보드 부하 재시험 경계 유지 |
+| docs/coding-standard.md / coding-standard-audit.md | 기존 소유권·단위·직렬화·테스트 규칙 유지; 새로운 스타일 규칙 불필요 |
+| docs/comment-audit.md / structure-review-2026-11-14.md | 날짜/대상 범위가 표시된 과거 감사 결과로 유지 |
+| fcc_app/tests/test_uart_rx/README.md / test_tracking/README.md | RX45·Tracking17+20과 모사 한계가 현재와 일치하여 유지 |
+| tools/vscode/README.md | 기존 C 소스 경로·compile database 안내 유효; 개인 설정 추적하지 않음 |
+| docs/naming-review.md | 이 재검토 기록 추가; 이전 이름 변경 결과 보존 |
+| docs/hardware-test-2026-11-01.md | 당시 GUI·RX·burst 증거 유지 |
+| docs/hardware-test-2026-11-12-status.md | 당시16바이트 STATUS 증거 유지 |
+| docs/hardware-test-2026-11-14-assert.md / -fmodf.md / -gating.md | 각 설정·수치 보호·게이트 당시 증거 유지 |
+| docs/hardware-test-2026-11-14-kconfig.md / -link-loss.md | 당시 정책·실제 단선 시험과 미검증 경계 유지 |
+| docs/hardware-test-2026-11-14-logging.md / -log-stress.md / -status-extended.md | 당시28바이트·부하·실패/복귀 증거 유지 |
+| docs/hardware-test-2026-11-18-track.md | e66515e의64개 판정·29개 보고 기록 유지 |
+| docs/hardware-test-2026-11-18-evaluation.md | 신규: 대상 소스 차이/해시·CSV·3시나리오·GUI13개·실패 이력·한계 |
+
+새 Python 모듈은 `recording.py`(Qt 없는 기록·평가)와 `evaluate.py`(시리얼 시나리오 CLI)로 기존 pc_sim에 둡니다. 별도 simulator 디렉터리나 제품 스레드는 만들지 않았습니다. 일반 사용자 기록 runs/는 Git 제외, 선택한 시험 증거만 docs/test-results에 보존합니다.

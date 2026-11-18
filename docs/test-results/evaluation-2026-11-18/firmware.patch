@@ -1,0 +1,135 @@
+diff --git a/fcc_app/src/application/frame_handler.c b/fcc_app/src/application/frame_handler.c
+index 9f91f2d..dcec972 100644
+--- a/fcc_app/src/application/frame_handler.c
++++ b/fcc_app/src/application/frame_handler.c
+@@ -73,6 +73,17 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
+         break;
+ 
+     case FRAME_TYPE_MEAS_REPORT: {
++        // Age uses board RX completion time, never the sender timestamp.
++        // Reject at the same boundary as measurement freshness, before any track update.
++        if (k_uptime_get() - p_frame->received_at_ms >= CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS) {
++            if (p_handler->stale_measurements != UINT32_MAX) {
++                p_handler->stale_measurements++;
++            }
++            if (p_handler->stale_measurements == 1 || p_handler->stale_measurements % 100 == 0) {
++                LOG_WRN("Stale measurements dropped: %u", (unsigned int)p_handler->stale_measurements);
++            }
++            break;
++        }
+         struct radar_process_result result;
+         if (radar_processor_process_measurement(&p_handler->radar, &p_frame->frame,
+                                                p_frame->received_at_ms, &result)) {
+@@ -83,7 +94,7 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
+     }
+     // Queue a STATUS_REPORT containing the current RX diagnostic counters.
+     case FRAME_TYPE_STATUS_REQUEST: {
+-        report_sender_submit_status();
++        report_sender_submit_status(p_handler->stale_measurements);
+         break;
+     }
+     // Placeholder: no command payload interpretation or control action yet.
+diff --git a/fcc_app/src/application/frame_handler.h b/fcc_app/src/application/frame_handler.h
+index 52e4346..b233b42 100644
+--- a/fcc_app/src/application/frame_handler.h
++++ b/fcc_app/src/application/frame_handler.h
+@@ -11,6 +11,8 @@
+ // Processing-thread-owned state; access through the frame queue in normal operation.
+ struct frame_handler {
+     struct radar_processor radar;
++    // Handler-owned saturating count; preserved across INIT/RESET and timeout.
++    uint32_t stale_measurements;
+     // Report state is preserved across INIT, RESET, and measurement timeout.
+     struct report_sender report_sender;
+ };
+@@ -36,7 +38,8 @@ void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_m
+ 
+ // Process a non-NULL, assembled frame against a non-NULL handler in its owner context.
+ // The RX path has already checked length and CRC; measurement decoding/gating happen here.
+-// Valid measurements queue TRACK_REPORT; STATUS_REQUEST queues STATUS_REPORT.
++// MEAS_REPORT age >= the measurement timeout is dropped and counted before decoding.
++// Fresh valid measurements queue TRACK_REPORT; STATUS_REQUEST queues STATUS_REPORT.
+ // COMMAND is not implemented; incoming reports are ignored.
+ void frame_handler_process(struct frame_handler *p_handler, const struct rx_frame *p_frame);
+ 
+diff --git a/fcc_app/src/application/report_sender.c b/fcc_app/src/application/report_sender.c
+index 16f510b..c9cafa4 100644
+--- a/fcc_app/src/application/report_sender.c
++++ b/fcc_app/src/application/report_sender.c
+@@ -12,7 +12,7 @@
+ // Reports run in the handler context and share its logging configuration.
+ LOG_MODULE_DECLARE(frame_handler, CONFIG_RADAR_HANDLER_LOG_LEVEL);
+ 
+-void report_sender_submit_status(void)
++void report_sender_submit_status(uint32_t stale_measurements)
+ {
+     struct rx_frame_processor_stats stats;
+     rx_frame_processor_get_stats(&stats);
+@@ -29,6 +29,7 @@ void report_sender_submit_status(void)
+         .ring_overflow_events = uart_stats.ring_overflow_events,
+         .rx_dropped_bytes = uart_stats.rx_dropped_bytes,
+         .recovery_discarded_bytes = uart_stats.recovery_discarded_bytes,
++        .stale_measurements = stale_measurements,
+     };
+     int ret = status_message_encode(&report, &request.frame);
+     if (ret != 0) {
+diff --git a/fcc_app/src/application/report_sender.h b/fcc_app/src/application/report_sender.h
+index 722ef53..8cbee91 100644
+--- a/fcc_app/src/application/report_sender.h
++++ b/fcc_app/src/application/report_sender.h
+@@ -14,9 +14,10 @@ struct report_sender {
+ };
+ 
+ // Read independently atomic RX counters, encode STATUS, and submit a copied frame.
++// Include the handler-owned stale measurement count without resetting it.
+ // Call from the handler thread. Log failures without retrying or resetting counters.
+ // Submission success means queued, not delivered to the peer.
+-void report_sender_submit_status(void);
++void report_sender_submit_status(uint32_t stale_measurements);
+ 
+ // Require non-NULL sender/track and exclusive handler-thread ownership.
+ // With input_present, time identifies the validated measurement even if tracking rejected it.
+diff --git a/fcc_app/src/protocol/status_message.c b/fcc_app/src/protocol/status_message.c
+index 65231df..975bb3d 100644
+--- a/fcc_app/src/protocol/status_message.c
++++ b/fcc_app/src/protocol/status_message.c
+@@ -28,5 +28,7 @@ int status_message_encode(const struct status_report *p_report, struct protocol_
+     write_u32_be(p_report->rx_dropped_bytes, &out_frame->payload[20]);
+     write_u32_be(p_report->recovery_discarded_bytes, &out_frame->payload[24]);
+ 
++    write_u32_be(p_report->stale_measurements, &out_frame->payload[28]);
++
+     return 0;
+ }
+diff --git a/fcc_app/src/protocol/status_message.h b/fcc_app/src/protocol/status_message.h
+index 8b503f4..57ed397 100644
+--- a/fcc_app/src/protocol/status_message.h
++++ b/fcc_app/src/protocol/status_message.h
+@@ -4,7 +4,7 @@
+ #include <stdint.h>
+ #include "protocol/protocol_frame.h"
+ 
+-// Transport-independent values copied from the RX diagnostic owners.
++// Transport-independent values copied from the RX and handler diagnostic owners.
+ struct status_report {
+     uint32_t crc_errors;
+     uint32_t length_errors;
+@@ -13,14 +13,15 @@ struct status_report {
+     uint32_t ring_overflow_events;
+     uint32_t rx_dropped_bytes;
+     uint32_t recovery_discarded_bytes;
++    uint32_t stale_measurements;
+ };
+ 
+ // Every wire field is a four-byte uint32; update the count when adding counters.
+-#define STATUS_REPORT_FIELD_COUNT 7U
++#define STATUS_REPORT_FIELD_COUNT 8U
+ #define STATUS_REPORT_PAYLOAD_LENGTH (STATUS_REPORT_FIELD_COUNT * 4U)
+ 
+-// Encode seven big-endian uint32 counters in the declaration order above.
+-// Set STATUS_REPORT type and the 28-byte payload length; no source counters are reset.
++// Encode eight big-endian uint32 counters in the declaration order above.
++// Set STATUS_REPORT type and the 32-byte payload length; no source counters are reset.
+ // Return 0 on success or -EINVAL for NULL input/output.
+ // Leave the output unchanged on failure.
+ int status_message_encode(const struct status_report *p_report, struct protocol_frame *out_frame);

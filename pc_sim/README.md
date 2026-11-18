@@ -26,6 +26,8 @@ PC에서 추적을 완료한 트랙이나 안정적인 표적 ID를 보드에 �
 - `protocol.py`: 공통 프레임 생성·CRC-16·라디안 변환·STATUS payload 해석.
 - `frame_parser.py`: 수신 프레임 조립과 LEN/CRC 검증.
 - `status_client.py`: STATUS 요청·응답 CLI.
+- `recording.py`: 세션별 CSV 기록과 시각 정렬 평가.
+- `evaluate.py`: 정상·잡음·연속 누락 실보드 수집 및 오프라인 RMSE CLI.
 - `gui.py`, `gui_model.py`, `gui_worker.py`: 화면·측정 생성·포트 소유 및 STATUS 수신.
 - `targets.py`: 등속 표적, 잡음, 미탐지, 클러터 모델.
 - `run_sim.py`: 표적 시나리오를 현재 규격으로 송신하거나 프레임만 출력.
@@ -95,7 +97,7 @@ python -m pc_sim.run_sim --pd 0.8 --duration 1
 - 모델의 앙각·도플러는 PC 내부 물리량이며 현재 10바이트 payload에는 없습니다.
 - 기본 시나리오는 `single_approach`, 탐지확률 1, 클러터 0입니다.
   `--noise`는 거리 표준편차(m), `--azimuth-noise`는 방위각 표준편차(rad)입니다.
-- 보드의 이진 트랙 응답·RMSE 계산은 아직 지원하지 않습니다. 결과는 ST-Link 콘솔로 확인합니다.
+- 이 두 송신기는 이진 응답을 수집하지 않습니다. TRACK 수집·RMSE에는 아래 평가 CLI를 사용합니다.
 - 두 연속 송신기 모두 실행마다 `7e 01 01 00 c8 9d` INIT을 한 번 보낸 뒤 timestamp를 0부터 시작합니다.
   출력 전용 모드에도 INIT이 먼저 표시됩니다. INIT은 측정 개수(`--count`)에 포함되지 않습니다.
   `flush()`는 송신 완료 대기이며 보드의 처리 완료 응답은 아닙니다.
@@ -156,26 +158,26 @@ GUI의 STATUS 탭에서도 수동 조회할 수 있습니다. 연결 중에는 C
 | 0x03 | `FRAME_TYPE_STATUS_REQUEST` | PC 진단 도구 → FCC 상태 조회 |
 | 0x04 | `FRAME_TYPE_COMMAND` | 명령 예약, 동작 미구현 |
 | 0x05 | `FRAME_TYPE_RESET` | FCC 추적 리셋 |
-| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 28바이트 payload; PC는 구형 16바이트 응답도 지원 |
+| 0x06 | `FRAME_TYPE_STATUS_REPORT` | FCC → PC 상태 보고, 32바이트 payload; PC는 구형 16/28바이트 응답도 지원 |
 | 0x07 | `FRAME_TYPE_TRACK_REPORT` | FCC → PC 추적 보고, 32바이트 payload; PC 디코더·GUI 표시 지원 |
 
 기존 0x01~0x05 값과 payload는 유지합니다. GUI/CLI의 측정 생성은 공통
 `protocol.py`를 통해 MEAS_REPORT를 보냅니다. 주기적 측정 방식이므로 MEAS_REQUEST는
 추가하지 않습니다. STATUS_REQUEST는 STATUS_REPORT를 큐에 제출하며 DEBUG 콘솔에는 접수만 기록합니다.
-응답 payload는 CRC 오류·길이 오류·부분 프레임 timeout·큐 드롭·링 overflow 횟수·ISR 폐기·복구 폐기 순서로
-big-endian uint32 일곱 개(총 28바이트)를 담습니다.
-개별 카운터는 atomic 조회하지만 전체의 동일 시점 snapshot은 보장하지 않습니다.
+응답 payload는 CRC 오류·길이 오류·부분 프레임 timeout·큐 드롭·링 overflow 횟수·ISR 폐기·복구 폐기·오래된 측정 폐기 순서로
+big-endian uint32 여덟 개(총 32바이트)를 담습니다.
+RX의 일곱 카운터는 atomic 조회하고 마지막 값은 handler 소유 상태에서 읽지만 전체의 동일 시점 snapshot은 보장하지 않습니다.
 보드의 단순 `TYPE_MEAS`/`TYPE_STATUS` 로그는 제거했습니다. 측정 상세는 디버그 빌드에서만 출력하며, 통계는 이진 응답으로 확인합니다.
 `frame_sender.py`의 선택지는 구현된 수신 경로 1~5로 유지합니다.
 
 
 ## TRACK_REPORT 지원 상태
 
-펌웨어는 유효 측정마다 TYPE=7을 TX 큐에 제출합니다. [32바이트 배치와 동작](../docs/requirements-traceability.md#spec-track-report)은 펌웨어에 구현되어 host 검증을 마쳤습니다.
+펌웨어는 신선한 유효 측정마다 TYPE=7을 TX 큐에 제출합니다. [32바이트 배치와 동작](../docs/requirements-traceability.md#spec-track-report)은 펌웨어에 구현되어 host 검증을 마쳤습니다.
 `protocol.decode_track_payload()`는 32바이트를 immutable `TrackReport`로 해석합니다. Python enum은 `TrackState`, `TrackReportResult`, `TrackReportFlag`이며 C wire 값과 일치합니다.
 길이·미지원 enum·reserved byte/bit·비유한 float·상태/유효 플래그 불일치·무효 추정값의 비영 필드를 거부합니다. 플래그가 있으면 timestamp/추정값 0도 유효합니다.
 GUI worker는 하나의 지속 파서로 STATUS와 TRACK을 TYPE별로 분기합니다. STATUS 요청/timeout 때 TRACK 부분 프레임을 지우지 않습니다. [GUI 표시·STALE 정책](GUI.md#track-수신과-유효성).
-로그 부하 시험기는 TRACK의 CRC·길이만 검사합니다. STATUS CLI는 TYPE=6만 조회하며 TRACK 수집 도구가 아닙니다. TRACK 수집 CLI·파일 저장·정량 평가는 아직 없습니다.
+로그 부하 시험기는 TRACK의 CRC·길이만 검사합니다. STATUS CLI는 TYPE=6만 조회하며 TRACK 수집 도구가 아닙니다. `evaluate` CLI와 GUI CSV 기록, `recording.evaluate_session()` 정량 평가를 지원합니다.
 `radar_sender.py`와 `run_sim.py`는 송신 도구이며 반환 결과를 수집하지 않습니다. 기존 도구의 실행 성공은 TRACK 왕복 성공을 뜻하지 않습니다.
 과거 설정별 보드 결과는 [검증 이력](../docs/verification-history.md)을 참고하세요.
 
@@ -190,12 +192,13 @@ GUI worker는 하나의 지속 파서로 STATUS와 TRACK을 TYPE별로 분기합
 | 16 | ring_overflow_events | 링 저장 실패로 복구에 진입한 횟수 |
 | 20 | rx_dropped_bytes | ISR이 FIFO에서 읽고 링에 저장하지 못한 바이트 |
 | 24 | recovery_discarded_bytes | 복구 시 링에 남아 폐기한 미소비 바이트 |
+| 28 | stale_measurements | handler가 나이 초과로 폐기한 측정 수; UINT32_MAX 포화 |
 
-모두 big-endian uint32이며 전체 wire 프레임은 33바이트입니다.
-마지막 두 바이트 카운터는 하드웨어 유실이나 parser가 이미 소비한 부분 프레임을 포함하지 않습니다.
-새 PC는 구형 16바이트도 수용하고, 없는 세 필드는 CLI `unsupported`·GUI `미지원`으로 표시합니다.
-새 펌웨어는 28바이트만 송신하므로 구형 PC는 업데이트해야 합니다. 다른 payload 길이는 거부합니다.
-이는 길이로 구분하는 명시적 두 규격 호환이며 임의 확장·버전 협상은 지원하지 않습니다.
+모두 big-endian uint32이며 전체 wire 프레임은 37바이트입니다.
+offset 20·24의 바이트 카운터는 하드웨어 유실이나 parser가 이미 소비한 부분 프레임을 포함하지 않습니다.
+새 PC는 구형 16/28바이트도 수용하고, 없는 필드는 CLI `unsupported`·GUI `미지원`으로 표시합니다.
+새 펌웨어는 32바이트만 송신하므로 구형 PC는 업데이트해야 합니다. 다른 payload 길이는 거부합니다.
+이는 길이로 구분하는 명시적 세 길이 호환이며 임의 확장·버전 협상은 지원하지 않습니다.
 
 필드를 바꿀 때 C의 `status_report`/`status_message_encode()`와 Python `protocol.py`의
 `STATUS_FIELDS`를 함께 수정합니다. Python 길이·디코딩과 CLI/GUI 행은 이 목록을 공유합니다.
@@ -203,7 +206,7 @@ C의 `STATUS_REPORT_FIELD_COUNT`도 갱신합니다. payload 길이는 필드 �
 정적 assert는 현재 all-uint32 구조체 크기와 payload 길이 일치 및 최대 payload 용량을 검사합니다.
 구조체 멤버 수를 자동으로 세는 것은 아니며, 타입·패딩이 바뀌면 크기 검사도 재검토합니다.
 이 검사는 필드 순서나 인코더의 기록 누락을 보장하지 않으므로 고정 바이트열 테스트를 유지합니다.
-C endian 쓰기는 `common/byte_order.h`를 재사용합니다. 생성기는 사용하지 않습니다.
+C endian 쓰기는 `common/byte_order.h`를 재사용합니다. 생성기는 사용하지 않습니다. 현재 STATUS가 최대 payload 32바이트를 모두 사용하므로 다음 필드 추가는 프레임 용량/버전 정책부터 검토해야 합니다.
 고정 기대 바이트열·C→Python 상호운용·길이 오류·구형 응답·CLI/GUI 테스트도 함께 갱신합니다.
 28바이트 응답의 [실보드 UART·CLI·GUI 왕복](../docs/hardware-test-2026-11-14-status-extended.md)을 확인했습니다.
 강제 overflow에 의한 새 카운터 증가 시험은 남아 있습니다.
@@ -211,6 +214,39 @@ C endian 쓰기는 `common/byte_order.h`를 재사용합니다. 생성기는 사
 ## 로깅 전환 후 보드 사용
 
 일반 INFO 빌드는 측정 상세를 출력하지 않습니다. 상세 관측에는 `debug.conf`를 적용합니다.
-STATUS는 두 설정 모두 일곱 통계를 이진 응답으로 반환합니다.
+STATUS는 두 설정 모두 여덟 통계를 이진 응답으로 반환합니다.
 [일반·디버그 실보드 회귀](../docs/hardware-test-2026-11-14-logging.md)는 각 30조건 통과했습니다.
 GUI 화면은 해당 로깅 회귀에 포함하지 않았습니다. 이후 [로그 포화·측정 부하 시험](../docs/hardware-test-2026-11-14-log-stress.md)에서 STATUS 유지·유실 알림·복귀를 확인했으며 장시간 검증은 남아 있습니다.
+
+## CSV 수집과 정량 평가
+
+GUI를 닫아 UART를 단독 사용한 뒤 저장소 루트에서 실행합니다. `PORT`를 실제 어댑터 경로로 바꿉니다.
+
+```sh
+python -m pc_sim.evaluate run --port PORT --scenario normal --output runs
+python -m pc_sim.evaluate run --port PORT --scenario noisy --output runs
+python -m pc_sim.evaluate run --port PORT --scenario dropout --output runs
+python -m pc_sim.evaluate report runs/SESSION --warmup-ms 2000
+```
+
+기본값은 seed42·센서 시간축 10Hz·120개, 초기 1000m·-5m/s·고정 방위각15도입니다.
+normal 거리 잡음0, noisy/dropout 표준편차8m이고, dropout은 [4000,5500)ms 측정을 송신하지 않습니다.
+각도 잡음은 없습니다. CLI는 INIT 초기화 보고를 확인하고 시작하며 마지막 timeout·STATUS·RESET도 수집합니다.
+`--count`, `--hz`, `--warmup-ms`로 바꿀 수 있습니다. dropout은 최소 9초·5Hz가 필요합니다.
+실제 송신은 PC 대기/USB 비용으로 센서 시간축보다 느릴 수 있으며 catch-up burst를 보내지 않습니다.
+
+실행마다 시간·고유 접미사를 붙인 폴더를 만들며 기존 경로를 덮어쓰지 않습니다. 기본 `runs/`는 Git에서 제외합니다.
+
+| 파일 | 내용 |
+|---|---|
+| metadata.json | 설정, board/preview 모드, 시작 시각, 파일 종료 여부 |
+| samples.csv | 센서 시각, 합성 정답, wire 양자화 측정값, 송신 직전 PC monotonic 시각, 프레임 hex |
+| reports.csv | 수신 TRACK 필드와 PC monotonic 시각 |
+| wire.csv | TX 프레임·RX 원시 chunk hex와 PC monotonic 시각 |
+| status.csv | 수신 STATUS 통계; 구형 미지원 필드는 빈칸 |
+| evaluation.json | 평가 CLI가 저장한 RMSE·개수·순번 관측·PC 왕복 시간 |
+
+평가는 유효하고 송신 sample과 **추정 시각이 일치하는** 보고만 비교합니다. 중복 추정 시각·무효·대응 불가 보고는 별도 집계하며 STARTED 후 2초를 매번 제외합니다. 같은 시각의 측정값이 baseline입니다. 각도 오차는 최단 wrap 차이입니다.
+미리보기는 보드 성능 평가에서 거부합니다. `closed=true`는 파일을 닫았다는 뜻이며 시험 합격을 뜻하지 않습니다. 예외 종료·빈 기록은 실행 오류와 수집 개수를 함께 확인합니다.
+PC 왕복 시간에는 USB·OS·read polling·CSV flush 비용이 포함됩니다. MCU 내부 지연·WCET·50Hz 지속 처리 보장이 아닙니다. 세션 ID가 없어 이전 실행의 지연 보고를 완벽히 구분하지 못합니다.
+[실보드 수치·GUI 캡처·제한](../docs/hardware-test-2026-11-18-evaluation.md).

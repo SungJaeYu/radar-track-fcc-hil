@@ -73,6 +73,17 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
         break;
 
     case FRAME_TYPE_MEAS_REPORT: {
+        // Age uses board RX completion time, never the sender timestamp.
+        // Reject at the same boundary as measurement freshness, before any track update.
+        if (k_uptime_get() - p_frame->received_at_ms >= CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS) {
+            if (p_handler->stale_measurements != UINT32_MAX) {
+                p_handler->stale_measurements++;
+            }
+            if (p_handler->stale_measurements == 1 || p_handler->stale_measurements % 100 == 0) {
+                LOG_WRN("Stale measurements dropped: %u", (unsigned int)p_handler->stale_measurements);
+            }
+            break;
+        }
         struct radar_process_result result;
         if (radar_processor_process_measurement(&p_handler->radar, &p_frame->frame,
                                                p_frame->received_at_ms, &result)) {
@@ -83,7 +94,7 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
     }
     // Queue a STATUS_REPORT containing the current RX diagnostic counters.
     case FRAME_TYPE_STATUS_REQUEST: {
-        report_sender_submit_status();
+        report_sender_submit_status(p_handler->stale_measurements);
         break;
     }
     // Placeholder: no command payload interpretation or control action yet.

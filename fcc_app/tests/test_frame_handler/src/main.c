@@ -98,6 +98,7 @@ static void reset_test(struct frame_handler *p_handler)
     memset(&submitted_frame, 0, sizeof(submitted_frame));
     memset(&source_stats, 0, sizeof(source_stats));
     memset(p_handler, 0, sizeof(*p_handler));
+    test_now_ms = 0;
     frame_handler_init(p_handler);
 }
 
@@ -117,10 +118,10 @@ static void test_status_zero(void)
     request_status(&handler);
     assert(stats_reads == 1 && submit_calls == 1);
     assert(submitted_frame.frame.type == FRAME_TYPE_STATUS_REPORT);
-    assert(submitted_frame.frame.payload_length == 28);
-    const uint8_t expected[28] = {0};
+    assert(submitted_frame.frame.payload_length == 32);
+    const uint8_t expected[32] = {0};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
-    assert(strcmp(output, "STATUS report queued: payload=28 bytes\n") == 0);
+    assert(strcmp(output, "STATUS report queued: payload=32 bytes\n") == 0);
 }
 
 static void test_status_snapshot(void)
@@ -131,7 +132,7 @@ static void test_status_snapshot(void)
     source_uart_stats = (struct uart_rx_stats){7, 0x80000000U, UINT32_MAX};
     request_status(&handler);
     assert(strcmp(output,
-                  "STATUS report queued: payload=28 bytes\n") == 0);
+                  "STATUS report queued: payload=32 bytes\n") == 0);
     source_stats.crc_errors = 2;
     output_size = 0;
     request_status(&handler);
@@ -140,7 +141,7 @@ static void test_status_snapshot(void)
                                 0, 0, 0, 7, 0x80, 0, 0, 0, 0xff, 0xff, 0xff, 0xff};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
     assert(strcmp(output,
-                  "STATUS report queued: payload=28 bytes\n") == 0);
+                  "STATUS report queued: payload=32 bytes\n") == 0);
     assert(source_stats.length_errors == 23 && source_stats.frame_timeouts == 456);
     assert(source_stats.queue_drops == UINT32_MAX);
 }
@@ -185,19 +186,19 @@ static void test_status_does_not_refresh_timeout(void)
 
 static void test_status_encode_wire(void)
 {
-    const struct status_report stats = {0x12345678U, 0x80000000U, 1U, UINT32_MAX, 7U, 0x01020304U, UINT32_MAX};
+    const struct status_report stats = {0x12345678U, 0x80000000U, 1U, UINT32_MAX, 7U, 0x01020304U, UINT32_MAX, 9U};
     struct protocol_frame frame;
     memset(&frame, 0xa5, sizeof(frame));
     assert(status_message_encode(&stats, &frame) == 0);
-    assert(frame.type == FRAME_TYPE_STATUS_REPORT && frame.payload_length == 28);
+    assert(frame.type == FRAME_TYPE_STATUS_REPORT && frame.payload_length == 32);
     // Independently calculated with Python binascii.crc_hqx(body, 0xffff).
-    const uint8_t expected[] = {0x7e, 0x1c, 0x06, 0x12, 0x34, 0x56, 0x78, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x07, 0x01, 0x02, 0x03, 0x04, 0xff, 0xff, 0xff, 0xff, 0xae, 0x34};
+    const uint8_t expected[] = {0x7e, 0x20, 0x06, 0x12, 0x34, 0x56, 0x78, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x07, 0x01, 0x02, 0x03, 0x04, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x09, 0xc4, 0x91};
     uint8_t wire[sizeof(expected) + 1];
     memset(wire, 0xa5, sizeof(wire));
     assert(protocol_frame_encode(&frame, wire, sizeof(wire)) == (int)sizeof(expected));
     assert(memcmp(wire, expected, sizeof(expected)) == 0);
     assert(wire[sizeof(expected)] == 0xa5);
-    for (size_t i = 28; i < sizeof(frame.payload); ++i) {
+    for (size_t i = 32; i < sizeof(frame.payload); ++i) {
         assert(frame.payload[i] == 0xa5);
     }
     assert(stats.crc_errors == 0x12345678U && stats.length_errors == 0x80000000U);
@@ -211,8 +212,8 @@ static void test_status_encode_wire(void)
                (i + 1 == sizeof(expected) ? PARSER_RESULT_FRAME_READY : PARSER_RESULT_INCOMPLETE));
     }
     assert(parser.frame.type == FRAME_TYPE_STATUS_REPORT);
-    assert(parser.frame.payload_length == 28);
-    assert(memcmp(parser.frame.payload, &expected[3], 28) == 0);
+    assert(parser.frame.payload_length == 32);
+    assert(memcmp(parser.frame.payload, &expected[3], 32) == 0);
 }
 
 static void test_status_encode_invalid_arguments(void)
@@ -300,6 +301,7 @@ static void test_incoming_status_report_is_ignored(void)
 static struct rx_frame measurement(uint32_t timestamp_ms, uint16_t range_m,
                                          int64_t received_at_ms)
 {
+    test_now_ms = received_at_ms;
     struct rx_frame frame = {
         .frame = {.type = FRAME_TYPE_MEAS_REPORT, .payload_length = 10},
         .received_at_ms = received_at_ms,
@@ -768,7 +770,40 @@ static void test_processor_timeout_query_preserves_state(void)
     assert(!radar_processor_is_timed_out(p_processor, 10000));
 }
 
+static void test_stale_measurement_boundary_and_stats(void)
+{
+    struct frame_handler handler;
+    reset_test(&handler);
+    struct rx_frame frame = measurement(0, 1000, 100);
+    test_now_ms = 100 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1;
+    frame_handler_process(&handler, &frame);
+    assert(handler.radar.timeout_armed && submit_calls == 1);
+    unsigned char before[sizeof(handler.radar)];
+    memcpy(before, &handler.radar, sizeof(before));
+    frame = measurement(100, 1000, 200);
+    test_now_ms = 200 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS;
+    frame_handler_process(&handler, &frame);
+    assert(memcmp(before, &handler.radar, sizeof(before)) == 0);
+    assert(submit_calls == 1 && handler.stale_measurements == 1);
+    assert(handler.report_sender.next_track_report_sequence == 1);
+    frame_handler_handle_timeout(&handler, test_now_ms);
+    assert(submit_calls == 2 && !handler.radar.timeout_armed);
+    frame_handler_process(&handler, &frame);
+    assert(submit_calls == 2 && !handler.radar.timeout_armed);
+    assert(handler.stale_measurements == 2);
+    frame_handler_reset(&handler);
+    request_status(&handler);
+    assert(report_u32(28) == 2);
+    handler.stale_measurements = UINT32_MAX;
+    frame_handler_process(&handler, &frame);
+    assert(handler.stale_measurements == UINT32_MAX);
+    frame = measurement(200, 1000, 3000);
+    frame_handler_process(&handler, &frame);
+    assert(handler.radar.track.state == TRACK_STATE_TENTATIVE);
+}
+
 static const struct test_case cases[] = {
+    TEST_CASE(test_stale_measurement_boundary_and_stats),
     TEST_CASE(test_processor_invalid_input_preserves_output),
     TEST_CASE(test_processor_timeout_query_preserves_state),
     TEST_CASE(test_track_encode_wire),

@@ -306,13 +306,13 @@ def test_gui_extended_and_legacy_status_fields(app):
         window.connected = True
         window.on_status_received(decode_status_payload(bytes.fromhex(
             "12345678 80000000 00000001 ffffffff 00000007 01020304 ffffffff")))
-        assert len(window.status_values) == 7
+        assert len(window.status_values) == 8
         assert window.status_values['ring_overflow_events'].text() == '7'
         assert window.status_values['rx_dropped_bytes'].text() == '16909060'
         assert window.status_values['recovery_discarded_bytes'].text() == '4294967295'
         # Legacy replies must replace old extended values with unsupported, not zero.
         window.on_status_received(decode_status_payload(bytes(16)))
-        for key in ('ring_overflow_events', 'rx_dropped_bytes', 'recovery_discarded_bytes'):
+        for key in ('ring_overflow_events', 'rx_dropped_bytes', 'recovery_discarded_bytes', 'stale_measurements'):
             assert window.status_values[key].text() == '미지원'
         assert window.status_values['crc_errors'].text() == '0'
     finally:
@@ -469,3 +469,24 @@ def test_gui_track_tab_and_preview_have_no_fabricated_board_estimate(app):
         assert window.height() <= 650
     finally:
         window.close()
+
+
+def test_worker_records_preview_and_closes_csv(app, tmp_path):
+    import csv
+    import json
+    path = tmp_path / 'preview'
+    worker = SessionWorker()
+    samples = []
+    worker.sample.connect(samples.append)
+    worker.start_simulation(Settings(duration_s=0.15), path)
+    worker.start()
+    try:
+        wait_for(app, lambda: len(samples) >= 1)
+    finally:
+        worker.requestInterruption()
+        assert worker.wait(2000)
+    assert json.loads((path / 'metadata.json').read_text())['closed']
+    with (path / 'samples.csv').open() as stream:
+        assert len(list(csv.DictReader(stream))) >= 1
+    with (path / 'reports.csv').open() as stream:
+        assert list(csv.DictReader(stream)) == []

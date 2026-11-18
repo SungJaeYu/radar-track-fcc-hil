@@ -3,8 +3,8 @@
 ## 프로젝트 정체성
 
 STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
-현재는 PC 측정 송신 → STM32 단일 트랙 처리 → STATUS/TRACK 이진 보고 송신 구조입니다. PC는 STATUS/TRACK을 해석하고 GUI에 보드 추정값을 표시합니다. 원시 로그·정량 평가는 미구현입니다. ST-Link는 별도 진단 콘솔입니다.
-단일표적 결과 반환·정량 검증은 아직 미완료입니다. v1의 범위와 완료 판정은 [README v1 검증 및 완료 기준](README.md#v1-acceptance)을 따릅니다. 다중표적·CT/IMM·BIT·Lock On은 v2 선택이며 v1 완료를 미루는 필수 작업으로 복원하지 않습니다. 계획 변경을 펌웨어 구현·시험 완료로 표시하지 않습니다.
+현재는 PC 측정 송신 → STM32 단일 트랙 처리 → STATUS/TRACK 이진 보고 송신 구조입니다. PC는 STATUS/TRACK을 해석하고 GUI에 보드 추정값을 표시합니다. GUI/CLI 세션 CSV와 고정 시나리오 RMSE 평가를 지원합니다. ST-Link는 별도 진단 콘솔입니다.
+단일표적 기본 결과 왕복·고정 시나리오 평가는 확인했고 지속 부하·보드 내부 지연/자원 검증은 남았습니다. v1의 범위와 완료 판정은 [README v1 검증 및 완료 기준](README.md#v1-acceptance)을 따릅니다. 다중표적·CT/IMM·BIT·Lock On은 v2 선택이며 v1 완료를 미루는 필수 작업으로 복원하지 않습니다. 계획 변경을 펌웨어 구현·시험 완료로 표시하지 않습니다.
 
 ## 개발 환경
 
@@ -26,21 +26,21 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - 보드 `measurement_message.c`가 semicircle을 rad로 변환합니다.
 - RX 스레드는 `rx_frame_processor`로 파싱하고 완성 프레임을 큐에 복사합니다.
 - 별도 handler 스레드에서 `frame_handler`는 큐·TYPE 분기, `radar_processor`는 측정·추적·무수신 감시, `report_sender`는 STATUS/TRACK 구성·제출을 담당합니다. 스레드를 추가한 분리가 아닙니다.
-- STATUS는 processor의 네 통계에 UART의 세 통계를 더한 일곱 값을 28바이트 STATUS_REPORT로 TX 큐에 복사 제출합니다. 각 값은 atomic 조회하며 동시 snapshot은 보장하지 않습니다.
+- STATUS는 processor의 네 통계에 UART의 세 통계와 handler의 오래된 측정 폐기를 더한 여덟 값을 32바이트 STATUS_REPORT로 TX 큐에 복사 제출합니다. RX 값은 atomic 조회하고 handler 값은 소유 스레드에서 읽으며 동시 snapshot은 보장하지 않습니다.
 - TX 초기화·복사 큐·워커·인코딩·polling 송신은 구현되어 있습니다. STATUS 제출까지 연결했으며 PC 파서·STATUS CLI·GUI 수동 조회까지 구현했으며 [확장 STATUS 실보드 시험](docs/hardware-test-2026-11-14-status-extended.md)에서 28바이트 응답의 CLI·GUI 왕복도 확인했습니다. 강제 링 overflow·UART 하드웨어 오류·지속 부하 검증은 남아 있습니다.
 - RX 링버퍼는 256바이트, 실제 저장 용량은 255바이트입니다. 인덱스는 `uint8_t`이므로 더 큰 버퍼는 타입 변경이 필요합니다.
 - overflow 정책은 `fcc_app/Kconfig` choice와 `prj.conf`에서 선택하며 `uart_rx.c`에서 매핑합니다. 기본값은 DRAIN입니다.
 - overflow 복구 중 새 입력은 버리고 저장된 바이트로 완성 가능한 프레임만 처리한 뒤 링·파서를 초기화합니다.
 - 단일 트랙, CV Kalman, 게이팅, hit/miss 상태 전이, 정상 측정 수신 timeout이 있습니다.
-- TRACK_REPORT(TYPE=7)는 32바이트 payload이며 유효 측정마다 한 번 TX 제출합니다. PC 해석·GUI의 2초 STALE 정책은 구현했으며 INIT/RESET·무수신 timeout 이벤트 보고도 구현했으며 실보드 검증은 남아 있습니다. 상세 계약은 [SPEC-TRACK-REPORT](docs/requirements-traceability.md#spec-track-report)를 따릅니다.
+- TRACK_REPORT(TYPE=7)는 32바이트 payload이며 신선한 유효 측정마다 한 번 TX 제출합니다. PC 해석·GUI의 2초 STALE 정책은 구현했으며 INIT/RESET·무수신 timeout 이벤트 보고도 구현했고 기본 실보드 왕복도 확인했습니다. 상세 계약은 [SPEC-TRACK-REPORT](docs/requirements-traceability.md#spec-track-report)를 따릅니다.
 - 다중표적 데이터 연관·LCD는 현재 실행 경로에 없습니다.
 - 기존 XOR 인코더는 CRC-16/IBM-3740으로 변경했습니다. 과거 구현은 Git 이력에 남아 있습니다.
 
 ## 검증
 
-- `python -m pytest`: GUI 의존성 설치 시 221개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
+- `python -m pytest`: GUI 의존성 설치 시 231개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 24·discard 21, 총 45회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
-- [handler host 테스트](fcc_app/tests/test_frame_handler/README.md): STATUS·TRACK·실패 복귀·INIT/RESET·측정 timeout·processor 계약 29개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.
+- [handler host 테스트](fcc_app/tests/test_frame_handler/README.md): STATUS·TRACK·실패 복귀·INIT/RESET·측정 timeout·processor·stale 계약 30개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.
 - [TX host 테스트](fcc_app/tests/test_uart_tx/README.md): 초기화·요청 검증·복사 큐·송신 순서·실패 후 복귀 4개 사례.
 - [Tracking C 테스트](fcc_app/tests/test_tracking/README.md): 필터·게이팅·추적 정책 17개 + 게이트 설정 행렬 20개 사례.
 - 수동 초기화만 필요할 때: `python pc_sim/frame_sender.py init --type 1 --port PORT`.
@@ -71,3 +71,5 @@ STM32 + Zephyr 기반 레이더 추적 학습 프로젝트.
 - 게이트/timeout/overflow는 `fcc_app/Kconfig`·`prj.conf`, 로그/디버그는 [로깅 안내](docs/logging.md)를 따릅니다. π는 `common/math_constants.h`의 상수입니다.
 - 2026-11-17 파일·API·변수 이름 변경을 적용했습니다. [변경 전후와 남은 설계 과제](docs/naming-review.md)를 참고합니다.
 - 과거 `docs/test-results/` 스크립트는 당시 revision용입니다. 현재 API로 재사용할 때 호환성을 확인하며 원시 증거를 덮어쓰지 않습니다.
+
+2026-11-18: stale 큐 측정은 MCU 나이가 측정 timeout 이상이면 폐기하고 handler 포화 통계에 집계합니다. CSV·고정 시나리오 실보드 RMSE·실제 UART GUI 확인 범위는 [최신 결과](docs/hardware-test-2026-11-18-evaluation.md)를 따릅니다. 30분 부하·MCU 내부 지연·스택은 미검증입니다.

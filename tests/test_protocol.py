@@ -75,7 +75,7 @@ def test_decode_status_payload_zero():
 
 @pytest.mark.parametrize("length", [0, 15, 17])
 def test_decode_status_payload_invalid_length(length):
-    with pytest.raises(ValueError, match="STATUS_REPORT payload must be 16 or 28 bytes"):
+    with pytest.raises(ValueError, match="STATUS_REPORT payload must be 16, 28 or 32 bytes"):
         protocol.decode_status_payload(bytes(length))
 
 
@@ -100,7 +100,14 @@ def test_extended_status_field_boundaries(index, value):
     assert list(stats.values()) == values
 
 
-@pytest.mark.parametrize("length", [20, 24, 27, 29, 32])
+@pytest.mark.parametrize("length", [20, 24, 27, 29, 31, 33])
 def test_reject_unknown_status_layout(length):
     with pytest.raises(ValueError):
         protocol.decode_status_payload(bytes(length))
+
+
+@pytest.mark.parametrize("value", [0, 1, 0xffffffff])
+def test_status_stale_counter_current_and_legacy(value):
+    current = protocol.decode_status_payload(struct.pack('>8I', 0, 0, 0, 0, 0, 0, 0, value))
+    assert current['stale_measurements'] == value
+    assert 'stale_measurements' not in protocol.decode_status_payload(bytes(28))

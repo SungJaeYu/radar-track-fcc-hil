@@ -2,13 +2,14 @@
 from collections import deque
 import math
 from datetime import datetime
+from pathlib import Path
 import sys
 import time
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import (
-    QApplication, QComboBox, QDoubleSpinBox, QFormLayout, QFrame,
+    QApplication, QCheckBox, QFileDialog, QComboBox, QDoubleSpinBox, QFormLayout, QFrame,
     QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton,
     QSplitter, QTabWidget, QVBoxLayout, QWidget, QScrollArea, QLayout, QSizePolicy,
 )
@@ -17,6 +18,7 @@ from serial.tools import list_ports
 
 from .gui_model import Settings, TrackMonitor
 from .gui_worker import SessionWorker
+from .recording import session_path
 from .protocol import STATUS_FIELDS
 
 STYLE = '''
@@ -119,6 +121,15 @@ class MainWindow(QMainWindow):
         scope_note = QLabel('단일표적 · 고정 방위각 / 일정 거리 변화율')
         scope_note.setWordWrap(True)
         controls.addWidget(scope_note)
+        self.record_directory = Path.cwd() / 'runs'
+        self.record_checkbox = QCheckBox('CSV 기록 (실행별 새 폴더)')
+        controls.addWidget(self.record_checkbox)
+        self.record_button = QPushButton('저장 폴더 선택')
+        self.record_button.clicked.connect(self.choose_record_directory)
+        controls.addWidget(self.record_button)
+        self.record_label = QLabel(str(self.record_directory))
+        self.record_label.setWordWrap(True)
+        controls.addWidget(self.record_label)
         self.settings_form = QWidget()
         fields = QFormLayout(self.settings_form)
         fields.setContentsMargins(0, 0, 0, 0)
@@ -308,6 +319,7 @@ class MainWindow(QMainWindow):
             self.show_error('데이터와 콘솔에 같은 포트를 사용할 수 없습니다.')
             return
         self.worker = SessionWorker(data, console, self)
+        self.worker.recording_started.connect(self.on_recording_started)
         self.worker.track_received.connect(self.on_track_received)
         self.worker.status_received.connect(self.on_status_received)
         self.worker.status_failed.connect(self.on_status_failed)
@@ -410,6 +422,16 @@ class MainWindow(QMainWindow):
         self.track_message.setText(message)
         self.board_note.setText(message)
 
+    def choose_record_directory(self):
+        directory = QFileDialog.getExistingDirectory(self, 'CSV 저장 폴더', str(self.record_directory))
+        if directory:
+            self.record_directory = Path(directory)
+            self.record_label.setText(directory)
+
+    def on_recording_started(self, path):
+        self.record_label.setText(path)
+        self.event_text.appendPlainText('CSV 기록: ' + path)
+
     def start_simulation(self):
         if not self.connected:
             return
@@ -424,7 +446,8 @@ class MainWindow(QMainWindow):
         self.map_plot.setRange(xRange=(-extent, extent), yRange=(-extent, extent), padding=0)
         self.start_button.setEnabled(False)
         self.settings_form.setEnabled(False)
-        self.worker.start_simulation(settings)
+        path = session_path(self.record_directory) if self.record_checkbox.isChecked() else None
+        self.worker.start_simulation(settings, path)
 
     def stop_simulation(self):
         if self.worker:
@@ -432,6 +455,8 @@ class MainWindow(QMainWindow):
             self.worker.stop_simulation()
 
     def on_running(self, running):
+        self.record_checkbox.setEnabled(not running)
+        self.record_button.setEnabled(not running)
         self.start_button.setEnabled(self.connected and not running)
         self.stop_button.setEnabled(self.connected and running)
         self.settings_form.setEnabled(not running)

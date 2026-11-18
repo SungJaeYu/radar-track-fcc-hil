@@ -73,6 +73,8 @@ ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overfl
 
 ## 4. 측정과 추적
 
+`frame_handler`는 MCU 수신 완료 후 경과가 측정 timeout 이상인 MEAS_REPORT를 먼저 폐기합니다. 이때 트랙·수신 감시·보고 순번은 갱신하지 않고 포화 카운터만 증가시킵니다.
+
 `frame_handler`는 TYPE을 분기하고 `radar_processor_process_measurement()`에 측정을 전달합니다.
 트랙·마지막 유효 수신 시각·감시 상태는 `frame_handler.radar`에 있으며 `radar_processor`가 갱신합니다.
 별도 스레드를 만든 것이 아니라 기존 handler 스레드 안에서 책임을 분리한 것입니다.
@@ -103,7 +105,7 @@ GUI 의존성을 설치하면 offscreen Qt·모사 serial로 시작·중지·재
 [UART host 테스트](fcc_app/tests/test_uart_rx/README.md)는 실제 ISR·복구·링버퍼·파서·timeout·통계를 drain 24·discard 21, 총 45회 실행으로 검증합니다.
 UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제로 스케줄링하지 않습니다.
 이 테스트들은 새 펌웨어 빌드나 실제 UART HIL 성공을 대신하지 않습니다.
-펌웨어의 측정별 TRACK_REPORT 경로를 구현했고 PC 해석·GUI 비교는 모사 UART로 확인했습니다. 원시 로그·정량 RMSE와 새 결과 경로의 실보드 검증은 아직 없습니다.
+펌웨어의 측정별 TRACK_REPORT 경로를 구현했고 PC 해석·GUI 비교는 모사 UART로 확인했습니다. CSV·고정 시나리오 실보드 RMSE와 실제 UART GUI를 확인했습니다. [결과](docs/hardware-test-2026-11-18-evaluation.md).
 구버전 LCD·다중 트랙 문서는 제거했으며 과거 기록은 Git 이력에서 확인할 수 있습니다.
 
 
@@ -118,14 +120,14 @@ UART·IRQ·atomic·시각·handler는 모사하며 무한 RX 스레드를 실제
 
 `uart_tx.c/.h`는 초기화·TX 복사 큐·스레드와 polling 송신을 구현했습니다.
 `protocol_frame_encode()`가 STX·LEN·TYPE·payload·CRC 바이트열을 구성합니다.
-STATUS 처리부는 processor의 네 통계와 UART의 세 통계를 big-endian uint32로 인코딩한 28바이트
+STATUS 처리부는 processor의 네 통계, UART의 세 통계, handler의 stale_measurements를 big-endian uint32로 인코딩한 32바이트
 STATUS_REPORT를 TX 큐에 복사 제출합니다. 순서는 CRC 오류·길이 오류·부분 프레임
-timeout·큐 드롭·링 overflow 횟수·ISR 폐기 바이트·복구 폐기 바이트입니다. 인코딩·큐 제출 실패는 오류 코드와 함께 로그로 남깁니다.
+timeout·큐 드롭·링 overflow 횟수·ISR 폐기 바이트·복구 폐기 바이트·오래된 측정 폐기입니다. 인코딩·큐 제출 실패는 오류 코드와 함께 로그로 남깁니다.
 `frame_parser.py`가 PC 수신 프레임을 조립·검증하고 `decode_status_payload()`가 통계를 해석합니다.
 `status_client.py`는 CLI 왕복을, GUI의 STATUS 탭은 기존 worker를 통한 수동 조회를 제공합니다.
 둘 다 host 모사 시험을 통과했으며 [확장 STATUS 실보드 시험](docs/hardware-test-2026-11-14-status-extended.md)에서 CLI·GUI STATUS 왕복도 확인했습니다.
-TX host 테스트 4개와 CRC/인코더 상호운용 29개를 통과했으며 실보드 STATUS 송신도 확인했습니다. TX 포화·최대 부하는 별도 검증 대상입니다.
-handler host 테스트 29개는 STATUS·TRACK 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향 및 processor 계약을 검증합니다.
+TX host 테스트 4개와 CRC/인코더 상호운용 34개를 통과했으며 실보드 STATUS 송신도 확인했습니다. TX 포화·최대 부하는 별도 검증 대상입니다.
+handler host 테스트 30개는 STATUS·TRACK 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향 및 processor 계약을 검증합니다.
 host 통계 snapshot은 모사합니다. 실보드에서는 CRC/LEN/부분 프레임 timeout 집계와
 INIT/RESET 후 보존을 확인했습니다. 강제 overflow·큐 포화 동시성 검증은 남아 있습니다.
 
@@ -142,7 +144,7 @@ INIT/RESET 후 보존을 확인했습니다. 강제 overflow·큐 포화 동시�
 큐 접수는 실제 송신 완료나 PC 수신을 보장하지 않습니다.
 
 INIT/RESET·무수신 timeout은 INPUT_PRESENT=0, ESTIMATE_VALID=0인 RESET 보고를 한 번 제출합니다. PC TRACK 디코더·그래프는 구현했고, 새 보고가 2초 동안 없으면 PC STALE로 표시합니다.
-이는 보드 LOST 판정과 별개이며 원시 로그·정량 평가는 아직 없습니다. [정확한 배치·플래그·결과 규격](docs/requirements-traceability.md#spec-track-report)을 참고하세요.
+이는 보드 LOST 판정과 별개이며 CSV 원시 로그·정량 평가도 지원합니다. [정확한 배치·플래그·결과 규격](docs/requirements-traceability.md#spec-track-report)을 참고하세요.
 
 ## 9. 설정과 검증 기록
 

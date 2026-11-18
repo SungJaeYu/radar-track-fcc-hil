@@ -1,0 +1,65 @@
+Test project /Users/yuseungjae/Desktop/radar-track-fcc-hil/build_frame_handler
+      Start  1: test_stale_measurement_boundary_and_stats
+ 1/30 Test  #1: test_stale_measurement_boundary_and_stats ............   Passed    0.88 sec
+      Start  2: test_processor_invalid_input_preserves_output
+ 2/30 Test  #2: test_processor_invalid_input_preserves_output ........   Passed    0.00 sec
+      Start  3: test_processor_timeout_query_preserves_state
+ 3/30 Test  #3: test_processor_timeout_query_preserves_state .........   Passed    0.00 sec
+      Start  4: test_track_encode_wire
+ 4/30 Test  #4: test_track_encode_wire ...............................   Passed    0.00 sec
+      Start  5: test_track_encode_invalid_arguments
+ 5/30 Test  #5: test_track_encode_invalid_arguments ..................   Passed    0.00 sec
+      Start  6: test_track_started_updated_and_confirmed
+ 6/30 Test  #6: test_track_started_updated_and_confirmed .............   Passed    0.00 sec
+      Start  7: test_track_timestamp_rejection_report
+ 7/30 Test  #7: test_track_timestamp_rejection_report ................   Passed    0.00 sec
+      Start  8: test_track_gate_rejection_empty_and_lost
+ 8/30 Test  #8: test_track_gate_rejection_empty_and_lost .............   Passed    0.00 sec
+      Start  9: test_track_gap_reset_and_recovery
+ 9/30 Test  #9: test_track_gap_reset_and_recovery ....................   Passed    0.00 sec
+      Start 10: test_track_sequence_wrap_and_timeout_preservation
+10/30 Test #10: test_track_sequence_wrap_and_timeout_preservation ....   Passed    0.00 sec
+      Start 11: test_track_submit_failure_and_recovery
+11/30 Test #11: test_track_submit_failure_and_recovery ...............   Passed    0.00 sec
+      Start 12: test_track_encode_failure_and_recovery
+12/30 Test #12: test_track_encode_failure_and_recovery ...............   Passed    0.00 sec
+      Start 13: test_incoming_track_report_is_ignored
+13/30 Test #13: test_incoming_track_report_is_ignored ................   Passed    0.00 sec
+      Start 14: test_init_command_resets_tracking
+14/30 Test #14: test_init_command_resets_tracking ....................   Passed    0.00 sec
+      Start 15: test_reset_command_resets_tracking
+15/30 Test #15: test_reset_command_resets_tracking ...................   Passed    0.00 sec
+      Start 16: test_valid_measurements_arm_refresh_and_expire
+16/30 Test #16: test_valid_measurements_arm_refresh_and_expire .......   Passed    0.00 sec
+      Start 17: test_invalid_measurements_do_not_arm_timeout
+17/30 Test #17: test_invalid_measurements_do_not_arm_timeout .........   Passed    0.00 sec
+      Start 18: test_invalid_measurements_do_not_refresh_timeout
+18/30 Test #18: test_invalid_measurements_do_not_refresh_timeout .....   Passed    0.00 sec
+      Start 19: test_gate_rejection_refreshes_receive_timeout
+19/30 Test #19: test_gate_rejection_refreshes_receive_timeout ........   Passed    0.00 sec
+      Start 20: test_timestamp_rejection_refreshes_receive_timeout
+20/30 Test #20: test_timestamp_rejection_refreshes_receive_timeout ...   Passed    0.00 sec
+      Start 21: test_status_zero
+21/30 Test #21: test_status_zero .....................................   Passed    0.00 sec
+      Start 22: test_status_snapshot
+22/30 Test #22: test_status_snapshot .................................   Passed    0.00 sec
+      Start 23: test_status_preserves_track
+23/30 Test #23: test_status_preserves_track ..........................   Passed    0.00 sec
+      Start 24: test_status_does_not_arm_timeout
+24/30 Test #24: test_status_does_not_arm_timeout .....................   Passed    0.00 sec
+      Start 25: test_status_does_not_refresh_timeout
+25/30 Test #25: test_status_does_not_refresh_timeout .................   Passed    0.00 sec
+      Start 26: test_status_encode_wire
+26/30 Test #26: test_status_encode_wire ..............................   Passed    0.00 sec
+      Start 27: test_status_encode_invalid_arguments
+27/30 Test #27: test_status_encode_invalid_arguments .................   Passed    0.00 sec
+      Start 28: test_status_submit_failure_and_recovery
+28/30 Test #28: test_status_submit_failure_and_recovery ..............   Passed    0.00 sec
+      Start 29: test_status_encode_failure_does_not_submit
+29/30 Test #29: test_status_encode_failure_does_not_submit ...........   Passed    0.00 sec
+      Start 30: test_incoming_status_report_is_ignored
+30/30 Test #30: test_incoming_status_report_is_ignored ...............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 30
+
+Total Test time (real) =   0.95 sec

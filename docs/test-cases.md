@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 221개 + subtest 9개, C host 115회 실행(RX drain 24·discard 21·handler 29·TX 4·Tracking 17·게이팅 설정 20)입니다.
+현재 합계는 Python 231개 + subtest 9개, C host 116회 실행(RX drain 24·discard 21·handler 30·TX 4·Tracking 17·게이팅 설정 20)입니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -15,24 +15,25 @@
 | PC STATUS CLI | `tests/test_status_client.py` | 23 | Python, serial·monotonic clock 모사 |
 | PC 수신 프레임 파서 | `tests/test_frame_parser.py` | 16 | Python, serial I/O 없음 |
 | PC TRACK payload | `tests/test_track_report.py` | 35 | Python, 고정 wire·의미 검증 |
-| 프로토콜·단위 변환 | `tests/test_protocol.py` | 43 | Python |
+| 프로토콜·단위 변환 | `tests/test_protocol.py` | 47 | Python |
 | 연속 측정 송신기 | `tests/test_radar_sender.py` | 5 + 내부 subtest 9 | Python, serial·sleep 모사 |
 | 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
 | GUI 측정·TRACK 표시 모델 | `tests/test_gui_model.py` | 10 | Python |
-| GUI 화면·통신 작업부 | `tests/test_gui.py` | 16 | offscreen Qt, serial 모사 |
+| GUI 화면·통신 작업부 | `tests/test_gui.py` | 17 | offscreen Qt, serial 모사 |
 | CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 34 | Python + 실제 C 파서 host 컴파일 |
 | 로그 부하 wire 판정 | `tests/test_log_stress.py` | 12 | Python, 기록 바이트열만 검사; flash/serial 없음 |
+| CSV·RMSE·평가 CLI 경계 | `tests/test_recording.py` | 5 | Python, 시각/수치 기준값; 실제 UART 없음 |
 | 내부 assert | `tests/test_firmware_assertions.py` | 6 | 실제 C host 자식 프로세스의 SIGABRT·메시지 검증 |
 | 게이팅 설정 행렬 | `fcc_app/tests/test_tracking/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
 | 필터·추적 | `fcc_app/tests/test_tracking` | 17 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
-| STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 29 | host C, 통계 조회·TX 제출·로그 캡처·RTOS 모사 |
+| STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 30 | host C, 통계 조회·TX 제출·로그 캡처·RTOS 모사 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **221개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **231개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest의 `tracking`에서 17개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
 UART C는 정책별 실행을 CTest에 따로 등록하므로 45개로 표시됩니다. 공통 사례 19개는 두 번 실행합니다.
-`pc_sim/frame_sender.py`는 이름에 test가 있지만 자동 테스트가 아닌 수동 송신 도구입니다.
+`pc_sim/frame_sender.py`는 자동 테스트가 아닌 수동 송신 도구입니다.
 
 ## Python: 수동 송신기·INIT/RESET
 
@@ -235,7 +236,7 @@ GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 - 실제 보드에서 강제 overflow 후 정상 수신 복귀, 손실량·IRQ 타이밍.
 - 실제 RX 스레드 스케줄링과 UART 하드웨어 overrun.
 - 파서 전체 상태·오류 조합의 추가 검증.
-- 장시간 운전, 부하별 수신률, 추적 결과 반환을 통한 폐루프 오차 측정.
+- 장시간 운전, 부하별 수신률·추정 연속성. 짧은 고정 시나리오 RMSE는 최신 평가 기록 참조.
 
 추가 보드 시험은 [보드 검증 절차](board-bringup.md)를 따릅니다.
 
@@ -250,7 +251,7 @@ GUI 연결·송신·중지·재시작·재연결도 확인했습니다.
 
 | 테스트 함수 | 검증 내용 |
 |---|---|
-| `test_status_zero` | 0인 일곱 통계값, 두 API 각각 조회 1회, 28바이트 STATUS_REPORT 제출 1회 |
+| `test_status_zero` | 0인 여덟 통계값, 두 RX API 각각 조회 1회, 32바이트 STATUS_REPORT 제출 1회 |
 | `test_status_snapshot` | 서로 다른 값·UINT32_MAX 출력, 반복 조회 시 최신값 반영·누적값 보존 |
 | `test_status_preserves_track` | 활성 트랙과 timeout 관리 상태를 변경하지 않음 |
 | `test_status_does_not_arm_timeout` | 첫 측정 전 STATUS로 timeout 감시가 시작되지 않음 |
@@ -521,7 +522,7 @@ STATUS 총 122개 wire 재검사, RX 통계 0. 기본 INFO 복원.
 ## TRACK_REPORT 측정 경로 host 회귀 (2026-11-16)
 
 요구사항: [REQ-RPT-001~003 / SPEC-TRACK-REPORT](requirements-traceability.md#spec-track-report).
-10개 보고 사례의 이름·검증값은 아래 suite README에, handler 전체 29개의 역추적은 [추적표](requirements-traceability.md#tests-test_frame_handler)에 모았다.
+10개 보고 사례의 이름·검증값은 아래 suite README에, handler 전체 30개의 역추적은 [추적표](requirements-traceability.md#tests-test_frame_handler)에 모았다.
 
 기존 handler 17개를 새 보고서 제출·로그 동작에 맞게 갱신하고 10개를 추가했다.
 [전체 사례와 검증 범위](../fcc_app/tests/test_frame_handler/README.md#track_report-host-coverage-2026-11-16).
@@ -556,3 +557,19 @@ handler가 초기화·로그·보고를 담당하며 INIT/RESET 및 timeout 보�
 
 1280×850 / 1000×650 offscreen 화면을 캡처해 TRACK 탭·세로 그래프·오른쪽 콘솔의 배치를 확인했다.
 모사 응답·offscreen 화면 검증은 실제 보드 TRACK 왕복·정량 정확도·지연·TX 부하를 증명하지 않는다.
+
+## 오래된 측정·STATUS 32바이트·CSV 평가 — 2026-11-18
+
+현재 Python 231개 + subtest9, C116회 실행을 통과했습니다. REQ-MEA-002 / REQ-PC-004를 추가했습니다.
+
+| 테스트 | 검증 |
+|---|---|
+| `test_stale_measurement_boundary_and_stats` | MCU 수신 완료 나이 경계, 추적/감시/순번 불변, timeout/정상 복귀, reset 통계 보존·포화 |
+| `test_record_and_evaluate_alignment_wrap_duplicates_and_invalid` | 거리 RMSE 수작업 기준, ±π 각도 wrap, 반복 추정/무효 이벤트 제외, PC 왕복 시각 |
+| `test_evaluation_excludes_warmup_and_unmatched_reports` | warm-up 및 대응 불가 제외, 표본0을 None으로 반환 |
+| `test_recorder_no_overwrite_and_preview_not_board_evidence` | 기존 폴더 덮어쓰기 방지, preview 보드 평가 거부 |
+| `test_warmup_restarts_after_track_reacquisition` | 재획득 STARTED마다 warm-up 재적용 |
+| `test_evaluation_cli_rejects_invalid_warmup_before_opening_port` | 잘못된 평가 옵션은 UART 접근/파일 생성 전에 거부 |
+
+프로토콜 시험은 STATUS의 추가 필드0/1/UINT32_MAX,16/28바이트 호환·미지원 표시를 확인하고 C golden/CRC를 32바이트로 갱신했습니다.
+GUI worker의 CSV 생성·종료 회귀도 추가했습니다. [고정 시나리오와 실제 UART GUI 증거](hardware-test-2026-11-18-evaluation.md)는 host 개수와 별도로 기록합니다.

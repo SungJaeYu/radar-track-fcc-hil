@@ -1,0 +1,54 @@
+[
+  {
+    "name": "board CONFIRMED",
+    "passed": true
+  },
+  {
+    "name": "board curve exists",
+    "passed": true
+  },
+  {
+    "name": "live board position exists",
+    "passed": true
+  },
+  {
+    "name": "32-byte STATUS stale counter displayed",
+    "passed": true
+  },
+  {
+    "name": "small window remains 1000x650",
+    "passed": true
+  },
+  {
+    "name": "track panel fits width",
+    "passed": true
+  },
+  {
+    "name": "timeout clears live estimate",
+    "passed": true
+  },
+  {
+    "name": "timeout reports EMPTY",
+    "passed": true
+  },
+  {
+    "name": "STALE keeps last board state",
+    "passed": true
+  },
+  {
+    "name": "restart makes separate CSV directory",
+    "passed": true
+  },
+  {
+    "name": "previous recording closed",
+    "passed": true
+  },
+  {
+    "name": "disconnect closes recording",
+    "passed": true
+  },
+  {
+    "name": "recording has matched post-warmup samples",
+    "passed": true
+  }
+]

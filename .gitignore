@@ -12,3 +12,6 @@ build_*/
 .pytest_cache/
 
 .venv/
+
+# Local GUI/evaluation session recordings
+/runs/

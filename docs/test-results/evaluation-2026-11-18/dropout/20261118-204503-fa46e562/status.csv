@@ -1,0 +1,3 @@
+rx_monotonic_s,crc_errors,length_errors,frame_timeouts,queue_drops,ring_overflow_events,rx_dropped_bytes,recovery_discarded_bytes,stale_measurements
+516189.71373075,0,0,0,0,0,0,0,0
+516203.700876333,0,0,0,0,0,0,0,0

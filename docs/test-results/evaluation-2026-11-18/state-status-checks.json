@@ -1,0 +1,27 @@
+[
+  {
+    "scenario": "normal",
+    "started_sensor_timestamps_ms": [
+      0
+    ],
+    "status_responses": 2,
+    "all_eight_counters_zero": true
+  },
+  {
+    "scenario": "noisy",
+    "started_sensor_timestamps_ms": [
+      0
+    ],
+    "status_responses": 2,
+    "all_eight_counters_zero": true
+  },
+  {
+    "scenario": "dropout",
+    "started_sensor_timestamps_ms": [
+      0,
+      5500
+    ],
+    "status_responses": 2,
+    "all_eight_counters_zero": true
+  }
+]

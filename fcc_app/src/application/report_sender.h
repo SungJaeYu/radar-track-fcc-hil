@@ -14,9 +14,10 @@ struct report_sender {
 };
 
 // Read independently atomic RX counters, encode STATUS, and submit a copied frame.
+// Include the handler-owned stale measurement count without resetting it.
 // Call from the handler thread. Log failures without retrying or resetting counters.
 // Submission success means queued, not delivered to the peer.
-void report_sender_submit_status(void);
+void report_sender_submit_status(uint32_t stale_measurements);
 
 // Require non-NULL sender/track and exclusive handler-thread ownership.
 // With input_present, time identifies the validated measurement even if tracking rejected it.

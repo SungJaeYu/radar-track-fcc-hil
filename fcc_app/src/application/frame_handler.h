@@ -11,6 +11,8 @@
 // Processing-thread-owned state; access through the frame queue in normal operation.
 struct frame_handler {
     struct radar_processor radar;
+    // Handler-owned saturating count; preserved across INIT/RESET and timeout.
+    uint32_t stale_measurements;
     // Report state is preserved across INIT, RESET, and measurement timeout.
     struct report_sender report_sender;
 };
@@ -36,7 +38,8 @@ void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_m
 
 // Process a non-NULL, assembled frame against a non-NULL handler in its owner context.
 // The RX path has already checked length and CRC; measurement decoding/gating happen here.
-// Valid measurements queue TRACK_REPORT; STATUS_REQUEST queues STATUS_REPORT.
+// MEAS_REPORT age >= the measurement timeout is dropped and counted before decoding.
+// Fresh valid measurements queue TRACK_REPORT; STATUS_REQUEST queues STATUS_REPORT.
 // COMMAND is not implemented; incoming reports are ignored.
 void frame_handler_process(struct frame_handler *p_handler, const struct rx_frame *p_frame);
 

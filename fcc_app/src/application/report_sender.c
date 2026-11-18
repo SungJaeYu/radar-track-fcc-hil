@@ -12,7 +12,7 @@
 // Reports run in the handler context and share its logging configuration.
 LOG_MODULE_DECLARE(frame_handler, CONFIG_RADAR_HANDLER_LOG_LEVEL);
 
-void report_sender_submit_status(void)
+void report_sender_submit_status(uint32_t stale_measurements)
 {
     struct rx_frame_processor_stats stats;
     rx_frame_processor_get_stats(&stats);
@@ -29,6 +29,7 @@ void report_sender_submit_status(void)
         .ring_overflow_events = uart_stats.ring_overflow_events,
         .rx_dropped_bytes = uart_stats.rx_dropped_bytes,
         .recovery_discarded_bytes = uart_stats.recovery_discarded_bytes,
+        .stale_measurements = stale_measurements,
     };
     int ret = status_message_encode(&report, &request.frame);
     if (ret != 0) {

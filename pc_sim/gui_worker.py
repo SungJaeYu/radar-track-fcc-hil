@@ -10,6 +10,7 @@ from PySide6.QtCore import QThread, Signal
 import serial
 
 from .gui_model import make_sample
+from .recording import SessionRecorder
 from .frame_parser import FrameParser
 from .protocol import (build_init_frame, encode_frame, decode_status_payload, decode_track_payload,
                        FRAME_TYPE_STATUS_REQUEST, FRAME_TYPE_STATUS_REPORT, FRAME_TYPE_TRACK_REPORT)
@@ -18,6 +19,7 @@ from .protocol import (build_init_frame, encode_frame, decode_status_payload, de
 class SessionWorker(QThread):
     # Capture freshness at reception, before queued GUI delivery can be delayed.
     track_received = Signal(object, float)
+    recording_started = Signal(str)
     status_received = Signal(object)
     status_failed = Signal(str)
     STATUS_TIMEOUT_S = 2.0
@@ -36,9 +38,10 @@ class SessionWorker(QThread):
         self.serial_factory = serial_factory or serial.Serial
         self.commands = queue.Queue()
         self.status_pending = Event()
+        self.recorder = None
 
-    def start_simulation(self, settings):
-        self.commands.put(('start', settings))
+    def start_simulation(self, settings, recording_path=None):
+        self.commands.put(('start', (settings, recording_path)))
 
     def stop_simulation(self):
         self.commands.put(('stop', None))
@@ -69,16 +72,24 @@ class SessionWorker(QThread):
         except Exception as error:
             self.error.emit(str(error))
         finally:
+            if self.recorder is not None:
+                try:
+                    self.recorder.close()
+                except OSError as error:
+                    self.error.emit(f'CSV close failed: {error}')
             if self.status_pending.is_set():
                 self.status_pending.clear()
                 self.status_failed.emit('연결 종료로 STATUS 조회가 취소되었습니다.')
             self.running_changed.emit(False)
 
-    @staticmethod
-    def _write(data, frame):
+    def _write(self, data, frame):
+        sent_at = time.monotonic()
         # A successful write is not an acknowledgement from the board.
         if data is not None and data.write(frame) != len(frame):
             raise OSError('UART 프레임을 모두 쓰지 못했습니다.')
+        if self.recorder is not None:
+            self.recorder.record_wire('tx', frame, sent_at)
+        return sent_at
 
     def _loop(self, data, console):
         settings = None
@@ -99,7 +110,14 @@ class SessionWorker(QThread):
                 self.running_changed.emit(False)
                 self.event.emit('송신 중지 · 콘솔 모니터는 유지됩니다.')
             elif command == 'start':
+                value, recording_path = value
                 value.validate()
+                if self.recorder is not None:
+                    self.recorder.close()
+                    self.recorder = None
+                if recording_path is not None:
+                    self.recorder = SessionRecorder(recording_path, value, 'board' if data else 'preview')
+                    self.recording_started.emit(str(self.recorder.path))
                 self._write(data, build_init_frame())
                 self.event.emit('INIT 전송' if data else 'INIT 생성 (미리보기)')
                 settings = value
@@ -110,6 +128,9 @@ class SessionWorker(QThread):
             # Nonblocking bounded reads keep simulation pacing and stop commands responsive.
             if data is not None:
                 raw = data.read(min(data.in_waiting, 4096))
+                received_at = time.monotonic()
+                if self.recorder is not None:
+                    self.recorder.record_wire('rx', raw, received_at)
                 if status_deadline is not None and time.monotonic() >= status_deadline:
                     status_deadline = None
                     self.status_pending.clear()
@@ -121,7 +142,9 @@ class SessionWorker(QThread):
                         except ValueError as error:
                             self.event.emit(f'TRACK 폐기: {error}')
                         else:
-                            self.track_received.emit(report, time.monotonic())
+                            if self.recorder is not None:
+                                self.recorder.record_report(report, received_at)
+                            self.track_received.emit(report, received_at)
                         continue
                     if status_deadline is None or frame.frame_type != FRAME_TYPE_STATUS_REPORT:
                         continue
@@ -131,6 +154,8 @@ class SessionWorker(QThread):
                         continue
                     status_deadline = None
                     self.status_pending.clear()
+                    if self.recorder is not None:
+                        self.recorder.record_status(stats, received_at)
                     self.status_received.emit(stats)
 
             if console is not None:
@@ -153,7 +178,9 @@ class SessionWorker(QThread):
                         self.running_changed.emit(False)
                         self.error.emit(str(error))
                     else:
-                        self._write(data, sample.frame)
+                        sent_at = self._write(data, sample.frame)
+                        if self.recorder is not None:
+                            self.recorder.record_sample(sample, sent_at)
                         self.sample.emit(sample)
                         # Never send catch-up bursts after a delayed write/read.
                         next_sample = time.monotonic() + 1 / settings.sample_rate_hz

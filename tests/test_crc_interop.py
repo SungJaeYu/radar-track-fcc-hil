@@ -48,7 +48,7 @@ int encode_test(unsigned char type, const unsigned char *p_data,
 }
 int encode_status_test(unsigned char *out_wire, size_t capacity) {
     const struct status_report report = {
-        0x12345678U, 0x80000000U, 1U, 0xffffffffU, 7U, 0x01020304U, 0xffffffffU
+        0x12345678U, 0x80000000U, 1U, 0xffffffffU, 7U, 0x01020304U, 0xffffffffU, 9U
     };
     struct protocol_frame frame;
     int ret = status_message_encode(&report, &frame);
@@ -243,13 +243,13 @@ def test_status_report_framing(parser_lib):
 
 def test_c_status_encoder_to_python_decoder(parser_lib):
     from pc_sim.frame_parser import FrameParser
-    buffer = ctypes.create_string_buffer(33)
-    assert parser_lib.encode_status_test(buffer, len(buffer)) == 33
+    buffer = ctypes.create_string_buffer(37)
+    assert parser_lib.encode_status_test(buffer, len(buffer)) == 37
     frames = FrameParser().feed(buffer.raw)
     assert len(frames) == 1 and frames[0].frame_type == 6
     assert protocol.decode_status_payload(frames[0].payload) == {
         "crc_errors": 0x12345678, "length_errors": 0x80000000,
         "frame_timeouts": 1, "queue_drops": 0xffffffff,
         "ring_overflow_events": 7, "rx_dropped_bytes": 0x01020304,
-        "recovery_discarded_bytes": 0xffffffff,
+        "recovery_discarded_bytes": 0xffffffff, "stale_measurements": 9,
     }

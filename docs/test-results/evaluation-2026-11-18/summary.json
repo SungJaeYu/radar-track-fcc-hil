@@ -1,0 +1,80 @@
+[
+  {
+    "path": "normal/20261118-204434-2e8a631c",
+    "sent_samples": 120,
+    "received_reports": 123,
+    "warmup_ms": 2000,
+    "matched_estimates": 100,
+    "invalid_estimates": 3,
+    "unmatched_estimates": 0,
+    "duplicate_estimate_times": 0,
+    "warmup_excluded": 20,
+    "sequence_gaps": 0,
+    "sequence_discontinuities": 0,
+    "recording_closed": true,
+    "range_measurement_rmse_m": 0.3535533905932738,
+    "range_estimate_rmse_m": 0.04796523081268134,
+    "azimuth_measurement_rmse_rad": 4.876392623032189e-10,
+    "azimuth_estimate_rmse_rad": 7.285231529152725e-09,
+    "pc_roundtrip_ms": {
+      "count": 120,
+      "p50": 5.3237079991959035,
+      "p95": 5.571834044530988,
+      "p99": 6.947874964680523,
+      "max": 7.224459026474506
+    },
+    "scenario": "normal"
+  },
+  {
+    "path": "noisy/20261118-204449-320a8922",
+    "sent_samples": 120,
+    "received_reports": 123,
+    "warmup_ms": 2000,
+    "matched_estimates": 100,
+    "invalid_estimates": 3,
+    "unmatched_estimates": 0,
+    "duplicate_estimate_times": 0,
+    "warmup_excluded": 20,
+    "sequence_gaps": 0,
+    "sequence_discontinuities": 0,
+    "recording_closed": true,
+    "range_measurement_rmse_m": 7.600986778044019,
+    "range_estimate_rmse_m": 2.739389927994694,
+    "azimuth_measurement_rmse_rad": 4.876392623032189e-10,
+    "azimuth_estimate_rmse_rad": 7.285231529152725e-09,
+    "pc_roundtrip_ms": {
+      "count": 120,
+      "p50": 5.331583030056208,
+      "p95": 5.606624996289611,
+      "p99": 6.521333998534828,
+      "max": 6.883249967359006
+    },
+    "scenario": "noisy"
+  },
+  {
+    "path": "dropout/20261118-204503-fa46e562",
+    "sent_samples": 105,
+    "received_reports": 109,
+    "warmup_ms": 2000,
+    "matched_estimates": 65,
+    "invalid_estimates": 4,
+    "unmatched_estimates": 0,
+    "duplicate_estimate_times": 0,
+    "warmup_excluded": 40,
+    "sequence_gaps": 0,
+    "sequence_discontinuities": 0,
+    "recording_closed": true,
+    "range_measurement_rmse_m": 7.793735156669598,
+    "range_estimate_rmse_m": 2.8702907291633157,
+    "azimuth_measurement_rmse_rad": 4.876392623032189e-10,
+    "azimuth_estimate_rmse_rad": 7.285231529152725e-09,
+    "pc_roundtrip_ms": {
+      "count": 105,
+      "p50": 5.318749987054616,
+      "p95": 6.036832986865193,
+      "p99": 6.884708011057228,
+      "max": 8.058666018769145
+    },
+    "scenario": "dropout"
+  }
+]

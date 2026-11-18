@@ -34,7 +34,7 @@ def check_wire(records, expected_responses):
     status_responses = 0
     for frame in frames:
         if frame.frame_type == FRAME_TYPE_STATUS_REPORT:
-            if (len(frame.payload) != 28
+            if (len(frame.payload) not in (28, 32)
                     or any(decode_status_payload(frame.payload).values())):
                 return False
             status_responses += 1

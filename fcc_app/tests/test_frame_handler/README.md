@@ -9,13 +9,13 @@ cmake --build build_frame_handler
 ctest --test-dir build_frame_handler --output-on-failure
 ```
 
-Twenty-nine cases exercise the real handler, STATUS/TRACK payload encoders, protocol encoder,
+Thirty cases exercise the real handler, STATUS/TRACK payload encoders, protocol encoder,
 parser, and tracking code:
 
 - Zero counters and one response submission per request.
 - Distinct counter values, UINT32_MAX, and fresh values on repeated requests.
 - Active track preservation and unchanged timeout arming/refresh behavior.
-- Exact 28-byte big-endian payload and a fixed 33-byte frame/CRC reference,
+- Exact 32-byte big-endian payload and a fixed 37-byte frame/CRC reference,
   independently calculated with Python binascii; parsing the resulting frame.
 - NULL input/output rejection with -EINVAL and unchanged output on failure.
 - TX submission errors (-ENOMSG, -EINVAL, -EIO), no immediate retry, preserved
@@ -71,7 +71,7 @@ Host CMake cache variable `RADAR_MEASUREMENT_TIMEOUT_MS` defaults to 1000 ms and
 and add `-DRADAR_MEASUREMENT_TIMEOUT_MS=2300` to the configure command to test a non-default value.
 Host configuration is independent of Zephyr prj.conf.
 
-STATUS combines four processor counters and three UART counters. Both owners are mocked;
+STATUS combines four processor counters, three UART counters, and the real handler stale counter. RX owners are mocked;
 real counter increments are tested separately by the UART suite.
 
 로그 정리 회귀: STATUS 성공은 큐 접수 한 줄이며 실패 시 성공 로그를 내지 않는다.
@@ -126,3 +126,15 @@ The handler owns reset, logging, and one no-input TRACK report per expiration.
 The 29 host cases pass, including repeated-query state preservation, repeated
 handler checks without duplicate reports, and INIT/RESET report sequence use.
 No firmware build, flash, or hardware test was performed for this change.
+
+## Stale queue policy (2026-11-18)
+
+Current total: 30 cases. `test_stale_measurement_boundary_and_stats` controls the
+mock uptime and verifies age timeout-1 acceptance, exact-boundary rejection,
+unchanged radar state and sequence, subsequent one-shot timeout, first-measurement
+arming suppression, reset preservation, UINT32_MAX saturation and fresh recovery.
+Age is MCU processing uptime minus RX completion uptime, not sender time.
+STATUS now carries eight uint32 fields (32 payload / 37 wire bytes), including the
+handler-owned stale count at offset 28. RX snapshots remain mocked.
+Earlier dated counts describe earlier revisions; hardware queue delay injection
+is not covered by these synchronous tests.

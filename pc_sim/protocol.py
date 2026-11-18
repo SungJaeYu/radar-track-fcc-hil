@@ -74,19 +74,20 @@ STATUS_FIELDS = (
     ("ring_overflow_events", "Ring overflows", "링 overflow 횟수"),
     ("rx_dropped_bytes", "ISR dropped bytes", "ISR 폐기 바이트"),
     ("recovery_discarded_bytes", "Recovery discarded bytes", "복구 중 버퍼 폐기 바이트"),
+    ("stale_measurements", "Stale measurements", "오래된 측정 폐기"),
 )
 STATUS_PAYLOAD = struct.Struct(">" + "I" * len(STATUS_FIELDS))
-# Compatibility is explicitly limited to the original four-counter layout.
+# Earlier four/seven-counter layouts remain readable; absent fields stay absent.
 LEGACY_STATUS_PAYLOAD = struct.Struct(">4I")
 
 
 def decode_status_payload(payload):
     """Decode current or legacy counters; absent legacy fields remain absent, not zero."""
-    layouts = (LEGACY_STATUS_PAYLOAD, STATUS_PAYLOAD)
+    layouts = (LEGACY_STATUS_PAYLOAD, struct.Struct(">7I"), STATUS_PAYLOAD)
     layout = next((item for item in layouts if item.size == len(payload)), None)
     if layout is None:
         raise ValueError(
-            f"STATUS_REPORT payload must be {LEGACY_STATUS_PAYLOAD.size} or {STATUS_PAYLOAD.size} bytes")
+            "STATUS_REPORT payload must be 16, 28 or 32 bytes")
     return {field[0]: value for field, value in zip(STATUS_FIELDS, layout.unpack(payload))}
 
 

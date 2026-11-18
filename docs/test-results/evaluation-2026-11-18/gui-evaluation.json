@@ -1,0 +1,24 @@
+{
+  "sent_samples": 36,
+  "received_reports": 38,
+  "warmup_ms": 2000,
+  "matched_estimates": 16,
+  "invalid_estimates": 2,
+  "unmatched_estimates": 0,
+  "duplicate_estimate_times": 0,
+  "warmup_excluded": 20,
+  "sequence_gaps": 0,
+  "sequence_discontinuities": 0,
+  "recording_closed": true,
+  "range_measurement_rmse_m": 8.373180399346468,
+  "range_estimate_rmse_m": 2.975336312170337,
+  "azimuth_measurement_rmse_rad": 4.876392623032189e-10,
+  "azimuth_estimate_rmse_rad": 7.285231529152725e-09,
+  "pc_roundtrip_ms": {
+    "count": 36,
+    "p50": 6.528666999656707,
+    "p95": 13.026957982219756,
+    "p99": 67.38525000400841,
+    "max": 67.38525000400841
+  }
+}

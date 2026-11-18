@@ -28,5 +28,7 @@ int status_message_encode(const struct status_report *p_report, struct protocol_
     write_u32_be(p_report->rx_dropped_bytes, &out_frame->payload[20]);
     write_u32_be(p_report->recovery_discarded_bytes, &out_frame->payload[24]);
 
+    write_u32_be(p_report->stale_measurements, &out_frame->payload[28]);
+
     return 0;
 }
