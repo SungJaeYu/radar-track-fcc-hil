@@ -90,6 +90,7 @@ def run(args):
     snapshot_parser = PerfConsole()
     decoder = FrameParser()
     valid_count = invalid_count = status_sent = 0
+    received_measurements = 0
     sequence = None
     failure = restore_failure = None
     result = {}
@@ -123,7 +124,7 @@ def run(args):
                     return now
 
                 def pump_until(deadline):
-                    nonlocal sequence
+                    nonlocal sequence, received_measurements
                     while time.monotonic() < deadline:
                         text = console.read(min(console.in_waiting, 16384)).decode(errors='replace')
                         if text:
@@ -149,6 +150,8 @@ def run(args):
                                         raise AssertionError('Normal stationary measurement rejected')
                                     if abs(report.range_m - 1000) > .01 or abs(report.azimuth_rad - math.radians(15)) > .0001:
                                         raise AssertionError('Unexpected stationary estimate')
+                                    # Keep progress reporting constant-time as the capture grows.
+                                    received_measurements += 1
                             elif frame.frame_type == 6:
                                 status = decode_status_payload(frame.payload)
                                 recorder.record_status(status, now)
@@ -208,7 +211,7 @@ def run(args):
                     if now >= next_progress:
                         latest = snapshot_parser.snapshots[-1]
                         print(json.dumps({'elapsed_s': round(now - start), 'sent': valid_count,
-                                          'received': sum(r.input_present for r in reports),
+                                          'received': received_measurements,
                                           'status': len(statuses), 'perf': latest['rx_to_submit'],
                                           'stack': {n: latest['stack ' + n] for n in ('rx', 'handler', 'tx')}}), flush=True)
                         next_progress += 60

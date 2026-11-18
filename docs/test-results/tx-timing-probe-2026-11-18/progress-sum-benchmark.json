@@ -1,0 +1,26 @@
+[
+  {
+    "reports": 3000,
+    "count": 2999,
+    "median_ms": 1.873541,
+    "max_ms": 1.918375
+  },
+  {
+    "reports": 30000,
+    "count": 29999,
+    "median_ms": 19.070833,
+    "max_ms": 19.334375
+  },
+  {
+    "reports": 60000,
+    "count": 59999,
+    "median_ms": 38.107083,
+    "max_ms": 38.276834
+  },
+  {
+    "reports": 89971,
+    "count": 89970,
+    "median_ms": 56.901375,
+    "max_ms": 57.10075
+  }
+]

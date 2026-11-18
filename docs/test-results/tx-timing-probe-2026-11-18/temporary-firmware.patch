@@ -1,0 +1,119 @@
+--- fcc_app/src/main.c
++++ probe/src/main.c
+@@ -8,6 +8,8 @@
+ #include "transport/uart_tx.h"
+ 
+ LOG_MODULE_REGISTER(radar_main, CONFIG_RADAR_MAIN_LOG_LEVEL);
++
++void uart_tx_probe_log(void);
+ 
+ int main(void)
+ {
+@@ -33,6 +35,7 @@
+ #if defined(CONFIG_RADAR_PERF_MONITOR)
+         k_sleep(K_SECONDS(5));
+         perf_monitor_log_summary();
++        uart_tx_probe_log();
+ #else
+         k_sleep(K_SECONDS(1));
+ #endif
+--- fcc_app/src/transport/uart_tx.c
++++ probe/src/transport/uart_tx.c
+@@ -6,6 +6,7 @@
+ #include <zephyr/drivers/uart.h>
+ #include <zephyr/kernel.h>
+ #include <zephyr/logging/log.h>
++#include <zephyr/sys/atomic.h>
+ 
+ #if defined(CONFIG_RADAR_PERF_MONITOR)
+ #include "diagnostics/perf_monitor.h"
+@@ -20,8 +21,18 @@
+ // One-time startup barrier: queued requests must wait for successful UART init.
+ K_SEM_DEFINE(tx_ready_sem, 0, 1);
+ 
++// Temporary diagnostic envelope; the wire frame and public request are unchanged.
++struct tx_probe_item {
++    struct tx_frame request;
++    uint32_t queued_cycles;
++};
++static atomic_t probe_count;
++static atomic_t probe_queue_max_us;
++static atomic_t probe_poll_max_us;
++static atomic_t probe_poll_total_us;
++
+ // The queue stores complete request copies; the TX thread alone emits their bytes.
+-K_MSGQ_DEFINE(tx_queue, sizeof(struct tx_frame), 8, 4);
++K_MSGQ_DEFINE(tx_queue, sizeof(struct tx_probe_item), 8, 4);
+ 
+ K_THREAD_DEFINE(uart_tx_tid, 1024, uart_tx_thread, NULL, NULL, NULL, 7, 0, 0);
+ 
+@@ -44,7 +55,11 @@
+         return -EINVAL;
+     }
+ 
+-    const int ret = k_msgq_put(&tx_queue, p_frame, K_NO_WAIT);
++    const struct tx_probe_item item = {
++        .request = *p_frame,
++        .queued_cycles = k_cycle_get_32(),
++    };
++    const int ret = k_msgq_put(&tx_queue, &item, K_NO_WAIT);
+ #if defined(CONFIG_RADAR_PERF_MONITOR)
+     perf_monitor_record_queue(PERF_QUEUE_TX, ret, k_msgq_num_used_get(&tx_queue));
+ #endif
+@@ -57,19 +72,23 @@
+     ARG_UNUSED(p_arg2);
+     ARG_UNUSED(p_arg3);
+ 
+-    struct tx_frame request;
++    struct tx_probe_item item;
+ 
+     // Wait until UART initialization succeeds.
+     k_sem_take(&tx_ready_sem, K_FOREVER);
+ 
+     while (1) {
+-        const int ret = k_msgq_get(&tx_queue, &request, K_FOREVER);
++        const int ret = k_msgq_get(&tx_queue, &item, K_FOREVER);
+ 
+         if (ret == 0) {
++            const uint32_t wait_us = k_cyc_to_us_floor32(k_cycle_get_32() - item.queued_cycles);
++            if (wait_us > (uint32_t)atomic_get(&probe_queue_max_us)) {
++                atomic_set(&probe_queue_max_us, wait_us);
++            }
+             // Encode one complete queued request; discard only this request on encoding failure.
+             uint8_t buffer[PROTOCOL_MAX_FRAME_SIZE];
+ 
+-            const int length = protocol_frame_encode(&request.frame, buffer, sizeof(buffer));
++            const int length = protocol_frame_encode(&item.request.frame, buffer, sizeof(buffer));
+ 
+             if (length < 0) {
+ #if defined(CONFIG_RADAR_PERF_MONITOR)
+@@ -81,8 +100,15 @@
+ 
+             // Polling can wait for UART readiness and provides no peer acknowledgment.
+             // Keep all frame bytes in this owner thread to preserve request order.
++            const uint32_t poll_started_cycles = k_cycle_get_32();
+             for (int i = 0; i < length; ++i) {
+                 uart_poll_out(p_uart, buffer[i]);
++            }
++            const uint32_t poll_us = k_cyc_to_us_floor32(k_cycle_get_32() - poll_started_cycles);
++            atomic_inc(&probe_count);
++            atomic_add(&probe_poll_total_us, poll_us);
++            if (poll_us > (uint32_t)atomic_get(&probe_poll_max_us)) {
++                atomic_set(&probe_poll_max_us, poll_us);
+             }
+ #if defined(CONFIG_RADAR_PERF_MONITOR)
+             perf_monitor_record_tx(true);
+@@ -90,3 +116,13 @@
+         }
+     }
+ }
++
++// Main samples independent atomic fields; compare the final quiescent summary.
++void uart_tx_probe_log(void)
++{
++    LOG_INF("TXPROBE count=%u queue_max_us=%u poll_max_us=%u poll_total_us=%u",
++            (unsigned int)atomic_get(&probe_count),
++            (unsigned int)atomic_get(&probe_queue_max_us),
++            (unsigned int)atomic_get(&probe_poll_max_us),
++            (unsigned int)atomic_get(&probe_poll_total_us));
++}

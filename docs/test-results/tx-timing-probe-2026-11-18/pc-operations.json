@@ -1,0 +1,229 @@
+{
+  "stats": {
+    "serial_in_waiting:/dev/cu.usbmodem11203": {
+      "count": 99244,
+      "total_ms": 1227.124352240935,
+      "max_ms": 2.072541043162346,
+      "max_cpu_ms": 0.142584,
+      "max_overrun_ms": 2.072541043162346
+    },
+    "serial_read:/dev/cu.usbmodem11203": {
+      "count": 99244,
+      "total_ms": 510.6117674149573,
+      "max_ms": 1.9225419964641333,
+      "max_cpu_ms": 0.078834,
+      "max_overrun_ms": 1.9225419964641333
+    },
+    "serial_in_waiting:/dev/cu.usbserial-A5069RR4": {
+      "count": 99244,
+      "total_ms": 814.5814454182982,
+      "max_ms": 0.635916949249804,
+      "max_cpu_ms": 0.077375,
+      "max_overrun_ms": 0.635916949249804
+    },
+    "serial_read:/dev/cu.usbserial-A5069RR4": {
+      "count": 99245,
+      "total_ms": 564.231549273245,
+      "max_ms": 50.401207990944386,
+      "max_cpu_ms": 0.160541,
+      "max_overrun_ms": 50.401207990944386
+    },
+    "sleep": {
+      "count": 99245,
+      "total_ms": 122288.71321864426,
+      "max_ms": 305.0494169583544,
+      "max_cpu_ms": 0.066333,
+      "max_overrun_ms": 22.338082944974303
+    },
+    "serial_write:/dev/cu.usbserial-A5069RR4": {
+      "count": 6123,
+      "total_ms": 292.210211744532,
+      "max_ms": 0.9319999953731894,
+      "max_cpu_ms": 0.156875,
+      "max_overrun_ms": 0.9319999953731894
+    },
+    "csv_flush:wire": {
+      "count": 12246,
+      "total_ms": 591.1668413318694,
+      "max_ms": 2.7405830333009362,
+      "max_cpu_ms": 0.202083,
+      "max_overrun_ms": 2.7405830333009362
+    },
+    "record_row:wire": {
+      "count": 12246,
+      "total_ms": 994.0982562256977,
+      "max_ms": 2.7520419098436832,
+      "max_cpu_ms": 0.249417,
+      "max_overrun_ms": 2.7520419098436832
+    },
+    "csv_flush:reports": {
+      "count": 6002,
+      "total_ms": 166.1840834422037,
+      "max_ms": 1.6442498890683055,
+      "max_cpu_ms": 0.115666,
+      "max_overrun_ms": 1.6442498890683055
+    },
+    "record_row:reports": {
+      "count": 6002,
+      "total_ms": 377.4682035436854,
+      "max_ms": 1.687083044089377,
+      "max_cpu_ms": 0.675917,
+      "max_overrun_ms": 1.687083044089377
+    },
+    "csv_flush:status": {
+      "count": 121,
+      "total_ms": 8.099951432086527,
+      "max_ms": 0.853499979712069,
+      "max_cpu_ms": 0.172833,
+      "max_overrun_ms": 0.853499979712069
+    },
+    "record_row:status": {
+      "count": 121,
+      "total_ms": 11.05250557884574,
+      "max_ms": 0.871957978233695,
+      "max_cpu_ms": 0.209167,
+      "max_overrun_ms": 0.871957978233695
+    },
+    "csv_flush:samples": {
+      "count": 6000,
+      "total_ms": 158.45175459980965,
+      "max_ms": 2.5797089328989387,
+      "max_cpu_ms": 0.2435,
+      "max_overrun_ms": 2.5797089328989387
+    },
+    "record_row:samples": {
+      "count": 6000,
+      "total_ms": 348.3158724848181,
+      "max_ms": 2.6352080749347806,
+      "max_cpu_ms": 0.296417,
+      "max_overrun_ms": 2.6352080749347806
+    },
+    "gc:0": {
+      "count": 10,
+      "total_ms": 2.1178360329940915,
+      "max_ms": 0.5916670197620988,
+      "max_cpu_ms": 0.59125,
+      "max_overrun_ms": 0.0
+    },
+    "sum_progress_or_check": {
+      "count": 3,
+      "total_ms": 26.779166073538363,
+      "max_ms": 10.731708025559783,
+      "max_cpu_ms": 10.619583,
+      "max_overrun_ms": 10.731708025559783
+    },
+    "print": {
+      "count": 2,
+      "total_ms": 0.15254213940352201,
+      "max_ms": 0.08325011003762484,
+      "max_cpu_ms": 0.082791,
+      "max_overrun_ms": 0.08325011003762484
+    }
+  },
+  "slow_events": [
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526920.006289208,
+      "wall_ms": 6.521875038743019,
+      "cpu_ms": 0.033667,
+      "requested_ms": 1.0,
+      "overrun_ms": 5.521875038743019
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526943.2602785,
+      "wall_ms": 6.056290934793651,
+      "cpu_ms": 0.038542,
+      "requested_ms": 1.0,
+      "overrun_ms": 5.056290934793651
+    },
+    {
+      "name": "sum_progress_or_check",
+      "at_monotonic_s": 526985.097133333,
+      "wall_ms": 6.323333014734089,
+      "cpu_ms": 6.263041,
+      "requested_ms": 0,
+      "overrun_ms": 6.323333014734089
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526987.089970916,
+      "wall_ms": 6.571042002178729,
+      "cpu_ms": 0.050167,
+      "requested_ms": 1.0,
+      "overrun_ms": 5.571042002178729
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526991.587942583,
+      "wall_ms": 12.286291923373938,
+      "cpu_ms": 0.020167,
+      "requested_ms": 1.0,
+      "overrun_ms": 11.286291923373938
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526997.157078333,
+      "wall_ms": 8.697292068973184,
+      "cpu_ms": 0.04025,
+      "requested_ms": 1.0,
+      "overrun_ms": 7.697292068973184
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 527006.98595825,
+      "wall_ms": 23.338082944974303,
+      "cpu_ms": 0.025208,
+      "requested_ms": 1.0,
+      "overrun_ms": 22.338082944974303
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 527007.054231583,
+      "wall_ms": 10.897749918513,
+      "cpu_ms": 0.028334,
+      "requested_ms": 1.0,
+      "overrun_ms": 9.897749918513
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 527016.986353708,
+      "wall_ms": 11.267625028267503,
+      "cpu_ms": 0.024625,
+      "requested_ms": 1.0,
+      "overrun_ms": 10.267625028267503
+    },
+    {
+      "name": "sum_progress_or_check",
+      "at_monotonic_s": 527046.396715791,
+      "wall_ms": 9.72412503324449,
+      "cpu_ms": 9.686542,
+      "requested_ms": 0,
+      "overrun_ms": 9.72412503324449
+    },
+    {
+      "name": "sum_progress_or_check",
+      "at_monotonic_s": 527052.406655125,
+      "wall_ms": 10.731708025559783,
+      "cpu_ms": 10.619583,
+      "requested_ms": 0,
+      "overrun_ms": 10.731708025559783
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 527054.586207458,
+      "wall_ms": 305.0494169583544,
+      "cpu_ms": 0.0565,
+      "requested_ms": 300.0,
+      "overrun_ms": 5.0494169583544135
+    },
+    {
+      "name": "serial_read:/dev/cu.usbserial-A5069RR4",
+      "at_monotonic_s": 527054.933387125,
+      "wall_ms": 50.401207990944386,
+      "cpu_ms": 0.160541,
+      "requested_ms": 0,
+      "overrun_ms": 50.401207990944386
+    }
+  ]
+}

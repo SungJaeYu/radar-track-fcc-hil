@@ -1,0 +1,293 @@
+*** Booting Zephyr OS build 4.2.0 ***
+[00:00:00.000,000] [0m<inf> radar_main: === FCC learning-rebuild boot ===[0m
+[00:00:00.000,000] [0m<inf> radar_main: FCC ready: USART6 RX/TX initialized[0m
+[00:00:05.000,000] [0m<inf> radar_perf: PERF uptime_ms=5000 measurements=0 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:05.000,000] [0m<inf> radar_perf: PERF queue_wait: n=0 total_ms=0 p50_bin=0 p95_bin=0 p99_bin=0 max_ms=0 over20=0[0m
+[00:00:05.000,000] [0m<inf> radar_perf: PERF processing: n=0 total_ms=0 p50_bin=0 p95_bin=0 p99_bin=0 max_ms=0 over20=0[0m
+[00:00:05.001,000] [0m<inf> radar_perf: PERF rx_to_submit: n=0 total_ms=0 p50_bin=0 p95_bin=0 p99_bin=0 max_ms=0 over20=0[0m
+[00:00:05.001,000] [0m<inf> radar_perf: PERF queue rx: accepted=0 rejected=0 observed_max_used=0[0m
+[00:00:05.001,000] [0m<inf> radar_perf: PERF queue tx: accepted=0 rejected=0 observed_max_used=0[0m
+[00:00:05.001,000] [0m<inf> radar_perf: PERF tx: poll_completed=0 encode_failed=0[0m
+[00:00:05.001,000] [0m<inf> radar_perf: PERF stack rx: unused=808 min_unused=808[0m
+[00:00:05.001,000] [0m<inf> radar_perf: PERF stack handler: unused=1704 min_unused=1704[0m
+[00:00:05.001,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:05.001,000] [0m<inf> uart_tx: TXPROBE count=0 queue_max_us=0 poll_max_us=0 poll_total_us=0[0m
+[00:00:06.185,000] [0m<inf> frame_handler: INIT: track and measurement monitoring reset[0m
+[00:00:06.436,000] [0m<inf> frame_handler: Track started: TENTATIVE, t=0 ms, range=1000.00 m, azimuth=0.2618 rad[0m
+[00:00:06.476,000] [0m<inf> frame_handler: Track state: TENTATIVE -> CONFIRMED[0m
+[00:00:10.001,000] [0m<inf> radar_perf: PERF uptime_ms=10001 measurements=179 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:10.001,000] [0m<inf> radar_perf: PERF queue_wait: n=179 total_ms=10 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:10.001,000] [0m<inf> radar_perf: PERF processing: n=179 total_ms=24 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:10.001,000] [0m<inf> radar_perf: PERF rx_to_submit: n=179 total_ms=34 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:10.001,000] [0m<inf> radar_perf: PERF queue rx: accepted=184 rejected=0 observed_max_used=0[0m
+[00:00:10.001,000] [0m<inf> radar_perf: PERF queue tx: accepted=184 rejected=0 observed_max_used=1[0m
+[00:00:10.001,000] [0m<inf> radar_perf: PERF tx: poll_completed=184 encode_failed=0[0m
+[00:00:10.001,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:10.002,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:10.002,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:10.002,000] [0m<inf> uart_tx: TXPROBE count=184 queue_max_us=3081 poll_max_us=3187 poll_total_us=560592[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF uptime_ms=15002 measurements=429 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF queue_wait: n=429 total_ms=16 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF processing: n=429 total_ms=56 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF rx_to_submit: n=429 total_ms=72 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF queue rx: accepted=439 rejected=0 observed_max_used=0[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF queue tx: accepted=439 rejected=0 observed_max_used=1[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF tx: poll_completed=439 encode_failed=0[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:15.002,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:15.002,000] [0m<inf> uart_tx: TXPROBE count=439 queue_max_us=3083 poll_max_us=3187 poll_total_us=1337607[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF uptime_ms=20003 measurements=679 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF queue_wait: n=679 total_ms=26 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF processing: n=679 total_ms=73 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF rx_to_submit: n=679 total_ms=99 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF queue rx: accepted=694 rejected=0 observed_max_used=0[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF queue tx: accepted=694 rejected=0 observed_max_used=1[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF tx: poll_completed=694 encode_failed=0[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:20.003,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:20.003,000] [0m<inf> uart_tx: TXPROBE count=694 queue_max_us=3084 poll_max_us=3187 poll_total_us=2114402[0m
+[00:00:25.003,000] [0m<inf> radar_perf: PERF uptime_ms=25003 measurements=929 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:25.003,000] [0m<inf> radar_perf: PERF queue_wait: n=929 total_ms=36 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:25.003,000] [0m<inf> radar_perf: PERF processing: n=929 total_ms=100 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:25.003,000] [0m<inf> radar_perf: PERF rx_to_submit: n=929 total_ms=136 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:25.003,000] [0m<inf> radar_perf: PERF queue rx: accepted=949 rejected=0 observed_max_used=0[0m
+[00:00:25.003,000] [0m<inf> radar_perf: PERF queue tx: accepted=949 rejected=0 observed_max_used=1[0m
+[00:00:25.003,000] [0m<inf> radar_perf: PERF tx: poll_completed=949 encode_failed=0[0m
+[00:00:25.003,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:25.004,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:25.004,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:25.004,000] [0m<inf> uart_tx: TXPROBE count=949 queue_max_us=3084 poll_max_us=3187 poll_total_us=2891417[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF uptime_ms=30004 measurements=1180 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF queue_wait: n=1180 total_ms=40 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF processing: n=1180 total_ms=127 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF rx_to_submit: n=1180 total_ms=167 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF queue rx: accepted=1205 rejected=0 observed_max_used=0[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF queue tx: accepted=1205 rejected=0 observed_max_used=1[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF tx: poll_completed=1204 encode_failed=0[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:30.004,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:30.005,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:30.005,000] [0m<inf> uart_tx: TXPROBE count=1204 queue_max_us=3084 poll_max_us=3187 poll_total_us=3668322[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF uptime_ms=35005 measurements=1430 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF queue_wait: n=1430 total_ms=53 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF processing: n=1430 total_ms=148 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF rx_to_submit: n=1430 total_ms=201 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF queue rx: accepted=1460 rejected=0 observed_max_used=0[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF queue tx: accepted=1460 rejected=0 observed_max_used=1[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF tx: poll_completed=1460 encode_failed=0[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:35.005,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:35.005,000] [0m<inf> uart_tx: TXPROBE count=1460 queue_max_us=3084 poll_max_us=3565 poll_total_us=4449012[0m
+[00:00:40.005,000] [0m<inf> radar_perf: PERF uptime_ms=40005 measurements=1680 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:40.005,000] [0m<inf> radar_perf: PERF queue_wait: n=1680 total_ms=61 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:40.005,000] [0m<inf> radar_perf: PERF processing: n=1680 total_ms=173 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:40.005,000] [0m<inf> radar_perf: PERF rx_to_submit: n=1680 total_ms=234 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:40.005,000] [0m<inf> radar_perf: PERF queue rx: accepted=1715 rejected=0 observed_max_used=0[0m
+[00:00:40.005,000] [0m<inf> radar_perf: PERF queue tx: accepted=1715 rejected=0 observed_max_used=1[0m
+[00:00:40.005,000] [0m<inf> radar_perf: PERF tx: poll_completed=1715 encode_failed=0[0m
+[00:00:40.006,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:40.006,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:40.006,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:40.006,000] [0m<inf> uart_tx: TXPROBE count=1715 queue_max_us=3084 poll_max_us=3565 poll_total_us=5225807[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF uptime_ms=45006 measurements=1930 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF queue_wait: n=1930 total_ms=69 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF processing: n=1930 total_ms=197 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF rx_to_submit: n=1930 total_ms=266 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF queue rx: accepted=1970 rejected=0 observed_max_used=0[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF queue tx: accepted=1970 rejected=0 observed_max_used=1[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF tx: poll_completed=1970 encode_failed=0[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:45.006,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:45.007,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:45.007,000] [0m<inf> uart_tx: TXPROBE count=1970 queue_max_us=3084 poll_max_us=3565 poll_total_us=6002932[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF uptime_ms=50007 measurements=2180 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF queue_wait: n=2180 total_ms=75 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF processing: n=2180 total_ms=224 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF rx_to_submit: n=2180 total_ms=299 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF queue rx: accepted=2225 rejected=0 observed_max_used=0[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF queue tx: accepted=2225 rejected=0 observed_max_used=1[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF tx: poll_completed=2225 encode_failed=0[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:50.007,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:50.007,000] [0m<inf> uart_tx: TXPROBE count=2225 queue_max_us=3084 poll_max_us=3565 poll_total_us=6779727[0m
+[00:00:55.007,000] [0m<inf> radar_perf: PERF uptime_ms=55007 measurements=2430 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF queue_wait: n=2430 total_ms=84 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF processing: n=2430 total_ms=247 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF rx_to_submit: n=2430 total_ms=331 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF queue rx: accepted=2480 rejected=0 observed_max_used=0[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF queue tx: accepted=2480 rejected=0 observed_max_used=1[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF tx: poll_completed=2480 encode_failed=0[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:00:55.008,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:00:55.008,000] [0m<inf> uart_tx: TXPROBE count=2480 queue_max_us=3084 poll_max_us=3565 poll_total_us=7556657[0m
+[00:01:00.008,000] [0m<inf> radar_perf: PERF uptime_ms=60008 measurements=2681 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:00.008,000] [0m<inf> radar_perf: PERF queue_wait: n=2681 total_ms=94 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:00.008,000] [0m<inf> radar_perf: PERF processing: n=2681 total_ms=283 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:00.008,000] [0m<inf> radar_perf: PERF rx_to_submit: n=2681 total_ms=377 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:00.008,000] [0m<inf> radar_perf: PERF queue rx: accepted=2736 rejected=0 observed_max_used=0[0m
+[00:01:00.008,000] [0m<inf> radar_perf: PERF queue tx: accepted=2736 rejected=0 observed_max_used=1[0m
+[00:01:00.008,000] [0m<inf> radar_perf: PERF tx: poll_completed=2736 encode_failed=0[0m
+[00:01:00.008,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:01:00.009,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:00.009,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:00.009,000] [0m<inf> uart_tx: TXPROBE count=2736 queue_max_us=3084 poll_max_us=3565 poll_total_us=8336825[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF uptime_ms=65009 measurements=2931 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF queue_wait: n=2931 total_ms=101 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF processing: n=2931 total_ms=307 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF rx_to_submit: n=2931 total_ms=408 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF queue rx: accepted=2991 rejected=0 observed_max_used=0[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF queue tx: accepted=2991 rejected=0 observed_max_used=1[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF tx: poll_completed=2991 encode_failed=0[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:05.009,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:05.010,000] [0m<inf> uart_tx: TXPROBE count=2991 queue_max_us=3084 poll_max_us=3565 poll_total_us=9114060[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF uptime_ms=70010 measurements=3181 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF queue_wait: n=3181 total_ms=111 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF processing: n=3181 total_ms=333 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF rx_to_submit: n=3181 total_ms=444 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF queue rx: accepted=3246 rejected=0 observed_max_used=0[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF queue tx: accepted=3246 rejected=0 observed_max_used=1[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF tx: poll_completed=3246 encode_failed=0[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:10.010,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:10.010,000] [0m<inf> uart_tx: TXPROBE count=3246 queue_max_us=3084 poll_max_us=3565 poll_total_us=9891185[0m
+[00:01:15.010,000] [0m<inf> radar_perf: PERF uptime_ms=75010 measurements=3431 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:15.010,000] [0m<inf> radar_perf: PERF queue_wait: n=3431 total_ms=128 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:15.010,000] [0m<inf> radar_perf: PERF processing: n=3431 total_ms=367 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:15.010,000] [0m<inf> radar_perf: PERF rx_to_submit: n=3431 total_ms=495 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:15.010,000] [0m<inf> radar_perf: PERF queue rx: accepted=3501 rejected=0 observed_max_used=0[0m
+[00:01:15.010,000] [0m<inf> radar_perf: PERF queue tx: accepted=3501 rejected=0 observed_max_used=1[0m
+[00:01:15.010,000] [0m<inf> radar_perf: PERF tx: poll_completed=3501 encode_failed=0[0m
+[00:01:15.011,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:01:15.011,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:15.011,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:15.011,000] [0m<inf> uart_tx: TXPROBE count=3501 queue_max_us=3084 poll_max_us=3565 poll_total_us=10668420[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF uptime_ms=80011 measurements=3681 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF queue_wait: n=3681 total_ms=143 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF processing: n=3681 total_ms=395 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF rx_to_submit: n=3681 total_ms=538 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF queue rx: accepted=3756 rejected=0 observed_max_used=0[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF queue tx: accepted=3756 rejected=0 observed_max_used=1[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF tx: poll_completed=3756 encode_failed=0[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:01:20.011,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:20.012,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:20.012,000] [0m<inf> uart_tx: TXPROBE count=3756 queue_max_us=3084 poll_max_us=3565 poll_total_us=11445538[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF uptime_ms=85012 measurements=3932 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF queue_wait: n=3932 total_ms=151 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF processing: n=3932 total_ms=425 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF rx_to_submit: n=3932 total_ms=576 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF queue rx: accepted=4012 rejected=0 observed_max_used=0[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF queue tx: accepted=4012 rejected=0 observed_max_used=1[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF tx: poll_completed=4011 encode_failed=0[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF stack rx: unused=804 min_unused=804[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:25.012,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:25.012,000] [0m<inf> uart_tx: TXPROBE count=4011 queue_max_us=3084 poll_max_us=3565 poll_total_us=12222773[0m
+[00:01:30.012,000] [0m<inf> radar_perf: PERF uptime_ms=90012 measurements=4182 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:30.012,000] [0m<inf> radar_perf: PERF queue_wait: n=4182 total_ms=158 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:30.013,000] [0m<inf> radar_perf: PERF processing: n=4182 total_ms=460 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:30.013,000] [0m<inf> radar_perf: PERF rx_to_submit: n=4182 total_ms=618 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:30.013,000] [0m<inf> radar_perf: PERF queue rx: accepted=4267 rejected=0 observed_max_used=0[0m
+[00:01:30.013,000] [0m<inf> radar_perf: PERF queue tx: accepted=4267 rejected=0 observed_max_used=1[0m
+[00:01:30.013,000] [0m<inf> radar_perf: PERF tx: poll_completed=4267 encode_failed=0[0m
+[00:01:30.013,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:01:30.013,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:30.013,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:30.013,000] [0m<inf> uart_tx: TXPROBE count=4267 queue_max_us=3084 poll_max_us=3565 poll_total_us=13003803[0m
+[00:01:35.013,000] [0m<inf> radar_perf: PERF uptime_ms=95013 measurements=4432 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:35.013,000] [0m<inf> radar_perf: PERF queue_wait: n=4432 total_ms=165 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:35.013,000] [0m<inf> radar_perf: PERF processing: n=4432 total_ms=488 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:35.013,000] [0m<inf> radar_perf: PERF rx_to_submit: n=4432 total_ms=653 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:35.013,000] [0m<inf> radar_perf: PERF queue rx: accepted=4522 rejected=0 observed_max_used=0[0m
+[00:01:35.013,000] [0m<inf> radar_perf: PERF queue tx: accepted=4522 rejected=0 observed_max_used=1[0m
+[00:01:35.013,000] [0m<inf> radar_perf: PERF tx: poll_completed=4522 encode_failed=0[0m
+[00:01:35.013,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:01:35.014,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:35.014,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:35.014,000] [0m<inf> uart_tx: TXPROBE count=4522 queue_max_us=3084 poll_max_us=3565 poll_total_us=13781038[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF uptime_ms=100014 measurements=4682 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF queue_wait: n=4682 total_ms=173 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF processing: n=4682 total_ms=520 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF rx_to_submit: n=4682 total_ms=693 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF queue rx: accepted=4777 rejected=0 observed_max_used=0[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF queue tx: accepted=4777 rejected=0 observed_max_used=1[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF tx: poll_completed=4777 encode_failed=0[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:40.014,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:40.014,000] [0m<inf> uart_tx: TXPROBE count=4777 queue_max_us=3084 poll_max_us=3565 poll_total_us=14558332[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF uptime_ms=105015 measurements=4932 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF queue_wait: n=4932 total_ms=183 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF processing: n=4932 total_ms=546 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF rx_to_submit: n=4932 total_ms=729 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF queue rx: accepted=5032 rejected=0 observed_max_used=0[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF queue tx: accepted=5032 rejected=0 observed_max_used=1[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF tx: poll_completed=5032 encode_failed=0[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:45.015,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:45.015,000] [0m<inf> uart_tx: TXPROBE count=5032 queue_max_us=3084 poll_max_us=3565 poll_total_us=15335567[0m
+[00:01:50.015,000] [0m<inf> radar_perf: PERF uptime_ms=110015 measurements=5183 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:50.015,000] [0m<inf> radar_perf: PERF queue_wait: n=5183 total_ms=193 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:50.015,000] [0m<inf> radar_perf: PERF processing: n=5182 total_ms=574 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:50.015,000] [0m<inf> radar_perf: PERF rx_to_submit: n=5182 total_ms=767 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:50.015,000] [0m<inf> radar_perf: PERF queue rx: accepted=5288 rejected=0 observed_max_used=0[0m
+[00:01:50.015,000] [0m<inf> radar_perf: PERF queue tx: accepted=5287 rejected=0 observed_max_used=1[0m
+[00:01:50.015,000] [0m<inf> radar_perf: PERF tx: poll_completed=5287 encode_failed=0[0m
+[00:01:50.015,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:01:50.016,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:50.016,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:50.016,000] [0m<inf> uart_tx: TXPROBE count=5287 queue_max_us=3085 poll_max_us=3565 poll_total_us=16112607[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF uptime_ms=115016 measurements=5433 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF queue_wait: n=5433 total_ms=207 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF processing: n=5433 total_ms=600 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF rx_to_submit: n=5433 total_ms=807 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF queue rx: accepted=5543 rejected=0 observed_max_used=0[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF queue tx: accepted=5543 rejected=0 observed_max_used=1[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF tx: poll_completed=5543 encode_failed=0[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:01:55.016,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:01:55.017,000] [0m<inf> uart_tx: TXPROBE count=5543 queue_max_us=3085 poll_max_us=3565 poll_total_us=16892885[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF uptime_ms=120017 measurements=5683 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF queue_wait: n=5683 total_ms=216 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF processing: n=5683 total_ms=626 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF rx_to_submit: n=5683 total_ms=842 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF queue rx: accepted=5798 rejected=0 observed_max_used=0[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF queue tx: accepted=5798 rejected=0 observed_max_used=1[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF tx: poll_completed=5798 encode_failed=0[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:02:00.017,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:02:00.017,000] [0m<inf> uart_tx: TXPROBE count=5798 queue_max_us=3085 poll_max_us=3565 poll_total_us=17670035[0m
+[00:02:05.017,000] [0m<inf> radar_perf: PERF uptime_ms=125017 measurements=5933 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:02:05.017,000] [0m<inf> radar_perf: PERF queue_wait: n=5933 total_ms=226 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:05.017,000] [0m<inf> radar_perf: PERF processing: n=5933 total_ms=651 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:05.017,000] [0m<inf> radar_perf: PERF rx_to_submit: n=5933 total_ms=877 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:05.017,000] [0m<inf> radar_perf: PERF queue rx: accepted=6053 rejected=0 observed_max_used=0[0m
+[00:02:05.017,000] [0m<inf> radar_perf: PERF queue tx: accepted=6053 rejected=0 observed_max_used=1[0m
+[00:02:05.017,000] [0m<inf> radar_perf: PERF tx: poll_completed=6053 encode_failed=0[0m
+[00:02:05.018,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:02:05.018,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:02:05.018,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:02:05.018,000] [0m<inf> uart_tx: TXPROBE count=6053 queue_max_us=3085 poll_max_us=3565 poll_total_us=18447270[0m
+[00:02:07.348,000] [1;33m<wrn> frame_handler: Radar measurement timeout: track cleared[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF uptime_ms=130018 measurements=6000 without_submit=0 submit_failed=0 invalid_time=0[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF queue_wait: n=6000 total_ms=229 p50_bin=0 p95_bin=0 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF processing: n=6000 total_ms=653 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF rx_to_submit: n=6000 total_ms=882 p50_bin=0 p95_bin=1 p99_bin=1 max_ms=1 over20=0[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF queue rx: accepted=6122 rejected=0 observed_max_used=0[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF queue tx: accepted=6123 rejected=0 observed_max_used=1[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF tx: poll_completed=6123 encode_failed=0[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF stack rx: unused=784 min_unused=784[0m
+[00:02:10.018,000] [0m<inf> radar_perf: PERF stack handler: unused=1472 min_unused=1472[0m
+[00:02:10.019,000] [0m<inf> radar_perf: PERF stack tx: unused=728 min_unused=728[0m
+[00:02:10.019,000] [0m<inf> uart_tx: TXPROBE count=6123 queue_max_us=3085 poll_max_us=3565 poll_total_us=18660534[0m

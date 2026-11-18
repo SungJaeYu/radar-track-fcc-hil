@@ -1,0 +1,91 @@
+{
+  "source": "5550bcd plus temporary-firmware.patch; temporary profiling wrapper",
+  "duration_s": 120,
+  "tx_probe": {
+    "count": 6123,
+    "queue_max_us": 3085,
+    "poll_max_us": 3565,
+    "poll_total_us": 18660534,
+    "poll_mean_us": 3047.612934835865,
+    "count_matches_received": true
+  },
+  "slow_events_during_load": [
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526943.2602785,
+      "wall_ms": 6.056290934793651,
+      "cpu_ms": 0.038542,
+      "requested_ms": 1.0,
+      "overrun_ms": 5.056290934793651,
+      "elapsed_s": 18.16363987501245
+    },
+    {
+      "name": "sum_progress_or_check",
+      "at_monotonic_s": 526985.097133333,
+      "wall_ms": 6.323333014734089,
+      "cpu_ms": 6.263041,
+      "requested_ms": 0,
+      "overrun_ms": 6.323333014734089,
+      "elapsed_s": 60.00049470795784
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526987.089970916,
+      "wall_ms": 6.571042002178729,
+      "cpu_ms": 0.050167,
+      "requested_ms": 1.0,
+      "overrun_ms": 5.571042002178729,
+      "elapsed_s": 61.99333229102194
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526991.587942583,
+      "wall_ms": 12.286291923373938,
+      "cpu_ms": 0.020167,
+      "requested_ms": 1.0,
+      "overrun_ms": 11.286291923373938,
+      "elapsed_s": 66.49130395799875
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 526997.157078333,
+      "wall_ms": 8.697292068973184,
+      "cpu_ms": 0.04025,
+      "requested_ms": 1.0,
+      "overrun_ms": 7.697292068973184,
+      "elapsed_s": 72.06043970794417
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 527006.98595825,
+      "wall_ms": 23.338082944974303,
+      "cpu_ms": 0.025208,
+      "requested_ms": 1.0,
+      "overrun_ms": 22.338082944974303,
+      "elapsed_s": 81.88931962498464
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 527007.054231583,
+      "wall_ms": 10.897749918513,
+      "cpu_ms": 0.028334,
+      "requested_ms": 1.0,
+      "overrun_ms": 9.897749918513,
+      "elapsed_s": 81.95759295800235
+    },
+    {
+      "name": "sleep",
+      "at_monotonic_s": 527016.986353708,
+      "wall_ms": 11.267625028267503,
+      "cpu_ms": 0.024625,
+      "requested_ms": 1.0,
+      "overrun_ms": 10.267625028267503,
+      "elapsed_s": 91.88971508294344
+    }
+  ],
+  "limits": [
+    "Short instrumented run does not replace the failed 30-minute acceptance test.",
+    "Polling duration includes preemption; loop return does not mean last bit transmitted or peer received.",
+    "PC per-operation profile covers serial, CSV rows and flush, sleep, sum, print and GC, not every Python operation or OS scheduling point."
+  ]
+}
