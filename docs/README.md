@@ -1,6 +1,8 @@
 # 문서 안내
 
-[프로젝트 소개](../README.md)에서 전체 구성을 확인한 뒤, 목적에 맞는 문서를 선택하세요.
+[English overview](../README.md) · [Architecture in English](../EXPLAINER.en.md)
+
+[한국어 프로젝트 소개](../README.ko.md)에서 전체 구성을 확인한 뒤, 목적에 맞는 문서를 선택하세요.
 
 ## 처음 보는 분께
 

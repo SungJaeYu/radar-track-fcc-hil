@@ -1,6 +1,8 @@
 # 구현 구조와 데이터 흐름
 
-[문서 목차](docs/README.md) · [프로젝트 소개](README.md)
+[English](EXPLAINER.en.md) | **한국어**
+
+[문서 목차](docs/README.md) · [프로젝트 소개](README.ko.md)
 
 이 문서는 V1 단일 트랙 구현을 설명합니다. 실행 명령은 [pc_sim 안내](pc_sim/README.md),
 배선은 [배선·보드 검증](docs/board-bringup.md)를 참고하세요.
@@ -151,10 +153,10 @@ timeout·큐 드롭·링 overflow 횟수·ISR 폐기 바이트·복구 폐기 �
 `frame_parser.py`가 PC 수신 프레임을 조립·검증하고 `decode_status_payload()`가 통계를 해석합니다.
 `status_client.py`는 CLI 왕복을, GUI의 STATUS 탭은 기존 worker를 통한 수동 조회를 제공합니다.
 둘 다 host 모사 시험을 통과했으며 [확장 STATUS 실보드 시험](docs/hardware-test-2026-11-14-status-extended.md)에서 CLI·GUI STATUS 왕복도 확인했습니다.
-TX host 테스트 4개와 CRC/인코더 상호운용 34개를 통과했으며 실보드 STATUS 송신도 확인했습니다. TX 포화·최대 부하는 별도 검증 대상입니다.
-handler host 테스트 30개는 STATUS·TRACK 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향 및 processor 계약을 검증합니다.
+TX host 테스트 4개와 CRC/인코더 상호운용 34개를 통과했으며 실보드 STATUS 송신도 확인했습니다. 이후 [TX 포화·제어 시험](docs/hardware-test-2026-11-18-track-controls.md)과 [30분 부하 시험](docs/hardware-test-2026-11-19-performance.md)을 기록했습니다. 최대 지속 처리율을 확정한 것은 아닙니다.
+handler host 테스트 31개는 STATUS·TRACK 응답·실패 복귀, INIT/RESET과 정상·잘못된 측정의 timeout 영향 및 processor 계약을 검증합니다.
 host 통계 snapshot은 모사합니다. 실보드에서는 CRC/LEN/부분 프레임 timeout 집계와
-INIT/RESET 후 보존을 확인했습니다. 강제 overflow·큐 포화 동시성 검증은 남아 있습니다.
+INIT/RESET 후 보존을 확인했습니다. 기본 DRAIN의 강제 링 overflow와 RX/TX 큐 포화 후 복귀는 [전송 오류 시험](docs/hardware-test-2026-11-18-transport-stress.md)에서 확인했습니다. 전체 동시성·UART 하드웨어 오류 검증으로 확대하지 않습니다.
 
 ## 8. TRACK_REPORT 결과 송신
 

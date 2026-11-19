@@ -1,78 +1,147 @@
 # radar-track-fcc-hil
 
-**STM32 · Zephyr 기반 단일표적 레이더 추적 HIL 프로젝트 — V1 완료 (`v1.0.0`)**
+**English** | [한국어](README.ko.md)
 
-PC에서 합성 레이더 측정을 보내고, STM32에서 표적을 추적한 뒤 결과를 PC로 반환합니다.
-정답·측정값·추정값을 비교하고, 통신 오류와 입력 이상치 이후의 복귀를 실보드에서 검증합니다.
+**Single-target tracking HIL on STM32 and Zephyr — V1 complete (`v1.0.0`).**
 
-[시작하기](#시작하기) · [구현 구조](EXPLAINER.md) · [검증 결과](#검증-결과) · [문서 목차](docs/README.md)
+A hardware-in-the-loop testbed for post-detection radar tracking. A PC sends synthetic range and azimuth measurements to an STM32, then compares the returned estimates with known ground truth. It provides a repeatable way to evaluate tracking accuracy, response latency, and recovery from corrupted frames, measurement outliers, and interrupted communication without a physical radar.
 
-## 시스템 구성
+[Architecture](EXPLAINER.en.md) · [Board results](#board-results) · [Quick start](#quick-start) · [Scope](#scope-and-follow-up-work)
 
-![PC와 STM32 사이의 측정 입력·추정 결과·진단 콘솔 연결](docs/images/system-overview.png)
+<a id="시스템-구성"></a>
 
-PC는 추적 전 센서 측정을 모사합니다. **예측·게이팅·칼만 필터·트랙 상태 관리는 펌웨어가 담당**하며, PC의 정답 데이터는 결과 비교에만 사용합니다.
+## System overview
 
-| 구성 | 주요 기능 |
-|---|---|
-| 펌웨어 | UART ISR·링버퍼, RX/처리/TX 스레드, CRC-16, 거리·방위각 CV 칼만 필터, 트랙 생성·유지·소실 |
-| 오류 처리 | 부분 프레임·무수신 timeout, overflow 복구, 오래된 측정 폐기, 누적 오류 통계 |
-| PC 도구 | GUI·CLI, 측정·잡음·이상치 생성, STATUS/TRACK 수신, CSV 기록·정량 평가 |
+![PC measurement generation, STM32 tracking, result return, and a separate diagnostic console](docs/images/system-overview.en.png)
 
-ISR·큐·스레드의 연결과 데이터 소유권은 [구현 흐름](EXPLAINER.md), PC와 보드의 책임은 [시스템 역할](docs/system-roles.md)에 정리했습니다.
+The firmware owns prediction, gating, Kalman updates, and track lifecycle management. Ground truth stays on the PC for evaluation; target IDs from the scenario are not sent to the board.
 
-## GUI 미리보기
+| Component | Implementation |
+| --- | --- |
+| Firmware | C, Zephyr RTOS, UART ISR and ring buffer, RX/handler/TX threads, bounded copying queues |
+| Tracker | Independent range and azimuth constant-velocity Kalman filters, fixed gates, track acquisition/coasting/loss |
+| Protocol and recovery | CRC-16, length validation, partial-frame and measurement timeouts, overflow recovery, stale-input rejection |
+| PC tools | Python CLI and PySide6/pyqtgraph GUI, synthetic measurements, noise/outlier injection, TRACK/STATUS decoding, CSV recording and evaluation |
 
-![현재 GUI의 설정 탭·표적 위치·거리 이력·실행 로그](docs/images/radar-gui-preview.png)
+See the [architecture and ownership guide](EXPLAINER.en.md) for thread boundaries, queue behavior, and timing definitions.
 
-현재 코드의 **보드 없는 미리보기 모드**입니다. 합성 정답과 측정값을 표시하며 보드 추정값은 생성하지 않습니다.
-[GUI 사용법·TRACK 화면](pc_sim/GUI.md) · [실보드 추정값 캡처와 시험 기록](docs/hardware-test-2026-11-18-evaluation.md)
+<a id="gui-미리보기"></a>
 
-## 검증 결과
+## Physical-board example
 
-아래 결과는 서로 다른 시험 조건에서 얻은 관측값입니다. 상세 조건과 원시 기록은 각 링크에서 확인할 수 있습니다.
+![GUI comparing synthetic truth and measurements with TRACK estimates returned by the STM32](docs/test-results/evaluation-2026-11-18/gui-track-small.png)
 
-| 시험 | 확인한 결과 | 상세 |
-|---|---|---|
-| 30분 송수신 | 목표50Hz, 실제49.994Hz. 측정 **89,990개 모두 대응** | [성능 기록](docs/hardware-test-2026-11-19-performance.md) |
-| 왕복 지연 | 위 부하에서 PC RTT **p99 8.049ms · 최대34.894ms** | [측정 경계·기준](docs/performance-monitoring.md) |
-| 이상치·복귀 | 단발·5연속 거리/각도 이상치 **49/49회 통과** | [실보드 평가](docs/hardware-test-2026-11-19-noise-spike.md) |
-| 잡음·정확도 | **100회** 잡음/seed 평가, 측정·추정 RMSE와 게이트 거부율 기록 | [조건별 결과](docs/hardware-test-2026-11-19-noise-spike.md#잡음100회) |
-| 오류 복구 | CRC·부분 프레임, 데이터 선 단절·복원, 링버퍼·큐 포화 후 복귀 | [검증 이력](docs/verification-history.md) |
+Recorded during the November 18, 2026 board evaluation. The GUI compares PC ground truth and measurements with estimates decoded from the board's binary TRACK_REPORT. GUI labels are currently Korean. The separate no-board preview mode generates truth and measurements only; it does not simulate board estimates.
 
-PC RTT는 USB·UART·보드·호스트 대기를 포함합니다. 30분 기록의 관측값은 현재 RTT 예산 이내이지만, 당시 호스트 송신 간격 기준에 따른 실패 판정은 이력에 보존했습니다. 조건·판정 변경과 적용 범위는 [완료 기준](docs/roadmap.md#v1-acceptance)을 따릅니다.
+<a id="검증-결과"></a>
 
-## 시작하기
+## Board results
 
-기준 환경은 **STM32F746G-DISCO · Zephyr 4.2 · Zephyr SDK 0.17.2**입니다.
-보드 연결과 펌웨어 빌드·플래시는 [보드 시작 안내](docs/board-bringup.md)를 따릅니다.
+V1 was completed on **November 19, 2026**. These are recorded observations from separate runs. Linked reports are in Korean and include configuration, source revisions, and raw CSV/JSON or console records.
 
-PC 도구는 저장소 루트에서 실행합니다. 아래는 준비된 Zephyr Python 환경을 사용하는 예입니다.
-GUI의 미리보기 모드는 보드 없이 실행할 수 있습니다.
+| Test | Recorded result | Evidence |
+| --- | --- | --- |
+| 30-minute load | Target 50 Hz measurements + 1 Hz STATUS; actual 49.994 Hz. **89,990 measurements, all matched with responses** | [Load run](docs/hardware-test-2026-11-19-performance.md) |
+| PC round-trip latency | **p99 8.049 ms; maximum 34.894 ms** in that load run | [Timing definitions](docs/performance-monitoring.md) |
+| Board processing interval | RX frame completion to TX queue submission: observed maximum **1 ms**, zero over the 20 ms budget | [Load run](docs/hardware-test-2026-11-19-performance.md) |
+| Noise sweep | **100 runs** across noise levels and seeds, with response-integrity checks and RMSE/gate-rejection measurements | [Noise and spike results](docs/hardware-test-2026-11-19-noise-spike.md) |
+| Spike recovery | **49/49 cases passed**, covering single and five-consecutive range/angle spikes | [Noise and spike results](docs/hardware-test-2026-11-19-noise-spike.md) |
+| Error recovery | CRC/partial frames, RX/TX wire disconnection, forced DRAIN ring overflow, and RX/TX queue saturation | [Verification history](docs/verification-history.md) |
+
+The load run used a stationary target, zero noise, `perf.conf` with DRAIN recovery, and USART6 at 115200 baud/8N1. PC round-trip timing includes USB, UART, board processing, and host waiting. The board interval ends at TX queue submission, before UART transmission completes.
+
+Current RTT budgets are p99 ≤20 ms and maximum ≤100 ms. The original load run failed its then-current host send-spacing criterion at 137.581 ms; that verdict is preserved separately from interpretation under the current RTT budgets. An earlier run's maximum RTT of 164.128 ms still exceeds the current budget. See [V1 acceptance and measurement limits](docs/roadmap.md#v1-acceptance).
+
+For the noise sweep, each of 10 conditions used 10 seeds with firmware tuning fixed. At 8 m range-noise standard deviation, the mean of per-seed RMSE values fell from **8.2528 m to 3.0805 m**. This is an observed accuracy result, not a separate accuracy pass threshold. Across the 100 noise and 49 spike sessions, all **17,880 measurements** had matching responses. These sessions used 10 Hz synthetic sensor time and actual send rates of 9.260–9.626 Hz; they are separate from the 50 Hz load run.
+
+<a id="시작하기"></a>
+
+## Quick start
+
+### Explore without a board
+
+From the repository root, on a desktop with Python and a supported Qt environment:
 
 ```bash
-source ~/zephyrproject/.venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -r pc_sim/requirements-gui.txt
 python -m pc_sim.gui
 ```
 
-- [GUI 사용법](pc_sim/GUI.md): 미리보기, 보드 연결, 측정·추정 그래프, 상태 조회
-- [CLI·평가 도구](pc_sim/README.md): 측정 송신, CSV 수집, 잡음·이상치 시험
-- [자동 테스트](docs/test-cases.md): Python 및 C host 테스트 실행 방법과 범위
+In the connection tab (`연결`), keep preview mode (`미리보기`), click preview connect (`미리보기 연결`), then start (`시작`). No UART port is opened. [Detailed GUI guide — Korean](pc_sim/GUI.md).
 
-## V1 범위
+To inspect the noise and spike plans without a board or output files:
+
+```bash
+python -m pc_sim.noise_sweep --dry-run
+python -m pc_sim.spike_sweep --dry-run
+```
+
+### Run on STM32
+
+Reference environment: **STM32F746G-DISCO, Zephyr 4.2, Zephyr SDK 0.17.2**. Use a configured Zephyr workspace and its Python environment for firmware builds.
+
+The data link is **USART6, 115200 baud, 8N1, no flow control**:
+
+| 3.3 V USB-UART adapter | STM32 connection |
+| --- | --- |
+| TXD | PC7 / USART6_RX |
+| RXD | PC6 / USART6_TX |
+| GND | GND |
+| VCC / 5V / 3V3 | Leave unconnected; power the board and adapter through their own USB connections |
+
+ST-Link USB is the separate flash/debug-console connection. Replace the repository path below with your checkout location:
+
+```bash
+source ~/zephyrproject/.venv/bin/activate
+cd ~/zephyrproject
+west build -d /path/to/radar-track-fcc-hil/build -b stm32f746g_disco /path/to/radar-track-fcc-hil/fcc_app
+west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
+```
+
+Return to the repository root and use the PC environment prepared above. Close the GUI and any other program using the data port before running the CLI. Replace `/dev/ttyUSB0` with the actual adapter port; macOS commonly uses `/dev/cu.usbserial...`.
+
+```bash
+python -m pc_sim.status_client --port /dev/ttyUSB0 --timeout 2
+python -m pc_sim.evaluate run --port /dev/ttyUSB0 --scenario noisy
+```
+
+The evaluator sends measurements and collects board reports for CSV/RMSE evaluation. [Wiring and board setup — Korean](docs/board-bringup.md) · [CLI options and recording — Korean](pc_sim/README.md).
+
+### Run host checks
+
+From the repository root, using the PC environment above:
+
+```bash
+python -m pip install pytest
+QT_QPA_PLATFORM=offscreen python -m pytest
+```
+
+Standalone C tests use CMake, Ninja, and a host C compiler. For example:
+
+```bash
+cmake -G Ninja -S fcc_app/tests/test_tracking -B /tmp/radar-track-tests -DTRACK_TEST_HOST=ON
+cmake --build /tmp/radar-track-tests
+ctest --test-dir /tmp/radar-track-tests --output-on-failure
+```
+
+Python and host C checks are separate from firmware builds and physical-board HIL runs. [Full test commands and coverage — Korean](docs/test-cases.md).
 
 <a id="portfolio-v1"></a>
 <a id="v1-acceptance"></a>
+<a id="v1-범위"></a>
 
-**단일표적 결과 왕복·정량 평가·주요 오류 복구·시간/자원 관측까지 완료했습니다.**
-다중표적·BIT·Lock On은 후속 확장입니다. 실제 RF 신호처리와 실운용 인증은 프로젝트 범위에 포함하지 않습니다.
-[완료 범위와 후속 과제](docs/roadmap.md)를 참고하세요.
+## Scope and follow-up work
 
-문서는 [사용·설계·검증·개발 기록](docs/README.md)으로 나누어 안내합니다. 날짜별 시험 기록에는 당시 버전·설정·한계를 보존합니다.
+V1 covers single-target measurement-to-result communication, quantitative tracking evaluation, major error recovery, and timing/resource observations. The [English architecture guide](EXPLAINER.en.md) explains the implemented contracts and their limits.
 
-## 개발 방식
+Multi-target association, CT/IMM/EKF comparisons, BIT/Lock On, and UART hardware-error diagnostics are follow-up work. RF processing, ADC/IQ/FFT, and operational certification are outside this project. [V1 scope and roadmap — Korean](docs/roadmap.md).
 
-문제 정의·구조·검증 기준과 STM32/Zephyr 펌웨어는 직접 설계·작성했습니다.
-PC 시뮬레이터와 GUI 구현에는 AI 코딩 에이전트를 활용했습니다.
-모든 입력은 합성 측정 데이터이며 실제 군 운용 데이터나 내부 시스템 정보를 사용하지 않습니다.
+<a id="개발-방식"></a>
+
+## Authorship
+
+I defined the problem, architecture, and validation criteria, and wrote the STM32/Zephyr firmware. I used AI coding tools for the PC simulator, GUI, and test-support implementation. All measurements are synthetic; no operational military data or internal system information is used.
+
+[English architecture](EXPLAINER.en.md) · [한국어 README](README.ko.md) · [Full documentation index — Korean](docs/README.md)

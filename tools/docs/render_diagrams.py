@@ -1,4 +1,6 @@
 """Render documentation diagrams as PNG with the existing GUI dependencies."""
+import argparse
+import json
 import os
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -15,6 +17,8 @@ INK = '#182c40'
 MUTED = '#51677b'
 BLUE = '#2563a8'
 TEAL = '#087f83'
+LANGUAGE = 'ko'
+LABELS = {}
 
 
 class Diagram:
@@ -26,6 +30,9 @@ class Diagram:
         self.text(36, 81, subtitle, 19, MUTED)
 
     def text(self, x, y, value, size=21, color=INK, bold=False):
+        value = LABELS.get(value, value)
+        if LANGUAGE == 'en' and any('\uac00' <= char <= '\ud7a3' for char in value):
+            raise ValueError(f'Missing English diagram label: {value}')
         self.parts.append(f'<text x="{x}" y="{y}" font-family="Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif" font-size="{size}" font-weight="{700 if bold else 400}" fill="{color}">{escape(value)}</text>')
 
     def box(self, x, y, w, h, title, lines, color=BLUE, fill='#ffffff'):
@@ -49,6 +56,8 @@ class Diagram:
         self.parts.append(f'<polyline points="{points}" fill="none" stroke="{color}" stroke-width="2.5"/>')
 
     def save(self, name):
+        if LANGUAGE == 'en':
+            name = f'{Path(name).stem}.en.png'
         svg = ('\n'.join(self.parts) + '</svg>').encode()
         renderer = QSvgRenderer(QByteArray(svg))
         assert renderer.isValid()
@@ -120,6 +129,12 @@ def firmware_flow():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--lang', choices=('ko', 'en'), default='ko')
+    args = parser.parse_args()
+    LANGUAGE = args.lang
+    if LANGUAGE == 'en':
+        LABELS = json.loads((Path(__file__).with_name('diagram-labels.en.json')).read_text(encoding='utf-8'))
     app = QApplication.instance() or QApplication([])
     OUT.mkdir(parents=True, exist_ok=True)
     overview()

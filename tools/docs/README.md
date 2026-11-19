@@ -7,10 +7,12 @@ README와 EXPLAINER의 다이어그램은 GitHub 앱에서도 별도 Mermaid 렌
 ```sh
 python -m pip install -r pc_sim/requirements-gui.txt
 python tools/docs/render_diagrams.py
+python tools/docs/render_diagrams.py --lang en
 python tools/docs/capture_gui.py
 ```
 
 - 다이어그램: `docs/images/system-overview.png`, `pc-board-flow.png`, `firmware-flow.png`.
+- 영문 다이어그램: 같은 이름의 `.en.png` 파일. `--lang en`은 `diagram-labels.en.json`의 영문 라벨을 사용하고 한국어 PNG를 덮어쓰지 않습니다. 라벨을 수정할 때 해당 언어의 PNG도 다시 생성합니다.
 - GUI 캡처: `docs/images/radar-gui-preview.png`, `radar-gui-track-preview.png`.
 - 캡처는 실제 `MainWindow`와 `SessionWorker`를 Qt offscreen으로 실행합니다. 1440×900 화면을 2배 해상도로 저장합니다.
 - 미리보기 설정: 초기 거리1000m, 변화율−10m/s, 방위각15°, 거리 잡음σ5m, 10Hz. 약11초간 생성 후 중지하고 설정·TRACK 탭을 캡처합니다. 호스트 실행 시각에 따라 표본 시각은 달라질 수 있습니다.
