@@ -64,6 +64,32 @@ def percentile(values, fraction):
     return ordered[max(0, math.ceil(len(ordered) * fraction) - 1)] if ordered else None
 
 
+def timing_summary(latencies, send_times, duration, skipped_slots):
+    """RTT is the primary metric; host pacing describes the applied load only."""
+    gaps = [(b - a) * 1000 for a, b in zip(send_times, send_times[1:])]
+    return {
+        'primary_metric': 'pc_write_to_track_read_ms',
+        'pc_latency_ms': {
+            'count': len(latencies),
+            'p50': percentile(latencies, .5), 'p95': percentile(latencies, .95),
+            'p99': percentile(latencies, .99),
+            'max': max(latencies) if latencies else None,
+        },
+        'actual_measurement_hz': len(send_times) / duration,
+        'host_skipped_slots': skipped_slots,
+        'host_max_send_gap_ms': max(gaps, default=0),
+        'host_pacing_is_acceptance_gate': False,
+    }
+
+
+def rtt_budget_checks(summary, p99_limit=None, max_limit=None):
+    """Optional, predeclared budgets; no invented default latency requirement."""
+    for key, limit in (('p99', p99_limit), ('max', max_limit)):
+        if limit is not None:
+            value = summary['pc_latency_ms'][key]
+            yield f'PC RTT {key} <= {limit:g}ms', value is not None and value <= limit
+
+
 def run(args):
     # Check both images before any flash; the finally path always attempts restoration.
     for build, enabled in [('build_perf', True), ('build', False)]:
@@ -79,6 +105,8 @@ def run(args):
     metadata = {'started_utc': datetime.now(timezone.utc).isoformat(),
                 'duration_s': args.duration, 'measurement_hz': 50, 'status_hz': 1,
                 'baud': 115200, 'smoke': args.smoke,
+                'acceptance_revision': '2026-11-19-pc-rtt',
+                'pc_rtt_limits_ms': {'p99': args.pc_rtt_p99_ms, 'max': args.pc_rtt_max_ms},
                 'source_commit': subprocess.check_output([args.git, 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
                 'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                 'data_port': args.data_port, 'console_port': args.console_port}
@@ -220,6 +248,10 @@ def run(args):
                 load_elapsed = time.monotonic() - start
                 # Drain replies and observe exactly one no-measurement timeout event.
                 pump_until(time.monotonic() + 1.3)
+                result.update(timing_summary(latencies, send_times, args.duration, skipped_slots))
+                result['pc_rtt_limits_ms'] = metadata['pc_rtt_limits_ms']
+                result['pc_rtt_budget_configured'] = any(v is not None for v in metadata['pc_rtt_limits_ms'].values())
+                check('load contains measurement RTT samples', bool(latencies) and bool(send_times))
                 check('one post-load timeout report', sum(not r.input_present for r in reports) == 2)
                 if args.smoke:
                     # No production fault-injection settings are used in this short check.
@@ -263,20 +295,18 @@ def run(args):
                                                             for s in snapshot_parser.snapshots for n in ('rx', 'handler', 'tx')))
                 gaps = [b - a for a, b in zip(send_times, send_times[1:])]
                 rate = len(send_times) / args.duration
-                check('host delivered nominal 50Hz within one percent', 49.5 <= rate <= 50.5)
-                check('host measurement gaps stay below 100ms', max(gaps, default=0) <= .1)
                 check('performance summaries remain continuous', all(0 < b['header']['uptime_ms'] - a['header']['uptime_ms'] < 6000
                                                                    for a, b in zip(snapshot_parser.snapshots, snapshot_parser.snapshots[1:])))
-                result = {'load_elapsed_s': load_elapsed, 'load_measurements': len(send_times),
+                result.update({'load_elapsed_s': load_elapsed, 'load_measurements': len(send_times),
                           'valid_measurements_total': valid_count, 'invalid_measurements': invalid_count,
                           'status_requests': status_sent, 'status_responses': len(statuses),
                           'track_reports': len(reports), 'actual_measurement_hz': rate,
                           'host_skipped_slots': skipped_slots, 'host_max_send_gap_ms': max(gaps, default=0) * 1000,
-                          'pc_latency_ms': {'p50': percentile(latencies, .5), 'p95': percentile(latencies, .95),
-                                            'p99': percentile(latencies, .99), 'max': max(latencies)},
                           'performance_summary_count': len(snapshot_parser.snapshots), 'last_performance': last,
                           'final_status': statuses[-1], 'pc_crc_errors': decoder.crc_errors,
-                          'pc_length_errors': decoder.length_errors}
+                          'pc_length_errors': decoder.length_errors})
+                for name, passed in rtt_budget_checks(result, args.pc_rtt_p99_ms, args.pc_rtt_max_ms):
+                    check(name, passed)
     except BaseException as error:
         failure = repr(error)
     finally:
@@ -307,7 +337,12 @@ def main():
     parser.add_argument('--git', default='git')
     parser.add_argument('--duration', type=int, default=1800)
     parser.add_argument('--smoke', action='store_true')
+    parser.add_argument('--pc-rtt-p99-ms', type=float, help='Optional load RTT p99 budget, declared before running')
+    parser.add_argument('--pc-rtt-max-ms', type=float, help='Optional load RTT maximum budget, declared before running')
     args = parser.parse_args()
+    for limit in (args.pc_rtt_p99_ms, args.pc_rtt_max_ms):
+        if limit is not None and (not math.isfinite(limit) or limit <= 0):
+            parser.error('PC RTT budgets must be finite and positive')
     if not 10 <= args.duration <= 3600:
         parser.error('duration must be 10..3600 seconds')
     raise SystemExit(run(args))

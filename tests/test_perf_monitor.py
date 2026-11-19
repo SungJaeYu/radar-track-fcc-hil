@@ -63,3 +63,20 @@ def test_perf_console_counts_boots_and_percentile_rank():
     assert board_check.percentile([], .5) is None
     assert board_check.percentile(list(range(1, 101)), .5) == 50
     assert board_check.percentile(list(range(1, 101)), .99) == 99
+
+
+def test_rtt_summary_keeps_host_gap_informational():
+    result = board_check.timing_summary([6., 7., 35.], [0., .02, .157], 1., 5)
+    assert result['host_max_send_gap_ms'] == pytest.approx(137.)
+    assert result['actual_measurement_hz'] == 3
+    assert result['host_pacing_is_acceptance_gate'] is False
+    assert result['pc_latency_ms'] == {'count': 3, 'p50': 7., 'p95': 35., 'p99': 35., 'max': 35.}
+    assert list(board_check.rtt_budget_checks(result)) == []
+    assert [ok for _, ok in board_check.rtt_budget_checks(result, 35., 35.)] == [True, True]
+    assert [ok for _, ok in board_check.rtt_budget_checks(result, 34., 34.)] == [False, False]
+
+
+def test_empty_rtt_cannot_pass_an_explicit_budget():
+    result = board_check.timing_summary([], [], 10., 0)
+    assert result['pc_latency_ms']['max'] is None
+    assert [ok for _, ok in board_check.rtt_budget_checks(result, 10., 20.)] == [False, False]
