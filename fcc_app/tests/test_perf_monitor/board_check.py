@@ -82,8 +82,8 @@ def timing_summary(latencies, send_times, duration, skipped_slots):
     }
 
 
-def rtt_budget_checks(summary, p99_limit=None, max_limit=None):
-    """Optional, predeclared budgets; no invented default latency requirement."""
+def rtt_budget_checks(summary, p99_limit=20.0, max_limit=100.0):
+    """Project budgets: one 50Hz period at p99, five periods at maximum."""
     for key, limit in (('p99', p99_limit), ('max', max_limit)):
         if limit is not None:
             value = summary['pc_latency_ms'][key]
@@ -337,8 +337,8 @@ def main():
     parser.add_argument('--git', default='git')
     parser.add_argument('--duration', type=int, default=1800)
     parser.add_argument('--smoke', action='store_true')
-    parser.add_argument('--pc-rtt-p99-ms', type=float, help='Optional load RTT p99 budget, declared before running')
-    parser.add_argument('--pc-rtt-max-ms', type=float, help='Optional load RTT maximum budget, declared before running')
+    parser.add_argument('--pc-rtt-p99-ms', type=float, default=20.0, help='Load RTT p99 budget in ms (default: 20)')
+    parser.add_argument('--pc-rtt-max-ms', type=float, default=100.0, help='Load RTT maximum budget in ms (default: 100)')
     args = parser.parse_args()
     for limit in (args.pc_rtt_p99_ms, args.pc_rtt_max_ms):
         if limit is not None and (not math.isfinite(limit) or limit <= 0):

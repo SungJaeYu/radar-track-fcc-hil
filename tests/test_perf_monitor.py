@@ -71,7 +71,7 @@ def test_rtt_summary_keeps_host_gap_informational():
     assert result['actual_measurement_hz'] == 3
     assert result['host_pacing_is_acceptance_gate'] is False
     assert result['pc_latency_ms'] == {'count': 3, 'p50': 7., 'p95': 35., 'p99': 35., 'max': 35.}
-    assert list(board_check.rtt_budget_checks(result)) == []
+    assert [ok for _, ok in board_check.rtt_budget_checks(result)] == [False, True]
     assert [ok for _, ok in board_check.rtt_budget_checks(result, 35., 35.)] == [True, True]
     assert [ok for _, ok in board_check.rtt_budget_checks(result, 34., 34.)] == [False, False]
 
@@ -80,3 +80,12 @@ def test_empty_rtt_cannot_pass_an_explicit_budget():
     result = board_check.timing_summary([], [], 10., 0)
     assert result['pc_latency_ms']['max'] is None
     assert [ok for _, ok in board_check.rtt_budget_checks(result, 10., 20.)] == [False, False]
+
+
+def test_default_rtt_budgets_include_boundaries_and_reject_excess():
+    def verdict(values):
+        result = board_check.timing_summary(values, [0., .137], 1., 0)
+        return [ok for _, ok in board_check.rtt_budget_checks(result)]
+    assert verdict([20.] * 99 + [100.]) == [True, True]
+    assert verdict([20.001] * 99 + [100.]) == [False, True]
+    assert verdict([20.] * 99 + [100.001]) == [True, False]
