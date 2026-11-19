@@ -1,11 +1,9 @@
-# 현재 학습 펌웨어 배선·보드 검증
+# 보드 연결·빌드·기본 검증
 
-현재 실행 경로는 USART6 수신 → rx_frame_processor → 메시지 큐 → handler 스레드의 radar_processor입니다.
-보고는 report_sender → TX 큐 → uart_tx → USART6로 나가며 ST-Link는 별도 진단 로그입니다.
-현재 소스에 LCD 표시는 없으며 이진 TRACK_REPORT 측정 결과 송신은 구현되어 있습니다. PC 해석·CSV·기본 실보드 왕복을 확인했습니다.
+[문서 목차](README.md) · [PC CLI](../pc_sim/README.md) · [GUI 사용법](../pc_sim/GUI.md)
 
-STATUS 요청과 유효 측정 처리에는 각각 STATUS_REPORT·TRACK_REPORT 송신 경로가 있습니다.
-PC STATUS 디코더·CLI·GUI와 TRACK 디코더·GUI는 구현했으며 고정 시나리오 정량 평가 CLI도 구현했습니다. STATUS 기본 실보드 왕복은 `2aa57d9`에서 확인했습니다.
+STM32F746G-DISCO의 USART6를 측정 입력·STATUS/TRACK 결과 출력에 사용합니다.
+ST-Link USB는 플래시와 진단 콘솔을 담당합니다. 아래 순서로 연결·빌드·기본 왕복을 확인하세요.
 
 ## 배선과 통신 설정
 
@@ -26,11 +24,13 @@ ST-Link USB는 flash와 Zephyr 콘솔 로그에 사용하며 데이터용 USB-UA
 
 ## 1. 빌드·플래시
 
+Zephyr4.2·SDK0.17.2와 Python 환경을 준비한 뒤 실행합니다. `/path/to/radar-track-fcc-hil`은 실제 저장소 경로로 바꿉니다.
+
 ```bash
 source ~/zephyrproject/.venv/bin/activate
 cd ~/zephyrproject
-west build -d <repo>/build -b stm32f746g_disco <repo>/fcc_app -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-west flash -d <repo>/build --runner openocd
+west build -d /path/to/radar-track-fcc-hil/build -b stm32f746g_disco /path/to/radar-track-fcc-hil/fcc_app
+west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
 ```
 
 빌드 성공, flash 성공, 보드 실행 성공을 각각 구분해서 기록합니다.
@@ -73,7 +73,9 @@ python -m pc_sim.run_sim --port /dev/ttyUSB0 --duration 10 --noise 0 --azimuth-n
 재실행 시 INIT이 자동 전송되므로 보드를 재부팅하거나 별도로 수동 INIT을 보낼 필요가 없습니다.
 이진 응답 수집·RMSE는 `python -m pc_sim.evaluate run --port /dev/ttyUSB0 --scenario noisy`를 사용합니다. run_sim은 송신 전용입니다.
 
-## 5. Overflow 보드 시험 (추후 수행)
+## 5. Overflow 복구 재현
+
+기본 DRAIN의 강제 overflow와 정상 복귀는 [전송 오류 시험](hardware-test-2026-11-18-transport-stress.md)에서 확인했습니다. 아래는 재현 시 확인할 항목입니다.
 
 현재 소프트웨어 RX 버퍼는 256바이트(저장 용량 255바이트), 복구 정책은 drain입니다.
 [UART host 테스트](../fcc_app/tests/test_uart_rx/README.md)는 보드 없이 수행하며,
@@ -98,16 +100,6 @@ Python 테스트, UART/Tracking host C 테스트, 펌웨어 빌드, flash, 실�
 통합 도구의 테스트 통과만으로 새 보드 HIL까지 통과했다고 기록하지 않습니다.
 
 STATUS 왕복 결과: [확장 STATUS 실보드 결과](hardware-test-2026-11-14-status-extended.md). 이후 로그 부하 시험과 최신 host/build 결과는 [검증 기록](verification-history.md)을 따릅니다. [TRACK 실보드](hardware-test-2026-11-18-track.md)와 [CSV·평가·GUI](hardware-test-2026-11-18-evaluation.md)를 확인했습니다. 이전 측정·GUI 기록은 [2026-11-01 검증](hardware-test-2026-11-01.md)에 보존합니다.
-
-### 에디터 분석 설정
-
-새 C 파일은 `fcc_app/CMakeLists.txt`에 등록하고 다시 빌드합니다.
-`-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`으로 생성한 데이터베이스를 에디터에 연결합니다.
-펌웨어와 host 테스트는 서로 다른 컴파일러·헤더를 사용하므로 분석 문맥도 구분합니다.
-개인 `.vscode/` 설정은 Git에서 제외하며 복사할 설정 JSON을 제공하지 않습니다.
-[VS Code 개발 환경 안내](../tools/vscode/README.md)를 참고하세요.
-실제 컴파일 실패는 에디터 설정으로 해결하지 않고 별도로 확인합니다.
-
 
 ### STATUS 통계 확인 (기본 왕복 검증 완료, 재현 절차)
 

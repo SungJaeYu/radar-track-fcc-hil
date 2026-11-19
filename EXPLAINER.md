@@ -1,6 +1,8 @@
-# 현재 코드 흐름 설명
+# 구현 구조와 데이터 흐름
 
-이 문서는 현재 단일 트랙 학습 구현을 설명합니다. 실행 명령은 [pc_sim 안내](pc_sim/README.md),
+[문서 목차](docs/README.md) · [프로젝트 소개](README.md)
+
+이 문서는 V1 단일 트랙 구현을 설명합니다. 실행 명령은 [pc_sim 안내](pc_sim/README.md),
 배선은 [배선·보드 검증](docs/board-bringup.md)를 참고하세요.
 
 ## 입출력과 시스템 연결
@@ -219,7 +221,7 @@ INIT/RESET·무수신 timeout은 INPUT_PRESENT=0, ESTIMATE_VALID=0인 RESET 보�
 
 게이트는 Kconfig의 거리/각도 상한을 모두 포함 경계로 검사합니다. π는 `common/math_constants.h`를 공유합니다.
 각도 정규화는 `fmodf`와 범위 보정으로 (-π, π]를 유지하며 비정상 innovation covariance는 보정을 생략합니다.
-내부 유한성 assert는 디버그에서 활성화합니다. [설정](README.md#주요-설정) · [로깅](docs/logging.md).
+내부 유한성 assert는 디버그에서 활성화합니다. [설정](docs/board-bringup.md#주요-설정) · [로깅](docs/logging.md).
 
 날짜·commit별 실보드 결과와 원시 로그는 [검증 이력](docs/verification-history.md)에 모읍니다.
 과거 STATUS·로그 부하 시험이 현재 TRACK_REPORT 경로의 실보드 검증을 대신하지 않습니다.
@@ -242,7 +244,6 @@ fcc_app/tests/
     test_perf_monitor/ 시간·큐 통계, 동시 snapshot, 요약·스택 조회 모사
     test_tracking/       필터·게이팅·추적 C 회귀 테스트
     log_stress/        별도 로그 부하 시험 도구(대상 버전 확인 필요)
-tools/vscode/         선택적 VS Code 개발 환경 안내
 pc_sim/
     gui.py             데스크톱 화면·실시간 그래프
     gui_worker.py      시리얼 소유·송수신·콘솔 작업 스레드

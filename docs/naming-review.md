@@ -101,7 +101,7 @@ wire TYPE·필드 순서·단위·enum 숫자·시간/유효성 정책은 이름
 
 - 변수/API 변경: C 호출부·공개 헤더·테스트 fixture·Python C 래퍼를 `rg`로 찾아 함께 바꾸고 해당 host 회귀를 실행한다.
 - 파일 이동: `fcc_app/CMakeLists.txt`, 각 test CMake·testcase.yaml, Python 경로·문서 링크를 갱신한다.
-- [VS Code](../tools/vscode/README.md)는 경로를 직접 복제하지 않고 일반/디버그·host 빌드를 다시 구성해 compile database를 갱신한다. 옛 source 경로가 cache에 남으면 새 build 디렉터리로 구성한다.
+- 파일 이동 후 일반/디버그·host 빌드를 다시 구성한다. 옛 source 경로가 cache에 남으면 새 build 디렉터리로 구성한다.
 - 프로토콜 바이트열·순번/초기화·timeout 결과가 그대로인지 확인하고 firmware 일반/디버그 빌드와 필요 범위의 보드 회귀를 구분해 기록한다.
 - 과거 증거 문서의 옛 함수명·경로는 당시 사실이면 유지한다. 현재 사용 안내와 구분되는 표지만 추가한다.
 
@@ -132,7 +132,7 @@ wire TYPE·필드 순서·단위·enum 숫자·시간/유효성 정책은 이름
 | [TX 시험](../fcc_app/tests/test_uart_tx/README.md) | STATUS/TRACK 제출 시험과 PC STATUS 시험 범위 구분 |
 | [Tracking 시험](../fcc_app/tests/test_tracking/README.md) | 유지: 17개 + 설정 행렬 20개와 host/Ztest 경계 일치 |
 | [로그 부하 도구](../fcc_app/tests/log_stress/README.md) | 현재 TRACK와 호환되지 않는 판정 설명 |
-| [VS Code 안내](../tools/vscode/README.md) | 파일 이동 후 compile database/cache 갱신 절차 보완 |
+| 과거 에디터 안내(현재 저장소에서 제거) | 파일 이동 후 compile database/cache 갱신 절차 보완 |
 | [11-01 보드](hardware-test-2026-11-01.md) | 유지: 당시 결과·로그 링크 |
 | [11-12 STATUS](hardware-test-2026-11-12-status.md) | 유지: 16바이트 당시 규격·결과 |
 | [11-14 assert](hardware-test-2026-11-14-assert.md) | 유지: 당시 설정·검증 한계 |
@@ -178,7 +178,7 @@ Tracking의 한 항목 안에서 17개를 실행하므로 C 논리 사례 합계
 | docs/coding-standard.md / coding-standard-audit.md | 기존 소유권·단위·직렬화·테스트 규칙 유지; 새로운 스타일 규칙 불필요 |
 | docs/comment-audit.md / structure-review-2026-11-14.md | 날짜/대상 범위가 표시된 과거 감사 결과로 유지 |
 | fcc_app/tests/test_uart_rx/README.md / test_tracking/README.md | RX45·Tracking17+20과 모사 한계가 현재와 일치하여 유지 |
-| tools/vscode/README.md | 기존 C 소스 경로·compile database 안내 유효; 개인 설정 추적하지 않음 |
+| 과거 에디터 안내(현재 제거) | 당시 C 소스 경로·compile database 안내를 확인한 기록 |
 | docs/naming-review.md | 이 재검토 기록 추가; 이전 이름 변경 결과 보존 |
 | docs/hardware-test-2026-11-01.md | 당시 GUI·RX·burst 증거 유지 |
 | docs/hardware-test-2026-11-12-status.md | 당시16바이트 STATUS 증거 유지 |

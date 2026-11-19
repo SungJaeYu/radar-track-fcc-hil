@@ -6,8 +6,9 @@ __pycache__/
 build/
 build_*/
 
-# 에디터
+# Local editor settings
 .vscode/
+*.code-workspace
 
 .pytest_cache/
 
