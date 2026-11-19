@@ -1,0 +1,214 @@
+{
+  "primary_metric": "pc_write_to_track_read_ms",
+  "pc_latency_ms": {
+    "count": 498,
+    "p50": 5.566125037148595,
+    "p95": 6.810583989135921,
+    "p99": 10.745375067926943,
+    "max": 25.377625017426908
+  },
+  "actual_measurement_hz": 49.8,
+  "host_skipped_slots": 2,
+  "host_max_send_gap_ms": 60.702291084453464,
+  "host_pacing_is_acceptance_gate": false,
+  "pc_rtt_limits_ms": {
+    "p99": 20.0,
+    "max": 100.0
+  },
+  "pc_rtt_budget_configured": true,
+  "load_elapsed_s": 10.000220042071305,
+  "load_measurements": 498,
+  "valid_measurements_total": 501,
+  "invalid_measurements": 1,
+  "status_requests": 11,
+  "status_responses": 11,
+  "track_reports": 506,
+  "performance_summary_count": 4,
+  "last_performance": {
+    "header": {
+      "uptime_ms": 20002,
+      "measurements": 502,
+      "without_submit": 1,
+      "submit_failed": 0,
+      "invalid_time": 0
+    },
+    "queue_wait": {
+      "n": 502,
+      "total_ms": 36,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "processing": {
+      "n": 501,
+      "total_ms": 52,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "rx_to_submit": {
+      "n": 501,
+      "total_ms": 88,
+      "p50_bin": 0,
+      "p95_bin": 1,
+      "p99_bin": 1,
+      "max_ms": 1,
+      "over20": 0
+    },
+    "queue rx": {
+      "accepted": 517,
+      "rejected": 0,
+      "observed_max_used": 0
+    },
+    "queue tx": {
+      "accepted": 517,
+      "rejected": 0,
+      "observed_max_used": 1
+    },
+    "tx": {
+      "poll_completed": 517,
+      "encode_failed": 0
+    },
+    "stack rx": {
+      "unused": 784,
+      "min_unused": 784
+    },
+    "stack handler": {
+      "unused": 1472,
+      "min_unused": 1472
+    },
+    "stack tx": {
+      "unused": 736,
+      "min_unused": 736
+    }
+  },
+  "final_status": {
+    "crc_errors": 0,
+    "length_errors": 0,
+    "frame_timeouts": 0,
+    "queue_drops": 0,
+    "ring_overflow_events": 0,
+    "rx_dropped_bytes": 0,
+    "recovery_discarded_bytes": 0,
+    "stale_measurements": 0
+  },
+  "pc_crc_errors": 0,
+  "pc_length_errors": 0,
+  "failure": null,
+  "restore_failure": null,
+  "checks": [
+    {
+      "name": "idle performance summary",
+      "passed": true
+    },
+    {
+      "name": "idle timing has no samples",
+      "passed": true
+    },
+    {
+      "name": "idle stack queries available",
+      "passed": true
+    },
+    {
+      "name": "INIT reset report received",
+      "passed": true
+    },
+    {
+      "name": "initial STATUS zero",
+      "passed": true
+    },
+    {
+      "name": "load contains measurement RTT samples",
+      "passed": true
+    },
+    {
+      "name": "one post-load timeout report",
+      "passed": true
+    },
+    {
+      "name": "tracking recovers after invalid input and RESET",
+      "passed": true
+    },
+    {
+      "name": "all measurements matched once",
+      "passed": true
+    },
+    {
+      "name": "all STATUS requests answered",
+      "passed": true
+    },
+    {
+      "name": "single firmware boot",
+      "passed": true
+    },
+    {
+      "name": "measurement count reconciles",
+      "passed": true
+    },
+    {
+      "name": "no submit failures or invalid times",
+      "passed": true
+    },
+    {
+      "name": "invalid measurement is counted without submission",
+      "passed": true
+    },
+    {
+      "name": "processing successful sample count",
+      "passed": true
+    },
+    {
+      "name": "rx_to_submit successful sample count",
+      "passed": true
+    },
+    {
+      "name": "queue wait count includes invalid input",
+      "passed": true
+    },
+    {
+      "name": "20ms board latency budget",
+      "passed": true
+    },
+    {
+      "name": "no queue rejection",
+      "passed": true
+    },
+    {
+      "name": "RX accepted frame count",
+      "passed": true
+    },
+    {
+      "name": "TX queued and polling counts match received frames",
+      "passed": true
+    },
+    {
+      "name": "no TX encoder failures",
+      "passed": true
+    },
+    {
+      "name": "all sampled stacks have headroom",
+      "passed": true
+    },
+    {
+      "name": "performance summaries remain continuous",
+      "passed": true
+    },
+    {
+      "name": "PC RTT p99 <= 20ms",
+      "passed": true
+    },
+    {
+      "name": "PC RTT max <= 100ms",
+      "passed": true
+    },
+    {
+      "name": "restored normal STATUS zero",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

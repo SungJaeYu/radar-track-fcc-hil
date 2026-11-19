@@ -1,0 +1,38 @@
+{
+  "initial_status": {
+    "crc_errors": 0,
+    "length_errors": 0,
+    "frame_timeouts": 0,
+    "queue_drops": 0,
+    "ring_overflow_events": 0,
+    "rx_dropped_bytes": 0,
+    "recovery_discarded_bytes": 0,
+    "stale_measurements": 0
+  },
+  "spike": {
+    "path": "spike/20261119-213625-72479947",
+    "complete": true,
+    "passed_runs": 49,
+    "failed_runs": 0
+  },
+  "noise": {
+    "path": "noise/20261119-214824-1b6d6cad",
+    "complete": true,
+    "recorded_runs": 100,
+    "failed_runs": 0
+  },
+  "final_status": {
+    "crc_errors": 0,
+    "length_errors": 0,
+    "frame_timeouts": 0,
+    "queue_drops": 0,
+    "ring_overflow_events": 0,
+    "rx_dropped_bytes": 0,
+    "recovery_discarded_bytes": 0,
+    "stale_measurements": 0
+  },
+  "console_capture_errors": [],
+  "console_fault_lines": [],
+  "passed": true,
+  "finished_utc": "2026-11-19T13:13:03.119284+00:00"
+}

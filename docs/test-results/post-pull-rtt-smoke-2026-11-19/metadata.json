@@ -1,0 +1,19 @@
+{
+  "started_utc": "2026-11-19T12:34:15.094225+00:00",
+  "duration_s": 10,
+  "measurement_hz": 50,
+  "status_hz": 1,
+  "baud": 115200,
+  "smoke": true,
+  "acceptance_revision": "2026-11-19-pc-rtt",
+  "pc_rtt_limits_ms": {
+    "p99": 20.0,
+    "max": 100.0
+  },
+  "source_commit": "eb15fb14bf653b9779a6a8b54bb18d301174db64",
+  "script_sha256": "675d357aa42df674eeb3f3c6bf0e9aba301ee664f0781e156a574cbd2d34d179",
+  "data_port": "/dev/cu.usbserial-A5069RR4",
+  "console_port": "/dev/cu.usbmodem1203",
+  "build_perf_elf_sha256": "1c8d31306bf15d0a526da0a63d098abe8884e4860085cce65f143f02cc0314ec",
+  "build_elf_sha256": "f93582d48d4a8f8908b16ed7dea0ee86460e5053ea7d20c1b81b75347f2a6e58"
+}

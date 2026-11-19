@@ -1,0 +1,17 @@
+{
+  "started_utc": "2026-11-19T12:36:25.698485+00:00",
+  "source_commit": "eb15fb14bf653b9779a6a8b54bb18d301174db64",
+  "normal_elf_sha256": "f93582d48d4a8f8908b16ed7dea0ee86460e5053ea7d20c1b81b75347f2a6e58",
+  "data_port": "/dev/cu.usbserial-A5069RR4",
+  "console_port": "/dev/cu.usbmodem1203",
+  "spike_cases": 49,
+  "noise_cases": 100,
+  "mode": "Existing run_suite/run_sweep, default plans; progress wrapper only for noise",
+  "source_files_sha256": {
+    "pc_sim/noise_sweep.py": "cb81e659ea64e552cb74162acfb798a9c3ca3d75ff6990eeeceaa82acad5e7c0",
+    "pc_sim/spike_sweep.py": "52eae24e3b12cf02672c6a53c77abefa0214f3d351d2602b2096c49c590d1f02",
+    "pc_sim/evaluate.py": "b1396b9d859f7c58c97cb390df3f2a9b86b4f8e16792da36529c6a2b2deed654",
+    "pc_sim/outliers.py": "24db85b60d17461f75741f68c4b47f40eeb255630f32aa46e53b189f407301f7",
+    "pc_sim/recording.py": "cd5f01a5b57b5c7803cc835d8df370ca86f3f30c5e19a5ea834823d74f260a3d"
+  }
+}

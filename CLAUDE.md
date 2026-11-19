@@ -45,7 +45,7 @@ V1은 2026-11-19 프로젝트 소유자의 완료 확인을 반영해 종료했�
 - [성능 계측 host 테스트](fcc_app/tests/test_perf_monitor/README.md): collector/reporter 9 + 계측 활성화 handler 32/TX 4회. 기본 C 121회와 합쳐 166회 실행(CTest 146개)입니다.
 - `python -m pytest`: GUI 의존성 설치 시 765개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 24·discard 21, 총 45회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
-- [handler host 테스트](fcc_app/tests/test_frame_handler/README.md): STATUS·TRACK·실패 복귀·INIT/RESET·측정 timeout·processor·stale 계약 30개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.
+- [handler host 테스트](fcc_app/tests/test_frame_handler/README.md): STATUS·TRACK·실패 복귀·INIT/RESET·측정 timeout·processor·stale·이상치 복귀 계약 31개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.
 - [TX host 테스트](fcc_app/tests/test_uart_tx/README.md): 초기화·요청 검증·복사 큐·송신 순서·실패 후 복귀 4개 사례.
 - [Tracking C 테스트](fcc_app/tests/test_tracking/README.md): 필터·게이팅·추적 정책 21개 + 게이트 설정 행렬 20개 사례.
 - 수동 초기화만 필요할 때: `python pc_sim/frame_sender.py init --type 1 --port PORT`.
@@ -56,7 +56,7 @@ V1은 2026-11-19 프로젝트 소유자의 완료 확인을 반영해 종료했�
 
 잡음별 추가 평가는 `python -m pc_sim.noise_sweep --dry-run`으로 계획을 확인하고 `--port PORT`로 실보드에서 실행합니다. 기본100회는 거리/각도 잡음을 한 축씩 바꾸고 seed10개를 반복합니다. host 모사 테스트를 새로운 실보드 정확도 수치로 쓰지 않습니다. 경계값·범위 밖·비유한 입력의 계약별 행렬은 [테스트 목록](docs/test-cases.md)을 따릅니다.
 
-순간 이상치 보드 시험은 `python -m pc_sim.spike_sweep --dry-run` / `--port PORT`를 사용합니다. 기본49회이며 정지1000m/0°·기본100m/10° 게이트를 전제로 합니다. 회복은 CONFIRMED·UPDATED·거리2m/각도0.2° 이내3연속의 센서 시간축 관측입니다. 실제49회 STM32 결과는 아직 없으며 host C48조합 검증과 구분합니다.
+순간 이상치 보드 시험은 `python -m pc_sim.spike_sweep --dry-run` / `--port PORT`를 사용합니다. 기본49회이며 정지1000m/0°·기본100m/10° 게이트를 전제로 합니다. 회복은 CONFIRMED·UPDATED·거리2m/각도0.2° 이내3연속의 센서 시간축 관측입니다. 기본49회 STM32 시험이 모두 통과했고 잡음100회도 기록·응답 검사를 완료했습니다. [실측 결과·한계](docs/hardware-test-2026-11-19-noise-spike.md)를 host C48조합 검증과 구분합니다.
 
 ## 작업 원칙
 

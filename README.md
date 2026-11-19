@@ -30,6 +30,8 @@ PC 왕복은 write 직전부터 대응 TRACK이 포함된 read 직후까지이�
 
 [시험 조건·상세 통계·원시 로그](docs/hardware-test-2026-11-19-performance.md) · [현재 측정·판정 기준](docs/performance-monitoring.md) · [추적 정확도 결과](docs/hardware-test-2026-11-18-evaluation.md)
 
+추가 실보드 검증: [순간 이상치49회·잡음/seed100회](docs/hardware-test-2026-11-19-noise-spike.md)에서 측정17,880개 응답 대응과 이상치 이후 정상 복귀를 확인했습니다. 조건별 오차·복귀 시간·한계는 별도 기록에 정리했습니다.
+
 ## 실행
 
 보드 데이터 연결은 **USB-UART TXD → PC7(RX), RXD ← PC6(TX), GND 공통**입니다. 3.3V 어댑터를 사용하며, 각자 USB로 급전하므로 전원선은 연결하지 않습니다. ST-Link는 플래시·진단 콘솔에 별도로 사용합니다.

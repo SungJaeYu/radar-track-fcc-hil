@@ -1,0 +1,58 @@
+[
+  {
+    "path": "session/reports.csv.gz",
+    "uncompressed_bytes": 36066,
+    "uncompressed_sha256": "ca21181a5345cedf2c7cdcffc282625264b010fa31dcf7dc2a45f3a0b7a9cb95",
+    "gzip_bytes": 6646,
+    "gzip_sha256": "83ab143bef7ff49c48c22f4a74f8e43e5ac9f6118ba439a8ade44981a5d1d751"
+  },
+  {
+    "path": "session/samples.csv.gz",
+    "uncompressed_bytes": 52014,
+    "uncompressed_sha256": "6b3e9d81db3cc487776389a9935917e859203bd748d800f9aae4d8589d20e577",
+    "gzip_bytes": 7797,
+    "gzip_sha256": "fc96925bb968248460d0c325b5c69a75f0272a1797fed802f2ab76a9b04d0d14"
+  },
+  {
+    "path": "session/status.csv.gz",
+    "uncompressed_bytes": 517,
+    "uncompressed_sha256": "266fc826aaef039d93cfc82ae9d10db34dd4e2debc7831c279e8a63d9a514df2",
+    "gzip_bytes": 225,
+    "gzip_sha256": "62d13c49a0582bfb1e8055b32ca5ae8b25493989da2fbf3bc86fd6306d4ef423"
+  },
+  {
+    "path": "session/wire.csv.gz",
+    "uncompressed_bytes": 75970,
+    "uncompressed_sha256": "804f6b42c8c1ae28f9b43b6336c42e84520523c7a9addd3b14f6830abe8d5dca",
+    "gzip_bytes": 15195,
+    "gzip_sha256": "2ce7f2e5fe0dd1cea1e1e80bf2c7d999071abf27fa3db8171d25ae44612a6e18"
+  },
+  {
+    "path": "console.log.gz",
+    "uncompressed_bytes": 5530,
+    "uncompressed_sha256": "00c5bb40a952b1364a7ce2fe3879aaba0163d0e9587cb189849fed7a236707c4",
+    "gzip_bytes": 894,
+    "gzip_sha256": "33b2df739b9f53643da0c3161e2786fab8e5f7ba4ee7a3711c5c1bbb99816a00"
+  },
+  {
+    "path": "perf-flash.log.gz",
+    "uncompressed_bytes": 1633,
+    "uncompressed_sha256": "7c65a3a5461038b3f4f0fc925e31ae71609d080eec5066aef145d390d2c5e4f9",
+    "gzip_bytes": 869,
+    "gzip_sha256": "ec9d94addbc1fc9c0651b2a5eb720a4ec8371b5875a8aa3d28f0f166e3d7ffe6"
+  },
+  {
+    "path": "restore-flash.log.gz",
+    "uncompressed_bytes": 1519,
+    "uncompressed_sha256": "96c01ab3d961faf39db548a9ab46d1de02917a8131be0e7725b3ced8dbd89217",
+    "gzip_bytes": 824,
+    "gzip_sha256": "e7191a7e9a04e3059775141014700942a42648db4b2dcaa48b570f78888ddb75"
+  },
+  {
+    "path": "performance.json.gz",
+    "uncompressed_bytes": 4525,
+    "uncompressed_sha256": "d9c579e1d73b36582b05cc2c9fb81b9c9fa1f23d3df5f33e363207d4fef6d6aa",
+    "gzip_bytes": 481,
+    "gzip_sha256": "d289847f50d276275968be6fee47184bc4af1242156566658a8ff4efec74cf67"
+  }
+]

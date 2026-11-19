@@ -1,0 +1,920 @@
+{
+  "sessions": 149,
+  "samples": 17880,
+  "track_reports": 18327,
+  "status_reports": 298,
+  "wire_frames": {
+    "tx": {
+      "1": 149,
+      "3": 298,
+      "2": 17880,
+      "5": 149
+    },
+    "rx": {
+      "7": 18327,
+      "6": 298
+    }
+  },
+  "matched_input_reports": 17880,
+  "gate_rejections": 82,
+  "lost_transitions": 12,
+  "sequence_errors": 0,
+  "runs": [
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213625-f2b17ebe",
+      "mode": "spike",
+      "actual_interval_hz": 9.568869909667674,
+      "pc_rtt_max_ms": 7.0777089567855
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213640-a3be655a",
+      "mode": "spike",
+      "actual_interval_hz": 9.590865788667017,
+      "pc_rtt_max_ms": 7.967540994286537
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213654-38254c16",
+      "mode": "spike",
+      "actual_interval_hz": 9.567181929264919,
+      "pc_rtt_max_ms": 6.107166991569102
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213709-f9a85604",
+      "mode": "spike",
+      "actual_interval_hz": 9.571261090077275,
+      "pc_rtt_max_ms": 9.510959032922983
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213723-f770223b",
+      "mode": "spike",
+      "actual_interval_hz": 9.62600581141735,
+      "pc_rtt_max_ms": 7.170291966758668
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213738-8a1c52f7",
+      "mode": "spike",
+      "actual_interval_hz": 9.54410219852938,
+      "pc_rtt_max_ms": 11.817915947176516
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213752-bd829567",
+      "mode": "spike",
+      "actual_interval_hz": 9.580802744308226,
+      "pc_rtt_max_ms": 7.27004196960479
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213807-ec6e11d3",
+      "mode": "spike",
+      "actual_interval_hz": 9.581275579329647,
+      "pc_rtt_max_ms": 6.888250005431473
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213821-6fe2143e",
+      "mode": "spike",
+      "actual_interval_hz": 9.608571588436824,
+      "pc_rtt_max_ms": 6.447624997235835
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213836-1725b822",
+      "mode": "spike",
+      "actual_interval_hz": 9.616539413599916,
+      "pc_rtt_max_ms": 6.965250009670854
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213850-d5acdc93",
+      "mode": "spike",
+      "actual_interval_hz": 9.57201852901295,
+      "pc_rtt_max_ms": 6.783624994568527
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213905-93d05065",
+      "mode": "spike",
+      "actual_interval_hz": 9.59825218279249,
+      "pc_rtt_max_ms": 6.412249989807606
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213919-4a0e5dbf",
+      "mode": "spike",
+      "actual_interval_hz": 9.585436484405085,
+      "pc_rtt_max_ms": 6.60333305131644
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213934-6661c33f",
+      "mode": "spike",
+      "actual_interval_hz": 9.600168769872235,
+      "pc_rtt_max_ms": 5.830666050314903
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-213949-98bee2cc",
+      "mode": "spike",
+      "actual_interval_hz": 9.602089931466937,
+      "pc_rtt_max_ms": 6.138333003036678
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214003-f410c09f",
+      "mode": "spike",
+      "actual_interval_hz": 9.595516136258071,
+      "pc_rtt_max_ms": 5.831458023749292
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214017-9d872e8e",
+      "mode": "spike",
+      "actual_interval_hz": 9.57985191353952,
+      "pc_rtt_max_ms": 6.699166959151626
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214032-f762e8b4",
+      "mode": "spike",
+      "actual_interval_hz": 9.57673914628183,
+      "pc_rtt_max_ms": 6.548166973516345
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214047-27b1e9a8",
+      "mode": "spike",
+      "actual_interval_hz": 9.548530403781983,
+      "pc_rtt_max_ms": 8.83437495213002
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214101-61aa82b0",
+      "mode": "spike",
+      "actual_interval_hz": 9.55757592779009,
+      "pc_rtt_max_ms": 13.125040917657316
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214116-76bcdcb4",
+      "mode": "spike",
+      "actual_interval_hz": 9.557357001105384,
+      "pc_rtt_max_ms": 5.6799170561134815
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214130-0a5046d6",
+      "mode": "spike",
+      "actual_interval_hz": 9.573962073989852,
+      "pc_rtt_max_ms": 10.198833071626723
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214145-b2aa4bd5",
+      "mode": "spike",
+      "actual_interval_hz": 9.60528561910304,
+      "pc_rtt_max_ms": 5.674417014233768
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214159-efd1fdb3",
+      "mode": "spike",
+      "actual_interval_hz": 9.542570150266341,
+      "pc_rtt_max_ms": 6.013875012286007
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214214-e5948845",
+      "mode": "spike",
+      "actual_interval_hz": 9.567304869242784,
+      "pc_rtt_max_ms": 6.394917028956115
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214228-2d4b7c42",
+      "mode": "spike",
+      "actual_interval_hz": 9.576754721491964,
+      "pc_rtt_max_ms": 8.09920800384134
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214243-c7a2440f",
+      "mode": "spike",
+      "actual_interval_hz": 9.587474665546589,
+      "pc_rtt_max_ms": 11.240249965339899
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214257-2bb5b6ef",
+      "mode": "spike",
+      "actual_interval_hz": 9.522359418209295,
+      "pc_rtt_max_ms": 6.217250018380582
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214312-ec459a3d",
+      "mode": "spike",
+      "actual_interval_hz": 9.364177649266937,
+      "pc_rtt_max_ms": 5.714082974009216
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214327-908b82d4",
+      "mode": "spike",
+      "actual_interval_hz": 9.311377379363675,
+      "pc_rtt_max_ms": 7.907249964773655
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214342-a0f3afb4",
+      "mode": "spike",
+      "actual_interval_hz": 9.280355544462957,
+      "pc_rtt_max_ms": 11.130459024570882
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214357-2040cde3",
+      "mode": "spike",
+      "actual_interval_hz": 9.300749040301435,
+      "pc_rtt_max_ms": 6.782167009077966
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214412-748f37df",
+      "mode": "spike",
+      "actual_interval_hz": 9.349475202233121,
+      "pc_rtt_max_ms": 6.501208059489727
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214426-cef5c69a",
+      "mode": "spike",
+      "actual_interval_hz": 9.3129624762427,
+      "pc_rtt_max_ms": 5.943291005678475
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214441-3b42d1ff",
+      "mode": "spike",
+      "actual_interval_hz": 9.313749409582698,
+      "pc_rtt_max_ms": 5.649333936162293
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214456-66ab79f0",
+      "mode": "spike",
+      "actual_interval_hz": 9.360396012607595,
+      "pc_rtt_max_ms": 6.595041952095926
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214511-2deb59c3",
+      "mode": "spike",
+      "actual_interval_hz": 9.301350457337541,
+      "pc_rtt_max_ms": 7.583708968013525
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214526-c6ec5cb3",
+      "mode": "spike",
+      "actual_interval_hz": 9.358993798348875,
+      "pc_rtt_max_ms": 6.808459060266614
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214541-da07280e",
+      "mode": "spike",
+      "actual_interval_hz": 9.338715393942556,
+      "pc_rtt_max_ms": 5.987624987028539
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214556-21a0422d",
+      "mode": "spike",
+      "actual_interval_hz": 9.32919726768158,
+      "pc_rtt_max_ms": 6.640125066041946
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214610-4d6ed736",
+      "mode": "spike",
+      "actual_interval_hz": 9.287103950845639,
+      "pc_rtt_max_ms": 8.653375087305903
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214625-5d39a7ea",
+      "mode": "spike",
+      "actual_interval_hz": 9.321710865510045,
+      "pc_rtt_max_ms": 6.505124969407916
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214640-aa6def85",
+      "mode": "spike",
+      "actual_interval_hz": 9.347739605501264,
+      "pc_rtt_max_ms": 6.724584032781422
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214655-7c77b217",
+      "mode": "spike",
+      "actual_interval_hz": 9.325681763607257,
+      "pc_rtt_max_ms": 5.9712500078603625
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214710-55ec51f2",
+      "mode": "spike",
+      "actual_interval_hz": 9.369993862825266,
+      "pc_rtt_max_ms": 8.972665993496776
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214725-db3f1567",
+      "mode": "spike",
+      "actual_interval_hz": 9.391993669124936,
+      "pc_rtt_max_ms": 5.698334076441824
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214740-e84f677d",
+      "mode": "spike",
+      "actual_interval_hz": 9.369183810527304,
+      "pc_rtt_max_ms": 6.827500066719949
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214754-4f1b6d68",
+      "mode": "spike",
+      "actual_interval_hz": 9.373003529027784,
+      "pc_rtt_max_ms": 6.058458937332034
+    },
+    {
+      "session": "spike/20261119-213625-72479947/20261119-214809-c246ddb8",
+      "mode": "spike",
+      "actual_interval_hz": 9.408459823828451,
+      "pc_rtt_max_ms": 7.388749974779785
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-214824-88c31865",
+      "mode": "noise",
+      "actual_interval_hz": 9.351812913205908,
+      "pc_rtt_max_ms": 8.705582935363054
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-214839-5a882786",
+      "mode": "noise",
+      "actual_interval_hz": 9.389607398714594,
+      "pc_rtt_max_ms": 5.682582966983318
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-214854-11cd3406",
+      "mode": "noise",
+      "actual_interval_hz": 9.301274241877953,
+      "pc_rtt_max_ms": 7.013292051851749
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-214908-45839def",
+      "mode": "noise",
+      "actual_interval_hz": 9.340066330793308,
+      "pc_rtt_max_ms": 6.293875048868358
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-214923-e22c3f3b",
+      "mode": "noise",
+      "actual_interval_hz": 9.326919735112972,
+      "pc_rtt_max_ms": 6.391082890331745
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-214938-c8ea160a",
+      "mode": "noise",
+      "actual_interval_hz": 9.36240543799129,
+      "pc_rtt_max_ms": 5.88345795404166
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-214953-275a678f",
+      "mode": "noise",
+      "actual_interval_hz": 9.316367406215901,
+      "pc_rtt_max_ms": 6.197041017003357
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215008-3b2d7e17",
+      "mode": "noise",
+      "actual_interval_hz": 9.320529636979495,
+      "pc_rtt_max_ms": 11.256290948949754
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215023-198a7b54",
+      "mode": "noise",
+      "actual_interval_hz": 9.419586951356484,
+      "pc_rtt_max_ms": 5.7044579880312085
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215038-a8c19eff",
+      "mode": "noise",
+      "actual_interval_hz": 9.384233785427938,
+      "pc_rtt_max_ms": 5.893999943509698
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215052-7c911f25",
+      "mode": "noise",
+      "actual_interval_hz": 9.331494632207033,
+      "pc_rtt_max_ms": 6.79833407048136
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215107-d580f327",
+      "mode": "noise",
+      "actual_interval_hz": 9.35285145061538,
+      "pc_rtt_max_ms": 6.893209065310657
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215122-f13c350c",
+      "mode": "noise",
+      "actual_interval_hz": 9.329786764512265,
+      "pc_rtt_max_ms": 5.726041970774531
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215137-486143ba",
+      "mode": "noise",
+      "actual_interval_hz": 9.31011154193201,
+      "pc_rtt_max_ms": 6.746291997842491
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215152-affb2def",
+      "mode": "noise",
+      "actual_interval_hz": 9.37917413884239,
+      "pc_rtt_max_ms": 5.8097089640796185
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215207-e2cfe5ed",
+      "mode": "noise",
+      "actual_interval_hz": 9.338091304789407,
+      "pc_rtt_max_ms": 6.823125062510371
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215221-962992a4",
+      "mode": "noise",
+      "actual_interval_hz": 9.341458081507476,
+      "pc_rtt_max_ms": 7.35395890660584
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215236-2064eb41",
+      "mode": "noise",
+      "actual_interval_hz": 9.353313937564318,
+      "pc_rtt_max_ms": 5.66633406560868
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215251-4e467e9b",
+      "mode": "noise",
+      "actual_interval_hz": 9.369517583553012,
+      "pc_rtt_max_ms": 6.605457980185747
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215306-cb9d0474",
+      "mode": "noise",
+      "actual_interval_hz": 9.359252375577974,
+      "pc_rtt_max_ms": 6.202833028510213
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215321-b2489a26",
+      "mode": "noise",
+      "actual_interval_hz": 9.325686940010337,
+      "pc_rtt_max_ms": 6.450499990023673
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215336-b9d3d614",
+      "mode": "noise",
+      "actual_interval_hz": 9.338554867206305,
+      "pc_rtt_max_ms": 11.06587506365031
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215351-0b61876e",
+      "mode": "noise",
+      "actual_interval_hz": 9.332172301287196,
+      "pc_rtt_max_ms": 6.580709014087915
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215405-a2f58deb",
+      "mode": "noise",
+      "actual_interval_hz": 9.339535609060196,
+      "pc_rtt_max_ms": 11.339792050421238
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215420-94e171c6",
+      "mode": "noise",
+      "actual_interval_hz": 9.348918683960623,
+      "pc_rtt_max_ms": 5.754875019192696
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215435-04c535ba",
+      "mode": "noise",
+      "actual_interval_hz": 9.347891084967525,
+      "pc_rtt_max_ms": 8.134458097629249
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215450-f5e201e4",
+      "mode": "noise",
+      "actual_interval_hz": 9.304981934962553,
+      "pc_rtt_max_ms": 6.327874958515167
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215505-564d46e7",
+      "mode": "noise",
+      "actual_interval_hz": 9.352203451802094,
+      "pc_rtt_max_ms": 5.717250052839518
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215520-4e5f0c3a",
+      "mode": "noise",
+      "actual_interval_hz": 9.314173044993389,
+      "pc_rtt_max_ms": 5.714625003747642
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215535-279e7abd",
+      "mode": "noise",
+      "actual_interval_hz": 9.34903522124966,
+      "pc_rtt_max_ms": 6.74237497150898
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215549-c596509c",
+      "mode": "noise",
+      "actual_interval_hz": 9.36149043285007,
+      "pc_rtt_max_ms": 8.97312501911074
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215604-b55eeb0d",
+      "mode": "noise",
+      "actual_interval_hz": 9.360491514719627,
+      "pc_rtt_max_ms": 5.67154202144593
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215619-f538aff5",
+      "mode": "noise",
+      "actual_interval_hz": 9.409184706865979,
+      "pc_rtt_max_ms": 8.01704206969589
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215634-7118bd9a",
+      "mode": "noise",
+      "actual_interval_hz": 9.323258850882162,
+      "pc_rtt_max_ms": 6.062334054149687
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215649-6fd22f13",
+      "mode": "noise",
+      "actual_interval_hz": 9.363442369428027,
+      "pc_rtt_max_ms": 6.790167069993913
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215703-99fd96de",
+      "mode": "noise",
+      "actual_interval_hz": 9.39144900087773,
+      "pc_rtt_max_ms": 6.438541924580932
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215718-68c6d90b",
+      "mode": "noise",
+      "actual_interval_hz": 9.318441550143334,
+      "pc_rtt_max_ms": 5.913458997383714
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215733-c26f2f9d",
+      "mode": "noise",
+      "actual_interval_hz": 9.390080350751328,
+      "pc_rtt_max_ms": 8.861582959070802
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215748-e9311d19",
+      "mode": "noise",
+      "actual_interval_hz": 9.355567849216095,
+      "pc_rtt_max_ms": 9.306624997407198
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215803-8ddcd519",
+      "mode": "noise",
+      "actual_interval_hz": 9.33888930077171,
+      "pc_rtt_max_ms": 7.9417499946430326
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215818-7022b0bf",
+      "mode": "noise",
+      "actual_interval_hz": 9.344364386311467,
+      "pc_rtt_max_ms": 7.485040929168463
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215832-d0100f15",
+      "mode": "noise",
+      "actual_interval_hz": 9.324063264023787,
+      "pc_rtt_max_ms": 6.820583017542958
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215847-663b4bc6",
+      "mode": "noise",
+      "actual_interval_hz": 9.52820146272374,
+      "pc_rtt_max_ms": 6.218291935510933
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215902-f0392fdb",
+      "mode": "noise",
+      "actual_interval_hz": 9.568813003045777,
+      "pc_rtt_max_ms": 5.729041062295437
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215916-12c7a33b",
+      "mode": "noise",
+      "actual_interval_hz": 9.57171418535094,
+      "pc_rtt_max_ms": 8.581250091083348
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215931-7e6bb6ab",
+      "mode": "noise",
+      "actual_interval_hz": 9.570514419240347,
+      "pc_rtt_max_ms": 5.693292012438178
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-215946-de7c3df4",
+      "mode": "noise",
+      "actual_interval_hz": 9.554745545527526,
+      "pc_rtt_max_ms": 8.850250043906271
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220000-62c92aeb",
+      "mode": "noise",
+      "actual_interval_hz": 9.59889430358784,
+      "pc_rtt_max_ms": 6.932708085514605
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220015-1805611d",
+      "mode": "noise",
+      "actual_interval_hz": 9.572365850274053,
+      "pc_rtt_max_ms": 5.805249908007681
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220029-4157c37b",
+      "mode": "noise",
+      "actual_interval_hz": 9.546382605996408,
+      "pc_rtt_max_ms": 7.262166007421911
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220044-d5e9bfb2",
+      "mode": "noise",
+      "actual_interval_hz": 9.577862260342473,
+      "pc_rtt_max_ms": 7.197708007879555
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220058-f0c7c5f1",
+      "mode": "noise",
+      "actual_interval_hz": 9.614989202794956,
+      "pc_rtt_max_ms": 7.014625007286668
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220113-2059df86",
+      "mode": "noise",
+      "actual_interval_hz": 9.565316292050094,
+      "pc_rtt_max_ms": 6.51070789899677
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220127-055b4273",
+      "mode": "noise",
+      "actual_interval_hz": 9.542457282345765,
+      "pc_rtt_max_ms": 6.228083046153188
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220142-6060fd5b",
+      "mode": "noise",
+      "actual_interval_hz": 9.530427939567915,
+      "pc_rtt_max_ms": 6.898958934471011
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220156-da50e3ea",
+      "mode": "noise",
+      "actual_interval_hz": 9.550997731026731,
+      "pc_rtt_max_ms": 5.776042002253234
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220211-5d9c431e",
+      "mode": "noise",
+      "actual_interval_hz": 9.608567709312283,
+      "pc_rtt_max_ms": 7.3394590290263295
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220225-625a440c",
+      "mode": "noise",
+      "actual_interval_hz": 9.531665710337567,
+      "pc_rtt_max_ms": 7.342083030380309
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220240-c294aec6",
+      "mode": "noise",
+      "actual_interval_hz": 9.580269892471136,
+      "pc_rtt_max_ms": 6.051999982446432
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220255-d9920413",
+      "mode": "noise",
+      "actual_interval_hz": 9.554366994627268,
+      "pc_rtt_max_ms": 7.141666952520609
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220309-c5ec6a16",
+      "mode": "noise",
+      "actual_interval_hz": 9.558334944955158,
+      "pc_rtt_max_ms": 5.883374949917197
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220324-13836fe1",
+      "mode": "noise",
+      "actual_interval_hz": 9.590836512090874,
+      "pc_rtt_max_ms": 9.105667006224394
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220338-ecbdbdad",
+      "mode": "noise",
+      "actual_interval_hz": 9.543385334373374,
+      "pc_rtt_max_ms": 7.306332932785153
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220353-9a97a588",
+      "mode": "noise",
+      "actual_interval_hz": 9.349456654692592,
+      "pc_rtt_max_ms": 6.809417041949928
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220408-c4a032e1",
+      "mode": "noise",
+      "actual_interval_hz": 9.2595808625711,
+      "pc_rtt_max_ms": 6.798167014494538
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220423-a35aa97e",
+      "mode": "noise",
+      "actual_interval_hz": 9.343832014613824,
+      "pc_rtt_max_ms": 5.768958013504744
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220437-3bf6266e",
+      "mode": "noise",
+      "actual_interval_hz": 9.354329737590835,
+      "pc_rtt_max_ms": 6.18091702926904
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220452-bab6b10b",
+      "mode": "noise",
+      "actual_interval_hz": 9.351693243543611,
+      "pc_rtt_max_ms": 5.6545420084148645
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220507-1813afd9",
+      "mode": "noise",
+      "actual_interval_hz": 9.351584356225876,
+      "pc_rtt_max_ms": 7.198083098046482
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220522-1ee2a5b8",
+      "mode": "noise",
+      "actual_interval_hz": 9.293674702787925,
+      "pc_rtt_max_ms": 5.690291989594698
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220537-8244c059",
+      "mode": "noise",
+      "actual_interval_hz": 9.380624772388362,
+      "pc_rtt_max_ms": 6.3120829872787
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220552-9a8bc9a3",
+      "mode": "noise",
+      "actual_interval_hz": 9.319599624152557,
+      "pc_rtt_max_ms": 6.560457986779511
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220607-d4706518",
+      "mode": "noise",
+      "actual_interval_hz": 9.34260177395556,
+      "pc_rtt_max_ms": 6.704000057652593
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220621-b232532a",
+      "mode": "noise",
+      "actual_interval_hz": 9.301669931681788,
+      "pc_rtt_max_ms": 5.797958001494408
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220636-1daa73da",
+      "mode": "noise",
+      "actual_interval_hz": 9.417558280538032,
+      "pc_rtt_max_ms": 5.893790978007019
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220651-dddba256",
+      "mode": "noise",
+      "actual_interval_hz": 9.346747534652058,
+      "pc_rtt_max_ms": 5.796624929644167
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220706-cb4cc340",
+      "mode": "noise",
+      "actual_interval_hz": 9.323509248899319,
+      "pc_rtt_max_ms": 43.38141705375165
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220721-8d54b3cc",
+      "mode": "noise",
+      "actual_interval_hz": 9.277994884157733,
+      "pc_rtt_max_ms": 6.737792049534619
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220736-535886ed",
+      "mode": "noise",
+      "actual_interval_hz": 9.27362521885606,
+      "pc_rtt_max_ms": 6.7338329972699285
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220751-eb88f930",
+      "mode": "noise",
+      "actual_interval_hz": 9.396417873084125,
+      "pc_rtt_max_ms": 7.114458014257252
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220805-e99ffc30",
+      "mode": "noise",
+      "actual_interval_hz": 9.299033785930394,
+      "pc_rtt_max_ms": 6.61170796956867
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220820-76807e89",
+      "mode": "noise",
+      "actual_interval_hz": 9.383388282207147,
+      "pc_rtt_max_ms": 6.9891250459477305
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220835-6e6c9e71",
+      "mode": "noise",
+      "actual_interval_hz": 9.328211687882876,
+      "pc_rtt_max_ms": 6.708667031489313
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220850-80f5bd7c",
+      "mode": "noise",
+      "actual_interval_hz": 9.35842167201588,
+      "pc_rtt_max_ms": 6.156292045488954
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220905-f23beb11",
+      "mode": "noise",
+      "actual_interval_hz": 9.411221215007085,
+      "pc_rtt_max_ms": 7.111542043276131
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220920-e26e51e0",
+      "mode": "noise",
+      "actual_interval_hz": 9.359910861179804,
+      "pc_rtt_max_ms": 6.110958056524396
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220934-679adb90",
+      "mode": "noise",
+      "actual_interval_hz": 9.330367069129537,
+      "pc_rtt_max_ms": 6.242165924049914
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-220949-ac6ed1c8",
+      "mode": "noise",
+      "actual_interval_hz": 9.310236340575615,
+      "pc_rtt_max_ms": 6.912708980962634
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221004-ded61afa",
+      "mode": "noise",
+      "actual_interval_hz": 9.2988848849366,
+      "pc_rtt_max_ms": 9.26408392842859
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221019-a3d154f3",
+      "mode": "noise",
+      "actual_interval_hz": 9.313010821562894,
+      "pc_rtt_max_ms": 5.621333024464548
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221034-1751c1e9",
+      "mode": "noise",
+      "actual_interval_hz": 9.335978130183682,
+      "pc_rtt_max_ms": 6.351624964736402
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221049-e34ef357",
+      "mode": "noise",
+      "actual_interval_hz": 9.355939361645094,
+      "pc_rtt_max_ms": 5.99974999204278
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221104-a04c3c43",
+      "mode": "noise",
+      "actual_interval_hz": 9.30805627206243,
+      "pc_rtt_max_ms": 6.043583038263023
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221119-b6e4f6e7",
+      "mode": "noise",
+      "actual_interval_hz": 9.293283835582114,
+      "pc_rtt_max_ms": 5.718333995901048
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221134-54321fa4",
+      "mode": "noise",
+      "actual_interval_hz": 9.399790341978484,
+      "pc_rtt_max_ms": 6.789500010199845
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221148-dbe7c582",
+      "mode": "noise",
+      "actual_interval_hz": 9.353068399343893,
+      "pc_rtt_max_ms": 5.995417013764381
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221203-2ff52876",
+      "mode": "noise",
+      "actual_interval_hz": 9.38947567798477,
+      "pc_rtt_max_ms": 7.313207956030965
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221218-31b2374d",
+      "mode": "noise",
+      "actual_interval_hz": 9.336430831534514,
+      "pc_rtt_max_ms": 34.15254200808704
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221233-5d903e7f",
+      "mode": "noise",
+      "actual_interval_hz": 9.34766571840035,
+      "pc_rtt_max_ms": 6.442332989536226
+    },
+    {
+      "session": "noise/20261119-214824-1b6d6cad/20261119-221248-2eb2f89f",
+      "mode": "noise",
+      "actual_interval_hz": 9.387322956794304,
+      "pc_rtt_max_ms": 17.722457996569574
+    }
+  ],
+  "passed": true,
+  "note": "Recorded evaluation metrics replay identically; wire/CSV correspondence and zero STATUS checked independently. Noise metrics are observations, not a predefined accuracy acceptance gate."
+}
