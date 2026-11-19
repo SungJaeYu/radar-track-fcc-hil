@@ -10,65 +10,19 @@
 PC는 측정 입력을 만들고, STM32는 추적 계산을 수행해 결과를 반환합니다.
 아래는 GUI 보드 모드의 현재 연결입니다. 합성 실제값은 비교 기준으로 PC에만 남습니다.
 
-```mermaid
-flowchart LR
-    subgraph PC["PC · pc_sim"]
-        Model["표적 운동 / 센서 잡음 · gui_model"]
-        Worker["SessionWorker · 시리얼 포트 소유 · 송수신"]
-        Decode["FrameParser → protocol · CRC 확인 · STATUS/TRACK 해석"]
-        GUI["GUI · 실제값 · 측정값 · 보드 추정값"]
-        Model -->|측정 프레임| Worker
-        Model -->|합성 실제값 · 측정값| GUI
-        Worker -->|송수신 · 측정 · 보고| CSV["SessionRecorder · CSV → 시각 정렬 RMSE"]
-        Worker -->|수신 바이트| Decode --> GUI
-    end
-    Board["STM32 · Zephyr · 수신 → 단일 트랙 추적 → 보고"]
-    Worker -->|"USB-UART → USART6 RX · MEAS_REPORT / INIT / STATUS_REQUEST"| Board
-    Board -->|"USART6 TX → USB-UART · TRACK_REPORT / STATUS_REPORT"| Worker
-    Board -.->|"진단 텍스트 · USART1 / ST-Link VCP"| Console["GUI 콘솔 또는 별도 터미널"]
-```
+![PC 측정 생성부터 보드 추적 결과 수신·기록까지](docs/images/pc-board-flow.png)
 
 데이터와 진단 콘솔은 별도 포트입니다. GUI와 CLI가 같은 포트를 동시에 열지 않습니다.
 CLI 송신기(`radar_sender`, `run_sim`)는 측정 송신만 수행합니다. GUI와 `python -m pc_sim.evaluate`는 TRACK 수집·CSV 저장을 지원합니다.
 
 ## 펌웨어 내부 처리 흐름
 
-실선은 데이터 전달, 점선은 알림·진단 통계 조회를 나타냅니다. ISR은 바이트를 저장하고 RX 스레드를 깨우며,
+실선은 데이터 전달, 점선은 세마포어 알림을 나타냅니다. ISR은 바이트를 저장하고 RX 스레드를 깨우며,
 파싱·추적 계산·보고서 구성은 스레드 문맥에서 수행합니다.
 
-```mermaid
-flowchart TD
-    RXPin["USART6 RX · 하드웨어 FIFO"] --> ISR["UART ISR · uart_callback · uart_fifo_read → ring_push"]
-    ISR --> Ring["rx_ring · 256바이트 배열 · 실제 저장 용량 255바이트"]
-    ISR -.->|"k_sem_give · 데이터 도착/overflow 알림"| Sem["rx_sem"]
-    subgraph RX["RX 스레드 · uart_rx_thread"]
-        Drain["ring_pop · overflow 복구 · 부분 프레임 timeout"]
-        Parser["rx_frame_processor → frame_parser · LEN/CRC 검사 · 프레임 조립"]
-        Drain --> Parser
-    end
-    Ring --> Drain
-    Sem -.->|"k_sem_take · 최대 50ms 대기"| Drain
-    Parser -->|"frame_handler_submit · 프레임 + 수신 완료 시각 복사"| RXQueue["frame_queue · 8개"]
-    subgraph Handler["처리 스레드 · frame_handler_thread"]
-        Dispatch["frame_handler_process · TYPE 분기 · INIT/RESET"]
-        Radar["radar_processor · 측정 해석 → 예측 → 게이팅 → 보정 · track / kalman_cv · 무수신 감시"]
-        Report["report_sender · STATUS 통계 / TRACK 추정값 구성"]
-        Dispatch -->|MEAS_REPORT| Radar
-        Radar -->|처리 결과| Report
-        Dispatch -->|STATUS_REQUEST| Report
-    end
-    RXQueue -->|k_msgq_get| Dispatch
-    Stats["uart_rx / rx_frame_processor · 누적 오류·드롭 통계"] -.->|atomic 개별 조회| Report
-    Dispatch -.->|handler 소유 stale_measurements| Report
-    Report -->|"uart_tx_submit · 보고서 프레임 복사"| TXQueue["tx_queue · 8개"]
-    subgraph TX["TX 스레드 · uart_tx_thread"]
-        Encode["protocol_frame_encode · STX + LEN + TYPE + payload + CRC"]
-        Send["uart_poll_out · 프레임 바이트 순서대로 송신"]
-        Encode --> Send
-    end
-    TXQueue -->|k_msgq_get| Encode
-    Send --> TXPin["USART6 TX → PC"]
-```
+![UART ISR·링버퍼·RX 스레드·처리 큐·처리 스레드·TX 큐·TX 스레드 연결](docs/images/firmware-flow.png)
+
+STATUS 구성 시 RX 오류·드롭 통계는 atomic 카운터를 개별 조회하고, 오래된 측정 통계는 처리 스레드가 소유한 값을 사용합니다. 전체 통계의 동시 snapshot을 보장하지는 않습니다.
 
 트랙과 보고 순번은 처리 스레드가 소유합니다. 큐는 구조체를 복사하고, 세마포어는 바이트를 전달하지 않습니다.
 RX/handler는 입력이 없어도 주기적으로 깨어 timeout을 확인합니다. TX는 현재 polling 방식이며 TX ISR/DMA를 사용하지 않습니다.

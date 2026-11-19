@@ -5,11 +5,17 @@
 
 ## 실제 앱 캡처
 
-아래는 TRACK 탭 추가 전, 보드 없이 미리보기 모드로 실행한 GUI 캡처입니다. PC 합성 데이터이며 보드 처리 결과 캡처가 아닙니다.
+2026-11-19 현재 코드에서 **보드 없이 미리보기 모드**로 실행한 캡처입니다. 설정·STATUS·TRACK 탭과 CSV 기록 UI를 포함합니다. PC 합성 데이터이며 보드 처리 결과 캡처가 아닙니다.
+
+설정 탭: 초기 거리·변화율·잡음을 설정하고 표적 위치와 거리 이력을 확인합니다.
 
 ![표적 위치·거리 이력과 콘솔 영역](../docs/images/radar-gui-preview.png)
 
-![미리보기의 INIT·측정 프레임 생성 로그](../docs/images/radar-gui-frames.png)
+TRACK 탭: 미리보기에서는 보드 추정값을 생성하지 않으므로 수신 대기 상태와 빈 추정값을 표시합니다. 오른쪽은 현재 CRC 프레임의 생성 로그입니다.
+
+![현재 TRACK 탭의 보드 수신 대기와 미리보기 프레임 로그](../docs/images/radar-gui-track-preview.png)
+
+[캡처·다이어그램 갱신 방법](../tools/docs/README.md). 실제 보드 추정값 화면은 아래 [실보드 검증](../docs/hardware-test-2026-11-18-evaluation.md) 기록과 구분합니다.
 
 ## CRC 프로토콜 전환
 

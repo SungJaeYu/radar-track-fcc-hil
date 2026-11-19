@@ -9,13 +9,7 @@ PC에서 합성 레이더 측정을 보내고, STM32에서 표적을 추적한 �
 
 ## 시스템 구성
 
-```mermaid
-flowchart LR
-    PC["PC 시뮬레이터<br/>측정 생성 · GUI · 평가"]
-    MCU["STM32F746G-DISCO<br/>Zephyr · 단일표적 추적"]
-    PC -->|"UART · 측정 / 제어 요청"| MCU
-    MCU -->|"UART · 추정 결과 / 상태 보고"| PC
-```
+![PC와 STM32 사이의 측정 입력·추정 결과·진단 콘솔 연결](docs/images/system-overview.png)
 
 PC는 추적 전 센서 측정을 모사합니다. **예측·게이팅·칼만 필터·트랙 상태 관리는 펌웨어가 담당**하며, PC의 정답 데이터는 결과 비교에만 사용합니다.
 
@@ -26,6 +20,13 @@ PC는 추적 전 센서 측정을 모사합니다. **예측·게이팅·칼만 �
 | PC 도구 | GUI·CLI, 측정·잡음·이상치 생성, STATUS/TRACK 수신, CSV 기록·정량 평가 |
 
 ISR·큐·스레드의 연결과 데이터 소유권은 [구현 흐름](EXPLAINER.md), PC와 보드의 책임은 [시스템 역할](docs/system-roles.md)에 정리했습니다.
+
+## GUI 미리보기
+
+![현재 GUI의 설정 탭·표적 위치·거리 이력·실행 로그](docs/images/radar-gui-preview.png)
+
+현재 코드의 **보드 없는 미리보기 모드**입니다. 합성 정답과 측정값을 표시하며 보드 추정값은 생성하지 않습니다.
+[GUI 사용법·TRACK 화면](pc_sim/GUI.md) · [실보드 추정값 캡처와 시험 기록](docs/hardware-test-2026-11-18-evaluation.md)
 
 ## 검증 결과
 
