@@ -138,3 +138,31 @@ GUI worker와 evaluate CLI는 TRACK 결과와 원시 wire CSV를 저장합니다
 
 날짜별 Kconfig·각도·게이트·STATUS·로깅 시험은 [검증 이력](verification-history.md)에 모았습니다.
 각 기록의 commit과 당시 미검증 범위를 보존하며 최신 펌웨어 전체의 합격 근거로 확대하지 않습니다.
+
+## 주요 설정
+
+애플리케이션 설정은 `fcc_app/Kconfig`에서 정의하고 `fcc_app/prj.conf`에서 선택합니다.
+변경 후 펌웨어를 다시 빌드합니다.
+
+| 설정 | 기본값 | 의미 |
+|---|---|---|
+| `CONFIG_RADAR_RX_OVERFLOW_DRAIN` | `y` | 저장된 바이트로 완성 가능한 프레임을 처리한 뒤 복구 |
+| `CONFIG_RADAR_FRAME_RX_TIMEOUT_MS` | `1000` | 부분 프레임 바이트 처리 중단 제한(ms) |
+| `CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS` | `1000` | 첫 정상 측정 이후 무수신 제한 및 큐 측정 최대 허용 나이(ms, 경계 폐기) |
+| `CONFIG_RADAR_RANGE_GATE_M` | `100` | 거리 오차 상한(m) |
+| `CONFIG_RADAR_AZIMUTH_GATE_DEG` | `10` | 각도 오차 상한(정수 degree) |
+
+게이트 설정 예:
+
+```ini
+CONFIG_RADAR_RANGE_GATE_M=100
+CONFIG_RADAR_AZIMUTH_GATE_DEG=10
+```
+
+값은 전체 창 폭이 아닌 **허용 오차의 절댓값 상한**입니다. 기본값은 ±100 m·±10°이며,
+두 조건을 모두 만족해야 통과합니다. 경계도 포함합니다. 거리 설정은 1–65535 m,
+각도 설정은 정수 1–180°를 허용하고 내부 계산은 radian입니다.
+180°는 정규화된 각도 오차를 모두 허용하지만 거리 검사는 유지합니다.
+공분산 기반 적응형 게이트는 아닙니다. π는 `common/math_constants.h`의 수학 상수입니다.
+
+[설정별 테스트](../fcc_app/tests/test_tracking/README.md) · [전체 펌웨어 주석 점검](comment-audit.md).

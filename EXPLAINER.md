@@ -3,6 +3,75 @@
 이 문서는 현재 단일 트랙 학습 구현을 설명합니다. 실행 명령은 [pc_sim 안내](pc_sim/README.md),
 배선은 [배선·보드 검증](docs/board-bringup.md)를 참고하세요.
 
+## 입출력과 시스템 연결
+
+PC는 측정 입력을 만들고, STM32는 추적 계산을 수행해 결과를 반환합니다.
+아래는 GUI 보드 모드의 현재 연결입니다. 합성 실제값은 비교 기준으로 PC에만 남습니다.
+
+```mermaid
+flowchart LR
+    subgraph PC["PC · pc_sim"]
+        Model["표적 운동 / 센서 잡음 · gui_model"]
+        Worker["SessionWorker · 시리얼 포트 소유 · 송수신"]
+        Decode["FrameParser → protocol · CRC 확인 · STATUS/TRACK 해석"]
+        GUI["GUI · 실제값 · 측정값 · 보드 추정값"]
+        Model -->|측정 프레임| Worker
+        Model -->|합성 실제값 · 측정값| GUI
+        Worker -->|송수신 · 측정 · 보고| CSV["SessionRecorder · CSV → 시각 정렬 RMSE"]
+        Worker -->|수신 바이트| Decode --> GUI
+    end
+    Board["STM32 · Zephyr · 수신 → 단일 트랙 추적 → 보고"]
+    Worker -->|"USB-UART → USART6 RX · MEAS_REPORT / INIT / STATUS_REQUEST"| Board
+    Board -->|"USART6 TX → USB-UART · TRACK_REPORT / STATUS_REPORT"| Worker
+    Board -.->|"진단 텍스트 · USART1 / ST-Link VCP"| Console["GUI 콘솔 또는 별도 터미널"]
+```
+
+데이터와 진단 콘솔은 별도 포트입니다. GUI와 CLI가 같은 포트를 동시에 열지 않습니다.
+CLI 송신기(`radar_sender`, `run_sim`)는 측정 송신만 수행합니다. GUI와 `python -m pc_sim.evaluate`는 TRACK 수집·CSV 저장을 지원합니다.
+
+## 펌웨어 내부 처리 흐름
+
+실선은 데이터 전달, 점선은 알림·진단 통계 조회를 나타냅니다. ISR은 바이트를 저장하고 RX 스레드를 깨우며,
+파싱·추적 계산·보고서 구성은 스레드 문맥에서 수행합니다.
+
+```mermaid
+flowchart TD
+    RXPin["USART6 RX · 하드웨어 FIFO"] --> ISR["UART ISR · uart_callback · uart_fifo_read → ring_push"]
+    ISR --> Ring["rx_ring · 256바이트 배열 · 실제 저장 용량 255바이트"]
+    ISR -.->|"k_sem_give · 데이터 도착/overflow 알림"| Sem["rx_sem"]
+    subgraph RX["RX 스레드 · uart_rx_thread"]
+        Drain["ring_pop · overflow 복구 · 부분 프레임 timeout"]
+        Parser["rx_frame_processor → frame_parser · LEN/CRC 검사 · 프레임 조립"]
+        Drain --> Parser
+    end
+    Ring --> Drain
+    Sem -.->|"k_sem_take · 최대 50ms 대기"| Drain
+    Parser -->|"frame_handler_submit · 프레임 + 수신 완료 시각 복사"| RXQueue["frame_queue · 8개"]
+    subgraph Handler["처리 스레드 · frame_handler_thread"]
+        Dispatch["frame_handler_process · TYPE 분기 · INIT/RESET"]
+        Radar["radar_processor · 측정 해석 → 예측 → 게이팅 → 보정 · track / kalman_cv · 무수신 감시"]
+        Report["report_sender · STATUS 통계 / TRACK 추정값 구성"]
+        Dispatch -->|MEAS_REPORT| Radar
+        Radar -->|처리 결과| Report
+        Dispatch -->|STATUS_REQUEST| Report
+    end
+    RXQueue -->|k_msgq_get| Dispatch
+    Stats["uart_rx / rx_frame_processor · 누적 오류·드롭 통계"] -.->|atomic 개별 조회| Report
+    Dispatch -.->|handler 소유 stale_measurements| Report
+    Report -->|"uart_tx_submit · 보고서 프레임 복사"| TXQueue["tx_queue · 8개"]
+    subgraph TX["TX 스레드 · uart_tx_thread"]
+        Encode["protocol_frame_encode · STX + LEN + TYPE + payload + CRC"]
+        Send["uart_poll_out · 프레임 바이트 순서대로 송신"]
+        Encode --> Send
+    end
+    TXQueue -->|k_msgq_get| Encode
+    Send --> TXPin["USART6 TX → PC"]
+```
+
+트랙과 보고 순번은 처리 스레드가 소유합니다. 큐는 구조체를 복사하고, 세마포어는 바이트를 전달하지 않습니다.
+RX/handler는 입력이 없어도 주기적으로 깨어 timeout을 확인합니다. TX는 현재 polling 방식이며 TX ISR/DMA를 사용하지 않습니다.
+큐 접수·UART write 성공은 상대 수신 ACK가 아닙니다. INIT/RESET·무수신 timeout은 무효 TRACK 초기화 보고를 한 번 제출합니다. 기본 실보드 왕복을 확인했습니다.
+
 ## 1. PC 측정 생성
 
 `pc_sim/radar_sender.py`는 거리 변화율과 잡음으로 간단한 측정을 생성합니다.
@@ -154,3 +223,39 @@ INIT/RESET·무수신 timeout은 INPUT_PRESENT=0, ESTIMATE_VALID=0인 RESET 보�
 
 날짜·commit별 실보드 결과와 원시 로그는 [검증 이력](docs/verification-history.md)에 모읍니다.
 과거 STATUS·로그 부하 시험이 현재 TRACK_REPORT 경로의 실보드 검증을 대신하지 않습니다.
+
+## 파일 구조
+
+```text
+fcc_app/src/
+    main.c            초기화·진입점
+    transport/        uart_rx, uart_tx, rx_frame_processor
+    protocol/         frame_parser, protocol_frame, measurement_message, status_message, track_message
+    application/      frame_handler(큐·분기), radar_processor(추적), report_sender(보고서 구성·제출)
+    tracking/         track, kalman_cv, gating, angle_utils
+    common/           crc16, ring_buffer, math_constants, byte_order
+    diagnostics/      선택적 perf_monitor(집계), perf_reporter(요약·스택 조회)
+fcc_app/tests/
+    test_uart_rx/      UART drain·링버퍼·부분 프레임 timeout
+    test_frame_handler/ STATUS·TRACK·INIT/RESET·측정 timeout·processor 계약
+    test_uart_tx/      TX 큐·인코딩·송신 순서
+    test_perf_monitor/ 시간·큐 통계, 동시 snapshot, 요약·스택 조회 모사
+    test_tracking/       필터·게이팅·추적 C 회귀 테스트
+    log_stress/        별도 로그 부하 시험 도구(대상 버전 확인 필요)
+tools/vscode/         선택적 VS Code 개발 환경 안내
+pc_sim/
+    gui.py             데스크톱 화면·실시간 그래프
+    gui_worker.py      시리얼 소유·송수신·콘솔 작업 스레드
+    frame_parser.py    PC 수신 프레임 조립·CRC 검증
+    status_client.py   STATUS 요청·응답 CLI
+    recording.py       세션 CSV 저장·시각 정렬 RMSE
+    evaluate.py        정상·잡음·연속 누락 보드 평가 CLI
+    gui_model.py       설정·측정 생성·TRACK 이력/수신 신선도
+    protocol.py        공통 프레임 생성·단위 변환·STATUS/TRACK 해석
+    radar_sender.py    간단한 거리 변화 측정 송신
+    frame_sender.py 단일 프레임 송신·수동 INIT
+    targets.py         표적·센서 모델
+    run_sim.py         시나리오 출력·UART 송신
+    README.md          실행·옵션·제약
+tests/                Python 프로토콜·송신기·시나리오 테스트
+```
