@@ -20,7 +20,7 @@ cmake --build /tmp/radar-track-tests
 ctest --test-dir /tmp/radar-track-tests --output-on-failure
 ```
 
-실행 파일 `track_tests`를 직접 실행하면 17개 개별 테스트 이름을 볼 수 있습니다.
+실행 파일 `track_tests`를 직접 실행하면 21개 개별 테스트 이름을 볼 수 있습니다.
 호스트 실행은 Zephyr 스레드, UART, 보드 동작을 검증하지 않습니다.
 링버퍼 크기·overflow drain 복구는 별도의 [UART host 테스트](../test_uart_rx/README.md)에서 검증합니다.
 해당 테스트 역시 실제 보드 IRQ 타이밍이나 하드웨어 수신 성공을 보장하지 않습니다.
@@ -57,9 +57,9 @@ NaN·±Inf 각도 입력의 assert 실패는 `tests/test_firmware_assertions.py`
 
 ## 게이트 설정 행렬
 
-host 모드는 기존 `track_tests` 17개와 아래 20개를 실행합니다. CTest 등록 항목은 총 21개입니다.
+host 모드는 기존 `track_tests` 21개와 아래 20개를 실행합니다. CTest 등록 항목은 총 21개입니다.
 `gating_cases.c`가 실제 `gating.c`·`angle_utils.c`를 설정별 실행 파일로 빌드합니다.
-Zephyr Ztest는 기존 17개를 기본 설정으로 실행하며 host 전용 행렬은 포함하지 않습니다.
+Zephyr Ztest는 기존 21개를 기본 설정으로 실행하며 host 전용 행렬은 포함하지 않습니다.
 
 | 실행 파일 | 거리 half-width (m) | 각도 half-width (°) |
 |---|---:|---:|
@@ -88,3 +88,15 @@ Zephyr Ztest는 기존 17개를 기본 설정으로 실행하며 host 전용 행
 2026-11-18: prediction assertions compare explicit `TrackPredictResult` values.
 They distinguish successful prediction, unchanged EMPTY/time rejection, and reset
 after LOST/excessive gaps while retaining state and numeric checks.
+
+
+## 입력 행렬 보강 — 2026-11-19
+
+기존17개에 4개 함수를 추가했습니다. 각 함수 내부 조합은 함수 개수와 별개입니다.
+
+- `test_measurement_wire_domain_matrix`: uint32 시각4값 × uint16 거리5값 × int32 각도7값, 총140조합. 디코딩과 의미 검증(거리0 거부)을 구분합니다.
+- `test_measurement_length_domain_preserves_output`: uint8 길이 전범위 중 정확한10바이트를 제외한255값을 거부하고 출력 구조체를 보존합니다.
+- `test_prediction_interval_and_noise_matrix`: dt5값 × Q4값 × 속도3값, 총60조합. double 기준값·공분산 대칭/양의 준정부호를 확인합니다.
+- `test_correction_noise_and_residual_matrix`: R5값 × 측정5값, 총25조합. 양·음·0 innovation과 보정 후 값·공분산을 검증하고 innovation covariance 하한 바로 위도 확인합니다.
+
+NaN·±Inf·분산 음수·R=0·dt<0은 [내부 assert 시험](../../../tests/test_firmware_assertions.py)에서 자식 프로세스로 실행합니다. host assert 어댑터의 검증이며 일반 펌웨어의 assert 활성 여부와 구분합니다.

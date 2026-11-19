@@ -8,7 +8,7 @@ import json
 import math
 import uuid
 
-from .protocol import STATUS_FIELDS, TrackReportResult
+from .protocol import STATUS_FIELDS, TrackReportResult, TrackState
 
 
 def session_path(base):
@@ -95,8 +95,8 @@ def evaluate_session(directory, warmup_ms=2000):
     metadata = json.loads((path / 'metadata.json').read_text(encoding='utf-8'))
     if metadata['mode'] != 'board':
         raise ValueError('Evaluation requires a board recording')
-    if warmup_ms < 0:
-        raise ValueError('warmup_ms must be nonnegative')
+    if type(warmup_ms) is not int or warmup_ms < 0:
+        raise ValueError('warmup_ms must be a nonnegative integer')
     def rows(name):
         with (path / f'{name}.csv').open(newline='', encoding='utf-8') as stream:
             return list(csv.DictReader(stream))
@@ -111,6 +111,10 @@ def evaluate_session(directory, warmup_ms=2000):
               'sequence_discontinuities': 0, 'recording_closed': metadata['closed']}
     errors = {key: [] for key in ('range_measurement_rmse_m', 'range_estimate_rmse_m',
                                   'azimuth_measurement_rmse_rad', 'azimuth_estimate_rmse_rad')}
+    result.update(gate_rejected=0, time_rejected=0, track_starts=0, lost_transitions=0,
+                  duplicate_input_reports=0, unmatched_input_reports=0)
+    input_counts = {stamp: 0 for stamp in samples}
+    previous_state = None
     seen, latencies = set(), []
     previous_sequence, segment_start = None, None
     for report in reports:
@@ -122,7 +126,20 @@ def evaluate_session(directory, warmup_ms=2000):
             elif delta > 0:
                 result['sequence_gaps'] += delta - 1
         previous_sequence = sequence
-        sample = samples.get(int(report['input_timestamp_ms'])) if flags & 1 else None
+        code, state = int(report['result']), int(report['state'])
+        result['gate_rejected'] += code == TrackReportResult.GATE_REJECTED
+        result['time_rejected'] += code == TrackReportResult.TIME_REJECTED
+        result['track_starts'] += code == TrackReportResult.STARTED
+        result['lost_transitions'] += state == TrackState.LOST and previous_state != TrackState.LOST
+        previous_state = state
+        input_stamp = int(report['input_timestamp_ms'])
+        sample = samples.get(input_stamp) if flags & 1 else None
+        if flags & 1:
+            if sample is None:
+                result['unmatched_input_reports'] += 1
+            else:
+                result['duplicate_input_reports'] += input_counts[input_stamp] > 0
+                input_counts[input_stamp] += 1
         if sample is not None:
             latency = (float(report['rx_monotonic_s']) - float(sample['tx_monotonic_s'])) * 1000
             if latency >= 0:
@@ -151,7 +168,12 @@ def evaluate_session(directory, warmup_ms=2000):
                            ('azimuth_estimate_rmse_rad', float(report['azimuth_rad']))]:
             errors[key].append((angle - truth_angle + math.pi) % (2 * math.pi) - math.pi)
         result['matched_estimates'] += 1
+    result['missing_input_reports'] = sum(count == 0 for count in input_counts.values())
+    result['matched_input_reports'] = sum(count > 0 for count in input_counts.values())
+    result['estimate_coverage'] = result['matched_estimates'] / len(samples) if samples else None
+    result['gate_rejection_fraction'] = result['gate_rejected'] / len(samples) if samples else None
     for key, values in errors.items():
+        result[key.replace('_rmse_', '_max_abs_error_')] = max(map(abs, values)) if values else None
         result[key] = math.sqrt(sum(value * value for value in values) / len(values)) if values else None
     latencies.sort()
     result['pc_roundtrip_ms'] = {'count': len(latencies)}

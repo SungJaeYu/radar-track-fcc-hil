@@ -231,8 +231,8 @@ python -m pc_sim.evaluate report runs/SESSION --warmup-ms 2000
 
 기본값은 seed42·센서 시간축 10Hz·120개, 초기 1000m·-5m/s·고정 방위각15도입니다.
 normal 거리 잡음0, noisy/dropout 표준편차8m이고, dropout은 [4000,5500)ms 측정을 송신하지 않습니다.
-각도 잡음은 없습니다. CLI는 INIT 초기화 보고를 확인하고 시작하며 마지막 timeout·STATUS·RESET도 수집합니다.
-`--count`, `--hz`, `--warmup-ms`로 바꿀 수 있습니다. dropout은 최소 9초·5Hz가 필요합니다.
+각도 잡음의 기본값은 0입니다. CLI는 INIT 초기화 보고를 확인하고 시작하며 마지막 timeout·STATUS·RESET도 수집합니다.
+`--count`, `--hz`, `--warmup-ms`, `--range-noise`(m), `--azimuth-noise-deg`(도), `--seed`로 바꿀 수 있습니다. dropout은 최소 9초·5Hz가 필요합니다.
 실제 송신은 PC 대기/USB 비용으로 센서 시간축보다 느릴 수 있으며 catch-up burst를 보내지 않습니다.
 
 실행마다 시간·고유 접미사를 붙인 폴더를 만들며 기존 경로를 덮어쓰지 않습니다. 기본 `runs/`는 Git에서 제외합니다.
@@ -250,3 +250,46 @@ normal 거리 잡음0, noisy/dropout 표준편차8m이고, dropout은 [4000,5500
 미리보기는 보드 성능 평가에서 거부합니다. `closed=true`는 파일을 닫았다는 뜻이며 시험 합격을 뜻하지 않습니다. 예외 종료·빈 기록은 실행 오류와 수집 개수를 함께 확인합니다.
 PC 왕복 시간에는 USB·OS·read polling·CSV flush 비용이 포함됩니다. MCU 내부 지연·WCET·50Hz 지속 처리 보장이 아닙니다. 세션 ID가 없어 이전 실행의 지연 보고를 완벽히 구분하지 못합니다.
 [실보드 수치·GUI 캡처·제한](../docs/hardware-test-2026-11-18-evaluation.md).
+
+
+## 잡음 크기·seed 반복 평가
+
+한 번의 8m·seed42 결과를 일반적인 필터 성능으로 해석하지 않도록, 거리·각도 잡음을 한 축씩 바꿔 반복합니다. 펌웨어의 필터·게이트 설정은 고정합니다. 현재 거리 R=25m²(표준편차5m), 각도 R≈0.00121847rad²(표준편차2°)이며 시험 잡음에 맞춰 자동 변경하지 않습니다. Q·R 튜닝 비교는 별도 시험입니다.
+
+| 항목 | 기본 행렬 |
+| --- | --- |
+| 거리 잡음 표준편차 | 0·2·5·8·15·30m, 각도 잡음0 |
+| 각도 잡음 표준편차 | 0·0.1·0.5·1·3°, 거리 잡음0 |
+| 난수 seed | 0~9, 조건마다 10개 |
+| 총 실행 | 공통 무잡음 조건 중복 제거 후 10조건 × 10seed = 100회 |
+| 각 실행 | 센서10Hz·120표본, 초기1000m·-5m/s·고정15°, 초기/재획득 후2초 제외 |
+
+```sh
+# UART·파일 생성 없이 모든 설정과 생성 표본을 검증하고 계획 출력
+python -m pc_sim.noise_sweep --dry-run
+
+# GUI/다른 CLI의 데이터 포트를 닫고 실행
+python -m pc_sim.noise_sweep --port PORT --output runs
+
+# 같은 잡음 행렬에 1.5초 연속 누락 추가
+python -m pc_sim.noise_sweep --port PORT --scenario dropout --output runs
+
+# 조건을 줄인 실행 예
+python -m pc_sim.noise_sweep --port PORT --range-noise 0 8 30 --azimuth-noise-deg 0 1 3 --seeds 0 1 2
+
+# 거리·각도 잡음을 동시에 주는 개별 실행
+python -m pc_sim.evaluate run --port PORT --range-noise 8 --azimuth-noise-deg 1 --seed 7
+```
+
+100회 기본 행렬은 센서 구간만 합쳐20분이고 초기화·마지막 수집·호스트 I/O 시간을 더하면 더 오래 걸립니다. 누락 시험은 별도100회입니다. 동일 seed·조건은 같은 측정열을 생성하며, 각도 잡음0에서는 기존 seed42 거리 측정열을 유지합니다. 단위가 `run_sim --azimuth-noise`(rad)와 다르므로 이 명령의 `--azimuth-noise-deg`는 도 단위를 사용합니다.
+
+상위 실행 폴더의 `sweep.json`에 계획·각 실행 경로·결과·조건별 평균/최소/최대를 저장합니다. 반복별 CSV와 `evaluation.json`도 보존합니다. `recorded`는 응답 대응·순번·시각 검사를 통과한 기록이라는 뜻이며, 필터가 모든 조건에서 RMSE를 개선했다는 합격 표시는 아닙니다.
+
+- 거리·각도 각각 측정/추정 RMSE와 최대 절대 오차를 기록합니다. 각도 지표 단위는 rad입니다.
+- `estimate_coverage`는 전체 송신 표본 중 RMSE에 실제 사용한 비율입니다. warm-up·무효·중복 등도 분모에 포함되므로 그 자체가 수신 성공률은 아닙니다. `matched_input_reports`/`missing_input_reports`로 응답 대응을 따로 봅니다.
+- 게이트 거부율·시각 거부·트랙 시작 횟수·LOST 진입 횟수를 함께 기록합니다. 첫 STARTED도 시작 횟수에 포함되며, 누락 timeout의 EMPTY 복귀를 LOST로 세지 않습니다. 재시작 시각·상태 경로는 `reports.csv`에서 확인합니다.
+- 응답 누락·중복·대응 불가·순번 공백/역행·시각 거부 실행은 실패로 표시하고 조건별 성공 집계에서 제외합니다. 실패 개수와 원래 결과는 함께 보존하며, 일부 seed의 실패를 숨기고 전체 조건이 성공했다고 해석하지 않습니다.
+- 조건별 평균은 완료된 정상 기록의 **seed별 지표를 동일 가중치**로 평균한 값입니다. 표본 전체를 합친 RMSE나 신뢰구간이 아닙니다. 누락 구간에 가상의 추정값을 채우지 않습니다.
+- UART 오류·응답 없음·생성 범위 오류가 발생하면 중단하고 부분 기록을 남깁니다. 입력을 경계값으로 잘라서 계속 실행하지 않습니다.
+
+이 행렬의 자동 검증은 실행기·계산·판정의 host 테스트입니다. 새 잡음 조건의 실보드 성능 수치는 실제로 위 명령을 실행한 CSV로 별도 확보해야 합니다. 기존 [V1 수치](../docs/hardware-test-2026-11-18-evaluation.md)는 그대로 보존합니다.

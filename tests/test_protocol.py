@@ -111,3 +111,54 @@ def test_status_stale_counter_current_and_legacy(value):
     current = protocol.decode_status_payload(struct.pack('>8I', 0, 0, 0, 0, 0, 0, 0, value))
     assert current['stale_measurements'] == value
     assert 'stale_measurements' not in protocol.decode_status_payload(bytes(28))
+
+
+@pytest.mark.parametrize('timestamp', [0, 1, 0x7fffffff, 0x80000000, 0xfffffffe, 0xffffffff])
+@pytest.mark.parametrize('distance', [0, 1, 2, 65534, 65535])
+@pytest.mark.parametrize('angle', [-2147483648, -2147483647, -1, 0, 1, 2147483646, 2147483647])
+def test_raw_measurement_integer_domains(timestamp, distance, angle):
+    # Raw encoder permits zero range for negative board tests; the scenario encoder does not.
+    frame = protocol.build_measurement_frame(timestamp, distance, angle)
+    assert struct.unpack('>IHi', frame[3:-2]) == (timestamp, distance, angle)
+
+
+@pytest.mark.parametrize('timestamp,distance,angle', [
+    (-1, 1, 0), (0x100000000, 1, 0), (0, -1, 0), (0, 65536, 0),
+    (0, 1, -2147483649), (0, 1, 2147483648),
+])
+def test_raw_measurement_rejects_unrepresentable_integers(timestamp, distance, angle):
+    with pytest.raises(struct.error):
+        protocol.build_measurement_frame(timestamp, distance, angle)
+
+
+@pytest.mark.parametrize('distance,expected', [
+    (0.5, None), (math.nextafter(.5, math.inf), 1), (1, 1),
+    (65535, 65535), (math.nextafter(65535.5, 0), 65535), (65535.5, None),
+])
+def test_range_rounding_boundaries(distance, expected):
+    if expected is None:
+        with pytest.raises(ValueError):
+            protocol.build_measurement_frame_from_radians(0, distance, 0)
+    else:
+        frame = protocol.build_measurement_frame_from_radians(0, distance, 0)
+        assert struct.unpack('>IHi', frame[3:-2])[1] == expected
+
+
+@pytest.mark.parametrize('length', range(34))
+def test_frame_payload_length_domain(length):
+    payload = bytes(range(length))
+    if 1 <= length <= 32:
+        frame = protocol.encode_frame(2, payload)
+        assert frame[1] == length and frame[3:-2] == payload and len(frame) == length + 5
+    else:
+        with pytest.raises(ValueError):
+            protocol.encode_frame(2, payload)
+
+
+@pytest.mark.parametrize('kind', [-1, 0, 1, 7, 254, 255, 256])
+def test_frame_type_byte_boundary(kind):
+    if 0 <= kind <= 255:
+        assert protocol.encode_frame(kind, b'x')[2] == kind
+    else:
+        with pytest.raises(ValueError):
+            protocol.encode_frame(kind, b'x')

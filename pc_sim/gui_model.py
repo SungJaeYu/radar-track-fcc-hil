@@ -17,16 +17,20 @@ class Settings:
     sample_rate_hz: float = 10.0
     duration_s: float = 30.0
     seed: int = 42
+    azimuth_noise_std_deg: float = 0.0
 
     def validate(self):
         values = (self.initial_range_m, self.range_rate_mps, self.azimuth_deg,
-                  self.range_noise_std_m, self.sample_rate_hz, self.duration_s)
+                  self.range_noise_std_m, self.sample_rate_hz, self.duration_s,
+                  self.azimuth_noise_std_deg)
         if not all(math.isfinite(v) for v in values):
             raise ValueError('설정값은 유한한 숫자여야 합니다.')
-        if not 1 <= self.initial_range_m <= 65535 or self.range_noise_std_m < 0:
+        if not 1 <= self.initial_range_m <= 65535 or self.range_noise_std_m < 0 or self.azimuth_noise_std_deg < 0:
             raise ValueError('거리는 1..65535 m, 잡음은 0 이상이어야 합니다.')
         if not 1 <= self.sample_rate_hz <= 50 or not 0 < self.duration_s <= 3600:
             raise ValueError('송신 주기는 1..50 Hz, 실행 시간은 0..3600초입니다.')
+        if type(self.seed) is not int:
+            raise ValueError('seed must be an integer')
         if not -180 <= self.azimuth_deg <= 180:
             raise ValueError('방위각은 -180..180도입니다.')
 
@@ -44,9 +48,13 @@ def make_sample(settings, timestamp_ms, rng: random.Random):
     truth = settings.initial_range_m + settings.range_rate_mps * timestamp_ms / 1000
     if not 1 <= truth <= 65535:
         raise ValueError('실제 거리가 1..65535 m 범위를 벗어나 송신을 중지했습니다.')
+    measured_range = truth + rng.gauss(0, settings.range_noise_std_m)
+    # Preserve the legacy range-noise sequence when angular noise is disabled.
+    angle = settings.azimuth_deg
+    if settings.azimuth_noise_std_deg:
+        angle += rng.gauss(0, settings.azimuth_noise_std_deg)
     frame = build_measurement_frame_from_radians(
-        timestamp_ms, truth + rng.gauss(0, settings.range_noise_std_m),
-        math.radians(settings.azimuth_deg))
+        timestamp_ms, measured_range, math.radians(angle))
     _, measured, semicircle = struct.unpack('>IHi', frame[3:-2])
     return Sample(timestamp_ms, truth, measured, semicircle * math.pi / 2**31, frame)
 

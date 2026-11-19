@@ -1,6 +1,7 @@
 """Record fixed single-target HIL scenarios or evaluate existing CSV sessions."""
 import argparse
 import json
+import math
 import random
 import time
 from pathlib import Path
@@ -14,16 +15,39 @@ from .protocol import (build_init_frame, encode_frame, decode_track_payload,
 from .recording import SessionRecorder, evaluate_session, session_path
 
 
-def run_scenario(port, scenario, output, count=120, hz=10, warmup_ms=2000):
-    if scenario not in ('normal', 'noisy', 'dropout') or count < 3 or not 1 <= hz <= 50:
-        raise ValueError('scenario must be normal/noisy/dropout; count >= 3 and hz in 1..50')
-    if warmup_ms < 0:
-        raise ValueError('warmup_ms must be nonnegative')
+def scenario_settings(scenario, count=120, hz=10, warmup_ms=2000,
+                      range_noise_std_m=None, azimuth_noise_std_deg=0, seed=42):
+    """Validate the complete run before creating files or opening a UART."""
+    if scenario not in ('normal', 'noisy', 'dropout') or type(count) is not int or count < 3:
+        raise ValueError('scenario must be normal/noisy/dropout; integer count >= 3')
+    if not math.isfinite(hz) or not 1 <= hz <= 50:
+        raise ValueError('hz must be finite and in 1..50')
+    if type(warmup_ms) is not int or warmup_ms < 0:
+        raise ValueError('warmup_ms must be a nonnegative integer')
+    if warmup_ms > round((count - 1) * 1000 / hz):
+        raise ValueError('warmup_ms must leave at least one sample for evaluation')
     if scenario == 'dropout' and (count / hz < 9 or hz < 5):
         raise ValueError('dropout requires at least 9 seconds at 5 Hz or more')
-    settings = Settings(range_rate_mps=-5, range_noise_std_m=0 if scenario == 'normal' else 8,
-                        duration_s=count / hz, sample_rate_hz=hz, seed=42)
+    noise = (0 if scenario == 'normal' else 8) if range_noise_std_m is None else range_noise_std_m
+    settings = Settings(range_rate_mps=-5, range_noise_std_m=noise,
+                        azimuth_noise_std_deg=azimuth_noise_std_deg,
+                        duration_s=count / hz, sample_rate_hz=hz, seed=seed)
     settings.validate()
+    return settings
+
+
+def scenario_samples(settings, count):
+    """Preflight every deterministic measurement; never clip an invalid range."""
+    rng = random.Random(settings.seed)
+    return [make_sample(settings, round(index * 1000 / settings.sample_rate_hz), rng)
+            for index in range(count)]
+
+
+def run_scenario(port, scenario, output, count=120, hz=10, warmup_ms=2000, *,
+                 range_noise_std_m=None, azimuth_noise_std_deg=0, seed=42):
+    settings = scenario_settings(scenario, count, hz, warmup_ms,
+                                 range_noise_std_m, azimuth_noise_std_deg, seed)
+    samples = scenario_samples(settings, count)
     path = session_path(output)
     parser = FrameParser()
     init_seen = False
@@ -61,11 +85,9 @@ def run_scenario(port, scenario, output, count=120, hz=10, warmup_ms=2000):
                 raise TimeoutError('No INIT reset report; check firmware and UART wiring')
             send(encode_frame(3, b'\0'))
             collect(time.monotonic() + .15)
-            rng = random.Random(settings.seed)
-            for index in range(count):
-                stamp = round(index * 1000 / hz)
-                # Generate even skipped samples so the random sequence stays comparable.
-                sample = make_sample(settings, stamp, rng)
+            # Samples include omitted slots to keep the seeded noise comparable.
+            for sample in samples:
+                stamp = sample.timestamp_ms
                 if not (scenario == 'dropout' and 4000 <= stamp < 5500):
                     sent_at = send(sample.frame)
                     recorder.record_sample(sample, sent_at)
@@ -96,13 +118,18 @@ def main(argv=None):
     run.add_argument('--count', type=int, default=120)
     run.add_argument('--hz', type=float, default=10)
     run.add_argument('--warmup-ms', type=int, default=2000)
+    run.add_argument('--range-noise', type=float, default=None, help='Range noise standard deviation (m)')
+    run.add_argument('--azimuth-noise-deg', type=float, default=0, help='Angular noise standard deviation (degrees)')
+    run.add_argument('--seed', type=int, default=42)
     report = sub.add_parser('report', help='Evaluate a recorded board session without serial I/O')
     report.add_argument('directory', type=Path)
     report.add_argument('--warmup-ms', type=int, default=2000)
     args = parser.parse_args(argv)
     try:
         if args.command == 'run':
-            path, result = run_scenario(args.port, args.scenario, args.output, args.count, args.hz, args.warmup_ms)
+            path, result = run_scenario(args.port, args.scenario, args.output, args.count, args.hz, args.warmup_ms,
+                                        range_noise_std_m=args.range_noise,
+                                        azimuth_noise_std_deg=args.azimuth_noise_deg, seed=args.seed)
             print(f'Session: {path}')
         else:
             result = evaluate_session(args.directory, args.warmup_ms)

@@ -212,15 +212,26 @@ def test_encoder_rejects_null_arguments(parser_lib):
     assert parser_lib.encode_test(3, b'x', 1, None, 37, 0) == -errno.EINVAL
 
 
-def test_encoder_capacity_boundary(parser_lib):
-    payload = bytes(range(32))
-    output = (ctypes.c_ubyte * 38)(*([0xa5] * 38))
-    for capacity in (0, 36):
-        assert parser_lib.encode_test(3, payload, 32, output, capacity, 0) == -errno.ENOSPC
-        assert bytes(output) == bytes([0xa5] * 38)
-    assert parser_lib.encode_test(3, payload, 32, output, 37, 0) == 37
-    assert bytes(output[:37]) == encode_frame(3, payload)
-    assert output[37] == 0xa5
+@pytest.mark.parametrize('length', [1, 2, 16, 31, 32])
+@pytest.mark.parametrize('extra', [-1, 0, 1])
+def test_encoder_capacity_boundary(parser_lib, length, extra):
+    payload = bytes(range(length))
+    output = (ctypes.c_ubyte * 40)(*([0xa5] * 40))
+    required = length + 5
+    count = parser_lib.encode_test(3, payload, length, output, required + extra, 0)
+    if extra < 0:
+        assert count == -errno.ENOSPC
+        assert bytes(output) == bytes([0xa5] * 40)
+    else:
+        assert count == required
+        assert bytes(output[:count]) == encode_frame(3, payload)
+        assert bytes(output[count:]) == bytes([0xa5] * (40 - count))
+
+
+def test_encoder_zero_capacity_preserves_output(parser_lib):
+    output = (ctypes.c_ubyte * 6)(*([0xa5] * 6))
+    assert parser_lib.encode_test(3, b'x', 1, output, 0, 0) == -errno.ENOSPC
+    assert bytes(output) == bytes([0xa5] * 6)
 
 
 def test_frame_type_values_match_firmware(parser_lib):

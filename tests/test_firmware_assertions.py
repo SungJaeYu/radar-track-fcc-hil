@@ -23,11 +23,29 @@ def assertion_probe(tmp_path_factory):
     probe.write_text('''
 #include <math.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include "common/ring_buffer.h"
 #include "protocol/frame_parser.h"
 #include "tracking/kalman_cv.h"
 #include "tracking/angle_utils.h"
 int main(int argc, char **argv) {
+    if (argc == 4) {
+        struct kalman_cv_filter filter;
+        float value = strtof(argv[3], NULL);
+        int field = atoi(argv[2]);
+        if (argv[1][0] == 'a') {
+            float args[] = {0, 0, 1, 0, 0, 1, 0, 1};
+            if (field < 0 || field >= 8) return 2;
+            args[field] = value;
+            kalman_cv_init(&filter, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
+        } else {
+            kalman_cv_init(&filter, 0, 0, 1, 0, 0, 1, 0, 1);
+            if (argv[1][0] == 'd') kalman_cv_predict(&filter, value);
+            if (argv[1][0] == 'c') kalman_cv_correct(&filter, value);
+            if (argv[1][0] == 'w') kalman_cv_correct_angle(&filter, value);
+        }
+        return 0;
+    }
     if (argc != 2) return 2;
     if (argv[1][0] == 'n') wrap_angle_rad(NAN);
     if (argv[1][0] == 'i') wrap_angle_rad(INFINITY);
@@ -72,3 +90,39 @@ def test_internal_contract_asserts_even_with_ndebug(assertion_probe, mode, messa
     result = subprocess.run([str(assertion_probe), mode], capture_output=True, text=True, timeout=5)
     assert result.returncode == -signal.SIGABRT
     assert message in result.stderr
+
+
+@pytest.mark.parametrize('field', range(8))
+@pytest.mark.parametrize('value', ['nan', 'inf', '-inf'])
+def test_kalman_init_each_nonfinite_argument(assertion_probe, field, value):
+    result = subprocess.run([str(assertion_probe), 'args', str(field), value],
+                            capture_output=True, text=True, timeout=5)
+    assert result.returncode == -signal.SIGABRT
+    assert 'must be finite' in result.stderr
+
+
+@pytest.mark.parametrize('field,value,valid', [
+    (2, '-0.000001', False), (2, '0', True),
+    (5, '-0.000001', False), (5, '0', True),
+    (6, '-0.000001', False), (6, '0', True),
+    (7, '-0.000001', False), (7, '0', False), (7, '0.000001', True),
+])
+def test_kalman_variance_zero_boundaries(assertion_probe, field, value, valid):
+    result = subprocess.run([str(assertion_probe), 'args', str(field), value],
+                            capture_output=True, text=True, timeout=5)
+    assert result.returncode == (0 if valid else -signal.SIGABRT)
+
+
+@pytest.mark.parametrize('mode', ['dt', 'correct', 'wrap_correct'])
+@pytest.mark.parametrize('value', ['nan', 'inf', '-inf'])
+def test_kalman_update_nonfinite_arguments(assertion_probe, mode, value):
+    result = subprocess.run([str(assertion_probe), mode, '0', value],
+                            capture_output=True, text=True, timeout=5)
+    assert result.returncode == -signal.SIGABRT
+
+
+@pytest.mark.parametrize('value,valid', [('-0.000001', False), ('0', True), ('0.000001', True)])
+def test_kalman_prediction_interval_zero_boundary(assertion_probe, value, valid):
+    result = subprocess.run([str(assertion_probe), 'dt', '0', value],
+                            capture_output=True, text=True, timeout=5)
+    assert result.returncode == (0 if valid else -signal.SIGABRT)

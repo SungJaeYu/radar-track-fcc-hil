@@ -303,8 +303,102 @@ TEST(test_lost_restarts_for_any_timestamp)
     }
 }
 
+TEST(test_measurement_wire_domain_matrix)
+{
+    const uint32_t timestamps[] = {0, 1, UINT32_MAX - 1, UINT32_MAX};
+    const uint16_t ranges[] = {0, 1, 2, UINT16_MAX - 1, UINT16_MAX};
+    const int32_t angles[] = {INT32_MIN, INT32_MIN + 1, -1, 0, 1, INT32_MAX - 1, INT32_MAX};
+    for (size_t ti = 0; ti < sizeof(timestamps) / sizeof(timestamps[0]); ++ti) {
+        for (size_t ri = 0; ri < sizeof(ranges) / sizeof(ranges[0]); ++ri) {
+            for (size_t ai = 0; ai < sizeof(angles) / sizeof(angles[0]); ++ai) {
+                uint32_t stamp = timestamps[ti], angle = (uint32_t)angles[ai];
+                uint16_t range = ranges[ri];
+                uint8_t payload[] = {stamp >> 24, stamp >> 16, stamp >> 8, stamp,
+                    range >> 8, range, angle >> 24, angle >> 16, angle >> 8, angle};
+                struct radar_measurement measurement;
+                CHECK(measurement_message_decode(payload, sizeof(payload), &measurement));
+                CHECK(measurement.timestamp_ms == stamp);
+                CHECK(measurement.range_m == (float)range);
+                CHECK(fabs((double)measurement.azimuth_rad -
+                           (double)angles[ai] * 3.14159265358979323846 / 2147483648.0) < 3e-7);
+                CHECK(measurement_message_validate(&measurement) == (range != 0));
+            }
+        }
+    }
+}
+
+TEST(test_measurement_length_domain_preserves_output)
+{
+    const uint8_t payload[UINT8_MAX] = {0};
+    for (unsigned length = 0; length <= UINT8_MAX; ++length) {
+        if (length == 10) {
+            continue;
+        }
+        struct radar_measurement measurement = {.timestamp_ms = 123, .range_m = 456, .azimuth_rad = .5f};
+        unsigned char before[sizeof(measurement)];
+        memcpy(before, &measurement, sizeof(measurement));
+        CHECK(!measurement_message_decode(payload, (uint8_t)length, &measurement));
+        CHECK(memcmp(before, &measurement, sizeof(measurement)) == 0);
+    }
+}
+
+TEST(test_prediction_interval_and_noise_matrix)
+{
+    const float intervals[] = {0, .001f, .02f, .1f, 1};
+    const float noises[] = {0, 1, 64, 900};
+    const float speeds[] = {-5, 0, 5};
+    for (size_t i = 0; i < sizeof(intervals) / sizeof(intervals[0]); ++i) {
+        for (size_t j = 0; j < sizeof(noises) / sizeof(noises[0]); ++j) {
+            for (size_t k = 0; k < sizeof(speeds) / sizeof(speeds[0]); ++k) {
+                struct kalman_cv_filter filter;
+                kalman_cv_init(&filter, 1000, speeds[k], 4, 0, 0, 9, noises[j], 1);
+                kalman_cv_predict(&filter, intervals[i]);
+                // Double-precision diagonal-P reference, independent of in-place update order.
+                double dt = intervals[i], q = noises[j];
+                CHECK(fabs(filter.estimate - (1000.0 + speeds[k] * dt)) < 1e-4);
+                CHECK(filter.rate == speeds[k]);
+                CHECK(fabs(filter.p00 - (4 + 9 * dt * dt + q * pow(dt, 4) / 4)) < 1e-4);
+                CHECK(fabs(filter.p01 - (9 * dt + q * pow(dt, 3) / 2)) < 1e-4);
+                CHECK(fabs(filter.p11 - (9 + q * dt * dt)) < 1e-4);
+                CHECK(filter.p01 == filter.p10);
+                CHECK((double)filter.p00 * filter.p11 - (double)filter.p01 * filter.p10 >= -1e-4);
+            }
+        }
+    }
+}
+
+TEST(test_correction_noise_and_residual_matrix)
+{
+    const float noises[] = {.25f, 1, 4, 64, 900};
+    const float measurements[] = {1, 970, 1000, 1030, 65535};
+    for (size_t i = 0; i < sizeof(noises) / sizeof(noises[0]); ++i) {
+        for (size_t j = 0; j < sizeof(measurements) / sizeof(measurements[0]); ++j) {
+            struct kalman_cv_filter filter;
+            kalman_cv_init(&filter, 1000, 0, 4, 0, 0, 9, 0, noises[i]);
+            kalman_cv_correct(&filter, measurements[j]);
+            double gain = 4.0 / (4.0 + noises[i]);
+            double expected = (1 - gain) * 1000 + gain * measurements[j];
+            CHECK(fabs(filter.estimate - expected) < .01);
+            CHECK(filter.estimate >= fminf(1000, measurements[j]));
+            CHECK(filter.estimate <= fmaxf(1000, measurements[j]));
+            CHECK(fabs(filter.p00 - 4 * noises[i] / (4 + noises[i])) < 1e-5);
+            CHECK(filter.rate == 0 && filter.p11 == 9 && filter.p01 == 0 && filter.p10 == 0);
+        }
+    }
+    struct kalman_cv_filter filter;
+    kalman_cv_init(&filter, 10, 0, nextafterf(1e-6f, INFINITY), 0, 0, 1, 0, 1);
+    filter.measurement_noise_variance = 0; // Just above the guarded innovation threshold.
+    kalman_cv_correct(&filter, 12);
+    CHECK(filter.estimate == 12 && filter.p00 == 0);
+}
+
 #ifdef TRACK_TEST_HOST
 static const struct test_case cases[] = {
+    TEST_CASE(test_measurement_wire_domain_matrix),
+    TEST_CASE(test_measurement_length_domain_preserves_output),
+    TEST_CASE(test_prediction_interval_and_noise_matrix),
+    TEST_CASE(test_correction_noise_and_residual_matrix),
+
     TEST_CASE(test_angle_wrap),
     TEST_CASE(test_angle_wrap_boundaries),
     TEST_CASE(test_angle_wrap_multiple_turns),

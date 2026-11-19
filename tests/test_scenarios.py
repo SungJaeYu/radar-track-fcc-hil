@@ -84,3 +84,39 @@ def test_uart_scenario_sends_current_frames_and_closes(monkeypatch):
                     bytes.fromhex('7e 0a 02 00 00 00 00 75 30 00 00 00 00 33 7b'),
                     bytes.fromhex('7e 0a 02 00 00 00 64 75 21 00 00 00 00 ef ac')]
     connection.__exit__.assert_called_once()
+
+
+@pytest.mark.parametrize('option,value,valid', [
+    ('--pd', '-0.000001', False), ('--pd', '0', True), ('--pd', '1', True),
+    ('--pd', '1.000001', False),
+    ('--dt', '0.000999', False), ('--dt', '0.001', True), ('--dt', '0.001001', True),
+    ('--duration', '0', False), ('--duration', '0.001', True),
+    ('--duration', '4294967.295', True), ('--duration', '4294967.296', False),
+    ('--clutter', '-0.000001', False), ('--clutter', '0', True),
+    ('--noise', '-0.000001', False), ('--noise', '0', True),
+    ('--azimuth-noise', '-0.000001', False), ('--azimuth-noise', '0', True),
+    ('--baud', '0', False), ('--baud', '1', True),
+])
+def test_cli_boundaries_without_executing_long_scenarios(monkeypatch, option, value, valid):
+    from pc_sim import run_sim
+    calls = []
+    monkeypatch.setattr(sys, 'argv', ['sim', option, value])
+    monkeypatch.setattr(run_sim, 'run', lambda *args, **kwargs: calls.append(args))
+    if valid:
+        run_sim.main()
+        assert len(calls) == 1
+    else:
+        with pytest.raises(SystemExit) as error:
+            run_sim.main()
+        assert error.value.code == 2 and not calls
+
+
+@pytest.mark.parametrize('option', ['--dt', '--duration', '--pd', '--clutter', '--noise', '--azimuth-noise'])
+@pytest.mark.parametrize('value', ['nan', 'inf', '-inf'])
+def test_each_simulation_cli_float_rejects_nonfinite(monkeypatch, option, value):
+    from pc_sim import run_sim
+    monkeypatch.setattr(sys, 'argv', ['sim', f'{option}={value}'])
+    monkeypatch.setattr(run_sim, 'run', lambda *a, **k: pytest.fail('Invalid scenario executed'))
+    with pytest.raises(SystemExit) as error:
+        run_sim.main()
+    assert error.value.code == 2

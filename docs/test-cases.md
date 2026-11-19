@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 239개 + subtest 9개, C host 160회 실행입니다. 기존 116회(RX drain 24·discard 21·handler 30·TX 4·Tracking 17·게이팅 설정 20)에 계측 구성 44회(monitor 9·handler 31·TX 4)를 더합니다. 중복 실행을 포함하며 CTest 등록 수는 144개입니다.
+현재 합계는 Python 703개 + subtest 9개, C host 164회 실행입니다. 기본120회(RX45·handler30·TX4·Tracking21·게이트20)와 계측 구성44회(monitor9·handler31·TX4)를 포함합니다. CTest 등록 수는144개이며 tracking 한 항목이21개 함수를 실행합니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -15,28 +15,49 @@
 | PC STATUS CLI | `tests/test_status_client.py` | 23 | Python, serial·monotonic clock 모사 |
 | PC 수신 프레임 파서 | `tests/test_frame_parser.py` | 16 | Python, serial I/O 없음 |
 | PC TRACK payload | `tests/test_track_report.py` | 35 | Python, 고정 wire·의미 검증 |
-| 프로토콜·단위 변환 | `tests/test_protocol.py` | 47 | Python |
+| 프로토콜·단위 변환 | `tests/test_protocol.py` | 310 | Python |
 | 연속 측정 송신기 | `tests/test_radar_sender.py` | 5 + 내부 subtest 9 | Python, serial·sleep 모사 |
-| 시나리오 실행기 | `tests/test_scenarios.py` | 15 | Python CLI, serial 모사 |
-| GUI 측정·TRACK 표시 모델 | `tests/test_gui_model.py` | 10 | Python |
+| 시나리오 실행기 | `tests/test_scenarios.py` | 52 | Python CLI, serial 모사 |
+| GUI 측정·TRACK 표시 모델 | `tests/test_gui_model.py` | 50 | Python |
 | GUI 화면·통신 작업부 | `tests/test_gui.py` | 17 | offscreen Qt, serial 모사 |
-| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 34 | Python + 실제 C 파서 host 컴파일 |
-| 성능 시험 콘솔 판정 | `tests/test_perf_monitor.py` | 8 | Python, 기록 파싱·오류 감지; flash/serial 없음 |
+| CRC·인코더·펌웨어 상호운용 | `tests/test_crc_interop.py` | 49 | Python + 실제 C 파서 host 컴파일 |
+| 성능 시험 콘솔 판정 | `tests/test_perf_monitor.py` | 11 | Python, 기록 파싱·오류 감지; flash/serial 없음 |
 | 로그 부하 wire 판정 | `tests/test_log_stress.py` | 12 | Python, 기록 바이트열만 검사; flash/serial 없음 |
-| CSV·RMSE·평가 CLI 경계 | `tests/test_recording.py` | 5 | Python, 시각/수치 기준값; 실제 UART 없음 |
-| 내부 assert | `tests/test_firmware_assertions.py` | 6 | 실제 C host 자식 프로세스의 SIGABRT·메시지 검증 |
+| CSV·RMSE·평가 CLI 경계 | `tests/test_recording.py` | 13 | Python, 시각/수치 기준값; 실제 UART 없음 |
+| 잡음 행렬·평가 실행기 | `tests/test_evaluate.py` | 53 | Python, 시계·UART 모사; 실보드 성능 증거 아님 |
+| 내부 assert | `tests/test_firmware_assertions.py` | 51 | 실제 C host 자식 프로세스의 SIGABRT·메시지 검증 |
 | 게이팅 설정 행렬 | `fcc_app/tests/test_tracking/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
-| 필터·추적 | `fcc_app/tests/test_tracking` | 17 | host C 또는 Zephyr Ztest |
+| 필터·추적 | `fcc_app/tests/test_tracking` | 21 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
 | STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 30 | host C, 통계 조회·TX 제출·로그 캡처·RTOS 모사 |
 | 성능 계측 | `fcc_app/tests/test_perf_monitor` | 9 | host C, mutex·스택/로그 모사 |
 | 계측 활성화 회귀 | handler/TX `PERF_TEST_ENABLED=ON` | 31 + 4 | 기존 동작 재실행 및 실제 계측 호출 검증 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **239개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
-Tracking C는 CTest의 `tracking`에서 17개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
+Python은 매개변수 조합을 펼쳐 **703개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Tracking C는 CTest의 `tracking`에서 21개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
 UART C는 정책별 실행을 CTest에 따로 등록하므로 45개로 표시됩니다. 공통 사례 19개는 두 번 실행합니다.
 `pc_sim/frame_sender.py`는 자동 테스트가 아닌 수동 송신 도구입니다.
+
+## 입력 경계·범위 점검 — 2026-11-19
+
+정상값 하나로 계산 결과를 확인하는 golden test와 입력 분할 시험을 함께 유지합니다. 연속 입력은 하한/상한 바로 안·경계·바로 밖, 정수는 끝값과 인접값, 부동소수점은 `nextafter`·NaN·±Inf를 해당 계약에 맞게 검사합니다. 모든 값을 무작위로 넣거나 출력 종류별로만 나누는 시험은 아닙니다.
+
+| 입력/계약 | 이번 보강 | 기존에 확인한 범위 |
+| --- | --- | --- |
+| UART 측정 정수 | timestamp uint32·range uint16·azimuth int32 끝값/인접값·범위 밖, 실제 C 디코더140조합 | 고정 wire·CRC·단위 변환 |
+| payload·출력 버퍼 | Python 길이0~33, C 측정 길이0~255 중10 제외 거부/출력 보존, 인코더 길이1/2/16/31/32에서 필요용량−1/동일/+1 | NULL·CRC 오류 후 복귀·최대 payload |
+| 실수 거리 | 정수 양자화가 허용/거부되는0.5m·65535.5m와 인접float | NaN·Inf·범위 밖 거리 |
+| PC 설정 | 거리1~65535·주기1~50·방위각±180·시간(0,3600] 경계, 모든 연속 입력의 NaN·±Inf, 잡음0·음수 | 대표적인 잘못된 설정 |
+| CLI·평가 구간 | 시나리오 확률0/1·uint32 시간 상한·dt1ms·음수 잡음, 평가 warm-up 직전/동일/직후, count·seed·잡음·누락9초/5Hz 조건 | 단일표적 제약·보드 아닌 기록 거부 |
+| 칼만 C 계산 | dt0/1ms/20ms/100ms/1s × Q0/1/64/900 × 속도−5/0/+5, R0.25/1/4/64/900 × 양/음/0 residual, 공분산·관측값 범위 | 독립 계산값·정지 수렴·각도 wrap |
+| 내부 칼만 계약 | 초기화8개 인자 각각 NaN/±Inf, 공분산/Q의0 경계·R>0·dt≥0, 보정 입력 비유한값, innovation threshold 바로 위 | assert·innovation≤1e−6 상태 보존 |
+| 수신·상태·시간 | 순번 반범위0x7fffffff/0x80000000/0x80000001, RMSE 계산에서 누락·중복·거부·최대 오차 보존 | 게이트5설정 경계·timestamp 순환·timeout·stale·큐 full/복귀·DRAIN/DISCARD |
+| 잡음별 성능 실행기 | 거리6단계·각도5단계·seed10개, 중복 baseline 제거, seed 재현·각도 wrap·부분 실패 보존 | 기존8m·seed42 실보드 기록 |
+
+`measurement_message_validate()`는 **wire에서 해석된 non-NULL 측정**이 전제이며 헤더에 finiteness 검사 제외가 명시되어 있습니다. uint16에 표현할 수 없는 음수 거리나 wire에 없는 NaN을 이 함수에 억지로 전달해 외부 입력 거부 계약으로 바꾸지 않습니다. 그런 값은 PC 인코더에서 거부하고, 내부 칼만의 비유한 인자는 디버그 assert 계약으로 시험합니다. 일반 펌웨어의 모든 내부 API가 런타임 검증을 한다는 뜻은 아닙니다.
+
+[잡음 행렬 실행법·지표 해석](../pc_sim/README.md#잡음-크기seed-반복-평가). 실제 보드의 새로운 잡음 행렬은 아직 실행하지 않았습니다. 범위 점검은 위 계약을 보강한 것이며 모든 동시성·하드웨어 오류·입력 조합의 전수 검증을 주장하지 않습니다.
 
 ## Python: 수동 송신기·INIT/RESET
 

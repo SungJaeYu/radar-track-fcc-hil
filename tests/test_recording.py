@@ -94,3 +94,48 @@ def test_evaluation_cli_rejects_invalid_warmup_before_opening_port(tmp_path, mon
     with pytest.raises(ValueError, match='nonnegative'):
         evaluate.run_scenario('unused', 'normal', tmp_path, warmup_ms=-1)
     assert not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize('stamp,included', [(1999, False), (2000, True), (2001, True)])
+def test_warmup_exact_boundary(tmp_path, stamp, included):
+    from pc_sim.recording import SessionRecorder, evaluate_session
+    settings = Settings(range_noise_std_m=0)
+    with SessionRecorder(tmp_path / 'run', settings, 'board') as recorder:
+        for sequence, time_ms in enumerate((0, stamp)):
+            sample = make_sample(settings, time_ms, random.Random(0))
+            recorder.record_sample(sample, time_ms / 1000)
+            recorder.record_report(replace(report(sequence, time_ms, sample.truth_range_m),
+                result=TrackReportResult.STARTED if sequence == 0 else TrackReportResult.UPDATED),
+                time_ms / 1000 + .01)
+    assert evaluate_session(tmp_path / 'run')['matched_estimates'] == int(included)
+
+
+def test_response_coverage_rejections_and_max_error_are_not_hidden_by_rmse(tmp_path):
+    from pc_sim.recording import SessionRecorder, evaluate_session
+    settings = Settings(initial_range_m=1000, range_rate_mps=0, range_noise_std_m=0, azimuth_deg=0)
+    with SessionRecorder(tmp_path / 'run', settings, 'board') as recorder:
+        for stamp in (0, 100, 200, 300):
+            recorder.record_sample(make_sample(settings, stamp, random.Random(0)), stamp / 1000)
+        recorder.record_report(report(0, 0, 1003), .01)
+        recorder.record_report(report(1, 100, 996), .11)
+        # A rejected measurement repeats the previous estimate, never a new accuracy sample.
+        recorder.record_report(replace(report(2, 200, 996), estimate_timestamp_ms=100,
+                                      result=TrackReportResult.GATE_REJECTED), .21)
+        recorder.record_report(report(3, 100, 996), .22)  # Duplicate input response.
+        recorder.record_report(report(4, 999, 1000), 1)  # Foreign response.
+    result = evaluate_session(tmp_path / 'run', warmup_ms=0)
+    assert result['missing_input_reports'] == 1
+    assert result['duplicate_input_reports'] == result['unmatched_input_reports'] == 1
+    assert result['gate_rejected'] == 1 and result['gate_rejection_fraction'] == .25
+    assert result['estimate_coverage'] == .5
+    assert result['range_estimate_rmse_m'] == pytest.approx(math.sqrt(12.5))
+    assert result['range_estimate_max_abs_error_m'] == 4
+
+
+@pytest.mark.parametrize('warmup', [-1, 0.1, math.nan, math.inf])
+def test_report_rejects_invalid_warmup(tmp_path, warmup):
+    from pc_sim.recording import SessionRecorder, evaluate_session
+    with SessionRecorder(tmp_path / 'run', Settings(), 'board'):
+        pass
+    with pytest.raises(ValueError):
+        evaluate_session(tmp_path / 'run', warmup)

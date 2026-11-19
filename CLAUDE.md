@@ -42,17 +42,19 @@ V1은 2026-11-19 프로젝트 소유자의 완료 확인을 반영해 종료했�
 
 ## 검증
 
-- [성능 계측 host 테스트](fcc_app/tests/test_perf_monitor/README.md): collector/reporter 9 + 계측 활성화 handler 31/TX 4회. 기존 C 116회와 합쳐 160회 실행(CTest 144개)입니다.
-- `python -m pytest`: GUI 의존성 설치 시 239개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
+- [성능 계측 host 테스트](fcc_app/tests/test_perf_monitor/README.md): collector/reporter 9 + 계측 활성화 handler 31/TX 4회. 기본 C 120회와 합쳐 164회 실행(CTest 144개)입니다.
+- `python -m pytest`: GUI 의존성 설치 시 703개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 24·discard 21, 총 45회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [handler host 테스트](fcc_app/tests/test_frame_handler/README.md): STATUS·TRACK·실패 복귀·INIT/RESET·측정 timeout·processor·stale 계약 30개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.
 - [TX host 테스트](fcc_app/tests/test_uart_tx/README.md): 초기화·요청 검증·복사 큐·송신 순서·실패 후 복귀 4개 사례.
-- [Tracking C 테스트](fcc_app/tests/test_tracking/README.md): 필터·게이팅·추적 정책 17개 + 게이트 설정 행렬 20개 사례.
+- [Tracking C 테스트](fcc_app/tests/test_tracking/README.md): 필터·게이팅·추적 정책 21개 + 게이트 설정 행렬 20개 사례.
 - 수동 초기화만 필요할 때: `python pc_sim/frame_sender.py init --type 1 --port PORT`.
 - 송신: `python pc_sim/radar_sender.py --port PORT --count 20 --noise 0`.
 - 두 연속 송신기는 실행마다 INIT을 한 번 자동 전송하고 timestamp를 0부터 시작합니다.
 - 보드 수신·추적 결과는 ST-Link 콘솔에서 확인합니다.
 - Python/host 테스트, 펌웨어 빌드, flash, 실제 보드 HIL을 구분해서 보고합니다.
+
+잡음별 추가 평가는 `python -m pc_sim.noise_sweep --dry-run`으로 계획을 확인하고 `--port PORT`로 실보드에서 실행합니다. 기본100회는 거리/각도 잡음을 한 축씩 바꾸고 seed10개를 반복합니다. host 모사 테스트를 새로운 실보드 정확도 수치로 쓰지 않습니다. 경계값·범위 밖·비유한 입력의 계약별 행렬은 [테스트 목록](docs/test-cases.md)을 따릅니다.
 
 ## 작업 원칙
 
