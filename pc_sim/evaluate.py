@@ -1,5 +1,6 @@
 """Record fixed single-target HIL scenarios or evaluate existing CSV sessions."""
 import argparse
+from dataclasses import asdict
 import json
 import math
 import random
@@ -9,6 +10,7 @@ from pathlib import Path
 import serial
 
 from .frame_parser import FrameParser
+from .outliers import inject_spike
 from .gui_model import Settings, make_sample
 from .protocol import (build_init_frame, encode_frame, decode_track_payload,
                        decode_status_payload, FRAME_TYPE_TRACK_REPORT, FRAME_TYPE_STATUS_REPORT)
@@ -18,8 +20,8 @@ from .recording import SessionRecorder, evaluate_session, session_path
 def scenario_settings(scenario, count=120, hz=10, warmup_ms=2000,
                       range_noise_std_m=None, azimuth_noise_std_deg=0, seed=42):
     """Validate the complete run before creating files or opening a UART."""
-    if scenario not in ('normal', 'noisy', 'dropout') or type(count) is not int or count < 3:
-        raise ValueError('scenario must be normal/noisy/dropout; integer count >= 3')
+    if scenario not in ('normal', 'noisy', 'dropout', 'spike') or type(count) is not int or count < 3:
+        raise ValueError('scenario must be normal/noisy/dropout/spike; integer count >= 3')
     if not math.isfinite(hz) or not 1 <= hz <= 50:
         raise ValueError('hz must be finite and in 1..50')
     if type(warmup_ms) is not int or warmup_ms < 0:
@@ -28,8 +30,9 @@ def scenario_settings(scenario, count=120, hz=10, warmup_ms=2000,
         raise ValueError('warmup_ms must leave at least one sample for evaluation')
     if scenario == 'dropout' and (count / hz < 9 or hz < 5):
         raise ValueError('dropout requires at least 9 seconds at 5 Hz or more')
-    noise = (0 if scenario == 'normal' else 8) if range_noise_std_m is None else range_noise_std_m
-    settings = Settings(range_rate_mps=-5, range_noise_std_m=noise,
+    noise = (0 if scenario in ('normal', 'spike') else 8) if range_noise_std_m is None else range_noise_std_m
+    settings = Settings(range_rate_mps=0 if scenario == 'spike' else -5,
+                        azimuth_deg=0 if scenario == 'spike' else 15, range_noise_std_m=noise,
                         azimuth_noise_std_deg=azimuth_noise_std_deg,
                         duration_s=count / hz, sample_rate_hz=hz, seed=seed)
     settings.validate()
@@ -44,15 +47,23 @@ def scenario_samples(settings, count):
 
 
 def run_scenario(port, scenario, output, count=120, hz=10, warmup_ms=2000, *,
-                 range_noise_std_m=None, azimuth_noise_std_deg=0, seed=42):
+                 range_noise_std_m=None, azimuth_noise_std_deg=0, seed=42, spike=None):
     settings = scenario_settings(scenario, count, hz, warmup_ms,
                                  range_noise_std_m, azimuth_noise_std_deg, seed)
+    if (scenario == 'spike') != (spike is not None):
+        raise ValueError('Provide SpikeSpec exactly when scenario is spike')
+    if spike is not None:
+        spike.validate(count, hz, warmup_ms)
     samples = scenario_samples(settings, count)
+    if spike is not None:
+        samples = inject_spike(samples, spike)
     path = session_path(output)
     parser = FrameParser()
     init_seen = False
     with SessionRecorder(path, settings, 'board') as recorder:
         recorder.metadata['scenario'] = scenario
+        if spike is not None:
+            recorder.metadata['spike'] = asdict(spike)
         recorder.metadata['dropout_sensor_interval_ms'] = [4000, 5500] if scenario == 'dropout' else None
         recorder._metadata()
         with serial.Serial(port, 115200, timeout=0.01, write_timeout=1) as data:

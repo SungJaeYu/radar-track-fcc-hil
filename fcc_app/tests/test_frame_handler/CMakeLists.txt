@@ -29,6 +29,7 @@ foreach(test_name IN ITEMS
         test_track_started_updated_and_confirmed
         test_track_timestamp_rejection_report
         test_track_gate_rejection_empty_and_lost
+        test_track_spike_recovery_matrix
         test_track_gap_reset_and_recovery
         test_track_sequence_wrap_and_timeout_preservation
         test_track_submit_failure_and_recovery

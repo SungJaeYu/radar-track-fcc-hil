@@ -179,4 +179,7 @@ def evaluate_session(directory, warmup_ms=2000):
     result['pc_roundtrip_ms'] = {'count': len(latencies)}
     for name, fraction in [('p50', .5), ('p95', .95), ('p99', .99), ('max', 1)]:
         result['pc_roundtrip_ms'][name] = latencies[max(0, math.ceil(fraction * len(latencies)) - 1)] if latencies else None
+    if 'spike' in metadata:
+        from .outliers import analyze_spike
+        result['spike'] = analyze_spike(sample_rows, reports, metadata['spike'])
     return result

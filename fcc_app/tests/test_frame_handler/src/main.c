@@ -1,6 +1,7 @@
 #include "../../common/test_runner.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -644,6 +645,69 @@ static void test_track_gate_rejection_empty_and_lost(void)
     check_track_report(9, 1000, 1000, TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_STARTED, true);
 }
 
+static void feed_spike_measurement(struct frame_handler *p_handler, uint32_t index,
+                                   uint16_t range_m, float angle_deg)
+{
+    output_size = 0;
+    output[0] = '\0';
+    struct rx_frame frame = measurement(index * 100U, range_m, 5000U + index * 100U);
+    int64_t rounded = llround((double)angle_deg * 2147483648.0 / 180.0);
+    uint32_t wire_angle = (uint32_t)rounded;
+    frame.frame.payload[6] = wire_angle >> 24;
+    frame.frame.payload[7] = wire_angle >> 16;
+    frame.frame.payload[8] = wire_angle >> 8;
+    frame.frame.payload[9] = wire_angle;
+    frame_handler_process(p_handler, &frame);
+    assert(submitted_frame.frame.type == FRAME_TYPE_TRACK_REPORT);
+    assert(report_u32(0) == index && report_u32(4) == index * 100U);
+}
+
+static void test_track_spike_recovery_matrix(void)
+{
+    const struct { uint16_t range_m; float angle_deg; int first_rejected; } cases[] = {
+        {950, 0, 0}, {1050, 0, 0}, {901, 0, 0}, {1099, 0, 0},
+        {900, 0, 0}, {1100, 0, 0}, {899, 0, 1}, {1101, 0, 1},
+        {500, 0, 1}, {1500, 0, 1}, {1, 0, 1}, {UINT16_MAX, 0, 1},
+        {1000, -5, 0}, {1000, 5, 0}, {1000, -9.9f, 0}, {1000, 9.9f, 0},
+        // Exact nominal angle boundaries depend on wire and float quantization.
+        {1000, -10, -1}, {1000, 10, -1}, {1000, -10.1f, 1}, {1000, 10.1f, 1},
+        {1000, -45, 1}, {1000, 45, 1}, {1000, -180, 1}, {1000, 180, 1},
+    };
+    const unsigned lengths[] = {1, 5};
+    for (size_t c = 0; c < sizeof(cases) / sizeof(cases[0]); ++c) {
+        for (size_t l = 0; l < sizeof(lengths) / sizeof(lengths[0]); ++l) {
+            struct frame_handler handler;
+            reset_test(&handler);
+            for (uint32_t i = 0; i < 40; ++i) {
+                feed_spike_measurement(&handler, i, 1000, 0);
+            }
+            assert(handler.radar.track.state == TRACK_STATE_CONFIRMED);
+            uint32_t index = 40;
+            for (unsigned n = 0; n < lengths[l]; ++n, ++index) {
+                feed_spike_measurement(&handler, index, cases[c].range_m, cases[c].angle_deg);
+                if (n == 0 && cases[c].first_rejected >= 0) {
+                    assert((submitted_frame.frame.payload[29] == TRACK_REPORT_RESULT_GATE_REJECTED)
+                           == (cases[c].first_rejected != 0));
+                }
+            }
+            if (lengths[l] == 5 && cases[c].first_rejected == 1) {
+                assert(handler.radar.track.state == TRACK_STATE_LOST);
+            }
+            unsigned settled = 0;
+            for (; index < 120 && settled < 3; ++index) {
+                feed_spike_measurement(&handler, index, 1000, 0);
+                const struct track *p_track = &handler.radar.track;
+                const bool good = p_track->state == TRACK_STATE_CONFIRMED &&
+                    submitted_frame.frame.payload[29] == TRACK_REPORT_RESULT_UPDATED &&
+                    fabsf(p_track->range_filter.estimate - 1000.0f) <= 2.0f &&
+                    fabsf(p_track->azimuth_filter.estimate) <= 0.2f * 3.14159265358979323846f / 180.0f;
+                settled = good ? settled + 1 : 0;
+            }
+            assert(settled == 3);
+        }
+    }
+}
+
 static void test_track_gap_reset_and_recovery(void)
 {
     struct frame_handler handler;
@@ -867,6 +931,7 @@ static const struct test_case cases[] = {
     TEST_CASE(test_track_started_updated_and_confirmed),
     TEST_CASE(test_track_timestamp_rejection_report),
     TEST_CASE(test_track_gate_rejection_empty_and_lost),
+    TEST_CASE(test_track_spike_recovery_matrix),
     TEST_CASE(test_track_gap_reset_and_recovery),
     TEST_CASE(test_track_sequence_wrap_and_timeout_preservation),
     TEST_CASE(test_track_submit_failure_and_recovery),

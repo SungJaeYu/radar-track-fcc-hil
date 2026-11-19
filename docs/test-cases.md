@@ -3,7 +3,7 @@
 각 사례의 요구사항·상세 규격 연결과 미검증 항목은 [요구사항 추적표](requirements-traceability.md)를 참고합니다.
 
 현재 테스트 소스를 기준으로 작성한 목록입니다. 테스트를 추가하거나 검증 조건을 바꿀 때 이 문서도 함께 갱신합니다.
-현재 합계는 Python 703개 + subtest 9개, C host 164회 실행입니다. 기본120회(RX45·handler30·TX4·Tracking21·게이트20)와 계측 구성44회(monitor9·handler31·TX4)를 포함합니다. CTest 등록 수는144개이며 tracking 한 항목이21개 함수를 실행합니다.
+현재 합계는 Python 765개 + subtest 9개, C host 166회 실행입니다. 기본121회(RX45·handler31·TX4·Tracking21·게이트20)와 계측 구성45회(monitor9·handler32·TX4)를 포함합니다. CTest 등록 수는146개이며 tracking 한 항목이21개 함수를 실행합니다.
 아래 날짜별 기록의 옛 개수는 당시 결과로 보존합니다.
 케이스 목록과 실제 실행 결과는 구분합니다. 아래 개수는 Python 수집 결과와 C 등록 코드를 기준으로 합니다.
 
@@ -24,20 +24,30 @@
 | 성능 시험 콘솔 판정 | `tests/test_perf_monitor.py` | 11 | Python, 기록 파싱·오류 감지; flash/serial 없음 |
 | 로그 부하 wire 판정 | `tests/test_log_stress.py` | 12 | Python, 기록 바이트열만 검사; flash/serial 없음 |
 | CSV·RMSE·평가 CLI 경계 | `tests/test_recording.py` | 13 | Python, 시각/수치 기준값; 실제 UART 없음 |
-| 잡음 행렬·평가 실행기 | `tests/test_evaluate.py` | 53 | Python, 시계·UART 모사; 실보드 성능 증거 아님 |
+| 잡음 행렬·평가 실행기 | `tests/test_evaluate.py` | 54 | Python, 시계·UART 모사; 실보드 성능 증거 아님 |
+| 순간 이상치·회복 | `tests/test_outliers.py` | 61 | Python, 계획·측정 주입·원시 보고 평가·실패 판정 |
 | 내부 assert | `tests/test_firmware_assertions.py` | 51 | 실제 C host 자식 프로세스의 SIGABRT·메시지 검증 |
 | 게이팅 설정 행렬 | `fcc_app/tests/test_tracking/src/gating_cases.c` | 20 (5 설정 × 4 사례) | host C |
 | 필터·추적 | `fcc_app/tests/test_tracking` | 21 | host C 또는 Zephyr Ztest |
 | TX 큐·송신 | `fcc_app/tests/test_uart_tx` | 4 | host C, UART·큐·세마포어 모사 |
-| STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 30 | host C, 통계 조회·TX 제출·로그 캡처·RTOS 모사 |
+| STATUS·TRACK 보고 처리 | `fcc_app/tests/test_frame_handler` | 31 | host C, 통계 조회·TX 제출·로그 캡처·RTOS 모사 |
 | 성능 계측 | `fcc_app/tests/test_perf_monitor` | 9 | host C, mutex·스택/로그 모사 |
-| 계측 활성화 회귀 | handler/TX `PERF_TEST_ENABLED=ON` | 31 + 4 | 기존 동작 재실행 및 실제 계측 호출 검증 |
+| 계측 활성화 회귀 | handler/TX `PERF_TEST_ENABLED=ON` | 32 + 4 | 기존 동작 재실행 및 실제 계측 호출 검증 |
 | UART drain·링버퍼 | `fcc_app/tests/test_uart_rx` | 45 (drain 24 + discard 21) | host C, Zephyr API 모사 |
 
-Python은 매개변수 조합을 펼쳐 **703개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
+Python은 매개변수 조합을 펼쳐 **765개 항목** (GUI 의존성 설치 시)을 수집합니다. unittest 내부 subtest 9개는 이 수집 항목과 별도로 표시될 수 있습니다.
 Tracking C는 CTest의 `tracking`에서 21개 함수를 실행하며, 게이팅 설정 시험 20개가 별도로 등록됩니다.
 UART C는 정책별 실행을 CTest에 따로 등록하므로 45개로 표시됩니다. 공통 사례 19개는 두 번 실행합니다.
 `pc_sim/frame_sender.py`는 자동 테스트가 아닌 수동 송신 도구입니다.
+
+## 순간 이상치·복귀 — 2026-11-19 추가
+
+[실보드 실행법](../pc_sim/README.md#순간-이상치정상-복귀-실보드-시험): 정지 표적 정상 입력40개 이후 거리/각도 오프셋을1개 또는5개 주입하고 정상 입력으로 복귀합니다. 기본49회(대조군1 + 거리12값/각도12값 × 길이2종)를 준비했습니다. 실제 보드 실행 결과는 아직 없습니다.
+
+- Python: truth·시각 보존, 주입 구간 양끝, 거리 wire 최솟값1m/최댓값65535m, ±180° wrap, 불법 offset/길이/회복 허용오차, 포트 접근 전 거부.
+- 회복 판정: 주입 전 정상 추적 확인, 첫 주입의 게이트 결과, 연속3표본 유지, 오차 허용경계 포함, 누락/중복/무효/과거 시각/COASTING/거부/NaN의 연속 횟수 초기화, 재획득 warm-up을 숨기지 않는 평가, 회복 실패·UART 실패 기록 보존.
+- C: `test_track_spike_recovery_matrix`에서 실제 measurement decoder·processor·CV 필터·report 인코더를 실행합니다. 거리12값/각도12값 × 단발/5연속의48조합을 한 함수에서 확인합니다. 첫 수용/거부, 연속 큰 이상치 뒤 LOST, 이후 정상 입력에서 CONFIRMED·2m/0.2° 이내3연속 복귀와 보고 순번/입력 시각을 검사합니다. 정확한 명목 각도10°는 wire/float 변환을 고려해 첫 판정을 강제하지 않습니다.
+- 동일 C 함수는 일반 handler와 perf 활성화 handler 두 구성에서 실행합니다. 모사 RTOS·UART이며 실제 인터럽트/USB 타이밍 증거는 아닙니다.
 
 ## 입력 경계·범위 점검 — 2026-11-19
 

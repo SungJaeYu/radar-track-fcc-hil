@@ -203,3 +203,19 @@ def test_dry_run_has_no_uart_or_file_side_effects(tmp_path, monkeypatch, capsys)
     noise_sweep.main(['--dry-run', '--output', str(tmp_path), '--seeds', '42'])
     assert json.loads(capsys.readouterr().out)['run_count'] == 10
     assert not list(tmp_path.iterdir())
+
+
+def test_spike_uart_records_actual_injection_and_offline_recovery(tmp_path, monkeypatch):
+    from pc_sim.outliers import SpikeSpec
+    from pc_sim.recording import evaluate_session
+    uart = fake_uart(monkeypatch)
+    spec = SpikeSpec(start_index=5, length=2, range_offset_m=500)
+    path, result = evaluate.run_scenario('mock', 'spike', tmp_path, count=15, warmup_ms=0, spike=spec)
+    distances = [struct.unpack('>IHi', f[3:-2])[1] for f in uart.writes if f[2] == 2]
+    assert distances == [1000] * 5 + [1500] * 2 + [1000] * 8
+    assert json.loads((path / 'metadata.json').read_text())['spike']['range_offset_m'] == 500
+    assert result['spike']['pre_spike_settled'] and result['spike']['recovered']
+    assert result['spike']['recovery_delay_sensor_ms'] == 0
+    assert result['spike']['peak_range_error_m'] == 500  # Mock echoes, not a Kalman result.
+    assert result['spike'] == evaluate_session(path, warmup_ms=0)['spike']
+    assert uart.closed
