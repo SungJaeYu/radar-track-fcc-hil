@@ -94,8 +94,9 @@ static TrackReportResult update_track_from_measurement(struct track *p_track, co
                 TRACK_REPORT_RESULT_TIME_REJECTED : TRACK_REPORT_RESULT_RESET;
         }
 
-        const float predicted_range_m = p_track->range_filter.estimate;
-        const float predicted_azimuth_rad = p_track->azimuth_filter.estimate;
+        const struct estimator_output predicted = estimator_get_output(&p_track->estimator);
+        const float predicted_range_m = predicted.range_m;
+        const float predicted_azimuth_rad = predicted.azimuth_rad;
 
         LOG_DBG("Prediction: range=%.2f m, azimuth=%.4f rad",
                 (double)predicted_range_m, (double)predicted_azimuth_rad);
@@ -116,12 +117,15 @@ static TrackReportResult update_track_from_measurement(struct track *p_track, co
             track_miss(p_track);
         }
 
+        const struct estimator_output estimate = estimator_get_output(&p_track->estimator);
         LOG_DBG("%s: range=%.2f m, azimuth=%.4f rad, range_rate=%.2f m/s, azimuth_rate=%.4f rad/s",
                 is_in_gate ? "Measurement accepted" : "Measurement rejected by gate",
-                (double)p_track->range_filter.estimate,
-                (double)p_track->azimuth_filter.estimate,
-                (double)p_track->range_filter.rate,
-                (double)p_track->azimuth_filter.rate);
+                (double)estimate.range_m,
+                (double)estimate.azimuth_rad,
+                (double)estimate.range_rate_mps,
+                (double)estimate.azimuth_rate_radps);
+
+        (void)estimate; // LOG_DBG may compile out at the configured log level.
 
         return is_in_gate ? TRACK_REPORT_RESULT_UPDATED : TRACK_REPORT_RESULT_GATE_REJECTED;
     }

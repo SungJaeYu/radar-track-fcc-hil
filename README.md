@@ -1,4 +1,4 @@
-# radar-track-fcc-hil
+# radar-tracking-bench
 
 **English** | [한국어](README.ko.md)
 
@@ -6,7 +6,7 @@
 
 A hardware-in-the-loop testbed for post-detection radar tracking. A PC sends synthetic range and azimuth measurements to an STM32, then compares the returned estimates with known ground truth. It provides a repeatable way to evaluate tracking accuracy, response latency, and recovery from corrupted frames, measurement outliers, and interrupted communication without a physical radar.
 
-[Architecture](EXPLAINER.en.md) · [Board results](#board-results) · [Quick start](#quick-start) · [Scope](#scope-and-follow-up-work)
+[Estimator adapters](docs/estimator-adapters.md) · [Architecture](EXPLAINER.en.md) · [Board results](#board-results) · [Quick start](#quick-start) · [Scope](#scope-and-follow-up-work)
 
 <a id="시스템-구성"></a>
 
@@ -96,8 +96,8 @@ ST-Link USB is the separate flash/debug-console connection. Replace the reposito
 ```bash
 source ~/zephyrproject/.venv/bin/activate
 cd ~/zephyrproject
-west build -d /path/to/radar-track-fcc-hil/build -b stm32f746g_disco /path/to/radar-track-fcc-hil/fcc_app
-west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
+west build -d /path/to/radar-tracking-bench/build -b stm32f746g_disco /path/to/radar-tracking-bench/fcc_app
+west flash -d /path/to/radar-tracking-bench/build --runner openocd
 ```
 
 Return to the repository root and use the PC environment prepared above. Close the GUI and any other program using the data port before running the CLI. Replace `/dev/ttyUSB0` with the actual adapter port; macOS commonly uses `/dev/cu.usbserial...`.
@@ -136,12 +136,12 @@ Python and host C checks are separate from firmware builds and physical-board HI
 
 V1 covers single-target measurement-to-result communication, quantitative tracking evaluation, major error recovery, and timing/resource observations. The [English architecture guide](EXPLAINER.en.md) explains the implemented contracts and their limits.
 
-Multi-target association, CT/IMM/EKF comparisons, BIT/Lock On, and UART hardware-error diagnostics are follow-up work. RF processing, ADC/IQ/FFT, and operational certification are outside this project. [V1 scope and roadmap — Korean](docs/roadmap.md).
+The benchmark branch adds a build-selected estimator adapter with the existing polar CV KF as its only production backend. Maneuvering trajectories, additional algorithms, and filter-only execution-time comparisons are follow-up work. Multi-target association, BIT/Lock On, and UART hardware-error diagnostics also remain outside the implemented scope. RF processing, ADC/IQ/FFT, and operational certification are outside this project. [V1 scope and roadmap — Korean](docs/roadmap.md).
 
 <a id="개발-방식"></a>
 
 ## Authorship
 
-I defined the problem, architecture, and validation criteria, and wrote the STM32/Zephyr firmware. I used AI coding tools for the PC simulator, GUI, and test-support implementation. All measurements are synthetic; no operational military data or internal system information is used.
+I defined the problem, architecture, and validation criteria, and wrote the STM32/Zephyr firmware. I used AI coding tools for the PC simulator, GUI, test-support implementation, and the estimator adapter refactor on the benchmark branch. All measurements are synthetic; no operational military data or internal system information is used.
 
 [English architecture](EXPLAINER.en.md) · [한국어 README](README.ko.md) · [Full documentation index — Korean](docs/README.md)

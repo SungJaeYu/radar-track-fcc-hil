@@ -599,7 +599,8 @@ static void test_track_started_updated_and_confirmed(void)
     // A corrected estimate differs from the prior stationary prediction.
     assert(report_u32(12) != 0x447a0000U);
     uint32_t corrected_bits;
-    memcpy(&corrected_bits, &handler.radar.track.range_filter.estimate, sizeof(corrected_bits));
+    const struct estimator_output estimate = estimator_get_output(&handler.radar.track.estimator);
+    memcpy(&corrected_bits, &estimate.range_m, sizeof(corrected_bits));
     assert(report_u32(12) == corrected_bits);
     feed_measurement(&handler, 300, 1010);
     check_track_report(2, 300, 300, TRACK_STATE_CONFIRMED, TRACK_REPORT_RESULT_UPDATED, true);
@@ -697,10 +698,11 @@ static void test_track_spike_recovery_matrix(void)
             for (; index < 120 && settled < 3; ++index) {
                 feed_spike_measurement(&handler, index, 1000, 0);
                 const struct track *p_track = &handler.radar.track;
+                const struct estimator_output estimate = estimator_get_output(&p_track->estimator);
                 const bool good = p_track->state == TRACK_STATE_CONFIRMED &&
                     submitted_frame.frame.payload[29] == TRACK_REPORT_RESULT_UPDATED &&
-                    fabsf(p_track->range_filter.estimate - 1000.0f) <= 2.0f &&
-                    fabsf(p_track->azimuth_filter.estimate) <= 0.2f * 3.14159265358979323846f / 180.0f;
+                    fabsf(estimate.range_m - 1000.0f) <= 2.0f &&
+                    fabsf(estimate.azimuth_rad) <= 0.2f * 3.14159265358979323846f / 180.0f;
                 settled = good ? settled + 1 : 0;
             }
             assert(settled == 3);

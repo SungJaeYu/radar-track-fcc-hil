@@ -7,7 +7,7 @@ set(RADAR_MEASUREMENT_TIMEOUT_MS 1000 CACHE STRING "Timeout under test in millis
 
 add_executable(frame_handler_tests src/main.c
     ../../src/application/radar_processor.c
-    ../../src/tracking/track.c ../../src/tracking/kalman_cv.c ../../src/tracking/angle_utils.c
+    ../../src/tracking/track.c ../../src/tracking/angle_utils.c
     ../../src/tracking/gating.c ../../src/protocol/measurement_message.c
     ../../src/protocol/protocol_frame.c ../../src/common/crc16.c
     ../../src/protocol/status_message.c ../../src/protocol/track_message.c
@@ -63,3 +63,6 @@ if(PERF_TEST_ENABLED)
     target_link_libraries(frame_handler_tests PRIVATE Threads::Threads)
     add_test(NAME test_perf_measurement_paths COMMAND frame_handler_tests test_perf_measurement_paths)
 endif()
+
+include(../../cmake/estimator.cmake)
+target_add_radar_estimator(frame_handler_tests)

@@ -76,11 +76,12 @@ void report_sender_submit_track(struct report_sender *p_sender, const struct tra
 
     // Invalid estimates retain zero-valued fields without reading stale filters.
     if (estimate_valid) {
+        const struct estimator_output estimate = estimator_get_output(&p_track->estimator);
         report.estimate_timestamp_ms = p_track->estimate_timestamp_ms;
-        report.range_m = p_track->range_filter.estimate;
-        report.azimuth_rad = p_track->azimuth_filter.estimate;
-        report.range_rate_mps = p_track->range_filter.rate;
-        report.azimuth_rate_radps = p_track->azimuth_filter.rate;
+        report.range_m = estimate.range_m;
+        report.azimuth_rad = estimate.azimuth_rad;
+        report.range_rate_mps = estimate.range_rate_mps;
+        report.azimuth_rate_radps = estimate.azimuth_rate_radps;
         report.flags |= TRACK_REPORT_FLAG_ESTIMATE_VALID;
     }
 

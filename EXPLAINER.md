@@ -100,6 +100,8 @@ ISR에서 `ring_push()`가 실패하면 해당 바이트를 버리고 `rx_overfl
 
 ## 4. 측정과 추적
 
+`track.c`는 공통 `estimator.h` API로 예측·보정을 호출하고, `polar_cv` 어댑터가 기존 거리/방위각 KF를 소유합니다. 처리·보고 코드는 공통 추정 출력만 읽습니다. [빌드 선택과 추가 방법](docs/estimator-adapters.md).
+
 `frame_handler`는 MCU 수신 완료 후 경과가 측정 timeout 이상인 MEAS_REPORT를 먼저 폐기합니다. 이때 트랙·수신 감시·보고 순번은 갱신하지 않고 포화 카운터만 증가시킵니다.
 
 `frame_handler`는 TYPE을 분기하고 `radar_processor_process_measurement()`에 측정을 전달합니다.
