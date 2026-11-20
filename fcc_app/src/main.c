@@ -6,7 +6,6 @@
 #endif
 #include "transport/uart_rx.h"
 #include "transport/uart_tx.h"
-#include "tracking/estimator.h"
 
 LOG_MODULE_REGISTER(radar_main, CONFIG_RADAR_MAIN_LOG_LEVEL);
 
@@ -14,7 +13,6 @@ int main(void)
 {
     // Console diagnostics are separate from USART6 protocol frames.
     LOG_INF("=== FCC learning-rebuild boot ===");
-    LOG_INF("Tracking estimator: %s", estimator_name());
 
     // Prepare the transmit path before enabling reception.
     // These init APIs return 0 on success and a negative errno on failure.

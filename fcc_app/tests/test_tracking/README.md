@@ -100,7 +100,3 @@ after LOST/excessive gaps while retaining state and numeric checks.
 - `test_correction_noise_and_residual_matrix`: R5값 × 측정5값, 총25조합. 양·음·0 innovation과 보정 후 값·공분산을 검증하고 innovation covariance 하한 바로 위도 확인합니다.
 
 NaN·±Inf·분산 음수·R=0·dt<0은 [내부 assert 시험](../../../tests/test_firmware_assertions.py)에서 자식 프로세스로 실행합니다. host assert 어댑터의 검증이며 일반 펌웨어의 assert 활성 여부와 구분합니다.
-
-## 추정기 교체 회귀
-
-`estimator_swap`은 KF와 다른 내부 구조의 시험용 어댑터를 실제 `track.c`와 링크합니다. KF를 링크하지 않고 인스턴스 독립성·예측/보정 호출·시간 거부·상태 전이·재시작을 확인합니다. host CTest 등록은 기존21개에 이 사례를 더한22개입니다. 실제 backend 선택과 추가 방법은 [추정기 교체 구조](../../../docs/estimator-adapters.md)를 따릅니다.

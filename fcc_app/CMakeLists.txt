@@ -12,6 +12,7 @@ target_sources(app PRIVATE
     src/application/radar_processor.c
     src/application/report_sender.c
     src/protocol/measurement_message.c
+    src/tracking/kalman_cv.c
     src/tracking/gating.c
     src/tracking/angle_utils.c
     src/tracking/track.c
@@ -36,6 +37,3 @@ target_sources_ifdef(CONFIG_RADAR_PERF_MONITOR app PRIVATE
 target_sources_ifdef(CONFIG_RADAR_LOG_STRESS_TEST app PRIVATE tests/log_stress/log_stress.c)
 
 target_sources_ifdef(CONFIG_RADAR_TRANSPORT_STRESS_TEST app PRIVATE tests/transport_stress/transport_stress.c)
-
-include(cmake/estimator.cmake)
-target_add_radar_estimator(app)

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "tracking/estimator.h"
+#include "tracking/kalman_cv.h"
 
 // EMPTY: no active track; TENTATIVE: awaiting confirmation; CONFIRMED: established.
 // COASTING: predicting after a gate miss; LOST: miss limit reached, awaiting reset.
@@ -27,7 +27,8 @@ typedef enum {
 struct track {
     TrackState state;
 
-    struct estimator estimator;
+    struct kalman_cv_filter range_filter;
+    struct kalman_cv_filter azimuth_filter;
 
     uint32_t hit_count;
     uint32_t miss_count;

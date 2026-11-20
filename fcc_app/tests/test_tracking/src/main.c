@@ -43,8 +43,8 @@ static struct track new_track(uint32_t timestamp)
 static void hit(struct track *p_track, uint32_t timestamp)
 {
     CHECK(track_predict(p_track, timestamp) == TRACK_PREDICT_RESULT_PREDICTED);
-    CHECK(gating_check(1000.0f, p_track->estimator.range_filter.estimate, RAD(30.0f),
-                       p_track->estimator.azimuth_filter.estimate));
+    CHECK(gating_check(1000.0f, p_track->range_filter.estimate, RAD(30.0f),
+                       p_track->azimuth_filter.estimate));
     track_hit(p_track, 1000.0f, RAD(30.0f));
 }
 
@@ -219,14 +219,14 @@ TEST(test_timestamp_rejection)
 TEST(test_elapsed_time_and_wraparound)
 {
     struct track t = new_track(100);
-    t.estimator.range_filter.rate = 20;
+    t.range_filter.rate = 20;
     CHECK(track_predict(&t, 400) == TRACK_PREDICT_RESULT_PREDICTED);
-    NEAR(t.estimator.range_filter.estimate, 1006);
+    NEAR(t.range_filter.estimate, 1006);
     CHECK(t.estimate_timestamp_ms == 400);
     t = new_track(UINT32_MAX - 49);
-    t.estimator.range_filter.rate = 20;
+    t.range_filter.rate = 20;
     CHECK(track_predict(&t, 50) == TRACK_PREDICT_RESULT_PREDICTED);
-    NEAR(t.estimator.range_filter.estimate, 1002);
+    NEAR(t.range_filter.estimate, 1002);
     CHECK(t.estimate_timestamp_ms == 50);
 }
 
@@ -240,9 +240,9 @@ TEST(test_long_gap_and_restart)
     CHECK(t.hit_count == 0 && t.miss_count == 0);
     track_start(&t, 2000, RAD(-30), 1200);
     CHECK(t.state == TRACK_STATE_TENTATIVE && t.hit_count == 1);
-    NEAR(t.estimator.range_filter.estimate, 2000);
-    NEAR(t.estimator.range_filter.rate, 0);
-    NEAR(t.estimator.azimuth_filter.estimate, RAD(-30));
+    NEAR(t.range_filter.estimate, 2000);
+    NEAR(t.range_filter.rate, 0);
+    NEAR(t.azimuth_filter.estimate, RAD(-30));
 }
 
 TEST(test_confirmation_coasting_and_loss)
@@ -298,8 +298,8 @@ TEST(test_lost_restarts_for_any_timestamp)
         CHECK(t.state == TRACK_STATE_EMPTY && t.hit_count == 0 && t.miss_count == 0);
         track_start(&t, 500, 0, timestamps[i] + 100);
         CHECK(t.state == TRACK_STATE_TENTATIVE && t.hit_count == 1);
-        NEAR(t.estimator.range_filter.estimate, 500);
-        NEAR(t.estimator.range_filter.rate, 0);
+        NEAR(t.range_filter.estimate, 500);
+        NEAR(t.range_filter.rate, 0);
     }
 }
 

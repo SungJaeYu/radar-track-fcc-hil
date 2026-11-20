@@ -23,7 +23,6 @@
 
 | 목적 | 문서 |
 |---|---|
-| 추정기 어댑터 API·빌드 선택·추가 방법 | [추정기 교체 구조](estimator-adapters.md) |
 | UART 규격·요구사항·구현·테스트 연결 | [요구사항 추적표](requirements-traceability.md) |
 | 자동 테스트 실행과 검증 범위 | [테스트 목록](test-cases.md) |
 | RTT·보드 지연·큐·스택의 측정 방법 | [성능 계측](performance-monitoring.md) |

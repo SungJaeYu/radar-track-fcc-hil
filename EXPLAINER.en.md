@@ -71,8 +71,6 @@ STATUS returns eight cumulative uint32 counters: CRC errors, length errors, part
 
 ## Tracking and time domains
 
-The lifecycle calls the common `estimator.h` API. The build-selected `polar_cv` adapter owns the existing filters; gating and reporting read a common output snapshot. [Adapter contract and extension guide — Korean](docs/estimator-adapters.md).
-
 Range and azimuth each use a constant-velocity Kalman filter. Angular differences are wrapped to the shortest difference. Fixed, inclusive range and azimuth gates must both pass before correction; defaults are ±100 m and ±10°. They are configured through Kconfig.
 
 | Event | Implemented behavior |

@@ -18,13 +18,6 @@ if(TRACK_TEST_HOST)
     # Detect regressions to nonterminating angle normalization loops.
     set_tests_properties(tracking PROPERTIES TIMEOUT 10)
 
-    # A different storage layout links with the real lifecycle without any KF.
-    add_executable(estimator_swap src/estimator_swap.c ../../src/tracking/track.c)
-    target_include_directories(estimator_swap PRIVATE ../../src src)
-    target_compile_definitions(estimator_swap PRIVATE RADAR_ESTIMATOR_HEADER="estimator_stub.h")
-    target_compile_options(estimator_swap PRIVATE -Wall -Wextra -Werror -UNDEBUG)
-    add_test(NAME estimator_swap COMMAND estimator_swap)
-
     # Compile the real gate implementation separately for each tuning combination.
     function(add_gate_tests name range_m azimuth_deg)
         add_executable(gating_${name} src/gating_cases.c
@@ -53,12 +46,10 @@ else()
 endif()
 
 target_sources(${TEST_TARGET} PRIVATE
+    ../../src/tracking/kalman_cv.c
     ../../src/tracking/angle_utils.c
     ../../src/tracking/gating.c
     ../../src/tracking/track.c
     ../../src/protocol/measurement_message.c
 )
 target_include_directories(${TEST_TARGET} PRIVATE ../../src)
-
-include(../../cmake/estimator.cmake)
-target_add_radar_estimator(${TEST_TARGET})
