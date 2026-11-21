@@ -24,9 +24,43 @@
 
 새 공개 C 함수는 `모듈_동작` 순서를 권장합니다(`frame_parser_feed`, `measurement_message_decode`).
 외부 센서 시각과 보드 uptime, 측정과 추정, 프레임과 payload를 이름에서 구분합니다.
-시간에는 단위뿐 아니라 기준 시점도 드러냅니다(`estimate_timestamp_ms`, `received_at_ms`).
+시간에는 단위뿐 아니라 기준 시점도 드러냅니다(`estimate_sensor_ms`, `received_uptime_ms`).
 자동 테스트는 `test_...`, 수동 송신 도구는 `..._sender.py`처럼 역할을 표시합니다.
 기존 예외와 변경 영향은 [구조·이름 점검](naming-review.md)에 있으며 이 권장 규칙을 적었다고 기존 코드를 변경한 것은 아닙니다.
+
+## 시간 이름
+
+- `sensor_time_ms`: 측정 구조체의 센서/PC 시각. 구조체 이름과 중복되는 `measurement_`는 생략합니다.
+- `*_sensor_ms`: 센서/PC 시뮬레이터가 제공하는 uint32 시각. 보드 부팅 시각과 기준이 다릅니다.
+- `*_uptime_ms`: `k_uptime_get()` 기준의 int64 보드 부팅 후 시각.
+- `*_interval_ms`, `*_interval_s`, `interval_s`: 두 시각의 차이인 경과 시간.
+- `_ms`, `_s`는 단위입니다. 서로 다른 시간축의 시각끼리는 차감하지 않습니다.
+
+| 이름 | 의미 |
+|---|---|
+| `sensor_time_ms` | 입력 측정의 센서 시각 |
+| `estimate_sensor_ms` | 현재 필터 추정값의 센서 시각; 게이트 거절 후에도 예측 시각으로 갱신 |
+| `target_sensor_ms` | 다음 상태를 예측할 목표 센서 시각 |
+| `input_sensor_ms` | 처리 결과/보고에 연결된 입력 측정의 센서 시각 |
+| `previous_estimate_sensor_ms` | 이번 처리 전 추정값의 센서 시각 |
+| `received_uptime_ms` | RX 파서가 프레임을 완성·제출한 보드 시각; ISR 바이트 도착 시각이 아님 |
+| `last_valid_rx_uptime_ms` | 마지막 decode·validate 성공 측정의 RX 완료 보드 시각 |
+| `now_uptime_ms` | timeout을 검사하는 현재 보드 시각 |
+| `last_byte_processed_uptime_ms` | RX 파서가 마지막 바이트를 처리한 보드 시각 |
+| `handler_start_uptime_ms`, `submit_uptime_ms` | 측정 처리 시작·TRACK 큐 제출 호출 종료 시각; 실제 송신 완료 시각이 아님 |
+| `prediction_interval_ms`, `prediction_interval_s` | 목표 센서 시각과 이전 추정 시각의 차이 |
+
+예측 간격은 `target_sensor_ms - estimate_sensor_ms`, 무수신 경과 시간은
+`now_uptime_ms - last_valid_rx_uptime_ms`로 계산합니다. uint32 센서 시각의 순환과
+반주기 거절 경계는 유지합니다.
+
+펌웨어 C 이름과 PC/CSV API 이름은 구분합니다. C의 `sensor_time_ms`,
+`input_sensor_ms`, `estimate_sensor_ms`는 PC의 `timestamp_ms`, `input_timestamp_ms`,
+`estimate_timestamp_ms`와 대응합니다. wire 필드 순서·폭·단위는 동일합니다.
+
+함수 선언·정의·호출에서 인자가 한두 개이면 한 줄에 작성합니다.
+상태 변경 함수는 `apply`, `reset`, `start` 등 동작을 드러내고,
+조회 함수는 `get`/`is`, 원본을 보존하는 다음 상태 계산은 `*_next`로 구분합니다.
 
 ## 중괄호와 공백
 
@@ -183,6 +217,15 @@ _Static_assert(RING_BUFFER_SIZE >= 2 && RING_BUFFER_SIZE <= 256,
 
 ## 분기·로그·테스트
 
+- 함수 반환값으로 분기할 때는 **함수를 먼저 호출해 반환값을 지역변수에 저장하고,
+  다음 `if`에서 검사합니다.** `if (function(...))`, `if (!function(...))`,
+  `if (function(...) != 0)`처럼 조건식 안에서 직접 호출하지 않습니다.
+  출력 객체를 변경하는 함수와 읽기 전용 판정 함수 모두 같은 규칙을 적용합니다.
+- 반환값 변수는 역할을 드러내는 이름을 사용합니다(`payload_decoded`, `measurement_valid`).
+  재대입하지 않는 결과는 `const`로 선언하고, 오류 코드는 원래 정수 타입으로 보존합니다.
+- 호출을 분리할 때 기존 실행 순서와 `&&`·`||`의 단락 평가를 유지합니다.
+  선행 검사 실패 시 실행하지 않던 함수를 미리 호출하지 않습니다. 디코딩 실패 시에는
+  초기화되지 않은 측정값을 검증하거나 읽지 않습니다.
 - `if`·`for`·`while` 본문은 한 문장이더라도 중괄호를 사용합니다.
   `switch`의 case는 switch와 같은 들여쓰기에 두고, 지역변수가 필요한 case는 `{ ... }`로 감쌉니다.
 - 의도적인 case fallthrough에는 `// Intentional fallthrough.` 주석이나
@@ -197,6 +240,18 @@ _Static_assert(RING_BUFFER_SIZE >= 2 && RING_BUFFER_SIZE <= 256,
   잘못된 입력·CRC 손상·오류 후 복귀를 실제 변경 범위에 맞게 시험합니다.
 - host 테스트·펌웨어 빌드·flash·실보드 결과를 구분해서 기록합니다.
   모사 큐·atomic·UART 테스트를 실제 동시성이나 물리 전송 성공의 증거로 사용하지 않습니다.
+
+```c
+const bool payload_decoded = measurement_message_decode(p_frame->payload, p_frame->payload_length, &measurement);
+if (!payload_decoded) {
+    return false;
+}
+
+const bool measurement_valid = measurement_message_validate(&measurement);
+if (!measurement_valid) {
+    return false;
+}
+```
 
 ## 적용 상태
 

@@ -13,7 +13,7 @@ LOG_MODULE_REGISTER(rx_frame_processor, CONFIG_RADAR_RX_PROCESSOR_LOG_LEVEL);
 
 // Accessed only by the RX thread after initialization
 static struct frame_parser parser;
-static int64_t last_byte_processed_ms;
+static int64_t last_byte_processed_uptime_ms;
 
 // RX updates counters; the handler reads them independently through the stats API.
 static atomic_t crc_error_count = ATOMIC_INIT(0);
@@ -33,7 +33,7 @@ void rx_frame_processor_reset(void)
 
 void rx_frame_processor_feed(uint8_t byte)
 {
-    last_byte_processed_ms = k_uptime_get();
+    last_byte_processed_uptime_ms = k_uptime_get();
 
     const ParserResult result = frame_parser_feed(&parser, byte);
 
@@ -41,15 +41,16 @@ void rx_frame_processor_feed(uint8_t byte)
 }
 
 // Query RX-owned state without resetting assembly or changing diagnostics.
-static bool rx_frame_processor_is_timed_out(int64_t now_ms)
+static bool rx_frame_processor_is_timed_out(int64_t now_uptime_ms)
 {
     return parser.state != PARSER_STATE_WAIT_STX &&
-           now_ms - last_byte_processed_ms >= CONFIG_RADAR_FRAME_RX_TIMEOUT_MS;
+           now_uptime_ms - last_byte_processed_uptime_ms >= CONFIG_RADAR_FRAME_RX_TIMEOUT_MS;
 }
 
-void rx_frame_processor_handle_timeout(int64_t now_ms)
+void rx_frame_processor_handle_timeout(int64_t now_uptime_ms)
 {
-    if (!rx_frame_processor_is_timed_out(now_ms)) {
+    const bool timed_out = rx_frame_processor_is_timed_out(now_uptime_ms);
+    if (!timed_out) {
         return;
     }
 
@@ -91,7 +92,7 @@ static void submit_parsed_frame(void)
     // This timestamp marks completion/submission, not physical byte arrival.
     const struct rx_frame received = {
         .frame = parser.frame,
-        .received_at_ms = k_uptime_get(),
+        .received_uptime_ms = k_uptime_get(),
     };
 
     const int ret = frame_handler_submit(&received);
@@ -100,8 +101,9 @@ static void submit_parsed_frame(void)
         // Count the new frame dropped because the queue is full.
         atomic_inc(&queue_drops_count);
         // Report the first drop and every hundredth drop to limit repetitive output.
-        if (atomic_get(&queue_drops_count) == 1 || atomic_get(&queue_drops_count) % 100 == 0) {
-            LOG_WRN("Frame queue drops: %u", (unsigned int)atomic_get(&queue_drops_count));
+        const atomic_val_t queue_drops = atomic_get(&queue_drops_count);
+        if (queue_drops == 1 || queue_drops % 100 == 0) {
+            LOG_WRN("Frame queue drops: %u", (unsigned int)queue_drops);
         }
     } else if (ret == -EINVAL) {
         LOG_ERR("Frame submit rejected: type=0x%02X, length=%u",

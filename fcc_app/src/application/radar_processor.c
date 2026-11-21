@@ -1,15 +1,22 @@
 #include "application/radar_processor.h"
 
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/__assert.h>
 
 #include "protocol/measurement_message.h"
 #include "tracking/gating.h"
 
+// Sensor timestamp gap limit, distinct from the board-clock RX silence timeout.
+#define TRACK_MAX_PREDICTION_INTERVAL_MS 1000U
+
 // Processing stays in the handler thread and shares its logging configuration.
 LOG_MODULE_DECLARE(frame_handler, CONFIG_RADAR_HANDLER_LOG_LEVEL);
 
-static TrackReportResult update_track_from_measurement(struct track *p_track,
-                                                       const struct radar_measurement *p_measurement);
+static TrackReportResult update_track_from_measurement(struct track *p_track, const struct radar_measurement *p_measurement);
+static void log_track_started(const struct radar_measurement *p_measurement);
+static void log_prediction(const struct estimator_output *p_estimate);
+static void log_prediction_skipped(uint32_t previous_estimate_sensor_ms, uint32_t input_sensor_ms, TrackState state);
+static void log_track_update(const struct track *p_track, bool measurement_accepted);
 static const char *track_state_name(TrackState state);
 
 void radar_processor_reset(struct radar_processor *p_processor)
@@ -17,32 +24,31 @@ void radar_processor_reset(struct radar_processor *p_processor)
     track_init(&p_processor->track);
 
     // Arm timeout monitoring only after the next valid radar measurement.
-    p_processor->last_valid_rx_ms = 0;
+    p_processor->last_valid_rx_uptime_ms = 0;
     p_processor->timeout_armed = false;
 }
 
-bool radar_processor_is_timed_out(const struct radar_processor *p_processor, int64_t now_ms)
+bool radar_processor_is_timed_out(const struct radar_processor *p_processor, int64_t now_uptime_ms)
 {
     // Compare board uptime with RX completion time; querying has no side effects.
     return p_processor->timeout_armed &&
-           now_ms - p_processor->last_valid_rx_ms >= CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS;
+           now_uptime_ms - p_processor->last_valid_rx_uptime_ms >= CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS;
 }
 
 bool radar_processor_process_measurement(struct radar_processor *p_processor,
-                                         const struct protocol_frame *p_frame, int64_t received_at_ms,
+                                         const struct protocol_frame *p_frame, int64_t received_uptime_ms,
                                          struct radar_process_result *out_result)
 {
     struct radar_measurement measurement;
 
-    if (!measurement_message_decode(
-            p_frame->payload,
-            p_frame->payload_length,
-            &measurement)) {
+    const bool payload_decoded = measurement_message_decode(p_frame->payload, p_frame->payload_length, &measurement);
+    if (!payload_decoded) {
         LOG_WRN("Invalid radar payload: length=%u", (unsigned int)p_frame->payload_length);
         return false;
     }
 
-    if (!measurement_message_validate(&measurement)) {
+    const bool measurement_valid = measurement_message_validate(&measurement);
+    if (!measurement_valid) {
         LOG_WRN("Invalid radar measurement: range=%.2f m, azimuth=%.4f rad",
                 (double)measurement.range_m, (double)measurement.azimuth_rad);
         return false;
@@ -50,11 +56,11 @@ bool radar_processor_process_measurement(struct radar_processor *p_processor,
 
     // Record received time for valid radar payloads, before timestamp/gate checks.
     // A later tracking rejection still counts as receiving a valid measurement payload.
-    p_processor->last_valid_rx_ms = received_at_ms;
+    p_processor->last_valid_rx_uptime_ms = received_uptime_ms;
     p_processor->timeout_armed = true;
 
-    LOG_DBG("Measurement: t=%u ms, range=%.2f m, azimuth=%.4f rad",
-            (unsigned int)measurement.timestamp_ms, (double)measurement.range_m, (double)measurement.azimuth_rad);
+    LOG_DBG("Measurement: sensor_ms=%u, range=%.2f m, azimuth=%.4f rad",
+            (unsigned int)measurement.sensor_time_ms, (double)measurement.range_m, (double)measurement.azimuth_rad);
 
     const TrackState previous_state = p_processor->track.state;
     const TrackReportResult result = update_track_from_measurement(&p_processor->track, &measurement);
@@ -65,65 +71,112 @@ bool radar_processor_process_measurement(struct radar_processor *p_processor,
                 track_state_name(previous_state), track_state_name(p_processor->track.state));
     }
 
-    out_result->input_timestamp_ms = measurement.timestamp_ms;
+    out_result->input_sensor_ms = measurement.sensor_time_ms;
     out_result->result = result;
     return true;
 }
 
 static TrackReportResult update_track_from_measurement(struct track *p_track, const struct radar_measurement *p_measurement)
 {
-    if (p_track->state == TRACK_STATE_EMPTY) {
-        track_start(p_track, (float)p_measurement->range_m, (float)p_measurement->azimuth_rad, p_measurement->timestamp_ms);
+    const uint32_t previous_estimate_sensor_ms = p_track->estimate_sensor_ms;
 
-        LOG_INF("Track started: TENTATIVE, t=%u ms, range=%.2f m, azimuth=%.4f rad",
-                (unsigned int)p_measurement->timestamp_ms,
-                (double)p_measurement->range_m, (double)p_measurement->azimuth_rad);
-
+    switch (p_track->state) {
+    case TRACK_STATE_EMPTY:
+        track_start(p_track, (float)p_measurement->range_m, (float)p_measurement->azimuth_rad, p_measurement->sensor_time_ms);
+        log_track_started(p_measurement);
         return TRACK_REPORT_RESULT_STARTED;
-    } else {
 
-        // Prediction may clear a lost/stale track. A later measurement starts it anew;
-        // this measurement is not reused for startup after a reset result.
-        const uint32_t previous_time_ms = p_track->estimate_timestamp_ms;
-        const TrackPredictResult prediction = track_predict(p_track, p_measurement->timestamp_ms);
-        if (prediction != TRACK_PREDICT_RESULT_PREDICTED) {
-            LOG_DBG("Prediction skipped: previous_t=%u ms, received_t=%u ms, state=%s",
-                    (unsigned int)previous_time_ms,
-                    (unsigned int)p_measurement->timestamp_ms, track_state_name(p_track->state));
-            return prediction == TRACK_PREDICT_RESULT_TIME_REJECTED ?
-                TRACK_REPORT_RESULT_TIME_REJECTED : TRACK_REPORT_RESULT_RESET;
+    case TRACK_STATE_LOST:
+        // Reset before checking the old timestamp; start anew on the next measurement.
+        track_init(p_track);
+        log_prediction_skipped(previous_estimate_sensor_ms, p_measurement->sensor_time_ms, p_track->state);
+        return TRACK_REPORT_RESULT_RESET;
+
+    case TRACK_STATE_TENTATIVE:
+    case TRACK_STATE_CONFIRMED:
+    case TRACK_STATE_COASTING: {
+        // Unsigned subtraction allows normal uint32 timestamp wraparound.
+        const uint32_t prediction_interval_ms = p_measurement->sensor_time_ms - previous_estimate_sensor_ms;
+        if (prediction_interval_ms == 0U || prediction_interval_ms >= TRACK_SENSOR_HALF_RANGE_MS) {
+            log_prediction_skipped(previous_estimate_sensor_ms, p_measurement->sensor_time_ms, p_track->state);
+            return TRACK_REPORT_RESULT_TIME_REJECTED;
         }
 
-        const float predicted_range_m = p_track->range_filter.estimate;
-        const float predicted_azimuth_rad = p_track->azimuth_filter.estimate;
+        if (prediction_interval_ms > TRACK_MAX_PREDICTION_INTERVAL_MS) {
+            // Do not reuse this measurement to start the cleared track.
+            track_init(p_track);
+            log_prediction_skipped(previous_estimate_sensor_ms, p_measurement->sensor_time_ms, p_track->state);
+            return TRACK_REPORT_RESULT_RESET;
+        }
 
-        LOG_DBG("Prediction: range=%.2f m, azimuth=%.4f rad",
-                (double)predicted_range_m, (double)predicted_azimuth_rad);
+        const struct track next = track_predict_next(p_track, p_measurement->sensor_time_ms);
+        *p_track = next;
 
-        // Compare with the prediction using both configured inclusive gates.
-        const bool is_in_gate = gating_check(
+        const struct estimator_output estimate = track_get_estimate(p_track);
+        log_prediction(&estimate);
+
+        const bool accepted = gating_check(
             p_measurement->range_m,
-            predicted_range_m,
+            estimate.range_m,
             p_measurement->azimuth_rad,
-            predicted_azimuth_rad
+            estimate.azimuth_rad
         );
 
-        // Only accepted measurements correct the filters. A gate miss retains
-        // the prediction and advances track-loss policy, not RX error statistics.
-        if (is_in_gate) {
-            track_hit(p_track, p_measurement->range_m, p_measurement->azimuth_rad);
+        // A gate miss keeps the prediction and only advances lifecycle policy.
+        if (accepted) {
+            track_apply_measurement(p_track, p_measurement->range_m, p_measurement->azimuth_rad);
         } else {
-            track_miss(p_track);
+            track_apply_miss(p_track);
         }
+        log_track_update(p_track, accepted);
+        return accepted ? TRACK_REPORT_RESULT_UPDATED : TRACK_REPORT_RESULT_GATE_REJECTED;
+    }
+
+    default:
+        __ASSERT(false, "Invalid track state: %d", (int)p_track->state);
+        // Clear invalid state when assertions are disabled.
+        track_init(p_track);
+        return TRACK_REPORT_RESULT_RESET;
+    }
+}
+
+static void log_prediction(const struct estimator_output *p_estimate)
+{
+    LOG_DBG("Prediction: range=%.2f m, azimuth=%.4f rad",
+            (double)p_estimate->range_m, (double)p_estimate->azimuth_rad);
+}
+
+static void log_track_started(const struct radar_measurement *p_measurement)
+{
+    LOG_INF("Track started: TENTATIVE, sensor_ms=%u, range=%.2f m, azimuth=%.4f rad",
+            (unsigned int)p_measurement->sensor_time_ms,
+            (double)p_measurement->range_m, (double)p_measurement->azimuth_rad);
+}
+
+static void log_prediction_skipped(uint32_t previous_estimate_sensor_ms, uint32_t input_sensor_ms, TrackState state)
+{
+    LOG_DBG("Prediction skipped: previous_estimate_sensor_ms=%u, input_sensor_ms=%u, state=%s",
+            (unsigned int)previous_estimate_sensor_ms,
+            (unsigned int)input_sensor_ms, track_state_name(state));
+}
+
+static void log_track_update(const struct track *p_track, bool measurement_accepted)
+{
+    if (p_track->state == TRACK_STATE_TENTATIVE ||
+        p_track->state == TRACK_STATE_CONFIRMED ||
+        p_track->state == TRACK_STATE_COASTING) {
+        const struct estimator_output updated = track_get_estimate(p_track);
 
         LOG_DBG("%s: range=%.2f m, azimuth=%.4f rad, range_rate=%.2f m/s, azimuth_rate=%.4f rad/s",
-                is_in_gate ? "Measurement accepted" : "Measurement rejected by gate",
-                (double)p_track->range_filter.estimate,
-                (double)p_track->azimuth_filter.estimate,
-                (double)p_track->range_filter.rate,
-                (double)p_track->azimuth_filter.rate);
-
-        return is_in_gate ? TRACK_REPORT_RESULT_UPDATED : TRACK_REPORT_RESULT_GATE_REJECTED;
+                measurement_accepted ? "Measurement accepted" : "Measurement rejected by gate",
+                (double)updated.range_m,
+                (double)updated.azimuth_rad,
+                (double)updated.range_rate_mps,
+                (double)updated.azimuth_rate_radps);
+    } else {
+        LOG_DBG("%s: state=%s, estimate invalid",
+                measurement_accepted ? "Measurement accepted" : "Measurement rejected by gate",
+                track_state_name(p_track->state));
     }
 }
 

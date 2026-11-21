@@ -31,7 +31,8 @@ uint16_t protocol_frame_crc(const struct protocol_frame *p_frame)
 
 int protocol_frame_encode(const struct protocol_frame *p_frame, uint8_t *out_buffer, size_t capacity)
 {
-    if (!protocol_frame_has_valid_length(p_frame) || out_buffer == NULL) {
+    const bool length_valid = protocol_frame_has_valid_length(p_frame);
+    if (!length_valid || out_buffer == NULL) {
         return -EINVAL;
     }
 

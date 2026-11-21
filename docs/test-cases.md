@@ -133,12 +133,14 @@ sleep 호출 검사는 실제 운영체제의 송신 주기 정확도를 보장�
 | `test_angle_prediction_and_correction` | 179°에서 예측·보정 시 ±180° 경계를 올바르게 처리하는지 |
 | `test_stationary_convergence` | 1000m 정지 측정을 200회 처리해 거리·속도가 수렴하고 공분산 대각이 음수가 아니며 대칭이 유지되는지 |
 | `test_decode_semicircle` | 10바이트 payload의 시간·거리·±π/2·int32 각도 경계 해석; 잘못된 길이와 NULL 인자 거부; 거리 0 거부 |
-| `test_timestamp_rejection` | 중복, 역행, 정확히 2³¹ms 차이의 timestamp를 거부하고 트랙 메모리를 변경하지 않는지 |
+| `test_prediction_preserves_lifecycle` | 활성 상태별 예측이 원본·상태·카운터를 보존하고 다음 추정값·공분산·timestamp를 반환하는지 |
 | `test_elapsed_time_and_wraparound` | 300ms 간격의 예측과 uint32 timestamp 순환을 넘는 100ms 간격 계산 확인 |
-| `test_long_gap_and_restart` | 간격 1000ms는 허용, 1001ms는 EMPTY로 초기화; 새 측정으로 TENTATIVE·필터 재시작 |
+| `test_track_restart` | 명시적 초기화 후 새 측정으로 TENTATIVE·필터 재시작 |
 | `test_confirmation_coasting_and_loss` | 최초 측정 포함 3 hit로 CONFIRMED; miss 후 COASTING, 재검출로 CONFIRMED; 연속 5 miss로 LOST |
-| `test_tentative_miss_and_inactive_calls` | TENTATIVE에서 miss 시 EMPTY; EMPTY에서 hit/miss/predict 호출이 상태를 변경하지 않는지 |
-| `test_lost_restarts_for_any_timestamp` | LOST에서 hit/miss는 상태 유지; timestamp 0/900/1000으로 predict 시 EMPTY, 이후 새 트랙 시작 가능 |
+| `test_tentative_miss_and_inactive_calls` | TENTATIVE에서 miss 시 EMPTY; EMPTY에서 hit/miss 호출이 상태를 변경하지 않는지 |
+| `test_lost_inactive_calls_and_restart` | LOST에서 hit/miss는 상태 유지; 명시적 초기화 후 새 트랙 시작 가능 |
+
+시간 거절·1000/1001ms 경계·LOST 초기화 우선순위는 handler의 `test_track_timestamp_rejection_report`, `test_track_gap_reset_and_recovery`, `test_track_gate_rejection_empty_and_lost`에서 검증합니다.
 
 실제 `frame_handler.c`는 이 테스트에 포함되지 않습니다. 송신 timestamp 간격 검사와 보드 uptime 기반 무수신 timeout은 서로 다른 기능입니다.
 

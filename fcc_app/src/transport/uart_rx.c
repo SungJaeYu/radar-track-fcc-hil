@@ -58,7 +58,8 @@ K_THREAD_DEFINE(uart_rx_tid, 1024, uart_rx_thread, NULL, NULL, NULL, 5, 0, 0);
 int uart_rx_init(void)
 {
     // Check UART device is ready
-    if (!device_is_ready(p_uart)) {
+    const bool device_ready = device_is_ready(p_uart);
+    if (!device_ready) {
         LOG_ERR("USART6 is not ready");
         return -ENODEV;
     }
@@ -107,18 +108,21 @@ static void uart_callback(const struct device *p_dev, void *p_user_data)
     // UART Interrupt is pending
     while (uart_irq_is_pending(p_dev)) {
         // if UART Interrupt Receive Ready
-        if (uart_irq_rx_ready(p_dev)) {
+        const int rx_ready = uart_irq_rx_ready(p_dev);
+        if (rx_ready) {
             uint8_t byte;
             // UART FIFO Read
             while (uart_fifo_read(p_dev, &byte, 1) == 1) {
                 // Keep draining the hardware FIFO during recovery, but discard new bytes.
                 // Drain recovery requires the buffer to contain only bytes received before the first loss.
-                if (atomic_get(&rx_overflow) != 0) {
+                const atomic_val_t overflow = atomic_get(&rx_overflow);
+                if (overflow != 0) {
                     atomic_inc(&rx_dropped_bytes);
                     continue;
                 }
 
-                if (!ring_push(&rx_ring, byte)) {
+                const bool byte_stored = ring_push(&rx_ring, byte);
+                if (!byte_stored) {
                     atomic_inc(&ring_overflow_events);
                     atomic_inc(&rx_dropped_bytes);
                     // Drop the byte that could not be stored and mark recovery as required.
@@ -153,7 +157,8 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
             // Parsing and queue submission run after interrupts are restored.
             const unsigned int key = irq_lock();
 
-            if (atomic_get(&rx_overflow) != 0) {
+            const atomic_val_t overflow = atomic_get(&rx_overflow);
+            if (overflow != 0) {
                 // Allow interrupts during parsing, queue submission, and logging in drain recovery.
                 // The flag remains set, so the ISR still cannot write to the ring buffer.
                 irq_unlock(key);
@@ -171,7 +176,8 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
                 break;
             }
 
-            if (!ring_pop(&rx_ring, &byte)) {
+            const bool byte_available = ring_pop(&rx_ring, &byte);
+            if (!byte_available) {
                 irq_unlock(key);
                 break;
             }

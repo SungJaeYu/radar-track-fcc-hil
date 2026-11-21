@@ -32,20 +32,33 @@ ZTEST_SUITE(tracking, NULL, NULL, NULL, NULL, NULL);
 #define RAD(degrees) ((degrees) * PI_F / 180.0f)
 #define NEAR(actual, expected) CHECK(fabsf((actual) - (expected)) < 1e-5f)
 
-static struct track new_track(uint32_t timestamp)
+static struct track new_track(uint32_t sensor_time_ms)
 {
     struct track t = {0};
     track_init(&t);
-    track_start(&t, 1000.0f, RAD(30.0f), timestamp);
+    track_start(&t, 1000.0f, RAD(30.0f), sensor_time_ms);
     return t;
 }
 
-static void hit(struct track *p_track, uint32_t timestamp)
+// Verify input preservation before the caller explicitly applies the next state.
+static struct track predict_checked(const struct track *p_current, uint32_t sensor_time_ms)
 {
-    CHECK(track_predict(p_track, timestamp) == TRACK_PREDICT_RESULT_PREDICTED);
-    CHECK(gating_check(1000.0f, p_track->range_filter.estimate, RAD(30.0f),
-                       p_track->azimuth_filter.estimate));
-    track_hit(p_track, 1000.0f, RAD(30.0f));
+    unsigned char before[sizeof *p_current];
+    memcpy(before, p_current, sizeof before);
+    const struct track next = track_predict_next(p_current, sensor_time_ms);
+    CHECK(memcmp(before, p_current, sizeof before) == 0);
+    CHECK(next.state == p_current->state);
+    CHECK(next.hit_count == p_current->hit_count);
+    CHECK(next.miss_count == p_current->miss_count);
+    return next;
+}
+
+static void hit(struct track *p_track, uint32_t sensor_time_ms)
+{
+    *p_track = predict_checked(p_track, sensor_time_ms);
+    const struct estimator_output predicted = track_get_estimate(p_track);
+    CHECK(gating_check(1000.0f, predicted.range_m, RAD(30.0f), predicted.azimuth_rad));
+    track_apply_measurement(p_track, 1000.0f, RAD(30.0f));
 }
 
 TEST(test_angle_wrap)
@@ -130,7 +143,7 @@ TEST(test_cv_prediction_and_covariance)
     kalman_cv_predict(&k, 0.5f);
     NEAR(k.estimate, 11);
     NEAR(k.rate, 2);
-    // Hand-calculated F P F^T + Q for dt=0.5, acceleration variance=4.
+    // Hand-calculated F P F^T + Q for interval_s=0.5, acceleration variance=4.
     NEAR(k.p00, 6.3125f);
     NEAR(k.p01, 4.75f);
     NEAR(k.p10, 4.75f);
@@ -181,7 +194,7 @@ TEST(test_decode_semicircle)
     uint8_t payload[] = {0, 0, 0, 100, 0x03, 0xe8, 0x40, 0, 0, 0};
     struct radar_measurement m;
     CHECK(measurement_message_decode(payload, sizeof payload, &m));
-    CHECK(m.timestamp_ms == 100);
+    CHECK(m.sensor_time_ms == 100);
     NEAR(m.range_m, 1000);
     NEAR(m.azimuth_rad, PI_F / 2);
     CHECK(measurement_message_validate(&m));
@@ -204,46 +217,61 @@ TEST(test_decode_semicircle)
     CHECK(!measurement_message_validate(&m));
 }
 
-TEST(test_timestamp_rejection)
+TEST(test_prediction_preserves_lifecycle)
 {
-    const uint32_t rejected[] = {100, 99, 100 + UINT32_C(0x80000000)};
-    for (unsigned i = 0; i < sizeof rejected / sizeof rejected[0]; ++i) {
-        struct track t = new_track(100);
-        unsigned char before[sizeof t];
-        memcpy(before, &t, sizeof t);
-        CHECK(track_predict(&t, rejected[i]) == TRACK_PREDICT_RESULT_TIME_REJECTED);
-        CHECK(memcmp(before, &t, sizeof t) == 0);
+    const TrackState states[] = {TRACK_STATE_TENTATIVE, TRACK_STATE_CONFIRMED, TRACK_STATE_COASTING};
+    for (size_t i = 0; i < sizeof states / sizeof states[0]; ++i) {
+        struct track current = new_track(100);
+        current.state = states[i];
+        current.hit_count = i == 0 ? 1 : i == 1 ? 3 : 0;
+        current.miss_count = i == 2 ? 2 : 0;
+        current.estimator.range_filter.rate = 20.0f;
+        const struct track next = predict_checked(&current, 1100);
+        CHECK(next.estimate_sensor_ms == 1100);
+        NEAR(next.estimator.range_filter.estimate, 1020.0f);
+        // Independent one-second CV covariance expectations with the initial tuning.
+        NEAR(next.estimator.range_filter.p00, 10050.0f);
+        NEAR(next.estimator.range_filter.p01, 10050.0f);
+        NEAR(next.estimator.range_filter.p10, 10050.0f);
+        NEAR(next.estimator.range_filter.p11, 10100.0f);
+        CHECK(next.estimator.range_filter.process_noise_variance == 100.0f);
+        CHECK(next.estimator.range_filter.measurement_noise_variance == 25.0f);
+        NEAR(next.estimator.azimuth_filter.estimate, RAD(30.0f));
+        CHECK(next.estimator.azimuth_filter.p00 > current.estimator.azimuth_filter.p00);
     }
 }
+
 
 TEST(test_elapsed_time_and_wraparound)
 {
     struct track t = new_track(100);
-    t.range_filter.rate = 20;
-    CHECK(track_predict(&t, 400) == TRACK_PREDICT_RESULT_PREDICTED);
-    NEAR(t.range_filter.estimate, 1006);
-    CHECK(t.estimate_timestamp_ms == 400);
+    // Inject a known velocity to isolate timestamp handling from filter convergence.
+    t.estimator.range_filter.rate = 20;
+    t = predict_checked(&t, 400);
+    NEAR(track_get_estimate(&t).range_m, 1006);
+    CHECK(t.estimate_sensor_ms == 400);
     t = new_track(UINT32_MAX - 49);
-    t.range_filter.rate = 20;
-    CHECK(track_predict(&t, 50) == TRACK_PREDICT_RESULT_PREDICTED);
-    NEAR(t.range_filter.estimate, 1002);
-    CHECK(t.estimate_timestamp_ms == 50);
+    t.estimator.range_filter.rate = 20;
+    t = predict_checked(&t, 50);
+    NEAR(track_get_estimate(&t).range_m, 1002);
+    CHECK(t.estimate_sensor_ms == 50);
 }
 
-TEST(test_long_gap_and_restart)
+TEST(test_track_restart)
 {
     struct track t = new_track(100);
-    CHECK(track_predict(&t, 1100) == TRACK_PREDICT_RESULT_PREDICTED);
-    t = new_track(100);
-    CHECK(track_predict(&t, 1101) == TRACK_PREDICT_RESULT_RESET);
+    t = predict_checked(&t, 1100);
+    track_init(&t);
     CHECK(t.state == TRACK_STATE_EMPTY);
     CHECK(t.hit_count == 0 && t.miss_count == 0);
     track_start(&t, 2000, RAD(-30), 1200);
     CHECK(t.state == TRACK_STATE_TENTATIVE && t.hit_count == 1);
-    NEAR(t.range_filter.estimate, 2000);
-    NEAR(t.range_filter.rate, 0);
-    NEAR(t.azimuth_filter.estimate, RAD(-30));
+    const struct estimator_output restarted = track_get_estimate(&t);
+    NEAR(restarted.range_m, 2000);
+    NEAR(restarted.range_rate_mps, 0);
+    NEAR(restarted.azimuth_rad, RAD(-30));
 }
+
 
 TEST(test_confirmation_coasting_and_loss)
 {
@@ -252,14 +280,14 @@ TEST(test_confirmation_coasting_and_loss)
     CHECK(t.state == TRACK_STATE_TENTATIVE);
     hit(&t, 200);
     CHECK(t.state == TRACK_STATE_CONFIRMED);
-    CHECK(track_predict(&t, 300) == TRACK_PREDICT_RESULT_PREDICTED);
-    track_miss(&t);
+    t = predict_checked(&t, 300);
+    track_apply_miss(&t);
     CHECK(t.state == TRACK_STATE_COASTING && t.hit_count == 0 && t.miss_count == 1);
     hit(&t, 400);
     CHECK(t.state == TRACK_STATE_CONFIRMED && t.miss_count == 0);
     for (unsigned i = 1; i <= 5; ++i) {
-        CHECK(track_predict(&t, 400 + i * 100) == TRACK_PREDICT_RESULT_PREDICTED);
-        track_miss(&t);
+        t = predict_checked(&t, 400 + i * 100);
+        track_apply_miss(&t);
         CHECK(t.state == (i < 5 ? TRACK_STATE_COASTING : TRACK_STATE_LOST));
     }
 }
@@ -267,57 +295,55 @@ TEST(test_confirmation_coasting_and_loss)
 TEST(test_tentative_miss_and_inactive_calls)
 {
     struct track t = new_track(0);
-    track_miss(&t);
+    track_apply_miss(&t);
     CHECK(t.state == TRACK_STATE_EMPTY && t.hit_count == 0 && t.miss_count == 0);
     unsigned char before[sizeof t];
     memcpy(before, &t, sizeof t);
-    track_hit(&t, 500, 0);
-    track_miss(&t);
-    CHECK(track_predict(&t, 100) == TRACK_PREDICT_RESULT_EMPTY);
+    track_apply_measurement(&t, 500, 0);
+    track_apply_miss(&t);
     CHECK(memcmp(before, &t, sizeof t) == 0);
 }
 
-TEST(test_lost_restarts_for_any_timestamp)
+TEST(test_lost_inactive_calls_and_restart)
 {
-    const uint32_t timestamps[] = {0, 900, 1000};
-    for (unsigned i = 0; i < sizeof timestamps / sizeof timestamps[0]; ++i) {
-        struct track t = new_track(0);
-        hit(&t, 100);
-        hit(&t, 200);
-        for (unsigned n = 1; n <= 5; ++n) {
-            CHECK(track_predict(&t, 400 + n * 100) == TRACK_PREDICT_RESULT_PREDICTED);
-            track_miss(&t);
-        }
-        CHECK(t.state == TRACK_STATE_LOST);
-        unsigned char before[sizeof t];
-        memcpy(before, &t, sizeof t);
-        track_hit(&t, 500, 0);
-        track_miss(&t);
-        CHECK(memcmp(before, &t, sizeof t) == 0);
-        CHECK(track_predict(&t, timestamps[i]) == TRACK_PREDICT_RESULT_RESET);
-        CHECK(t.state == TRACK_STATE_EMPTY && t.hit_count == 0 && t.miss_count == 0);
-        track_start(&t, 500, 0, timestamps[i] + 100);
-        CHECK(t.state == TRACK_STATE_TENTATIVE && t.hit_count == 1);
-        NEAR(t.range_filter.estimate, 500);
-        NEAR(t.range_filter.rate, 0);
+    struct track t = new_track(0);
+    hit(&t, 100);
+    hit(&t, 200);
+    for (unsigned n = 1; n <= 5; ++n) {
+        t = predict_checked(&t, 400 + n * 100);
+        track_apply_miss(&t);
     }
+    CHECK(t.state == TRACK_STATE_LOST);
+    unsigned char before[sizeof t];
+    memcpy(before, &t, sizeof t);
+    track_apply_measurement(&t, 500, 0);
+    track_apply_miss(&t);
+    CHECK(memcmp(before, &t, sizeof t) == 0);
+    track_init(&t);
+    CHECK(t.state == TRACK_STATE_EMPTY && t.hit_count == 0 && t.miss_count == 0);
+    track_start(&t, 500, 0, 100);
+    CHECK(t.state == TRACK_STATE_TENTATIVE && t.hit_count == 1);
+    const struct estimator_output restarted = track_get_estimate(&t);
+    NEAR(restarted.range_m, 500);
+    NEAR(restarted.range_rate_mps, 0);
 }
+
 
 TEST(test_measurement_wire_domain_matrix)
 {
-    const uint32_t timestamps[] = {0, 1, UINT32_MAX - 1, UINT32_MAX};
+    const uint32_t sensor_timestamps_ms[] = {0, 1, UINT32_MAX - 1, UINT32_MAX};
     const uint16_t ranges[] = {0, 1, 2, UINT16_MAX - 1, UINT16_MAX};
     const int32_t angles[] = {INT32_MIN, INT32_MIN + 1, -1, 0, 1, INT32_MAX - 1, INT32_MAX};
-    for (size_t ti = 0; ti < sizeof(timestamps) / sizeof(timestamps[0]); ++ti) {
+    for (size_t ti = 0; ti < sizeof(sensor_timestamps_ms) / sizeof(sensor_timestamps_ms[0]); ++ti) {
         for (size_t ri = 0; ri < sizeof(ranges) / sizeof(ranges[0]); ++ri) {
             for (size_t ai = 0; ai < sizeof(angles) / sizeof(angles[0]); ++ai) {
-                uint32_t stamp = timestamps[ti], angle = (uint32_t)angles[ai];
+                uint32_t sensor_time_ms = sensor_timestamps_ms[ti], angle = (uint32_t)angles[ai];
                 uint16_t range = ranges[ri];
-                uint8_t payload[] = {stamp >> 24, stamp >> 16, stamp >> 8, stamp,
+                uint8_t payload[] = {sensor_time_ms >> 24, sensor_time_ms >> 16, sensor_time_ms >> 8, sensor_time_ms,
                     range >> 8, range, angle >> 24, angle >> 16, angle >> 8, angle};
                 struct radar_measurement measurement;
                 CHECK(measurement_message_decode(payload, sizeof(payload), &measurement));
-                CHECK(measurement.timestamp_ms == stamp);
+                CHECK(measurement.sensor_time_ms == sensor_time_ms);
                 CHECK(measurement.range_m == (float)range);
                 CHECK(fabs((double)measurement.azimuth_rad -
                            (double)angles[ai] * 3.14159265358979323846 / 2147483648.0) < 3e-7);
@@ -334,7 +360,7 @@ TEST(test_measurement_length_domain_preserves_output)
         if (length == 10) {
             continue;
         }
-        struct radar_measurement measurement = {.timestamp_ms = 123, .range_m = 456, .azimuth_rad = .5f};
+        struct radar_measurement measurement = {.sensor_time_ms = 123, .range_m = 456, .azimuth_rad = .5f};
         unsigned char before[sizeof(measurement)];
         memcpy(before, &measurement, sizeof(measurement));
         CHECK(!measurement_message_decode(payload, (uint8_t)length, &measurement));
@@ -354,12 +380,12 @@ TEST(test_prediction_interval_and_noise_matrix)
                 kalman_cv_init(&filter, 1000, speeds[k], 4, 0, 0, 9, noises[j], 1);
                 kalman_cv_predict(&filter, intervals[i]);
                 // Double-precision diagonal-P reference, independent of in-place update order.
-                double dt = intervals[i], q = noises[j];
-                CHECK(fabs(filter.estimate - (1000.0 + speeds[k] * dt)) < 1e-4);
+                double interval_s = intervals[i], q = noises[j];
+                CHECK(fabs(filter.estimate - (1000.0 + speeds[k] * interval_s)) < 1e-4);
                 CHECK(filter.rate == speeds[k]);
-                CHECK(fabs(filter.p00 - (4 + 9 * dt * dt + q * pow(dt, 4) / 4)) < 1e-4);
-                CHECK(fabs(filter.p01 - (9 * dt + q * pow(dt, 3) / 2)) < 1e-4);
-                CHECK(fabs(filter.p11 - (9 + q * dt * dt)) < 1e-4);
+                CHECK(fabs(filter.p00 - (4 + 9 * interval_s * interval_s + q * pow(interval_s, 4) / 4)) < 1e-4);
+                CHECK(fabs(filter.p01 - (9 * interval_s + q * pow(interval_s, 3) / 2)) < 1e-4);
+                CHECK(fabs(filter.p11 - (9 + q * interval_s * interval_s)) < 1e-4);
                 CHECK(filter.p01 == filter.p10);
                 CHECK((double)filter.p00 * filter.p11 - (double)filter.p01 * filter.p10 >= -1e-4);
             }
@@ -410,12 +436,12 @@ static const struct test_case cases[] = {
     TEST_CASE(test_angle_prediction_and_correction),
     TEST_CASE(test_stationary_convergence),
     TEST_CASE(test_decode_semicircle),
-    TEST_CASE(test_timestamp_rejection),
+    TEST_CASE(test_prediction_preserves_lifecycle),
     TEST_CASE(test_elapsed_time_and_wraparound),
-    TEST_CASE(test_long_gap_and_restart),
+    TEST_CASE(test_track_restart),
     TEST_CASE(test_confirmation_coasting_and_loss),
     TEST_CASE(test_tentative_miss_and_inactive_calls),
-    TEST_CASE(test_lost_restarts_for_any_timestamp),
+    TEST_CASE(test_lost_inactive_calls_and_restart),
 };
 
 int main(int argc, char **p_argv)

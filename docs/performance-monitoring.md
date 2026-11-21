@@ -42,7 +42,7 @@ west flash -d <repo>/build --runner openocd
 
 ```text
 RX 파서 완료              handler process 진입           uart_tx_submit 반환
-received_at_ms (t0)       k_uptime_get() (t1)              k_uptime_get() (t2)
+received_uptime_ms (t0)       k_uptime_get() (t1)              k_uptime_get() (t2)
         └──── queue_wait ──────┘
                                 └──── processing ──────────┘
         └──────────────── rx_to_submit ───────────────────┘
@@ -54,6 +54,11 @@ received_at_ms (t0)       k_uptime_get() (t1)              k_uptime_get() (t2)
 - `t0`는 기존 보드 RX 완료 시각이다. 첫/마지막 바이트 ISR 시각이나 센서 `input_timestamp_ms`가 아니다.
 - `t2`는 송신 큐 제출 반환 직후, 제출 결과 로그 전에 기록한다. `uart_tx_submit()` 내부 계측 비용도 포함한다. UART 실제 전송·PC 수신까지의 지연은 아니다.
 - 처리 시간에는 선점·대기와 계측 자체의 비용도 포함된다. 순수 필터 실행 시간이나 WCET라고 해석하지 않는다.
+
+C의 시간 통계 타입은 `perf_latency_stats`이며, `sample_count`는 표본 수,
+`histogram_counts`는 구간별 빈도, `over_budget_count`는 기준 초과 횟수다.
+큐 통계는 `accepted_count`, `rejected_count`, `max_observed_depth`로 저장한다.
+기존 로그 필드 이름은 보드 검증 도구와의 호환을 위해 유지한다.
 
 각 시간 통계는 `n`, `total_ms`, `max_ms`, `over20`, 히스토그램을 유지한다. 평균은 `total_ms / n`으로 계산하며 n=0이면 표본이 없다. 부팅 이후 누적값이고 5초 구간별 통계가 아니다.
 
@@ -79,7 +84,7 @@ collector의 짧은 `k_spinlock` 구간에서 카운터·snapshot을 보호한�
 
 통계 구조체는 한 번의 잠금으로 복사하지만 여러 단계의 이벤트는 서로 다른 순간에 기록된다. 입력·처리·송신이 진행 중일 때 카운터가 즉시 일치하지 않을 수 있다. 스택 검사는 snapshot 이후 별도 조회이며 동시에 실행 중인 스레드의 사용을 샘플링한다. 무손실·완전한 peak 검출이나 stack overflow 부재를 보장하지 않는다.
 
-collector는 `src/diagnostics/perf_monitor.c/.h`, 출력·스택 조회는 `perf_reporter.c`에 둔다. 별도 계측 스레드를 만들지 않고 기존 main 루프를 사용한다. 큰 출력용 snapshot은 main 스택 대신 reporter의 정적 저장소에 둔다. 로그 모듈 `radar_perf`는 고정 INFO다. 요약은 여러 LOG 호출이므로 다른 로그와 섞이거나 버퍼 포화 시 일부가 누락될 수 있다.
+collector는 `src/diagnostics/perf_monitor.c/.h`, 출력·스택 조회는 `perf_reporter.c/.h`에 둔다. main은 `perf_reporter.h`의 `perf_reporter_log_summary()`를 호출한다. 별도 계측 스레드를 만들지 않고 기존 main 루프를 사용한다. 큰 출력용 snapshot은 main 스택 대신 reporter의 정적 저장소에 둔다. 로그 모듈 `radar_perf`는 고정 INFO다. 요약은 여러 LOG 호출이므로 다른 로그와 섞이거나 버퍼 포화 시 일부가 누락될 수 있다.
 
 ## 검증과 다음 보드 시험
 

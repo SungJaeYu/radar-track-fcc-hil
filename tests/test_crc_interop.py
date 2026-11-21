@@ -62,8 +62,8 @@ int encode_track_test(unsigned char *out_wire, size_t capacity, int index) {
                           TRACK_REPORT_RESULT_RESET};
     const int valid = index > 0 && index < 4;
     const struct track_report report = {
-        .report_sequence = 0xffffffffU, .input_timestamp_ms = 300U,
-        .estimate_timestamp_ms = valid ? 200U : 0U,
+        .report_sequence = 0xffffffffU, .input_sensor_ms = 300U,
+        .estimate_sensor_ms = valid ? 200U : 0U,
         .range_m = valid ? 1000.0f : 0.0f, .azimuth_rad = valid ? -0.5f : 0.0f,
         .range_rate_mps = valid ? -20.0f : 0.0f, .azimuth_rate_radps = valid ? 0.25f : 0.0f,
         .state = states[index], .result = results[index],

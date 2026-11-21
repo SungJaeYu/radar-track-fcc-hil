@@ -50,16 +50,17 @@ static void irq_unlock(unsigned int key)
 }
 
 // Tests advance board uptime explicitly; no wall-clock sleeps are needed.
-static int64_t test_now_ms = 100;
+static int64_t test_uptime_ms = 100;
 static int64_t k_uptime_get(void)
 {
-    return test_now_ms;
+    return test_uptime_ms;
 }
 
 // Single-threaded counter storage; this does not model atomic concurrency.
 typedef int atomic_t;
+typedef int atomic_val_t;
 #define ATOMIC_INIT(x) (x)
-static int atomic_get(const atomic_t *p_value)
+static atomic_val_t atomic_get(const atomic_t *p_value)
 {
     return *p_value;
 }

@@ -28,7 +28,8 @@ K_THREAD_DEFINE(uart_tx_tid, 1024, uart_tx_thread, NULL, NULL, NULL, 7, 0, 0);
 int uart_tx_init(void)
 {
     // Check UART device is ready
-    if (!device_is_ready(p_uart)) {
+    const bool device_ready = device_is_ready(p_uart);
+    if (!device_ready) {
         LOG_ERR("USART6 is not ready");
         return -ENODEV;
     }
@@ -40,7 +41,12 @@ int uart_tx_init(void)
 
 int uart_tx_submit(const struct tx_frame *p_frame)
 {
-    if (p_frame == NULL || !protocol_frame_has_valid_length(&p_frame->frame)) {
+    if (p_frame == NULL) {
+        return -EINVAL;
+    }
+
+    const bool length_valid = protocol_frame_has_valid_length(&p_frame->frame);
+    if (!length_valid) {
         return -EINVAL;
     }
 

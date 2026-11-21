@@ -21,8 +21,8 @@ int track_message_encode(const struct track_report *p_report, struct protocol_fr
     out_frame->payload_length = TRACK_REPORT_PAYLOAD_LENGTH;
 
     write_u32_be(p_report->report_sequence, &out_frame->payload[0]);
-    write_u32_be(p_report->input_timestamp_ms, &out_frame->payload[4]);
-    write_u32_be(p_report->estimate_timestamp_ms, &out_frame->payload[8]);
+    write_u32_be(p_report->input_sensor_ms, &out_frame->payload[4]);
+    write_u32_be(p_report->estimate_sensor_ms, &out_frame->payload[8]);
     write_f32_be(p_report->range_m, &out_frame->payload[12]);
     write_f32_be(p_report->azimuth_rad, &out_frame->payload[16]);
     write_f32_be(p_report->range_rate_mps, &out_frame->payload[20]);

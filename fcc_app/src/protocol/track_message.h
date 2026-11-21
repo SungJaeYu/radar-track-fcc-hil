@@ -11,8 +11,9 @@
 
 struct track_report {
     uint32_t report_sequence;
-    uint32_t input_timestamp_ms;
-    uint32_t estimate_timestamp_ms;
+    // Sensor clock; wire offsets 4 and 8 match the PC timestamp fields.
+    uint32_t input_sensor_ms;
+    uint32_t estimate_sensor_ms;
     float range_m;
     float azimuth_rad;
     float range_rate_mps;

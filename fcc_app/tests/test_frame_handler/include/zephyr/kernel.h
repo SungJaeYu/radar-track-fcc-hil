@@ -9,10 +9,10 @@
 #define K_MSGQ_DEFINE(name, size, count, align) int name
 #define K_MSEC(x) (x)
 #define K_NO_WAIT 0
-static int64_t test_now_ms;
+static int64_t test_uptime_ms;
 static int64_t k_uptime_get(void)
 {
-    return test_now_ms;
+    return test_uptime_ms;
 }
 
 static int k_msgq_get(int *p_queue, void *p_data, int timeout)

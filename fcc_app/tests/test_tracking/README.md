@@ -1,14 +1,17 @@
 # Tracking C regression tests
 
-현재 `kalman_cv`, `angle_utils`, `gating`, `track`, `measurement_message` 구현을 직접
+현재 `kalman_cv`, `estimator`, `angle_utils`, `gating`, `track`, `measurement_message` 구현을 직접
 컴파일합니다. 예전 Cartesian `kalman_state` 테스트를 대체합니다.
 
 검증 범위:
 - semicircle 수신 변환, radian wrap 및 gating
 - CV 예측·보정, 공분산 계산, 정지 표적 수렴
-- timestamp 중복·역행·순환, 긴 공백 이후 재시작
+- 예측 함수의 원본·수명주기 보존, 반환 공분산·timestamp 및 uint32 순환
 - TENTATIVE / CONFIRMED / COASTING / LOST 전환
-- LOST에서 timestamp가 재시작되는 경우와 비활성 상태 호출
+- 명시적 초기화·재시작과 EMPTY/LOST에서 hit/miss 호출 보존
+
+중복·역행·반주기 timestamp 거절, 1000/1001ms 경계와 LOST 초기화 우선순위는
+[handler 테스트](../test_frame_handler/README.md)에서 radar_processor를 통해 검증합니다.
 
 ## 호스트 실행 (보드 불필요)
 
@@ -85,9 +88,13 @@ Zephyr Ztest는 기존 21개를 기본 설정으로 실행하며 host 전용 행
 
 2026-11-14: STM32용 Zephyr Ztest 앱도 빌드 성공했으며 기본 gate 설정이 생성된 `.config`에 반영됨을 확인했습니다. 이 앱의 보드 실행은 하지 않았습니다.
 
-2026-11-18: prediction assertions compare explicit `TrackPredictResult` values.
+2026-11-18 historical behavior: prediction assertions compared explicit `TrackPredictResult` values.
 They distinguish successful prediction, unchanged EMPTY/time rejection, and reset
 after LOST/excessive gaps while retaining state and numeric checks.
+
+2026-11-21: `track_predict_next()` now returns a complete `struct track` without
+modifying its input. State/time rejection policy moved to `radar_processor`;
+the intermediate prediction result enum was removed.
 
 
 ## 입력 행렬 보강 — 2026-11-19

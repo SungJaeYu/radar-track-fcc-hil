@@ -2,7 +2,7 @@
 #include <zephyr/logging/log.h>
 
 #if defined(CONFIG_RADAR_PERF_MONITOR)
-#include "diagnostics/perf_monitor.h"
+#include "diagnostics/perf_reporter.h"
 #endif
 #include "transport/uart_rx.h"
 #include "transport/uart_tx.h"
@@ -32,7 +32,7 @@ int main(void)
     while (1) {
 #if defined(CONFIG_RADAR_PERF_MONITOR)
         k_sleep(K_SECONDS(5));
-        perf_monitor_log_summary();
+        perf_reporter_log_summary();
 #else
         k_sleep(K_SECONDS(1));
 #endif

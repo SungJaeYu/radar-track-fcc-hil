@@ -57,7 +57,7 @@ TRACK_REPORT 측정 경로는 아래 REQ-RPT-001~003 및 SPEC-TRACK-REPORT에 �
 | REQ-TRK-001 | 거리와 방위각을 CV 칼만 필터로 예측·보정하고 각도 오차의 순환을 처리해야 한다. | [SPEC-TRACK](#spec-track) | [kalman_cv.c](../fcc_app/src/tracking/kalman_cv.c) · `kalman_cv_predict / kalman_cv_correct_angle` | [test_tracking](#tests-test_tracking) | 구현; 수치·공분산·수렴 host 검증. 실측 정확도 목표 미정 |
 | REQ-TRK-002 | 거리·방위각 게이트를 모두 만족하는 측정만 보정에 사용해야 한다. | [SPEC-TRACK](#spec-track) | [gating.c](../fcc_app/src/tracking/gating.c) · `gating_check` | [test_tracking](#tests-test_tracking)  [test_frame_handler](#tests-test_frame_handler) | 구현; 기본/최소/좁은/넓은/최대 설정 20개 경계·AND·wrap 검증. handler의 gate 거부·COASTING·수신 시각 갱신 host 검증 완료 |
 | REQ-TRK-003 | 중복·역행 시각을 거부하고 정상 wraparound를 허용하며 1000ms 초과 예측 간격은 트랙을 지워야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_predict` | [test_tracking](#tests-test_tracking) | 구현; timestamp 경계·복귀 host 검증 |
-| REQ-TRK-004 | hit/miss에 따라 트랙을 생성·확인·coasting·lost 처리하고 재시작해야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_start / track_hit / track_miss` | [test_tracking](#tests-test_tracking) | 구현; 상태 전이 host 검증 |
+| REQ-TRK-004 | hit/miss에 따라 트랙을 생성·확인·coasting·lost 처리하고 재시작해야 한다. | [SPEC-TRACK](#spec-track) | [track.c](../fcc_app/src/tracking/track.c) · `track_start / track_apply_measurement / track_apply_miss` | [test_tracking](#tests-test_tracking) | 구현; 상태 전이 host 검증 |
 | REQ-CTL-001 | INIT/RESET은 트랙과 측정 timeout 감시를 초기화하되 RX 누적 통계는 보존해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `frame_handler_process / frame_handler_reset` | [Python](#tests-python)  [test_frame_handler](#tests-test_frame_handler) | 구현; 명령 경유 초기화·모사 통계 응답 보존 host 검증. 실보드 CRC/LEN/timeout 누적값 보존 확인; 큐·overflow 증가 후 통합 시험은 남음 |
 | REQ-CTL-002 | 첫 유효 측정 이후 설정된 제한 시간(기본 1000ms) 동안 유효 측정이 없으면 트랙을 한 번 초기화해야 한다. | [SPEC-TIME](#spec-time) | [frame_handler.c](../fcc_app/src/application/frame_handler.c) · `frame_handler_handle_timeout` → [radar_processor.c](../fcc_app/src/application/radar_processor.c) · `radar_processor_is_timed_out` | [test_frame_handler](#tests-test_frame_handler) | 구현; 정상/무효 측정·gate/timestamp 거부·경계·1회 만료 host 검증 완료 |
 | REQ-STA-001 | RX 오류 네 항목을 누적 집계하고 조회·파서 reset으로 초기화하지 않아야 한다. | [SPEC-STATUS](#spec-status) | [rx_frame_processor.c](../fcc_app/src/transport/rx_frame_processor.c) · `rx_frame_processor_get_stats` | [test_uart_rx](#tests-test_uart_rx) | 구현; 개별 atomic 조회 host 검증. 동시 snapshot 보장은 요구하지 않음 |
@@ -133,7 +133,7 @@ payload는 정확히 10바이트이며 정답 ID를 포함하지 않는다. NULL
 - parser는 RX, track·무수신 감시 상태는 handler 소유의 radar_processor, 보고 순번은 handler 소유의 report_sender, UART 송신은 TX가 담당한다. 새 application 모듈은 기존 handler 스레드에서 실행한다. 프레임 큐와 TX 큐는 각 8항목.
 - RX/handler는 최대 50ms 대기를 사용해 무수신에도 검사 기회를 만든다.
   timeout 임계값과 실제 스케줄링 지연을 포함한 응답 시간은 별개다.
-- `received_at_ms`는 프레임 완성·제출 시점의 보드 uptime이다. 물리적 첫/마지막 바이트 도착 시각이 아니다.
+- `received_uptime_ms`는 프레임 완성·제출 시점의 보드 uptime이다. 물리적 첫/마지막 바이트 도착 시각이 아니다.
 - submit은 객체를 복사하고 K_NO_WAIT를 사용한다. NULL/잘못된 LEN은 `-EINVAL`.
   RX 제출 `-ENOMSG`만 queue_drops로 집계한다. 다른 실패는 로그로 구분한다.
 - RX 초기화 실패 시 IRQ enable·준비 신호를 내지 않는다. TX도 장치 준비 성공 후 준비 신호를 낸다.
@@ -145,8 +145,8 @@ payload는 정확히 10바이트이며 정답 ID를 포함하지 않는다. NULL
 | 조건 | 기준 시계·시점 | 경계와 결과 |
 | --- | --- | --- |
 | 부분 프레임 timeout | RX가 마지막 바이트를 처리한 보드 uptime | 조립 중 경과 `>=CONFIG_RADAR_FRAME_RX_TIMEOUT_MS` (기본 1000ms)이면 parser reset·frame_timeouts 1 증가. STX 대기이면 감시하지 않음 |
-| 측정 무수신 timeout | 마지막 decode·validate 성공 프레임의 received_at_ms | 첫 유효 측정 후에만 감시. 경과 `>=CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS` (기본 1000ms)이면 트랙 reset·감시 해제·로그 1회 |
-| 큐 측정 나이 | handler 처리 시 보드 uptime − received_at_ms | `>=CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS`이면 MEAS_REPORT 폐기, stale_measurements 포화 증가; 추적·감시·보고 순번 불변 |
+| 측정 무수신 timeout | 마지막 decode·validate 성공 프레임의 received_uptime_ms | 첫 유효 측정 후에만 감시. 경과 `>=CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS` (기본 1000ms)이면 트랙 reset·감시 해제·로그 1회 |
+| 큐 측정 나이 | handler 처리 시 보드 uptime − received_uptime_ms | `>=CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS`이면 MEAS_REPORT 폐기, stale_measurements 포화 증가; 추적·감시·보고 순번 불변 |
 | 예측 간격 | 송신 측정 timestamp의 uint32 차이 | `>1000ms`이면 트랙 삭제. 정확히 1000ms는 예측 허용 |
 
 부분 프레임은 바이트를 처리할 때마다 기준 시각을 갱신한다. 전체 프레임 조립 시간이
@@ -161,7 +161,7 @@ INIT/RESET은 트랙과 감시를 지우고 RX 통계는 지우지 않는다. ST
 
 - 거리와 방위각에 각각 상태 `[값, 변화율]`의 CV 필터를 사용한다.
   `dt = delta_ms / 1000`; 각도 보정은 wrap된 최소 각도 차이를 사용한다.
-  Q/R 초기 튜닝값은 [track.c](../fcc_app/src/tracking/track.c)의 단위 주석을 기준으로 하며 센서 교정값으로 간주하지 않는다.
+  Q/R 초기 튜닝값은 [estimator.c](../fcc_app/src/tracking/estimator.c)의 단위 주석을 기준으로 하며 센서 교정값으로 간주하지 않는다.
 - 게이트는 `|거리 오차| <= CONFIG_RADAR_RANGE_GATE_M` 그리고 `|wrap 각도 오차| <= CONFIG_RADAR_AZIMUTH_GATE_DEG × π / 180`인 직사각형 게이트다. 기본값은 100 m·10°이고 경계를 포함한다.
 - Kconfig 허용 범위는 1–65535 m·정수 1–180°다. 180°는 모든 정규화 각도 오차를 허용한다. 설정별 검증은 `gating_cases.c`의 `range_boundary`, `angle_boundary`, `both_required`, `wrapped_error`를 5개 조합에서 실행한다.
 - EMPTY에서 측정으로 TENTATIVE 생성, hit_count=1. 총 3 hit에서 CONFIRMED.
@@ -169,12 +169,16 @@ INIT/RESET은 트랙과 감시를 지우고 RX 통계는 지우지 않는다. ST
   COASTING에서 hit는 CONFIRMED로 복귀하고 miss_count를 지운다.
 - miss는 현재 radar_processor의 게이트 거부에 의해 발생한다. 무수신 시간마다 miss가 자동 증가하는 구조는 아니다.
 - delta=0 또는 unsigned delta>=`0x80000000`은 거부한다. 정상 uint32 wraparound는 허용한다.
-- LOST 또는 긴 간격은 predict에서 EMPTY로 만들고 TRACK_PREDICT_RESULT_RESET을 반환한다.
+- LOST 또는 1000ms를 초과하는 전진 간격은 radar_processor에서 EMPTY로 만들고 TRACK_REPORT_RESULT_RESET을 반환한다.
   radar_processor는 해당 측정을 재사용해 시작하지 않으며 다음 측정에서 새 트랙을 시작한다.
 - RMSE 비교 방법과 초기 부하/지연 목표는 [v1 기준](roadmap.md#v1-acceptance)을 따른다. 최종 지원 부하와 실측 정확도·연속성은 아직 검증하지 않았다.
 
 <a id="spec-track-report"></a>
 ### SPEC-TRACK-REPORT — 단일 트랙 측정 결과
+
+펌웨어 C 구조체의 시각 필드는 `input_sensor_ms`·`estimate_sensor_ms`입니다.
+아래 표의 `input_timestamp_ms`·`estimate_timestamp_ms`는 PC/CSV의 기존 필드명이며
+동일한 센서 시각을 나타냅니다. wire 오프셋·형식은 변경하지 않았습니다.
 
 현재 펌웨어의 TYPE=7, payload 32바이트·전체 wire 37바이트 규격이다.
 `track_message_encode()`가 필드별로 직렬화하며 C 구조체 메모리를 그대로 전송하지 않는다.
@@ -365,12 +369,12 @@ PC monotonic 수신 시각부터 2초 이상 새 순번 보고가 없으면 STAL
 | [`test_stationary_convergence`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-001 |
 | [`test_gate`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-002 |
 | [`test_decode_semicircle`](../fcc_app/tests/test_tracking/src/main.c) | REQ-MEA-001, REQ-SYS-001 |
-| [`test_timestamp_rejection`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-003 |
+| [`test_prediction_preserves_lifecycle`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-003 |
 | [`test_elapsed_time_and_wraparound`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-003 |
-| [`test_long_gap_and_restart`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-003 |
+| [`test_track_restart`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-003 |
 | [`test_confirmation_coasting_and_loss`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-004 |
 | [`test_tentative_miss_and_inactive_calls`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-004 |
-| [`test_lost_restarts_for_any_timestamp`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-004 |
+| [`test_lost_inactive_calls_and_restart`](../fcc_app/tests/test_tracking/src/main.c) | REQ-TRK-004 |
 
 <a id="tests-python"></a>
 ### Python 시험 묶음
@@ -584,7 +588,9 @@ handler 전체 27개 통과. 이는 진행 중인 구현의 검증이며 v1 결�
 
 `radar_processor_is_timed_out(const ...)`는 판정만 하며 handler가 초기화·로그·보고를 담당한다.
 RX는 내부 `rx_frame_processor_is_timed_out()`으로 판정하고 공개 `rx_frame_processor_handle_timeout()`에서 파서 초기화·통계 증가를 수행한다.
-`track_predict()`는 `TrackPredictResult`의 PREDICTED/EMPTY/TIME_REJECTED/RESET을 반환한다. 예측·소실·시간 정책은 유지하며 호출자가 상태를 다시 읽어 반환 이유를 추론하지 않는다. 이 enum은 wire enum과 독립적이다.
+당시 `track_predict()`는 `TrackPredictResult`의 PREDICTED/EMPTY/TIME_REJECTED/RESET을 반환한다. 예측·소실·시간 정책은 유지하며 호출자가 상태를 다시 읽어 반환 이유를 추론하지 않는다. 이 enum은 wire enum과 독립적이다.
+
+2026-11-21: 위 중간 enum은 제거했다. 현재 `track_predict_next()`는 검증된 활성 트랙과 전진 timestamp를 받아 원본을 보존하고 다음 `struct track`을 반환한다. 상태·시간 정책과 최종 `TrackReportResult` 판정은 radar_processor가 담당하며, 예측 상태의 적용은 명시적 대입으로 수행한다.
 
 <a id="spec-eval"></a>
 ## SPEC-EVAL — CSV와 오프라인 평가
@@ -610,7 +616,7 @@ RX는 내부 `rx_frame_processor_is_timed_out()`으로 판정하고 공개 `rx_f
 <a id="spec-perf"></a>
 ## SPEC-PERF / REQ-PERF-001
 
-상세 계약은 [성능 계측](performance-monitoring.md)을 따른다. `CONFIG_RADAR_PERF_MONITOR`에서만 활성화하며 `received_at_ms` 기준 queue_wait와 성공 제출의 processing/rx_to_submit을 분리한다. INIT/RESET·timeout 보고는 지연 표본에서 제외하고 모든 측정 종료에서 문맥을 해제한다. 카운터·snapshot은 잠금으로 보호하며 계측 중의 로그/스택 조회는 잠금 밖에서 수행한다. 0..20ms 히스토그램과 >20ms 구간, 포화·실패 분리·관측 점유율/스택 한계를 문서화한다.
+상세 계약은 [성능 계측](performance-monitoring.md)을 따른다. `CONFIG_RADAR_PERF_MONITOR`에서만 활성화하며 `received_uptime_ms` 기준 queue_wait와 성공 제출의 processing/rx_to_submit을 분리한다. INIT/RESET·timeout 보고는 지연 표본에서 제외하고 모든 측정 종료에서 문맥을 해제한다. 카운터·snapshot은 잠금으로 보호하며 계측 중의 로그/스택 조회는 잠금 밖에서 수행한다. 0..20ms 히스토그램과 >20ms 구간, 포화·실패 분리·관측 점유율/스택 한계를 문서화한다.
 
 역추적: [monitor 테스트의 모든 9개 함수](../fcc_app/tests/test_perf_monitor/README.md)는 REQ-PERF-001에 연결한다. [handler](../fcc_app/tests/test_frame_handler/src/main.c)의 `test_perf_measurement_paths`, [TX](../fcc_app/tests/test_uart_tx/src/main.c)의 `test_tx_invalid_submit`, `test_tx_queue_copy_fifo_full_and_recovery`, `test_tx_encode_error_continues`는 PERF_TEST_ENABLED 구성에서 같은 요구사항의 호출 연결·실패 분리도 검증한다. 일반/debug/perf 펌웨어 빌드는 실제 Zephyr API와 옵션 분리를 확인하며 실보드 성능 증거는 아니다.
 

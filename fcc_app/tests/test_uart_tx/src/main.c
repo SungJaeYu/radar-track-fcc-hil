@@ -48,8 +48,8 @@ static void test_tx_invalid_submit(void)
 #if defined(CONFIG_RADAR_PERF_MONITOR)
     struct perf_stats stats;
     assert(perf_monitor_get_stats(&stats) == 0);
-    assert(stats.queues[PERF_QUEUE_TX].accepted == 0);
-    assert(stats.queues[PERF_QUEUE_TX].rejected == 0);
+    assert(stats.queues[PERF_QUEUE_TX].accepted_count == 0);
+    assert(stats.queues[PERF_QUEUE_TX].rejected_count == 0);
 #endif
 }
 
@@ -89,9 +89,9 @@ static void test_tx_queue_copy_fifo_full_and_recovery(void)
 #if defined(CONFIG_RADAR_PERF_MONITOR)
     struct perf_stats stats;
     assert(perf_monitor_get_stats(&stats) == 0);
-    assert(stats.queues[PERF_QUEUE_TX].accepted - before.queues[PERF_QUEUE_TX].accepted == 8);
-    assert(stats.queues[PERF_QUEUE_TX].rejected - before.queues[PERF_QUEUE_TX].rejected == 1);
-    assert(stats.queues[PERF_QUEUE_TX].observed_max_used == 8);
+    assert(stats.queues[PERF_QUEUE_TX].accepted_count - before.queues[PERF_QUEUE_TX].accepted_count == 8);
+    assert(stats.queues[PERF_QUEUE_TX].rejected_count - before.queues[PERF_QUEUE_TX].rejected_count == 1);
+    assert(stats.queues[PERF_QUEUE_TX].max_observed_depth == 8);
     assert(stats.tx_poll_completed - before.tx_poll_completed == 8 &&
            stats.tx_encode_failed == before.tx_encode_failed);
 #endif

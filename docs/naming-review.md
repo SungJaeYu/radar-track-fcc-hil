@@ -189,3 +189,13 @@ Tracking의 한 항목 안에서 17개를 실행하므로 C 논리 사례 합계
 | docs/hardware-test-2026-11-18-evaluation.md | 신규: 대상 소스 차이/해시·CSV·3시나리오·GUI13개·실패 이력·한계 |
 
 새 Python 모듈은 `recording.py`(Qt 없는 기록·평가)와 `evaluate.py`(시리얼 시나리오 CLI)로 기존 pc_sim에 둡니다. 별도 simulator 디렉터리나 제품 스레드는 만들지 않았습니다. 일반 사용자 기록 runs/는 Git 제외, 선택한 시험 증거만 docs/test-results에 보존합니다.
+
+## 2026-11-21 시간축 이름 정리
+
+위 11월 17일 점검에서 사용한 시간 이름은 현재 펌웨어에서 다음과 같이 구체화했습니다.
+`timestamp_ms` → `sensor_time_ms`, `estimate_timestamp_ms` → `estimate_sensor_ms`,
+`input_timestamp_ms` → `input_sensor_ms`, `received_at_ms` → `received_uptime_ms`,
+`now_ms` → `now_uptime_ms`, `delta_ms` → `prediction_interval_ms`, `dt_s` → `interval_s`.
+예측 함수의 목표 시각은 `target_sensor_ms`, 보드의 마지막 유효 수신 시각은
+`last_valid_rx_uptime_ms`입니다. 세부 의미와 PC/CSV 이름 대응은
+[시간 이름 규칙](coding-standard.md#시간-이름)을 따릅니다. wire와 PC API 이름은 유지합니다.

@@ -7,6 +7,7 @@ set(RADAR_MEASUREMENT_TIMEOUT_MS 1000 CACHE STRING "Timeout under test in millis
 
 add_executable(frame_handler_tests src/main.c
     ../../src/application/radar_processor.c
+    ../../src/tracking/estimator.c
     ../../src/tracking/track.c ../../src/tracking/kalman_cv.c ../../src/tracking/angle_utils.c
     ../../src/tracking/gating.c ../../src/protocol/measurement_message.c
     ../../src/protocol/protocol_frame.c ../../src/common/crc16.c

@@ -9,6 +9,7 @@
 #include <zephyr/kernel.h>
 
 #include "diagnostics/perf_monitor.h"
+#include "diagnostics/perf_reporter.h"
 
 static struct k_thread threads[3] = {{0}, {1}, {2}};
 k_tid_t const uart_rx_tid = &threads[0];
@@ -54,7 +55,7 @@ static void reset_test(void)
 static void test_summary_and_stack_queries(void)
 {
     reset_test();
-    perf_monitor_log_summary();
+    perf_reporter_log_summary();
     assert(strstr(output, "PERF queue_wait: n=0") != NULL);
     assert(strstr(output, "PERF stack handler: unused=1200 min_unused=1200") != NULL);
     assert(strstr(output, "PERF uptime_ms=5000") != NULL);
@@ -68,7 +69,7 @@ static void test_summary_and_stack_queries(void)
     stack_unused[1] = 800;
     stack_result[2] = -ENOTSUP;
     reset_test();
-    perf_monitor_log_summary();
+    perf_reporter_log_summary();
     assert(strstr(output, "PERF queue_wait: n=100") != NULL);
     assert(strstr(output, "p50_bin=1 p95_bin=20 p99_bin=21 max_ms=40 over20=5") != NULL);
     assert(strstr(output, "PERF stack handler: unused=800 min_unused=800") != NULL);
@@ -77,7 +78,7 @@ static void test_summary_and_stack_queries(void)
     stack_unused[1] = 1000;
     stack_result[2] = 0;
     reset_test();
-    perf_monitor_log_summary();
+    perf_reporter_log_summary();
     assert(strstr(output, "PERF stack handler: unused=1000 min_unused=800") != NULL);
     assert(strstr(output, "PERF stack tx: unused=600 min_unused=600") != NULL);
 }

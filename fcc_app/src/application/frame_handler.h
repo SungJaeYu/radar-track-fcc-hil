@@ -20,7 +20,7 @@ struct frame_handler {
 struct rx_frame {
     struct protocol_frame frame;
     // Board uptime at RX parser completion/submission, not ISR arrival or handler execution.
-    int64_t received_at_ms;
+    int64_t received_uptime_ms;
 };
 
 // Require a non-NULL handler and exclusive access to its state.
@@ -34,7 +34,7 @@ void frame_handler_reset(struct frame_handler *p_handler);
 // On expiration, reset/disarm, log, and attempt one no-input TRACK reset report.
 // Failed report submission is not retried by subsequent timeout checks.
 // Monitoring is inactive before the first valid measurement after init/reset.
-void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_ms);
+void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_uptime_ms);
 
 // Process a non-NULL, assembled frame against a non-NULL handler in its owner context.
 // The RX path has already checked length and CRC; measurement decoding/gating happen here.

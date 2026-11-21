@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// Millisecond bins 0..20 are exact; bin 21 contains every value above the budget.
+// Histogram indices 0..20 represent exact millisecond values; index 21 counts values above the budget.
 #define PERF_LATENCY_BUDGET_MS 20U
 #define PERF_LATENCY_BIN_COUNT (PERF_LATENCY_BUDGET_MS + 2U)
 
@@ -14,25 +14,25 @@ typedef enum {
     PERF_QUEUE_COUNT,
 } PerfQueue;
 
-struct perf_timing_stats {
-    uint32_t count;
+struct perf_latency_stats {
+    uint32_t sample_count;
     uint64_t total_ms;
     uint32_t max_ms;
-    uint32_t over_budget;
-    uint32_t bins[PERF_LATENCY_BIN_COUNT];
+    uint32_t over_budget_count;
+    uint32_t histogram_counts[PERF_LATENCY_BIN_COUNT];
 };
 
 struct perf_queue_stats {
-    uint32_t accepted;
-    uint32_t rejected;
+    uint32_t accepted_count;
+    uint32_t rejected_count;
     // Sampled after submission; the consumer may already have removed an item.
-    uint32_t observed_max_used;
+    uint32_t max_observed_depth;
 };
 
 struct perf_stats {
-    struct perf_timing_stats queue_wait;
-    struct perf_timing_stats processing;
-    struct perf_timing_stats rx_to_submit;
+    struct perf_latency_stats queue_wait;
+    struct perf_latency_stats processing;
+    struct perf_latency_stats rx_to_submit;
     struct perf_queue_stats queues[PERF_QUEUE_COUNT];
     uint32_t measurements;
     uint32_t without_submit;
@@ -42,10 +42,11 @@ struct perf_stats {
     uint32_t invalid_timestamps;
 };
 
+// All time arguments use board uptime in milliseconds, not sensor timestamps.
 // Begin/end and track submission run only in the handler thread, without nesting.
 // End every measurement, including stale/invalid input and encode failure paths.
-void perf_monitor_begin_measurement(int64_t received_at_ms, int64_t started_at_ms);
-void perf_monitor_record_track_submit(int64_t completed_at_ms, int result);
+void perf_monitor_begin_measurement(int64_t received_uptime_ms, int64_t handler_start_uptime_ms);
+void perf_monitor_record_track_submit(int64_t submit_uptime_ms, int result);
 void perf_monitor_end_measurement(void);
 
 // Queue hooks may run concurrently. Invalid API arguments are excluded by callers.
@@ -57,8 +58,5 @@ void perf_monitor_record_tx(bool completed);
 // Counters saturate; timing aggregates stop accepting samples at UINT32_MAX.
 // INIT/RESET preserve these boot-lifetime diagnostics.
 int perf_monitor_get_stats(struct perf_stats *out_stats);
-
-// Called only from main, every five seconds; stack scans and logging stay outside locks.
-void perf_monitor_log_summary(void);
 
 #endif

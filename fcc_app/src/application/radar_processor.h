@@ -12,14 +12,14 @@
 struct radar_processor {
     struct track track;
     // Board uptime at RX frame completion, not the sender's measurement time.
-    int64_t last_valid_rx_ms;
+    int64_t last_valid_rx_uptime_ms;
     // Armed by a valid measurement payload, including later tracking rejections.
     bool timeout_armed;
 };
 
 // Successful processing identifies an input; the track may still be invalid.
 struct radar_process_result {
-    uint32_t input_timestamp_ms;
+    uint32_t input_sensor_ms;
     TrackReportResult result;
 };
 
@@ -34,12 +34,12 @@ void radar_processor_reset(struct radar_processor *p_processor);
 // Return true for valid payloads, including gate/time rejection; fill the result.
 // Does not submit reports, consume report sequence numbers, or access UART/queues.
 bool radar_processor_process_measurement(struct radar_processor *p_processor,
-                                         const struct protocol_frame *p_frame, int64_t received_at_ms,
+                                         const struct protocol_frame *p_frame, int64_t received_uptime_ms,
                                          struct radar_process_result *out_result);
 
 // Require a non-NULL processor in its owner context; use board uptime in ms.
 // Return whether armed monitoring has expired, without changing state or logging.
 // Remain true until the owner resets the processor or receives a valid measurement.
-bool radar_processor_is_timed_out(const struct radar_processor *p_processor, int64_t now_ms);
+bool radar_processor_is_timed_out(const struct radar_processor *p_processor, int64_t now_uptime_ms);
 
 #endif

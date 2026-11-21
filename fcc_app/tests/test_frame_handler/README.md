@@ -9,7 +9,7 @@ cmake --build build_frame_handler
 ctest --test-dir build_frame_handler --output-on-failure
 ```
 
-Thirty cases exercise the real handler, STATUS/TRACK payload encoders, protocol encoder,
+Thirty-one cases exercise the real handler, STATUS/TRACK payload encoders, protocol encoder,
 parser, and tracking code:
 
 - Zero counters and one response submission per request.
@@ -146,3 +146,11 @@ Configure a separate build with `-DPERF_TEST_ENABLED=ON` to link the real collec
 ## 순간 이상치 회귀 — 2026-11-19
 
 `test_track_spike_recovery_matrix`를 추가했습니다. 정상40표본 뒤 거리/각도24값을1회 또는5회 주입한48조합에서 첫 게이트 결과·LOST·정상 복귀·순번/입력 시각을 확인합니다. 거리1m/65535m, 게이트 안·경계·밖과 각도±180°를 포함합니다. 회복은 CONFIRMED·UPDATED·거리2m/각도0.2° 이내3표본 연속이며, host 모사 시간축에서 실행합니다. 일반31개·perf 활성화32개 함수가 등록돼 있습니다. [실보드 실행](../../../pc_sim/README.md#순간-이상치정상-복귀-실보드-시험)은 별도로 수행합니다.
+
+## Prediction policy ownership — 2026-11-21
+
+`radar_processor` checks lifecycle and sensor timestamps before calling the pure
+next-track predictor. Existing cases now also cover half-range timestamp rejection
+with unchanged track bytes, the 1000/1001 ms boundary, and LOST reset priority for
+zero, backward, duplicate, forward, excessive-gap, and half-range timestamps.
+Reset measurements are not reused for startup; the next measurement starts a track.

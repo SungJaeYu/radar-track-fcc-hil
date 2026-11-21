@@ -13,6 +13,7 @@ target_sources(app PRIVATE
     src/application/report_sender.c
     src/protocol/measurement_message.c
     src/tracking/kalman_cv.c
+    src/tracking/estimator.c
     src/tracking/gating.c
     src/tracking/angle_utils.c
     src/tracking/track.c

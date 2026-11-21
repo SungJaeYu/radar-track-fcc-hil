@@ -47,6 +47,7 @@ endif()
 
 target_sources(${TEST_TARGET} PRIVATE
     ../../src/tracking/kalman_cv.c
+    ../../src/tracking/estimator.c
     ../../src/tracking/angle_utils.c
     ../../src/tracking/gating.c
     ../../src/tracking/track.c

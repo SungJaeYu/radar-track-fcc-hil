@@ -4,6 +4,9 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#if defined(CONFIG_TIMING_FUNCTIONS)
+#include <zephyr/timing/timing.h>
+#endif
 
 #if defined(CONFIG_RADAR_PERF_MONITOR)
 #include "diagnostics/perf_monitor.h"
@@ -34,6 +37,12 @@ static void frame_handler_thread(void *p_arg1, void *p_arg2, void *p_arg3)
     struct frame_handler handler = {0};
     struct rx_frame frame;
 
+#if defined(CONFIG_TIMING_FUNCTIONS)
+    // Start timing once in the owner thread, before processing any track updates.
+    timing_init();
+    timing_start();
+#endif
+
     frame_handler_init(&handler);
 
     while (1) {
@@ -54,9 +63,10 @@ void frame_handler_reset(struct frame_handler *p_handler)
     frame_handler_init(p_handler);
 }
 
-void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_ms)
+void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_uptime_ms)
 {
-    if (!radar_processor_is_timed_out(&p_handler->radar, now_ms)) {
+    const bool timed_out = radar_processor_is_timed_out(&p_handler->radar, now_uptime_ms);
+    if (!timed_out) {
         return;
     }
 
@@ -72,7 +82,7 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
 #if defined(CONFIG_RADAR_PERF_MONITOR)
     if (p_frame->frame.type == FRAME_TYPE_MEAS_REPORT) {
         // Use board RX completion time, including time spent waiting in the queue.
-        perf_monitor_begin_measurement(p_frame->received_at_ms, k_uptime_get());
+        perf_monitor_begin_measurement(p_frame->received_uptime_ms, k_uptime_get());
     }
 #endif
 
@@ -86,7 +96,8 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
     case FRAME_TYPE_MEAS_REPORT: {
         // Age uses board RX completion time, never the sender timestamp.
         // Reject at the same boundary as measurement freshness, before any track update.
-        if (k_uptime_get() - p_frame->received_at_ms >= CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS) {
+        const int64_t now_uptime_ms = k_uptime_get();
+        if (now_uptime_ms - p_frame->received_uptime_ms >= CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS) {
             if (p_handler->stale_measurements != UINT32_MAX) {
                 p_handler->stale_measurements++;
             }
@@ -96,10 +107,11 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
             break;
         }
         struct radar_process_result result;
-        if (radar_processor_process_measurement(&p_handler->radar, &p_frame->frame,
-                                               p_frame->received_at_ms, &result)) {
+        const bool measurement_processed = radar_processor_process_measurement(
+            &p_handler->radar, &p_frame->frame, p_frame->received_uptime_ms, &result);
+        if (measurement_processed) {
             report_sender_submit_track(&p_handler->report_sender, &p_handler->radar.track,
-                                       result.input_timestamp_ms, true, result.result);
+                                       result.input_sensor_ms, true, result.result);
         }
         break;
     }
@@ -137,7 +149,12 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
 
 int frame_handler_submit(const struct rx_frame *p_frame)
 {
-    if (p_frame == NULL || !protocol_frame_has_valid_length(&p_frame->frame)) {
+    if (p_frame == NULL) {
+        return -EINVAL;
+    }
+
+    const bool length_valid = protocol_frame_has_valid_length(&p_frame->frame);
+    if (!length_valid) {
         return -EINVAL;
     }
 

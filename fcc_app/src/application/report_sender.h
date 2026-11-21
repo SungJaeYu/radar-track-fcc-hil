@@ -25,6 +25,6 @@ void report_sender_submit_status(uint32_t stale_measurements);
 // Report invalid estimates as zero; preserve the track and consume one sequence.
 // Log encode/TX failures without retrying. No pointers are retained after return.
 void report_sender_submit_track(struct report_sender *p_sender, const struct track *p_track,
-                                uint32_t input_timestamp_ms, bool input_present, TrackReportResult result);
+                                uint32_t input_sensor_ms, bool input_present, TrackReportResult result);
 
 #endif

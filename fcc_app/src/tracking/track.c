@@ -1,150 +1,141 @@
 #include "tracking/track.h"
 
+#include <zephyr/sys/__assert.h>
+#if defined(CONFIG_TIMING_FUNCTIONS)
+#include <zephyr/timing/timing.h>
+#endif
+
+#include "tracking/estimator.h"
+
 // Lifecycle thresholds are independent of the configurable measurement gates.
 #define TRACK_CONFIRM_HITS 3U
 #define TRACK_LOST_MISSES 5U
-// Sensor timestamp gap limit, distinct from the host-clock RX silence timeout.
-#define TRACK_MAX_PREDICT_INTERVAL_MS 1000U
 
 void track_init(struct track *p_track)
 {
     p_track->state = TRACK_STATE_EMPTY;
     p_track->hit_count = 0U;
     p_track->miss_count = 0U;
-    p_track->estimate_timestamp_ms = 0U;
+    p_track->estimate_sensor_ms = 0U;
 }
 
-void track_start(struct track *p_track, float initial_range_m, float initial_azimuth_rad, uint32_t timestamp_ms)
+void track_start(struct track *p_track, float initial_range_m, float initial_azimuth_rad, uint32_t sensor_time_ms)
 {
-    // Range tuning defaults: p00/R = 25 m^2, p11 = 10000 (m/s)^2,
-    // q = 100 (m/s^2)^2; these are initial tuning values, not sensor calibration data.
-    kalman_cv_init(
-        &p_track->range_filter,
-        initial_range_m,      // initial_range_m
-        0.0f,      // initial_range_rate
-        25.0f,     // p00: range uncertainty
-        0.0f,      // p01
-        0.0f,      // p10
-        10000.0f,  // p11: range-rate uncertainty
-        100.0f,    // q: acceleration noise variance
-        25.0f      // R: measurement noise variance
-    );
-
-    kalman_cv_init(
-        &p_track->azimuth_filter,
-        initial_azimuth_rad,      // initial_azimuth
-        0.0f,      // initial_azimuth_rate
-        0.00121847f,     // p00: azimuth uncertainty: std dev = 2 deg, p00 = (2 * PI / 180)^2 [rad^2]
-        0.0f,      // p01
-        0.0f,      // p10
-        0.03046174f,  // p11: angular velocity uncertainty: std dev = 10 deg/s, p11 = (10 * PI / 180)^2 [(rad/s)^2]
-        0.00761544f,    // q: angular acceleration noise variance: std dev = 5 deg/s^2, q = (5 * PI / 180)^2 [(rad/s^2)^2]
-        0.00121847f      // R: measurement noise variance: std dev = 2 deg, R = (2 * PI / 180)^2 [rad^2]
-    );
+    estimator_init(&p_track->estimator, initial_range_m, initial_azimuth_rad);
 
     p_track->state = TRACK_STATE_TENTATIVE;
     p_track->hit_count = 1U;
     p_track->miss_count = 0U;
 
-    p_track->estimate_timestamp_ms = timestamp_ms;
+    p_track->estimate_sensor_ms = sensor_time_ms;
 }
 
-TrackPredictResult track_predict(struct track *p_track, uint32_t timestamp_ms)
+struct track track_predict_next(const struct track *p_current, uint32_t target_sensor_ms)
 {
-    if (p_track->state == TRACK_STATE_EMPTY) {
-        return TRACK_PREDICT_RESULT_EMPTY;
-    }
+    __ASSERT(p_current->state == TRACK_STATE_TENTATIVE ||
+             p_current->state == TRACK_STATE_CONFIRMED ||
+             p_current->state == TRACK_STATE_COASTING,
+             "Prediction requires an active track");
 
-    // Discard a lost track before checking its old timestamp.
-    // The caller starts a new track on the next measurement.
-    if (p_track->state == TRACK_STATE_LOST) {
-        track_init(p_track);
-        return TRACK_PREDICT_RESULT_RESET;
-    }
+    const uint32_t prediction_interval_ms = target_sensor_ms - p_current->estimate_sensor_ms;
+    __ASSERT(prediction_interval_ms > 0U && prediction_interval_ms < TRACK_SENSOR_HALF_RANGE_MS,
+             "Prediction requires a validated forward timestamp");
 
-    // Timestamp of the current filter state, including prediction-only updates.
-    const uint32_t delta_ms = timestamp_ms - p_track->estimate_timestamp_ms;
+    struct track next = *p_current;
 
-    // Reject duplicate or backward/ambiguous timestamps.
-    // Unsigned subtraction allows normal uint32 timestamp wraparound.
-    if (delta_ms == 0U || delta_ms >= UINT32_C(0x80000000)) {
-        return TRACK_PREDICT_RESULT_TIME_REJECTED;
-    }
+    const float prediction_interval_s = (float)prediction_interval_ms / 1000.0f;
+#if defined(CONFIG_TIMING_FUNCTIONS)
+    timing_t predict_begin = timing_counter_get();
+#endif
+    estimator_predict(&next.estimator, prediction_interval_s);
+#if defined(CONFIG_TIMING_FUNCTIONS)
+    timing_t predict_end = timing_counter_get();
 
-    // A long forward gap invalidates the current track.
-    if (delta_ms > TRACK_MAX_PREDICT_INTERVAL_MS) {
-        track_init(p_track);
-        return TRACK_PREDICT_RESULT_RESET;
-    }
-
-    const float dt_s = (float)delta_ms / 1000.0f;
-
-    kalman_cv_predict(
-        &p_track->range_filter,
-        dt_s
-    );
-
-    kalman_cv_predict_angle(
-        &p_track->azimuth_filter,
-        dt_s
-    );
-
-    p_track->estimate_timestamp_ms = timestamp_ms;
-
-    return TRACK_PREDICT_RESULT_PREDICTED;
+    const uint64_t cycles = timing_cycles_get(&predict_begin, &predict_end);
+    const uint64_t elapsed_ns = timing_cycles_to_ns(cycles);
+    // TODO: Record prediction timing in diagnostics when aggregation is implemented.
+    (void)elapsed_ns;
+#endif
+    next.estimate_sensor_ms = target_sensor_ms;
+    return next;
 }
 
-void track_hit(struct track *p_track, float measured_range_m, float measured_azimuth_rad)
+struct estimator_output track_get_estimate(const struct track *p_track)
 {
-    if (p_track->state == TRACK_STATE_EMPTY || p_track->state == TRACK_STATE_LOST) {
-        return;
-    }
+    return estimator_get_output(&p_track->estimator);
+}
 
-    kalman_cv_correct(&p_track->range_filter, measured_range_m);
-    kalman_cv_correct_angle(&p_track->azimuth_filter, measured_azimuth_rad);
-
-    if (p_track->hit_count < TRACK_CONFIRM_HITS) {
-        p_track->hit_count++;
-    }
-    p_track->miss_count = 0U;
-
+void track_apply_measurement(struct track *p_track, float measured_range_m, float measured_azimuth_rad)
+{
     switch (p_track->state) {
+    case TRACK_STATE_EMPTY:
+    case TRACK_STATE_LOST:
+        return;
+
     case TRACK_STATE_TENTATIVE:
-        if (p_track->hit_count >= TRACK_CONFIRM_HITS) {
+    case TRACK_STATE_CONFIRMED:
+    case TRACK_STATE_COASTING: {
+#if defined(CONFIG_TIMING_FUNCTIONS)
+        timing_t correct_begin = timing_counter_get();
+#endif
+        estimator_correct(&p_track->estimator, measured_range_m, measured_azimuth_rad);
+#if defined(CONFIG_TIMING_FUNCTIONS)
+        timing_t correct_end = timing_counter_get();
+        // TODO: Compute and record correction timing when aggregation is implemented.
+        (void)correct_begin;
+        (void)correct_end;
+#endif
+
+        if (p_track->hit_count < TRACK_CONFIRM_HITS) {
+            p_track->hit_count++;
+        }
+        p_track->miss_count = 0U;
+
+        if (p_track->state == TRACK_STATE_COASTING ||
+            (p_track->state == TRACK_STATE_TENTATIVE && p_track->hit_count >= TRACK_CONFIRM_HITS)) {
             p_track->state = TRACK_STATE_CONFIRMED;
         }
-        break;
-    case TRACK_STATE_CONFIRMED:
-        break;
-    case TRACK_STATE_COASTING:
-        p_track->state = TRACK_STATE_CONFIRMED;
-        break;
-    default:
-        break;
-    }
-}
-
-void track_miss(struct track *p_track)
-{
-    if (p_track->state == TRACK_STATE_EMPTY || p_track->state == TRACK_STATE_LOST) {
         return;
     }
 
-    if (p_track->state == TRACK_STATE_TENTATIVE) {
+    default:
+        __ASSERT(false, "Invalid track state: %d", (int)p_track->state);
+        // Clear invalid state when assertions are disabled.
         track_init(p_track);
         return;
     }
+}
 
-    p_track->hit_count = 0U;
-    if (p_track->miss_count < TRACK_LOST_MISSES) {
-        p_track->miss_count++;
+void track_apply_miss(struct track *p_track)
+{
+    switch (p_track->state) {
+    case TRACK_STATE_EMPTY:
+    case TRACK_STATE_LOST:
+        return;
+
+    case TRACK_STATE_TENTATIVE:
+        track_init(p_track);
+        return;
+
+    case TRACK_STATE_CONFIRMED:
+    case TRACK_STATE_COASTING: {
+        p_track->hit_count = 0U;
+        if (p_track->miss_count < TRACK_LOST_MISSES) {
+            p_track->miss_count++;
+        }
+
+        if (p_track->miss_count >= TRACK_LOST_MISSES) {
+            p_track->state = TRACK_STATE_LOST;
+        } else {
+            p_track->state = TRACK_STATE_COASTING;
+        }
+        return;
     }
 
-    if (p_track->state == TRACK_STATE_CONFIRMED) {
-        p_track->state = TRACK_STATE_COASTING;
-    }
-
-    if (p_track->miss_count >= TRACK_LOST_MISSES) {
-        p_track->state = TRACK_STATE_LOST;
+    default:
+        __ASSERT(false, "Invalid track state: %d", (int)p_track->state);
+        // Clear invalid state when assertions are disabled.
+        track_init(p_track);
+        return;
     }
 }

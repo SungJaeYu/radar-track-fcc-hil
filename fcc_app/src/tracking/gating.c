@@ -20,10 +20,7 @@ bool gating_check(
         measured_range_m - predicted_range_m;
 
     // Use the shortest signed angular difference across the -pi/+pi boundary.
-    const float azimuth_error_rad =
-        angle_diff_rad(
-            measured_azimuth_rad,
-            predicted_azimuth_rad);
+    const float azimuth_error_rad = angle_diff_rad(measured_azimuth_rad, predicted_azimuth_rad);
 
     // Both independent inclusive thresholds must pass (a rectangular gate).
     // Gate rejection is a tracking decision; it is not a malformed UART frame.

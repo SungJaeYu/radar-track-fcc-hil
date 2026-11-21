@@ -8,7 +8,7 @@
 
 #include "tracking/angle_utils.h"
 
-static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s, bool is_angle);
+static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float interval_s, bool is_angle);
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle);
 
 void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float initial_value_rate, float p00, float p01, float p10, float p11, float process_noise_variance, float measurement_noise_variance)
@@ -39,14 +39,14 @@ void kalman_cv_init(struct kalman_cv_filter *p_kf, float initial_value, float in
     p_kf->measurement_noise_variance = measurement_noise_variance;
 }
 
-void kalman_cv_predict(struct kalman_cv_filter *p_kf, float dt_s)
+void kalman_cv_predict(struct kalman_cv_filter *p_kf, float interval_s)
 {
-    kalman_cv_predict_internal(p_kf, dt_s, false);
+    kalman_cv_predict_internal(p_kf, interval_s, false);
 }
 
-void kalman_cv_predict_angle(struct kalman_cv_filter *p_kf, float dt_s)
+void kalman_cv_predict_angle(struct kalman_cv_filter *p_kf, float interval_s)
 {
-    kalman_cv_predict_internal(p_kf, dt_s, true);
+    kalman_cv_predict_internal(p_kf, interval_s, true);
 }
 
 void kalman_cv_correct(struct kalman_cv_filter *p_kf, float value_measurement)
@@ -59,24 +59,24 @@ void kalman_cv_correct_angle(struct kalman_cv_filter *p_kf, float angle_measurem
     kalman_cv_correct_internal(p_kf, angle_measurement_rad, true);
 }
 
-static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s, bool is_angle)
+static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float interval_s, bool is_angle)
 {
     __ASSERT(p_kf != NULL, "Kalman filter pointer is NULL");
     __ASSERT(
-        isfinite(dt_s) && dt_s >= 0.0f,
-        "Prediction interval must be finite and nonnegative: %f s", (double)dt_s
+        isfinite(interval_s) && interval_s >= 0.0f,
+        "Prediction interval must be finite and nonnegative: %f s", (double)interval_s
     );
     __ASSERT(isfinite(p_kf->estimate), "Estimated value must be finite");
     __ASSERT(isfinite(p_kf->rate), "Estimated rate value must be finite");
 
     // State Prediction
-    p_kf->estimate += p_kf->rate * dt_s;
+    p_kf->estimate += p_kf->rate * interval_s;
     if (is_angle) {
         p_kf->estimate = wrap_angle_rad(p_kf->estimate);
     }
 
     // Covariance Prediction
-    // Discrete acceleration variance q uses Q = q * [[dt_s^4/4, dt_s^3/2], [dt_s^3/2, dt_s^2]].
+    // Discrete acceleration variance q uses Q = q * [[interval_s^4/4, interval_s^3/2], [interval_s^3/2, interval_s^2]].
     // P' = F P F(T) + Q
     const float old_p00 = p_kf->p00;
     const float old_p01 = p_kf->p01;
@@ -86,21 +86,21 @@ static void kalman_cv_predict_internal(struct kalman_cv_filter *p_kf, float dt_s
 
     p_kf->p00 =
         old_p00 +
-        dt_s * old_p10 +
-        dt_s * old_p01 +
-        dt_s * dt_s * old_p11 +
-        q * (dt_s * dt_s * dt_s * dt_s) / 4.0f;
+        interval_s * old_p10 +
+        interval_s * old_p01 +
+        interval_s * interval_s * old_p11 +
+        q * (interval_s * interval_s * interval_s * interval_s) / 4.0f;
     p_kf->p01 =
         old_p01 +
-        dt_s * old_p11 +
-        q * (dt_s * dt_s * dt_s) / 2.0f;
+        interval_s * old_p11 +
+        q * (interval_s * interval_s * interval_s) / 2.0f;
     p_kf->p10 =
         old_p10 +
-        dt_s * old_p11 +
-        q * (dt_s * dt_s * dt_s) / 2.0f;
+        interval_s * old_p11 +
+        q * (interval_s * interval_s * interval_s) / 2.0f;
     p_kf->p11 =
         old_p11 +
-        q * (dt_s * dt_s);
+        q * (interval_s * interval_s);
 }
 
 static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float value_measurement, bool is_angle)
@@ -122,7 +122,8 @@ static void kalman_cv_correct_internal(struct kalman_cv_filter *p_kf, float valu
 
     // Skip correction for nonfinite or near-zero/nonpositive innovation covariance.
     // Preserve the prior filter state; this does not repair an already invalid covariance.
-    if (!isfinite(s) || s <= 1e-6f) {
+    const bool innovation_finite = isfinite(s);
+    if (!innovation_finite || s <= 1e-6f) {
         return;
     }
 

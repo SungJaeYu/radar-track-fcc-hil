@@ -24,7 +24,7 @@ bool measurement_message_decode(
         return false;
     }
 
-    const uint32_t timestamp_ms =
+    const uint32_t sensor_time_ms =
         ((uint32_t)p_payload[0] << 24) |
         ((uint32_t)p_payload[1] << 16) |
         ((uint32_t)p_payload[2] << 8)  |
@@ -42,7 +42,7 @@ bool measurement_message_decode(
             (uint32_t)p_payload[9]
         );
 
-    out_measurement->timestamp_ms = timestamp_ms;
+    out_measurement->sensor_time_ms = sensor_time_ms;
     out_measurement->range_m = (float)range_m;
 
     // Signed semicircle units use 2^31 units per pi radians.
@@ -53,8 +53,7 @@ bool measurement_message_decode(
     return true;
 }
 
-bool measurement_message_validate(
-    const struct radar_measurement *p_measurement)
+bool measurement_message_validate(const struct radar_measurement *p_measurement)
 {
     if (p_measurement->range_m == 0.0f) {
         return false;

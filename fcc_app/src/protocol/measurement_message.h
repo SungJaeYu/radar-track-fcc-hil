@@ -9,7 +9,7 @@
 // This decoded representation uses float meters and radians, not the wire layout.
 struct radar_measurement {
     // Sender measurement time, not board uptime.
-    uint32_t timestamp_ms;
+    uint32_t sensor_time_ms;
     float range_m;
     float azimuth_rad;
 };
@@ -24,7 +24,6 @@ bool measurement_message_decode(
 
 // Require a non-NULL decoded measurement. Return false for zero range or
 // azimuth outside [-pi, pi]. Does not check timestamp order, gating, or finiteness.
-bool measurement_message_validate(
-    const struct radar_measurement *p_measurement);
+bool measurement_message_validate(const struct radar_measurement *p_measurement);
 
 #endif
