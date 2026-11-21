@@ -149,3 +149,7 @@ Multi-target association, CT/IMM/EKF comparisons, BIT/Lock On, and UART hardware
 I defined the problem, architecture, and validation criteria, and wrote the STM32/Zephyr firmware. I used AI coding tools for the PC simulator, GUI, and test-support implementation. All measurements are synthetic; no operational military data or internal system information is used.
 
 [English architecture](EXPLAINER.en.md) · [한국어 README](README.ko.md) · [Full documentation index — Korean](docs/README.md)
+
+## Estimator execution timing (2026-11-22)
+
+The `perf.conf` build aggregates predict/correct timer cycles separately and reports sample count and minimum/mean/maximum nanoseconds every five seconds. Aggregates are cumulative since boot; empty aggregates report `no samples`. Host tests and firmware builds cover this addition; the new execution-time output has not yet been validated on hardware. See the [measurement contract](docs/performance-monitoring.md) for boundaries and limitations.

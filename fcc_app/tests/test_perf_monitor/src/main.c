@@ -171,8 +171,37 @@ static void test_counter_saturation(void)
     assert(captured.tx_poll_completed == UINT32_MAX);
 }
 
+static void test_execution_aggregation(void)
+{
+    reset_test();
+    perf_monitor_record_predict(0);
+    perf_monitor_record_predict(9);
+    perf_monitor_record_correct(UINT64_MAX);
+
+    const struct perf_stats captured = snapshot();
+    assert(captured.estimator_predict.sample_count == 2);
+    assert(captured.estimator_predict.total_cycles == 9);
+    assert(captured.estimator_predict.min_cycles == 0);
+    assert(captured.estimator_predict.max_cycles == 9);
+    assert(captured.estimator_correct.min_cycles == UINT64_MAX);
+
+    perf_monitor_record_correct(1);
+    assert(stats.estimator_correct.sample_count == 1);
+    assert(stats.estimator_correct.total_cycles == UINT64_MAX);
+    assert(stats.estimator_correct.min_cycles == UINT64_MAX);
+    assert(stats.estimator_correct.max_cycles == UINT64_MAX);
+
+    stats.estimator_predict.sample_count = UINT32_MAX;
+    perf_monitor_record_predict(100);
+    assert(stats.estimator_predict.sample_count == UINT32_MAX);
+    assert(stats.estimator_predict.total_cycles == 9);
+    assert(stats.estimator_predict.min_cycles == 0);
+    assert(stats.estimator_predict.max_cycles == 9);
+}
+
 static const struct test_case cases[] = {
     TEST_CASE(test_counter_saturation),
+    TEST_CASE(test_execution_aggregation),
     TEST_CASE(test_timing_boundaries),
     TEST_CASE(test_failed_and_missing_submit),
     TEST_CASE(test_context_cleanup),

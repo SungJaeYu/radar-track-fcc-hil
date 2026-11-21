@@ -24,7 +24,7 @@ from pc_sim.status_client import request_status
 
 
 class PerfConsole:
-    """Only publish complete ten-line snapshots; preserve raw text separately."""
+    """Require the base snapshot fields; retain optional estimator summaries."""
 
     def __init__(self):
         self.pending = ''
@@ -54,7 +54,7 @@ class PerfConsole:
                 if name == 'stack tx':
                     required = {'header', 'queue_wait', 'processing', 'rx_to_submit',
                                 'queue rx', 'queue tx', 'tx', 'stack rx', 'stack handler', 'stack tx'}
-                    if set(self.current) == required:
+                    if required.issubset(self.current):
                         self.snapshots.append(self.current)
                     self.current = None
 

@@ -1,8 +1,10 @@
 #include "tracking/track.h"
 
 #include <zephyr/sys/__assert.h>
-#if defined(CONFIG_TIMING_FUNCTIONS)
+
+#if defined(CONFIG_RADAR_PERF_MONITOR) && defined(CONFIG_TIMING_FUNCTIONS)
 #include <zephyr/timing/timing.h>
+#include "diagnostics/perf_monitor.h"
 #endif
 
 #include "tracking/estimator.h"
@@ -44,17 +46,14 @@ struct track track_predict_next(const struct track *p_current, uint32_t target_s
     struct track next = *p_current;
 
     const float prediction_interval_s = (float)prediction_interval_ms / 1000.0f;
-#if defined(CONFIG_TIMING_FUNCTIONS)
+#if defined(CONFIG_RADAR_PERF_MONITOR) && defined(CONFIG_TIMING_FUNCTIONS)
     timing_t predict_begin = timing_counter_get();
 #endif
     estimator_predict(&next.estimator, prediction_interval_s);
-#if defined(CONFIG_TIMING_FUNCTIONS)
+#if defined(CONFIG_RADAR_PERF_MONITOR) && defined(CONFIG_TIMING_FUNCTIONS)
     timing_t predict_end = timing_counter_get();
-
     const uint64_t cycles = timing_cycles_get(&predict_begin, &predict_end);
-    const uint64_t elapsed_ns = timing_cycles_to_ns(cycles);
-    // TODO: Record prediction timing in diagnostics when aggregation is implemented.
-    (void)elapsed_ns;
+    perf_monitor_record_predict(cycles);
 #endif
     next.estimate_sensor_ms = target_sensor_ms;
     return next;
@@ -75,15 +74,14 @@ void track_apply_measurement(struct track *p_track, float measured_range_m, floa
     case TRACK_STATE_TENTATIVE:
     case TRACK_STATE_CONFIRMED:
     case TRACK_STATE_COASTING: {
-#if defined(CONFIG_TIMING_FUNCTIONS)
+#if defined(CONFIG_RADAR_PERF_MONITOR) && defined(CONFIG_TIMING_FUNCTIONS)
         timing_t correct_begin = timing_counter_get();
 #endif
         estimator_correct(&p_track->estimator, measured_range_m, measured_azimuth_rad);
-#if defined(CONFIG_TIMING_FUNCTIONS)
+#if defined(CONFIG_RADAR_PERF_MONITOR) && defined(CONFIG_TIMING_FUNCTIONS)
         timing_t correct_end = timing_counter_get();
-        // TODO: Compute and record correction timing when aggregation is implemented.
-        (void)correct_begin;
-        (void)correct_end;
+        const uint64_t cycles = timing_cycles_get(&correct_begin, &correct_end);
+        perf_monitor_record_correct(cycles);
 #endif
 
         if (p_track->hit_count < TRACK_CONFIRM_HITS) {

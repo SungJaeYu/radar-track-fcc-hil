@@ -4,6 +4,11 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/__assert.h>
+
+#if defined(CONFIG_TIMING_FUNCTIONS)
+#include <zephyr/timing/timing.h>
+#endif
 
 #include "diagnostics/perf_monitor.h"
 
@@ -17,6 +22,8 @@ extern const k_tid_t uart_tx_tid;
 // Main is the sole caller. Keep the large snapshot off its small stack.
 static struct perf_stats snapshot;
 static size_t min_unused[3] = {SIZE_MAX, SIZE_MAX, SIZE_MAX};
+
+static void log_execution(const char *p_name, const struct perf_execution_stats *p_stats);
 
 static uint32_t percentile_bin(const struct perf_latency_stats *p_latency, uint32_t percentile)
 {
@@ -70,18 +77,53 @@ void perf_reporter_log_summary(void)
             (long long)k_uptime_get(), (unsigned int)snapshot.measurements,
             (unsigned int)snapshot.without_submit, (unsigned int)snapshot.track_submit_failed,
             (unsigned int)snapshot.invalid_timestamps);
+
     log_latency("queue_wait", &snapshot.queue_wait);
     log_latency("processing", &snapshot.processing);
     log_latency("rx_to_submit", &snapshot.rx_to_submit);
+
+    log_execution("estimator_predict", &snapshot.estimator_predict);
+    log_execution("estimator_correct", &snapshot.estimator_correct);
+
     for (unsigned int i = 0; i < PERF_QUEUE_COUNT; ++i) {
         const struct perf_queue_stats *p_queue = &snapshot.queues[i];
         LOG_INF("PERF queue %s: accepted=%u rejected=%u observed_max_used=%u",
                 i == PERF_QUEUE_RX ? "rx" : "tx", (unsigned int)p_queue->accepted_count,
                 (unsigned int)p_queue->rejected_count, (unsigned int)p_queue->max_observed_depth);
     }
+
     LOG_INF("PERF tx: poll_completed=%u encode_failed=%u",
             (unsigned int)snapshot.tx_poll_completed, (unsigned int)snapshot.tx_encode_failed);
+
     log_stack("rx", uart_rx_tid, 0);
     log_stack("handler", frame_handler_tid, 1);
     log_stack("tx", uart_tx_tid, 2);
+}
+
+static void log_execution(const char *p_name, const struct perf_execution_stats *p_stats)
+{
+    __ASSERT(p_name != NULL, "Execution label is NULL");
+    __ASSERT(p_stats != NULL, "Execution statistics pointer is NULL");
+
+    if (p_stats->sample_count == 0) {
+        LOG_INF("PERF %s: n=0 no samples", p_name);
+        return;
+    }
+
+    const uint64_t mean_cycles = p_stats->total_cycles / (uint64_t)p_stats->sample_count;
+
+#if defined(CONFIG_TIMING_FUNCTIONS)
+    const uint64_t min_ns = timing_cycles_to_ns(p_stats->min_cycles);
+    const uint64_t mean_ns = timing_cycles_to_ns(mean_cycles);
+    const uint64_t max_ns = timing_cycles_to_ns(p_stats->max_cycles);
+
+    LOG_INF("PERF %s: n=%u min_ns=%llu mean_ns=%llu max_ns=%llu",
+            p_name, (unsigned int)p_stats->sample_count,
+            (unsigned long long)min_ns, (unsigned long long)mean_ns, (unsigned long long)max_ns);
+#else
+    LOG_INF("PERF %s: n=%u min_cycles=%llu mean_cycles=%llu max_cycles=%llu",
+            p_name, (unsigned int)p_stats->sample_count,
+            (unsigned long long)p_stats->min_cycles, (unsigned long long)mean_cycles,
+            (unsigned long long)p_stats->max_cycles);
+#endif
 }

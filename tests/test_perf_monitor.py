@@ -10,11 +10,14 @@ board_check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(board_check)
 
 
-def summary(uptime=5000, omit=None):
+def summary(uptime=5000, omit=None, execution=True):
     # Deliberately fixed text, independent of the firmware's formatting implementation.
     lines = [f'PERF uptime_ms={uptime} measurements=3 without_submit=0 submit_failed=0 invalid_time=0']
     lines += [f'PERF {name}: n=3 total_ms=2 p50_bin=1 p95_bin=1 p99_bin=1 max_ms=1 over20=0'
               for name in ('queue_wait', 'processing', 'rx_to_submit')]
+    if execution:
+        lines += ['PERF estimator_predict: n=3 min_ns=100 mean_ns=200 max_ns=300',
+                  'PERF estimator_correct: n=0 no samples']
     lines += [f'PERF queue {name}: accepted=4 rejected=0 observed_max_used=1' for name in ('rx', 'tx')]
     lines += ['PERF tx: poll_completed=4 encode_failed=0']
     lines += [f'PERF stack {name}: unused=700 min_unused=680' for name in ('rx', 'handler', 'tx')]
@@ -23,14 +26,18 @@ def summary(uptime=5000, omit=None):
 
 
 @pytest.mark.parametrize('bytewise', [False, True])
-def test_perf_console_handles_serial_chunks(bytewise):
+@pytest.mark.parametrize('execution', [False, True])
+def test_perf_console_handles_serial_chunks(bytewise, execution):
     parser = board_check.PerfConsole()
-    text = summary()
+    text = summary(execution=execution)
     for chunk in text if bytewise else [text]:
         parser.feed(chunk)
     assert len(parser.snapshots) == 1
     assert parser.snapshots[0]['header']['uptime_ms'] == 5000
     assert parser.snapshots[0]['stack tx']['min_unused'] == 680
+    if execution:
+        assert parser.snapshots[0]['estimator_predict']['mean_ns'] == 200
+        assert parser.snapshots[0]['estimator_correct'] == {'n': 0}
 
 
 def test_perf_console_discards_incomplete_summary_before_next_header():

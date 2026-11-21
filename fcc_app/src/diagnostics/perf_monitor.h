@@ -29,11 +29,21 @@ struct perf_queue_stats {
     uint32_t max_observed_depth;
 };
 
+// Execution costs in timer cycles; min/max are meaningful only when sample_count is nonzero.
+struct perf_execution_stats {
+    uint32_t sample_count;
+    uint64_t total_cycles;
+    uint64_t min_cycles;
+    uint64_t max_cycles;
+};
+
 struct perf_stats {
     struct perf_latency_stats queue_wait;
     struct perf_latency_stats processing;
     struct perf_latency_stats rx_to_submit;
     struct perf_queue_stats queues[PERF_QUEUE_COUNT];
+    struct perf_execution_stats estimator_predict;
+    struct perf_execution_stats estimator_correct;
     uint32_t measurements;
     uint32_t without_submit;
     uint32_t track_submit_failed;
@@ -53,6 +63,10 @@ void perf_monitor_end_measurement(void);
 void perf_monitor_record_queue(PerfQueue queue, int result, uint32_t used);
 // True means all uart_poll_out calls returned, not peer reception or wire idle.
 void perf_monitor_record_tx(bool completed);
+
+// Samples that would overflow the count or total are excluded without changing the aggregate.
+void perf_monitor_record_predict(uint64_t elapsed_cycles);
+void perf_monitor_record_correct(uint64_t elapsed_cycles);
 
 // Copy one protected snapshot. Return 0 on success or -EINVAL for NULL.
 // Counters saturate; timing aggregates stop accepting samples at UINT32_MAX.

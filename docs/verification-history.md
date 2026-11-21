@@ -13,6 +13,15 @@
 
 이하 내용은 검증 및 판정 변경 이력입니다. 최신 사용법은 각 도구의 안내를 따릅니다.
 
+## 2026-11-22 — estimator 실행 시간 집계·출력
+
+`495d70d` 이후 작업본에서 predict/correct cycle 측정·집계와 누적 최소/평균/최대 ns 로그를 연결했다.
+collector/reporter CTest 12개, PERF handler 32개, PERF TX 4개(합계 48개),
+latency guard 및 콘솔 파서 Python 25개가 통과했다. 일반·debug·PERF 펌웨어 빌드가 통과했다.
+PERF 구성 시 기존 devicetree의 중복 unit-address 경고가 출력되었으나 빌드는 성공했다.
+flash·실보드 HIL은 수행하지 않았으며 기존 30분 기록을 새 실행 시간 출력의 증거로 사용하지 않는다.
+[계측 계약](performance-monitoring.md)과 [재현 명령](../fcc_app/tests/test_perf_monitor/README.md)을 따른다.
+
 ## 2026-11-19 — pull 후 RTT·이상치49회·잡음100회 실보드 검증
 
 `eb15fb1` 기준 Python765개+subtest9개, 변경 영향을 받는 CTest84개 등록 항목(논리 사례104회) 통과. 일반/perf 빌드 최신성 확인 후 짧은 RTT 회귀27개 판정 통과: p99 10.745ms·최대25.378ms, 정상 이미지 복원·STATUS0.

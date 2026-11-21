@@ -36,7 +36,7 @@ west flash -d <repo>/build --runner openocd
 | `CONFIG_RADAR_LOG_STRESS_TEST=n` | 합성 로그 폭주 제외 |
 | `CONFIG_RADAR_TRANSPORT_STRESS_TEST=n` | RX/handler/TX 강제 정지 제외 |
 
-최종 설정은 `build_perf/zephyr/.config`에서 확인한다. 현재 보드 구성의 kernel tick은 10,000Hz지만 `k_uptime_get()`으로 저장하는 계측 값의 단위는 정수 ms다. 1ms 미만 차이를 세밀하게 구분하지 못하며 tick/cycle 기반 처리시간이나 CPU 점유율 측정이 아니다.
+최종 설정은 `build_perf/zephyr/.config`에서 확인한다. 현재 보드 구성의 kernel tick은 10,000Hz지만 `k_uptime_get()`으로 저장하는 계측 값의 단위는 정수 ms다. 1ms 미만 차이를 세밀하게 구분하지 못하며 이 지연 통계는 cycle 기반 실행 시간이나 CPU 점유율 측정이 아니다. 별도의 estimator 실행 시간은 아래 기준을 따른다.
 
 ## 시간 기준과 대상
 
@@ -64,6 +64,30 @@ C의 시간 통계 타입은 `perf_latency_stats`이며, `sample_count`는 표�
 
 히스토그램은 0..20ms 각각 한 구간과 **>20ms 구간 21**로 구성된다. 로그의 `p50_bin`, `p95_bin`, `p99_bin`은 nearest-rank 방식의 구간 번호다. 예를 들어 `p99_bin=21 max_ms=40`이면 p99는 **20ms 초과**, 관측 최대는 40ms라는 뜻이며 p99=21ms라는 뜻이 아니다. 초과 구간의 정확한 백분위가 필요하면 후속 시험에서 더 넓거나 세밀한 계측을 추가해야 한다. `over20`은 엄격한 `>20ms`이며 20ms는 포함하지 않는다.
 
+## Estimator 실행 시간 — 2026-11-22
+
+`CONFIG_RADAR_PERF_MONITOR`와 `CONFIG_TIMING_FUNCTIONS`가 모두 켜지면 `track.c`에서
+`estimator_predict()`와 `estimator_correct()` 호출 전후의 timer cycle을 측정한다.
+실제로 호출된 연산만 집계하므로 predict/correct 표본 수는 서로 다를 수 있다.
+집계 함수와 로그 출력은 측정 구간 밖에 있으며, 구간 중 인터럽트·선점과 타이머 조회 비용은 포함될 수 있다.
+순수 명령어 비용이나 WCET 보장값으로 해석하지 않는다.
+
+`perf_execution_stats`는 부팅 이후 표본 수·cycle 합계·최소·최대를 유지한다.
+reporter는 기존 snapshot에서 평균 cycle을 정수 나눗셈으로 계산한 뒤
+Zephyr `timing_cycles_to_ns()`로 최소·평균·최대를 ns로 변환한다.
+평균은 cycle 단위에서 먼저 소수 부분이 버려지며, ns 표기는 ns 단위의 측정 해상도를 뜻하지 않는다.
+
+```text
+PERF estimator_predict: n=0 no samples
+PERF estimator_correct: n=3 min_ns=100 mean_ns=200 max_ns=300
+```
+
+위 숫자는 출력 형식 예시이며 실측값이 아니다. board_check는 새 필드를 JSON과 원문 콘솔 로그에 보존하며, 실행 시간 필드가 없는 예전 로그도 읽는다. 실행 시간에 대한 자동 성능 합격 기준은 아직 적용하지 않는다. 5초마다 출력하지만 5초 구간별 통계가 아니다.
+표본이 없으면 나눗셈을 하지 않는다. count 또는 합계가 넘치는 표본은 집계 전체를 변경하지 않고 제외한다.
+타이밍 기능이 없는 구성에서는 자동 측정 hook이 꺼지고, 직접 기록한 표본은 `_cycles` 필드로 출력한다.
+새 실행 시간 출력은 host 테스트와 펌웨어 빌드로 확인하며 실제 보드 측정은 아직 미검증이다.
+기존 11월 18~19일 부하 시험은 이 출력의 검증 증거가 아니다.
+
 ## 카운터·소유권·집계 범위
 
 | 필드/로그 | 의미 |
@@ -80,7 +104,7 @@ C의 시간 통계 타입은 `perf_latency_stats`이며, `sample_count`는 표�
 
 collector의 짧은 `k_spinlock` 구간에서 카운터·snapshot을 보호한다. 그 안에서는 시계 조회·큐 API·스택 검사·로그를 실행하지 않는다. handler만 측정 begin/end를 호출하며 중첩 호출을 지원하지 않는다. 제출 여부와 무관하게 종료 지점에서 문맥을 해제한다. INIT/RESET·무수신 timeout의 입력 없는 TRACK은 측정 지연에 포함하지 않는다.
 
-카운터는 UINT32_MAX에서 포화한다. 시간 통계는 count가 포화되면 합계·히스토그램·최대값을 함께 동결한다. 한 시간 표본도 UINT32_MAX ms로 제한하여 uint64 누적 합계가 넘치지 않게 한다. INIT/RESET은 이 통계를 지우지 않는다. 새 run은 재부팅으로 시작한다.
+카운터는 UINT32_MAX에서 포화한다. 시간 통계는 count가 포화되면 합계·히스토그램·최대값을 함께 동결한다. 한 시간 표본도 UINT32_MAX ms로 제한하여 uint64 누적 합계가 넘치지 않게 한다. latency 집계 함수는 음수 입력을 내부에서 검사하여 assert하며, assert가 비활성화되어도 표본을 제외한다. INIT/RESET은 이 통계를 지우지 않는다. 새 run은 재부팅으로 시작한다.
 
 통계 구조체는 한 번의 잠금으로 복사하지만 여러 단계의 이벤트는 서로 다른 순간에 기록된다. 입력·처리·송신이 진행 중일 때 카운터가 즉시 일치하지 않을 수 있다. 스택 검사는 snapshot 이후 별도 조회이며 동시에 실행 중인 스레드의 사용을 샘플링한다. 무손실·완전한 peak 검출이나 stack overflow 부재를 보장하지 않는다.
 
@@ -91,7 +115,7 @@ collector는 `src/diagnostics/perf_monitor.c/.h`, 출력·스택 조회는 `perf
 host 사례와 실행 명령은 [성능 계측 테스트](../fcc_app/tests/test_perf_monitor/README.md)에 정리했다. 요구사항은 [REQ-PERF-001](requirements-traceability.md#spec-perf)로 추적한다.
 
 1. `perf.conf`를 플래시하고 ST-Link 콘솔 원문을 저장한다. 처음에는 입력 없이 0 표본·세 스택 조회 결과를 확인한다.
-2. 짧은 정상 입력에서 queue_wait/processing/rx_to_submit 표본 증가, 20ms 초과 횟수, STATUS/TRACK PC 수신과 TX 집계를 대조한다.
+2. predict/correct의 무표본 출력과 정상 입력 후 표본 수·최소/평균/최대 ns를 확인한다. 짧은 정상 입력에서 queue_wait/processing/rx_to_submit 표본 증가, 20ms 초과 횟수, STATUS/TRACK PC 수신과 TX 집계를 대조한다.
 3. INIT/RESET·무수신 timeout 보고가 측정 표본을 추가하지 않는지, 오래된/무효 입력·큐 실패가 각 카운터에 반영되는지 확인한다.
 4. 별도 run에서 README의 선언 부하(초안: 50Hz 측정·50Hz 결과·1Hz STATUS)를 30분 적용한다. 시작/종료 설정·baud·프레임 수·마지막 누적 요약·RX STATUS·PC CSV를 함께 남긴다.
 5. 송신 중단 후 큐가 비워진 구간의 통계를 비교한다. timeout 이벤트 TRACK 등 입력 없는 보고도 TX 프레임 수에 포함해 설명한다. 계측 로그 유실/타임스탬프 이상이 있으면 유효한 성능 증거로 단정하지 않는다.

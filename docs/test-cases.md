@@ -627,3 +627,7 @@ GUI worker의 CSV 생성·종료 회귀도 추가했습니다. [고정 시나리
 ## 실보드 성능 계측 시험기
 
 `tests/test_perf_monitor.py`의 8개 사례는 콘솔 chunk 분할, 미완성 요약 폐기, 스택 조회 실패 보존, ASSERT/FAULT/로그 유실 감지, 부팅 횟수와 percentile 순위를 검사한다. 실제 포트 접근은 하지 않는다. [실보드 실행과 한계](hardware-test-2026-11-18-performance.md)는 별도 기록이다.
+
+## 2026-11-22 실행 시간 계측 회귀
+
+[성능 계측 host suite](../fcc_app/tests/test_perf_monitor/README.md)는 collector/reporter 12개, PERF handler 32개, PERF TX 4개를 검증한다. 실행 시간 집계의 0·최댓값·포화, predict/correct 분리, 무표본 출력, 평균 절삭, cycle/ns 출력이 포함된다. `tests/test_perf_latency_guard.py` 12개는 assert 활성/비활성에서 음수 및 정수 범위를 검증하며, `tests/test_perf_monitor.py` 13개는 새 로그가 기존 보드 요약 파싱을 깨뜨리지 않는지도 확인한다. 실보드 실행 시간 정확도를 보증하는 테스트는 아니다.

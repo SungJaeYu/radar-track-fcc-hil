@@ -83,8 +83,31 @@ static void test_summary_and_stack_queries(void)
     assert(strstr(output, "PERF stack tx: unused=600 min_unused=600") != NULL);
 }
 
+static void test_execution_summary(void)
+{
+    reset_test();
+    perf_reporter_log_summary();
+    assert(strstr(output, "PERF estimator_predict: n=0 no samples") != NULL);
+    assert(strstr(output, "PERF estimator_correct: n=0 no samples") != NULL);
+
+    perf_monitor_record_predict(0);
+    perf_monitor_record_predict(9);
+    perf_monitor_record_correct(12);
+
+    reset_test();
+    perf_reporter_log_summary();
+#if defined(CONFIG_TIMING_FUNCTIONS)
+    assert(strstr(output, "PERF estimator_predict: n=2 min_ns=0 mean_ns=40 max_ns=90") != NULL);
+    assert(strstr(output, "PERF estimator_correct: n=1 min_ns=120 mean_ns=120 max_ns=120") != NULL);
+#else
+    assert(strstr(output, "PERF estimator_predict: n=2 min_cycles=0 mean_cycles=4 max_cycles=9") != NULL);
+    assert(strstr(output, "PERF estimator_correct: n=1 min_cycles=12 mean_cycles=12 max_cycles=12") != NULL);
+#endif
+}
+
 static const struct test_case cases[] = {
     TEST_CASE(test_summary_and_stack_queries),
+    TEST_CASE(test_execution_summary),
 };
 
 int main(int argc, char **p_argv)

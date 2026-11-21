@@ -142,3 +142,7 @@ Python tests cover protocol/scenario/evaluation code and, with GUI dependencies,
 | [fcc_app/tests](fcc_app/tests) / [tests](tests) | Host C / Python verification |
 
 V1 is complete. Multi-target tracking, alternative estimators, additional hardware-error handling and latency optimization are separate follow-up work. [Scope and roadmap — Korean](docs/roadmap.md).
+
+## Estimator execution timing (2026-11-22)
+
+The `perf.conf` build aggregates predict/correct timer cycles separately and reports sample count and minimum/mean/maximum nanoseconds every five seconds. Aggregates are cumulative since boot; empty aggregates report `no samples`. Host tests and firmware builds cover this addition; the new execution-time output has not yet been validated on hardware. See the [measurement contract](docs/performance-monitoring.md) for boundaries and limitations.

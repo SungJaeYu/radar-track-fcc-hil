@@ -38,11 +38,13 @@ V1은 2026-11-19 프로젝트 소유자의 완료 확인을 반영해 종료했�
 
 ## 선택적 성능 계측
 
-`perf.conf`는 `diagnostics/perf_monitor.c/.h`의 지연·큐·송신 집계와 `perf_reporter.c`의 5초 요약·스택 조회를 켭니다. 일반/debug 빌드에는 제외됩니다. [측정 계약](docs/performance-monitoring.md)을 따릅니다. [11월 19일 종료한 30분 기록](docs/hardware-test-2026-11-19-performance.md)은 측정89,990건 모두 대응, PC RTT p99 8.049ms·최대34.894ms, 보드 RX→TX 제출 최대1ms입니다. PC RTT는 USB·UART·호스트 대기도 포함합니다. 기존 호스트 간격137.581ms에 따른 원시 실패 판정은 당시 이력으로 유지하며 현재 RTT 기준과 구분합니다. 추가 RTT 개선은 후속 선택입니다.
+`perf.conf`는 `diagnostics/perf_monitor.c/.h`의 지연·큐·송신·predict/correct 실행 cycle 집계와 `perf_reporter.c`의 5초 요약·스택 조회를 켭니다. 일반/debug 빌드에는 제외됩니다. [측정 계약](docs/performance-monitoring.md)을 따릅니다. [11월 19일 종료한 30분 기록](docs/hardware-test-2026-11-19-performance.md)은 측정89,990건 모두 대응, PC RTT p99 8.049ms·최대34.894ms, 보드 RX→TX 제출 최대1ms입니다. PC RTT는 USB·UART·호스트 대기도 포함합니다. 기존 호스트 간격137.581ms에 따른 원시 실패 판정은 당시 이력으로 유지하며 현재 RTT 기준과 구분합니다. 추가 RTT 개선은 후속 선택입니다.
+
+새 predict/correct 실행 시간 출력은 host/빌드 검증 대상이며 아직 실보드 미검증입니다. 기존 30분 기록과 구분합니다.
 
 ## 검증
 
-- [성능 계측 host 테스트](fcc_app/tests/test_perf_monitor/README.md): collector/reporter 9 + 계측 활성화 handler 32/TX 4회. 기본 C 121회와 합쳐 166회 실행(CTest 146개)입니다.
+- [성능 계측 host 테스트](fcc_app/tests/test_perf_monitor/README.md): collector/reporter 12 + 계측 활성화 handler 32/TX 4회. 이번 계측 관련 검증은 총 48개 CTest입니다.
 - `python -m pytest`: GUI 의존성 설치 시 765개 + subtest 9개. 미설치 시 Qt 테스트는 skip됩니다. 실제 보드와 별도입니다.
 - [UART host 테스트](fcc_app/tests/test_uart_rx/README.md): drain 24·discard 21, 총 45회 실행으로 링버퍼·부분 프레임 timeout·통계·init 오류를 검증합니다. 모사 IRQ는 실제 동시성을 검증하지 않습니다.
 - [handler host 테스트](fcc_app/tests/test_frame_handler/README.md): STATUS·TRACK·실패 복귀·INIT/RESET·측정 timeout·processor·stale·이상치 복귀 계약 31개 사례. 통계는 모사 snapshot이며 실제 RX 카운터 통합은 별도입니다.

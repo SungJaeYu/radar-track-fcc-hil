@@ -16,10 +16,12 @@ cmake --build /tmp/radar-tx-perf-tests
 ctest --test-dir /tmp/radar-tx-perf-tests --output-on-failure
 ```
 
-The monitor suite registers nine CTest cases. `perf_monitor_tests` runs eight collector cases, and `perf_reporter_tests` runs the reporter case. Both use the common test runner: no argument runs all cases, a case name selects one, and an unknown name returns 2. The collector fixture resets private state through an included production source; firmware has no diagnostic reset API.
+The monitor suite registers 12 CTest cases. `perf_monitor_tests` runs nine collector cases, and `perf_reporter_tests` runs the existing reporter case and the cycle-summary case; `perf_reporter_timing_tests` checks ns conversion with a synthetic 100 MHz timer. Both use the common test runner: no argument runs all cases, a case name selects one, and an unknown name returns 2. The collector fixture resets private state through an included production source; firmware has no diagnostic reset API.
 
 | Case | Behavior checked |
 |---|---|
+| `test_execution_aggregation` | Independent predict/correct aggregates, zero/UINT64_MAX samples, count/total overflow exclusion |
+| `test_execution_summary_cycles/ns` | Empty samples, independent summaries, integer mean and unit conversion with/without timing support |
 | `test_counter_saturation` | Counters do not wrap; timing aggregate freezes consistently; huge elapsed values clamp |
 | `test_timing_boundaries` | 0/1/19/20/21ms, strict >20ms budget, separate queue/processing/total time |
 | `test_failed_and_missing_submit` | Failed submit is excluded from successful timing; missing submit is separate |
@@ -30,9 +32,11 @@ The monitor suite registers nine CTest cases. `perf_monitor_tests` runs eight co
 | `test_concurrent_snapshots` | Two pthread producers, 20,000 updates, snapshots preserve the count/depth invariant |
 | `test_summary_and_stack_queries` | Empty samples, nearest-rank percentile boundaries, overflow bin, stack minimum, unavailable query and recovery |
 
-The handler's `PERF_TEST_ENABLED=ON` build runs the existing 30 cases plus `test_perf_measurement_paths`: real timing hooks across success, stale/invalid input, encoder failure, full queue, recovery, controls/timeout, and RX submit validation. The TX variant reuses four cases and adds assertions for queue rejection, observed occupancy, successful polling and encoder failure. Total performance-enabled executions: 9 + 31 + 4 = 44.
+The handler's `PERF_TEST_ENABLED=ON` build runs the existing 31 cases plus `test_perf_measurement_paths`: real timing hooks across success, stale/invalid input, encoder failure, full queue, recovery, controls/timeout, and RX submit validation. The TX variant reuses four cases and adds assertions for queue rejection, observed occupancy, successful polling and encoder failure. Total performance-enabled executions: 12 + 32 + 4 = 48.
 
 A pthread mutex stands in for `k_spinlock`; this checks concurrent host updates/snapshots but not Zephyr IRQ exclusion or timing. Handler/TX scheduling, uptime, stack queries and UART are mocked. Firmware builds check the actual Zephyr APIs. No host test establishes board stack headroom, physical delivery, latency, or 30-minute load stability. See [measurement contract and board procedure](../../../docs/performance-monitoring.md).
+
+The separate `tests/test_perf_latency_guard.py` suite checks negative inputs with assertions on/off and signed/unsigned boundaries (12 cases). Run it with `python -m pytest -q tests/test_perf_latency_guard.py`. These tests do not establish actual estimator execution times.
 
 ## Real-board check
 
@@ -54,4 +58,4 @@ The fixed load is a stationary 1,000m/15-degree target, 50Hz MEAS_REPORT and 1Hz
 
 The short mode also sends an invalid range and INIT/RESET, verifies recovery, and checks that one invalid measurement increments `without_submit` while controls and the timeout event do not add timing samples. Queue saturation and stale injection remain covered by the separate transport stress test; this fixture does not pause consumers.
 
-Raw console text, session CSVs, configurations, ELF/script hashes, complete parsed summaries and assertions are saved. `tests/test_perf_monitor.py` checks summary chunk boundaries, incomplete records, stack query failures, fatal/log-loss detection and percentile rank without serial access. These eight Python cases are distinct from the nine C collector/reporter cases.
+Raw console text, session CSVs, configurations, ELF/script hashes, complete parsed summaries and assertions are saved. `tests/test_perf_monitor.py` checks summary chunk boundaries, incomplete records, stack query failures, fatal/log-loss detection and percentile rank without serial access. These 13 Python cases also check old/new summary compatibility; optional estimator fields are retained in the bench JSON and raw console log without adding execution-time acceptance thresholds. They are distinct from the 12 C collector/reporter cases.

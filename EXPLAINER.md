@@ -216,3 +216,7 @@ pc_sim/
     README.md          실행·옵션·제약
 tests/                Python 프로토콜·송신기·시나리오 테스트
 ```
+
+## Estimator 실행 시간 계측 (2026-11-22)
+
+`perf.conf`에서 predict/correct의 실행 cycle을 별도로 누적하고 5초 요약에 표본 수와 최소·평균·최대 ns를 출력합니다. 표본이 없으면 `no samples`를 출력합니다. host/빌드 검증과 실제 보드 측정은 구분하며, 새 출력의 실보드 검증은 아직 남아 있습니다. [계측 범위·단위·한계](docs/performance-monitoring.md)를 따릅니다.
