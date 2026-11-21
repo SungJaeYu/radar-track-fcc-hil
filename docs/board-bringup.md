@@ -24,13 +24,13 @@ ST-Link USB는 flash와 Zephyr 콘솔 로그에 사용하며 데이터용 USB-UA
 
 ## 1. 빌드·플래시
 
-Zephyr4.2·SDK0.17.2와 Python 환경을 준비한 뒤 실행합니다. `/path/to/radar-track-fcc-hil`은 실제 저장소 경로로 바꿉니다.
+Zephyr4.2·SDK0.17.2와 Python 환경을 준비한 뒤 실행합니다. `/path/to/radar-tracking-bench`은 실제 저장소 경로로 바꿉니다.
 
 ```bash
 source ~/zephyrproject/.venv/bin/activate
 cd ~/zephyrproject
-west build -d /path/to/radar-track-fcc-hil/build -b stm32f746g_disco /path/to/radar-track-fcc-hil/fcc_app
-west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
+west build -d /path/to/radar-tracking-bench/build -b stm32f746g_disco /path/to/radar-tracking-bench/fcc_app
+west flash -d /path/to/radar-tracking-bench/build --runner openocd
 ```
 
 빌드 성공, flash 성공, 보드 실행 성공을 각각 구분해서 기록합니다.

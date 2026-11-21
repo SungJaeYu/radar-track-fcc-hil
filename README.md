@@ -1,6 +1,10 @@
-# radar-track-fcc-hil
+# radar-tracking-bench
+
+<a id="radar-track-fcc-hil"></a>
 
 **English** | [한국어](README.ko.md)
+
+Previously named `radar-track-fcc-hil`.
 
 **Single-target tracking HIL on STM32 and Zephyr — V1 complete (`v1.0.0`).**
 
@@ -96,8 +100,8 @@ ST-Link USB is the separate flash/debug-console connection. Replace the reposito
 ```bash
 source ~/zephyrproject/.venv/bin/activate
 cd ~/zephyrproject
-west build -d /path/to/radar-track-fcc-hil/build -b stm32f746g_disco /path/to/radar-track-fcc-hil/fcc_app
-west flash -d /path/to/radar-track-fcc-hil/build --runner openocd
+west build -d /path/to/radar-tracking-bench/build -b stm32f746g_disco /path/to/radar-tracking-bench/fcc_app
+west flash -d /path/to/radar-tracking-bench/build --runner openocd
 ```
 
 Return to the repository root and use the PC environment prepared above. Close the GUI and any other program using the data port before running the CLI. Replace `/dev/ttyUSB0` with the actual adapter port; macOS commonly uses `/dev/cu.usbserial...`.

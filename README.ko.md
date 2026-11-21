@@ -1,6 +1,10 @@
-# radar-track-fcc-hil
+# radar-tracking-bench
+
+<a id="radar-track-fcc-hil"></a>
 
 [English](README.md) | **한국어**
+
+이전 이름: `radar-track-fcc-hil`.
 
 **STM32 · Zephyr 기반 단일표적 레이더 추적 HIL 프로젝트 — V1 완료 (`v1.0.0`)**
 
