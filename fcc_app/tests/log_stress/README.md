@@ -22,7 +22,7 @@ TRACK 수치·상태·순번 연속성·입력 대비 전달률은 검증하지 
 아래 `REPO`, `ZEPHYR_WS`, 포트는 로컬 경로에 맞게 지정합니다. pyserial이 필요합니다.
 
 ```sh
-REPO=/path/to/radar-track-fcc-hil
+REPO=/path/to/radar-tracking-bench
 ZEPHYR_WS=/path/to/zephyrproject
 cd "$ZEPHYR_WS"
 "$ZEPHYR_WS/.venv/bin/west" build -d "$REPO/build_log_stress" \

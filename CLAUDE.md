@@ -1,4 +1,4 @@
-# radar-track-fcc-hil
+# radar-tracking-bench
 
 ## 프로젝트 정체성
 
