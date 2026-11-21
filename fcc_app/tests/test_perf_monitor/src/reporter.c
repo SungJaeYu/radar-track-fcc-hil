@@ -57,8 +57,8 @@ static void test_summary_and_stack_queries(void)
     reset_test();
     perf_reporter_log_summary();
     assert(strstr(output, "PERF queue_wait: n=0") != NULL);
-    assert(strstr(output, "PERF stack handler: unused=1200 min_unused=1200") != NULL);
-    assert(strstr(output, "PERF uptime_ms=5000") != NULL);
+    assert(strstr(output, "PERF stack handler: unused_bytes=1200 min_unused_bytes=1200") != NULL);
+    assert(strstr(output, "PERF summary: uptime_ms=5000") != NULL);
     // Exactly 100 samples make nearest-rank percentile boundaries explicit.
     for (unsigned int i = 1; i <= 100; ++i) {
         const int64_t delay = i <= 50 ? 1 : (i <= 95 ? 20 : 40);
@@ -71,24 +71,24 @@ static void test_summary_and_stack_queries(void)
     reset_test();
     perf_reporter_log_summary();
     assert(strstr(output, "PERF queue_wait: n=100") != NULL);
-    assert(strstr(output, "p50_bin=1 p95_bin=20 p99_bin=21 max_ms=40 over20=5") != NULL);
-    assert(strstr(output, "PERF stack handler: unused=800 min_unused=800") != NULL);
+    assert(strstr(output, "p50_bin=1 p95_bin=20 p99_bin=21 max_ms=40 over_budget_count=5") != NULL);
+    assert(strstr(output, "PERF stack handler: unused_bytes=800 min_unused_bytes=800") != NULL);
     assert(strstr(output, "PERF stack tx: unavailable=-") != NULL);
-    assert(strstr(output, "PERF stack tx: unused=") == NULL);
+    assert(strstr(output, "PERF stack tx: unused_bytes=") == NULL);
     stack_unused[1] = 1000;
     stack_result[2] = 0;
     reset_test();
     perf_reporter_log_summary();
-    assert(strstr(output, "PERF stack handler: unused=1000 min_unused=800") != NULL);
-    assert(strstr(output, "PERF stack tx: unused=600 min_unused=600") != NULL);
+    assert(strstr(output, "PERF stack handler: unused_bytes=1000 min_unused_bytes=800") != NULL);
+    assert(strstr(output, "PERF stack tx: unused_bytes=600 min_unused_bytes=600") != NULL);
 }
 
 static void test_execution_summary(void)
 {
     reset_test();
     perf_reporter_log_summary();
-    assert(strstr(output, "PERF estimator_predict: n=0 no samples") != NULL);
-    assert(strstr(output, "PERF estimator_correct: n=0 no samples") != NULL);
+    assert(strstr(output, "PERF estimator_predict: n=0 status=no_samples") != NULL);
+    assert(strstr(output, "PERF estimator_correct: n=0 status=no_samples") != NULL);
 
     perf_monitor_record_predict(0);
     perf_monitor_record_predict(9);

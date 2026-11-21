@@ -44,13 +44,14 @@ static uint32_t percentile_bin(const struct perf_latency_stats *p_latency, uint3
 static void log_latency(const char *p_name, const struct perf_latency_stats *p_latency)
 {
     // Percentile bin 21 means >20 ms, not an exact 21 ms observation.
-    LOG_INF("PERF %s: n=%u total_ms=%llu p50_bin=%u p95_bin=%u p99_bin=%u max_ms=%u over20=%u",
+    LOG_INF("PERF %s: n=%u total_ms=%llu p50_bin=%u p95_bin=%u p99_bin=%u max_ms=%u over_budget_count=%u status=%s",
             p_name, (unsigned int)p_latency->sample_count,
             (unsigned long long)p_latency->total_ms,
             (unsigned int)percentile_bin(p_latency, 50),
             (unsigned int)percentile_bin(p_latency, 95),
             (unsigned int)percentile_bin(p_latency, 99),
-            (unsigned int)p_latency->max_ms, (unsigned int)p_latency->over_budget_count);
+            (unsigned int)p_latency->max_ms, (unsigned int)p_latency->over_budget_count,
+            p_latency->sample_count == 0 ? "no_samples" : "ok");
 }
 
 static void log_stack(const char *p_name, const struct k_thread *p_thread, unsigned int index)
@@ -65,7 +66,7 @@ static void log_stack(const char *p_name, const struct k_thread *p_thread, unsig
     if (unused_bytes < min_unused[index]) {
         min_unused[index] = unused_bytes;
     }
-    LOG_INF("PERF stack %s: unused=%u min_unused=%u", p_name,
+    LOG_INF("PERF stack %s: unused_bytes=%u min_unused_bytes=%u", p_name,
             (unsigned int)unused_bytes, (unsigned int)min_unused[index]);
 }
 
@@ -73,7 +74,7 @@ void perf_reporter_log_summary(void)
 {
     (void)perf_monitor_get_stats(&snapshot);
     // Fields below share a snapshot; subsequent stack scans are independent samples.
-    LOG_INF("PERF uptime_ms=%lld measurements=%u without_submit=%u submit_failed=%u invalid_time=%u",
+    LOG_INF("PERF summary: uptime_ms=%lld measurements=%u without_submit=%u submit_failed=%u invalid_time=%u",
             (long long)k_uptime_get(), (unsigned int)snapshot.measurements,
             (unsigned int)snapshot.without_submit, (unsigned int)snapshot.track_submit_failed,
             (unsigned int)snapshot.invalid_timestamps);
@@ -106,7 +107,7 @@ static void log_execution(const char *p_name, const struct perf_execution_stats 
     __ASSERT(p_stats != NULL, "Execution statistics pointer is NULL");
 
     if (p_stats->sample_count == 0) {
-        LOG_INF("PERF %s: n=0 no samples", p_name);
+        LOG_INF("PERF %s: n=0 status=no_samples", p_name);
         return;
     }
 

@@ -10,7 +10,7 @@ board_check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(board_check)
 
 
-def summary(uptime=5000, omit=None, execution=True):
+def summary(uptime=5000, omit=None, execution=True, modern=True):
     # Deliberately fixed text, independent of the firmware's formatting implementation.
     lines = [f'PERF uptime_ms={uptime} measurements=3 without_submit=0 submit_failed=0 invalid_time=0']
     lines += [f'PERF {name}: n=3 total_ms=2 p50_bin=1 p95_bin=1 p99_bin=1 max_ms=1 over20=0'
@@ -21,15 +21,21 @@ def summary(uptime=5000, omit=None, execution=True):
     lines += [f'PERF queue {name}: accepted=4 rejected=0 observed_max_used=1' for name in ('rx', 'tx')]
     lines += ['PERF tx: poll_completed=4 encode_failed=0']
     lines += [f'PERF stack {name}: unused=700 min_unused=680' for name in ('rx', 'handler', 'tx')]
+    if modern:
+        lines = [line.replace('PERF uptime_ms=', 'PERF summary: uptime_ms=')
+                 .replace(' over20=', ' over_budget_count=')
+                 .replace(' unused=', ' unused_bytes=').replace(' min_unused=', ' min_unused_bytes=')
+                 .replace('n=0 no samples', 'n=0 status=no_samples') for line in lines]
     return ''.join('\x1b[0m<inf> radar_perf: ' + line + '\x1b[0m\r\n'
                    for line in lines if omit is None or not line.startswith(omit))
 
 
 @pytest.mark.parametrize('bytewise', [False, True])
 @pytest.mark.parametrize('execution', [False, True])
-def test_perf_console_handles_serial_chunks(bytewise, execution):
+@pytest.mark.parametrize('modern', [False, True])
+def test_perf_console_handles_serial_chunks(bytewise, execution, modern):
     parser = board_check.PerfConsole()
-    text = summary(execution=execution)
+    text = summary(execution=execution, modern=modern)
     for chunk in text if bytewise else [text]:
         parser.feed(chunk)
     assert len(parser.snapshots) == 1
@@ -51,7 +57,7 @@ def test_perf_console_discards_incomplete_summary_before_next_header():
 
 def test_perf_console_keeps_stack_query_errors_visible():
     parser = board_check.PerfConsole()
-    parser.feed(summary().replace('PERF stack tx: unused=700 min_unused=680',
+    parser.feed(summary().replace('PERF stack tx: unused_bytes=700 min_unused_bytes=680',
                                   'PERF stack tx: unavailable=-134'))
     assert parser.snapshots[0]['stack tx'] == {'unavailable': -134}
 

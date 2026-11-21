@@ -50,3 +50,5 @@
 - [코딩 규칙 적용 점검](coding-standard-audit.md) · [주석 점검](comment-audit.md)
 
 현재 후속 작업 후보는 [로드맵](roadmap.md#다음-구현-순서)에서 관리합니다.
+
+- [2026-11-22 로그 형식 통일·GUI/PC·실보드 회귀](hardware-test-2026-11-22-logging.md)

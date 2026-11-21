@@ -29,7 +29,7 @@ static void test_tx_init(void)
     reset_test();
     ready = false;
     assert(uart_tx_init() == -ENODEV && tx_ready_sem.count == 0);
-    assert(strstr(log_output, "not ready") != NULL);
+    assert(strstr(log_output, "status=not_ready") != NULL);
     ready = true;
     assert(uart_tx_init() == 0 && tx_ready_sem.count == 1);
 }

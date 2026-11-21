@@ -58,11 +58,11 @@ received_uptime_ms (t0)       k_uptime_get() (t1)              k_uptime_get() (t
 C의 시간 통계 타입은 `perf_latency_stats`이며, `sample_count`는 표본 수,
 `histogram_counts`는 구간별 빈도, `over_budget_count`는 기준 초과 횟수다.
 큐 통계는 `accepted_count`, `rejected_count`, `max_observed_depth`로 저장한다.
-기존 로그 필드 이름은 보드 검증 도구와의 호환을 위해 유지한다.
+콘솔 필드 형식은 [로그 규칙](logging.md)을 따른다. 보드 검증 parser는 이전 로그도 읽고 JSON의 기존 키를 유지한다.
 
-각 시간 통계는 `n`, `total_ms`, `max_ms`, `over20`, 히스토그램을 유지한다. 평균은 `total_ms / n`으로 계산하며 n=0이면 표본이 없다. 부팅 이후 누적값이고 5초 구간별 통계가 아니다.
+각 시간 통계는 `n`, `total_ms`, `max_ms`, `over_budget_count`, 히스토그램을 유지한다. 평균은 `total_ms / n`으로 계산하며 n=0이면 표본이 없다. 부팅 이후 누적값이고 5초 구간별 통계가 아니다.
 
-히스토그램은 0..20ms 각각 한 구간과 **>20ms 구간 21**로 구성된다. 로그의 `p50_bin`, `p95_bin`, `p99_bin`은 nearest-rank 방식의 구간 번호다. 예를 들어 `p99_bin=21 max_ms=40`이면 p99는 **20ms 초과**, 관측 최대는 40ms라는 뜻이며 p99=21ms라는 뜻이 아니다. 초과 구간의 정확한 백분위가 필요하면 후속 시험에서 더 넓거나 세밀한 계측을 추가해야 한다. `over20`은 엄격한 `>20ms`이며 20ms는 포함하지 않는다.
+히스토그램은 0..20ms 각각 한 구간과 **>20ms 구간 21**로 구성된다. 로그의 `p50_bin`, `p95_bin`, `p99_bin`은 nearest-rank 방식의 구간 번호다. 예를 들어 `p99_bin=21 max_ms=40`이면 p99는 **20ms 초과**, 관측 최대는 40ms라는 뜻이며 p99=21ms라는 뜻이 아니다. 초과 구간의 정확한 백분위가 필요하면 후속 시험에서 더 넓거나 세밀한 계측을 추가해야 한다. `over_budget_count`은 엄격한 `>20ms`이며 20ms는 포함하지 않는다.
 
 ## Estimator 실행 시간 — 2026-11-22
 
@@ -78,14 +78,14 @@ Zephyr `timing_cycles_to_ns()`로 최소·평균·최대를 ns로 변환한다.
 평균은 cycle 단위에서 먼저 소수 부분이 버려지며, ns 표기는 ns 단위의 측정 해상도를 뜻하지 않는다.
 
 ```text
-PERF estimator_predict: n=0 no samples
+PERF estimator_predict: n=0 status=no_samples
 PERF estimator_correct: n=3 min_ns=100 mean_ns=200 max_ns=300
 ```
 
 위 숫자는 출력 형식 예시이며 실측값이 아니다. board_check는 새 필드를 JSON과 원문 콘솔 로그에 보존하며, 실행 시간 필드가 없는 예전 로그도 읽는다. 실행 시간에 대한 자동 성능 합격 기준은 아직 적용하지 않는다. 5초마다 출력하지만 5초 구간별 통계가 아니다.
 표본이 없으면 나눗셈을 하지 않는다. count 또는 합계가 넘치는 표본은 집계 전체를 변경하지 않고 제외한다.
 타이밍 기능이 없는 구성에서는 자동 측정 hook이 꺼지고, 직접 기록한 표본은 `_cycles` 필드로 출력한다.
-새 실행 시간 출력은 host 테스트와 펌웨어 빌드로 확인하며 실제 보드 측정은 아직 미검증이다.
+새 실행 시간 출력은 host 테스트·펌웨어 빌드와 [2026-11-22 STM32 smoke](hardware-test-2026-11-22-logging.md)에서 확인했다.
 기존 11월 18~19일 부하 시험은 이 출력의 검증 증거가 아니다.
 
 ## 카운터·소유권·집계 범위
@@ -100,7 +100,7 @@ PERF estimator_correct: n=3 min_ns=100 mean_ns=200 max_ns=300
 | `observed_max_used` | 제출 직후 조회한 큐 점유 수의 최대. 소비자가 이미 꺼낼 수 있어 실제 최대 점유율의 하한 관측값 |
 | `tx poll_completed` | 프레임의 모든 `uart_poll_out()` 호출을 마친 수. 상대 수신 ACK나 마지막 stop bit 완료가 아님 |
 | `tx encode_failed` | TX 워커에서 wire 인코딩에 실패한 수 |
-| `stack rx/handler/tx unused/min_unused` | 스택 패턴 검사에서 관측한 미사용 바이트와 조회한 값들의 최솟값. 조회 실패는 `unavailable=<negative errno>` |
+| `stack rx/handler/tx unused_bytes/min_unused_bytes` | 스택 패턴 검사에서 관측한 미사용 바이트와 조회한 값들의 최솟값. 조회 실패는 `unavailable=<negative errno>` |
 
 collector의 짧은 `k_spinlock` 구간에서 카운터·snapshot을 보호한다. 그 안에서는 시계 조회·큐 API·스택 검사·로그를 실행하지 않는다. handler만 측정 begin/end를 호출하며 중첩 호출을 지원하지 않는다. 제출 여부와 무관하게 종료 지점에서 문맥을 해제한다. INIT/RESET·무수신 timeout의 입력 없는 TRACK은 측정 지연에 포함하지 않는다.
 

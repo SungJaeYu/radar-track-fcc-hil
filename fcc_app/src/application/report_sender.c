@@ -39,20 +39,20 @@ void report_sender_submit_status(uint32_t stale_measurements)
     };
     int ret = status_message_encode(&report, &request.frame);
     if (ret != 0) {
-        LOG_ERR("STATUS encode failed: %d", ret);
+        LOG_ERR("STATUS encode failed: error=%d", ret);
         return;
     }
     ret = uart_tx_submit(&request);
     if (ret == -ENOMSG) {
-        LOG_WRN("STATUS submit failed: %d (TX queue full)", ret);
+        LOG_WRN("STATUS submit failed: error=%d reason=queue_full", ret);
         return;
     }
     if (ret != 0) {
-        LOG_ERR("STATUS submit failed: %d", ret);
+        LOG_ERR("STATUS submit failed: error=%d", ret);
         return;
     }
     // Submission only confirms a queue copy, not transmission or peer reception.
-    LOG_DBG("STATUS report queued: payload=%u bytes", (unsigned int)request.frame.payload_length);
+    LOG_DBG("STATUS report queued: payload_bytes=%u", (unsigned int)request.frame.payload_length);
 }
 
 void report_sender_submit_track(struct report_sender *p_sender, const struct track *p_track,
@@ -88,7 +88,7 @@ void report_sender_submit_track(struct report_sender *p_sender, const struct tra
 
     int ret = track_message_encode(&report, &request.frame);
     if (ret != 0) {
-        LOG_ERR("TRACK encode failed: %d", ret);
+        LOG_ERR("TRACK encode failed: error=%d", ret);
         return;
     }
     ret = uart_tx_submit(&request);
@@ -99,13 +99,13 @@ void report_sender_submit_track(struct report_sender *p_sender, const struct tra
     }
 #endif
     if (ret == -ENOMSG) {
-        LOG_WRN("TRACK submit failed: %d (TX queue full)", ret);
+        LOG_WRN("TRACK submit failed: error=%d reason=queue_full", ret);
         return;
     }
     if (ret != 0) {
-        LOG_ERR("TRACK submit failed: %d", ret);
+        LOG_ERR("TRACK submit failed: error=%d", ret);
         return;
     }
     // Submission only confirms a queue copy, not transmission or peer reception.
-    LOG_DBG("TRACK report queued: payload=%u bytes", (unsigned int)request.frame.payload_length);
+    LOG_DBG("TRACK report queued: payload_bytes=%u", (unsigned int)request.frame.payload_length);
 }

@@ -60,14 +60,14 @@ int uart_rx_init(void)
     // Check UART device is ready
     const bool device_ready = device_is_ready(p_uart);
     if (!device_ready) {
-        LOG_ERR("USART6 is not ready");
+        LOG_ERR("UART init: uart=USART6 status=not_ready");
         return -ENODEV;
     }
 
     // Set Callback Function
     const int ret = uart_irq_callback_user_data_set(p_uart, uart_callback, NULL);
     if (ret != 0) {
-        LOG_ERR("Failed to set UART callback: %d", ret);
+        LOG_ERR("UART callback: status=failed error=%d", ret);
         return ret;
     }
 
@@ -168,7 +168,7 @@ static void uart_rx_thread(void *p_arg1, void *p_arg2, void *p_arg3)
                 struct uart_rx_stats stats;
                 uart_rx_get_stats(&stats);
                 // Cumulative values are individually atomic, not one snapshot.
-                LOG_WRN("RX overflow: recovery completed, events=%u, ISR dropped=%u bytes, recovery discarded=%u bytes",
+                LOG_WRN("RX overflow: recovery=completed events=%u isr_dropped_bytes=%u recovery_discarded_bytes=%u",
                         (unsigned int)stats.ring_overflow_events,
                         (unsigned int)stats.rx_dropped_bytes,
                         (unsigned int)stats.recovery_discarded_bytes);

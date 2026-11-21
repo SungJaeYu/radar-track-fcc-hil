@@ -11,12 +11,12 @@ static void log_stress_thread(void *p_arg1, void *p_arg2, void *p_arg3)
 
     // Allow the PC to establish baseline traffic after flashing.
     k_sleep(K_SECONDS(8));
-    LOG_INF("Log stress starting: bursts=10, messages_per_burst=2000");
+    LOG_INF("Log stress starting: bursts=10 messages_per_burst=2000");
     k_sleep(K_MSEC(200));
 
     for (unsigned int burst = 0; burst < 10; ++burst) {
         for (unsigned int index = 0; index < 2000; ++index) {
-            LOG_DBG("Log stress sequence=%u payload=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            LOG_DBG("Log stress: sequence=%u payload=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                     burst * 2000 + index);
         }
         // Let the logger run between bursts; RX/handler/TX have higher priorities.

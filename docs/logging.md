@@ -99,3 +99,28 @@ TRACK_REPORT 추가 전 로그 정리: handler 17개·RX 45개·TX 4개 통과. 
 
 시험용 생성기는 [tests/log_stress](../fcc_app/tests/log_stress/README.md)에 격리했다.
 `CONFIG_RADAR_LOG_STRESS_TEST`는 기본 비활성이고 일반 DEBUG 설정만으로 활성화되지 않는다.
+
+## 로그 본문 형식 (2026-11-22)
+
+펌웨어와 시험용 producer의 본문은 `항목: key=value key=value`로 통일한다.
+Zephyr가 붙이는 timestamp·level·module 접두사는 그대로 사용한다.
+필드는 공백으로 구분하고 값에는 공백을 넣지 않는다. 단위는 `_ms`, `_ns`, `_bytes`,
+`_m`, `_rad`, `_mps`, `_radps`처럼 키에 포함한다. 오류 코드는 `error`, 사유는 `reason`으로 표시한다.
+
+```text
+Measurement: sensor_ms=100 range_m=1000.00 azimuth_rad=0.2618
+Track state: previous=TENTATIVE current=CONFIRMED
+STATUS submit failed: error=-42 reason=queue_full
+PERF summary: uptime_ms=5000 measurements=0 without_submit=0 submit_failed=0 invalid_time=0
+PERF estimator_predict: n=0 status=no_samples
+PERF stack handler: unused_bytes=1200 min_unused_bytes=1200
+```
+
+위 값은 형식 예시다. 지연 통계도 `status=no_samples` 또는 `status=ok`를 표시하며,
+무표본일 때 기존 수치 필드의 0을 실제 측정값으로 해석하지 않는다.
+`PERF` parser는 이전 header·`over20`·`unused`·`min_unused` 로그도 읽는다.
+JSON 증거의 기존 키는 호환을 위해 유지한다. 새 콘솔 키는 `over_budget_count`,
+`unused_bytes`, `min_unused_bytes`다. 과거 원문 기록은 변환하지 않는다.
+
+GUI는 ST-Link 콘솔을 텍스트로 표시하며 추적 상태·좌표와 STATUS는 데이터 UART의
+이진 프레임에서 얻는다. PC 시뮬레이터의 프로토콜·CSV 형식은 이번 로그 변경과 무관하다.

@@ -40,7 +40,7 @@ V1은 2026-11-19 프로젝트 소유자의 완료 확인을 반영해 종료했�
 
 `perf.conf`는 `diagnostics/perf_monitor.c/.h`의 지연·큐·송신·predict/correct 실행 cycle 집계와 `perf_reporter.c`의 5초 요약·스택 조회를 켭니다. 일반/debug 빌드에는 제외됩니다. [측정 계약](docs/performance-monitoring.md)을 따릅니다. [11월 19일 종료한 30분 기록](docs/hardware-test-2026-11-19-performance.md)은 측정89,990건 모두 대응, PC RTT p99 8.049ms·최대34.894ms, 보드 RX→TX 제출 최대1ms입니다. PC RTT는 USB·UART·호스트 대기도 포함합니다. 기존 호스트 간격137.581ms에 따른 원시 실패 판정은 당시 이력으로 유지하며 현재 RTT 기준과 구분합니다. 추가 RTT 개선은 후속 선택입니다.
 
-새 predict/correct 실행 시간 출력은 host/빌드 검증 대상이며 아직 실보드 미검증입니다. 기존 30분 기록과 구분합니다.
+새 predict/correct 실행 시간 출력은 host/빌드와 2026-11-22 STM32 10초 smoke에서 확인했습니다. 기존 30분 기록과 구분하며 [로그 형식 회귀](docs/hardware-test-2026-11-22-logging.md)를 따릅니다.
 
 ## 검증
 

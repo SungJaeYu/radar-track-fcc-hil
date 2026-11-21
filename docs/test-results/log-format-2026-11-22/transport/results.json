@@ -1,0 +1,390 @@
+{
+  "checks": [
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "BENCH RX: state=paused",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH RX: state=resumed",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "real ring overflow counted",
+      "passed": true
+    },
+    {
+      "name": "ISR discarded bytes counted",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "fresh tracking CONFIRMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "BENCH HANDLER: state=paused",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH HANDLER: state=resumed",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "RX queue drops counted",
+      "passed": true
+    },
+    {
+      "name": "old queued measurements dropped",
+      "passed": true
+    },
+    {
+      "name": "stale backlog emits no TRACK",
+      "passed": true
+    },
+    {
+      "name": "handler pressure did not overflow ring",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "fresh tracking CONFIRMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH TX: state=paused",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "paused TX emits no response",
+      "passed": true
+    },
+    {
+      "name": "BENCH TX: state=resumed",
+      "passed": true
+    },
+    {
+      "name": "TX preserves queue plus possible in-flight reply",
+      "passed": true
+    },
+    {
+      "name": "TX queue full diagnosed",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "STATUS response",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "fresh tracking CONFIRMED",
+      "passed": true
+    },
+    {
+      "name": "complete PC write",
+      "passed": true
+    },
+    {
+      "name": "BENCH: state=complete",
+      "passed": true
+    },
+    {
+      "name": "received framing intact",
+      "passed": true
+    },
+    {
+      "name": "normal firmware STATUS restored",
+      "passed": true
+    }
+  ],
+  "failure": null,
+  "track_controls": false,
+  "hex_sha256": {
+    "build": "0832a233c7b34bc6b6a3e9c35c3926a4bd863f7b5f7843f2dcf092b9113f25a6",
+    "build_transport_stress": "9356bd1b7bc41250ccb300317ffca737c3bb0caf0ea3016bb1a5a9dfb4af1779"
+  }
+}

@@ -103,16 +103,16 @@ def main():
                 pump(.05)
 
             before = status()
-            marker('BENCH RX PAUSED')
+            marker('BENCH RX: state=paused')
             # Noise fills the ring without requiring a valid queued frame.
             send(bytes(600))
-            marker('BENCH RX RESUMED', 7)
+            marker('BENCH RX: state=resumed', 7)
             after = status()
             check('real ring overflow counted', after['ring_overflow_events'] > before['ring_overflow_events'])
             check('ISR discarded bytes counted', after['rx_dropped_bytes'] > before['rx_dropped_bytes'])
             recover()
             before = status()
-            marker('BENCH HANDLER PAUSED')
+            marker('BENCH HANDLER: state=paused')
             # Pace below line capacity; isolate handler queue pressure from ring pressure.
             for index in range(24):
                 send(build_measurement_frame(index * 100, 1000, 0))
@@ -124,7 +124,7 @@ def main():
                 send(encode_frame(5, b'\0'))
                 pump(.02)
             start = len(reports)
-            marker('BENCH HANDLER RESUMED', 7)
+            marker('BENCH HANDLER: state=resumed', 7)
             after = status()
             check('RX queue drops counted', after['queue_drops'] > before['queue_drops'])
             check('old queued measurements dropped', after['stale_measurements'] > before['stale_measurements'])
@@ -152,7 +152,7 @@ def main():
                 check('post-control tracks use new measurements',
                       [r.range_m for r in ordered if r.input_present] == [1000, 1100, 1200])
             recover()
-            marker('BENCH TX PAUSED')
+            marker('BENCH TX: state=paused')
             if args.track_controls:
                 start = len(reports)
                 previous_sequence = reports[-1].report_sequence
@@ -160,7 +160,7 @@ def main():
                     send(build_measurement_frame(index * 100, 1000, 0))
                     pump(.01)
                 check('paused TX emits no TRACK', len(reports) == start)
-                marker('BENCH TX RESUMED', 7)
+                marker('BENCH TX: state=resumed', 7)
                 pump(.3)
                 retained = reports[start:]
                 check('TRACK retains eight queued plus possible in-flight item', 8 <= len(retained) <= 9)
@@ -169,7 +169,7 @@ def main():
                 check('retained TRACK sequence order',
                       [r.report_sequence for r in retained] ==
                       [(previous_sequence + index + 1) & 0xffffffff for index in range(len(retained))])
-                check('TRACK queue full diagnosed', 'TRACK submit failed:' in console and '(TX queue full)' in console)
+                check('TRACK queue full diagnosed', 'TRACK submit failed:' in console and 'reason=queue_full' in console)
                 count = len(reports)
                 send(build_init_frame())
                 pump(.15)
@@ -186,15 +186,15 @@ def main():
                     send(encode_frame(3, b'\0'))
                     pump(.01)
                 check('paused TX emits no response', len(statuses) == count)
-                marker('BENCH TX RESUMED', 7)
+                marker('BENCH TX: state=resumed', 7)
                 pump(.3)
                 # A pending k_msgq_get may already own one item in addition to eight queued.
                 accepted = len(statuses) - count
                 check('TX preserves queue plus possible in-flight reply', 8 <= accepted <= 9)
-                check('TX queue full diagnosed', 'STATUS submit failed:' in console and '(TX queue full)' in console)
+                check('TX queue full diagnosed', 'STATUS submit failed:' in console and 'reason=queue_full' in console)
                 status()
                 recover()
-            marker('BENCH COMPLETE')
+            marker('BENCH: state=complete')
             check('received framing intact', decoder.crc_errors == decoder.length_errors == 0)
     except Exception as error:
         failure = repr(error)

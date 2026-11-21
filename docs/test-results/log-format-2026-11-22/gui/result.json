@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "qt_platform": "offscreen",
+  "hardware": "STM32F746G-DISCO",
+  "samples": 29,
+  "track_reports": 30,
+  "status": {
+    "crc_errors": 0,
+    "length_errors": 0,
+    "frame_timeouts": 0,
+    "queue_drops": 0,
+    "ring_overflow_events": 0,
+    "rx_dropped_bytes": 0,
+    "recovery_discarded_bytes": 0,
+    "stale_measurements": 0
+  },
+  "console_display_checked": true,
+  "estimate_display_checked": true,
+  "errors": []
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "mode": "board-performance",
+  "settings": {
+    "initial_range_m": 1000.0,
+    "range_rate_mps": 0,
+    "azimuth_deg": 15.0,
+    "range_noise_std_m": 0,
+    "sample_rate_hz": 50,
+    "duration_s": 10,
+    "seed": 42,
+    "azimuth_noise_std_deg": 0.0
+  },
+  "started_utc": "2026-11-21T15:12:29.512901+00:00",
+  "closed": true
+}

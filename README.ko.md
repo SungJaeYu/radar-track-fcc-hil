@@ -85,4 +85,6 @@ PC 시뮬레이터와 GUI 구현에는 AI 코딩 에이전트를 활용했습니
 
 ## Estimator 실행 시간 계측 (2026-11-22)
 
-`perf.conf`에서 predict/correct의 실행 cycle을 별도로 누적하고 5초 요약에 표본 수와 최소·평균·최대 ns를 출력합니다. 표본이 없으면 `no samples`를 출력합니다. host/빌드 검증과 실제 보드 측정은 구분하며, 새 출력의 실보드 검증은 아직 남아 있습니다. [계측 범위·단위·한계](docs/performance-monitoring.md)를 따릅니다.
+`perf.conf`에서 predict/correct의 실행 cycle을 별도로 누적하고 5초 요약에 표본 수와 최소·평균·최대 ns를 출력합니다. 표본이 없으면 `status=no_samples`를 출력합니다. host/빌드와 STM32 10초 smoke에서 새 출력을 확인했습니다. WCET나 장시간 성능 보장은 아닙니다. [계측 범위·단위·한계](docs/performance-monitoring.md)를 따릅니다.
+
+[2026-11-22 로그 형식·GUI/PC 실보드 회귀](docs/hardware-test-2026-11-22-logging.md)를 참고하세요.

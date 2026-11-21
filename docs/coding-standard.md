@@ -307,3 +307,12 @@ if (!measurement_valid) {
 `write_u32_be()`처럼 작고 상태가 없는 공통 연산을 헤더에 정의할 때는 C의 `static inline`을 사용합니다.
 표준 타입만으로 충분하면 Zephyr나 transport 헤더에 의존하지 않습니다. 출력 용량 등 호출 전제를 주석으로 명시합니다.
 `inline`은 실제 호출 제거를 보장하지 않으며, 큰 함수·스레드·상태 처리 함수를 일괄 inline화하지 않습니다.
+
+## 로그 형식
+
+- 본문은 `항목: key=value key=value`로 작성하고 필드는 공백으로 구분합니다.
+- 값 안의 공백·쉼표·문장형 설명 대신 `status=no_samples`, `reason=queue_full`처럼 표현합니다.
+- 물리량 단위는 키에 표시합니다. 예: `range_m`, `azimuth_rad`, `range_rate_mps`, `unused_bytes`.
+- 오류 코드는 `error`, 사유는 `reason`, 상태 전이는 `previous`/`current`로 표시합니다.
+- 로그 형식을 변경하면 소비하는 parser·보드 시험기·테스트·문서를 함께 확인합니다.
+  기존 검증 원문은 보존하며 필요한 읽기 호환성은 parser에서 처리합니다.

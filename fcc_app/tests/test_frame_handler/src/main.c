@@ -126,7 +126,7 @@ static void test_status_zero(void)
     assert(submitted_frame.frame.payload_length == 32);
     const uint8_t expected[32] = {0};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
-    assert(strcmp(output, "STATUS report queued: payload=32 bytes\n") == 0);
+    assert(strcmp(output, "STATUS report queued: payload_bytes=32\n") == 0);
 }
 
 static void test_status_snapshot(void)
@@ -137,7 +137,7 @@ static void test_status_snapshot(void)
     source_uart_stats = (struct uart_rx_stats){7, 0x80000000U, UINT32_MAX};
     request_status(&handler);
     assert(strcmp(output,
-                  "STATUS report queued: payload=32 bytes\n") == 0);
+                  "STATUS report queued: payload_bytes=32\n") == 0);
     source_stats.crc_errors = 2;
     output_size = 0;
     request_status(&handler);
@@ -146,7 +146,7 @@ static void test_status_snapshot(void)
                                 0, 0, 0, 7, 0x80, 0, 0, 0, 0xff, 0xff, 0xff, 0xff};
     assert(memcmp(submitted_frame.frame.payload, expected, sizeof(expected)) == 0);
     assert(strcmp(output,
-                  "STATUS report queued: payload=32 bytes\n") == 0);
+                  "STATUS report queued: payload_bytes=32\n") == 0);
     assert(source_stats.length_errors == 23 && source_stats.frame_timeouts == 456);
     assert(source_stats.queue_drops == UINT32_MAX);
 }
@@ -171,7 +171,7 @@ static void test_status_does_not_arm_timeout(void)
     request_status(&handler);
     assert(!handler.radar.timeout_armed && handler.radar.last_valid_rx_uptime_ms == 0);
     frame_handler_handle_timeout(&handler, 10000);
-    assert(strstr(output, "track cleared") == NULL);
+    assert(strstr(output, "track=cleared") == NULL);
 }
 
 static void test_status_does_not_refresh_timeout(void)
@@ -186,7 +186,7 @@ static void test_status_does_not_refresh_timeout(void)
     assert(handler.radar.timeout_armed);
     frame_handler_handle_timeout(&handler, 100 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
     assert(!handler.radar.timeout_armed && handler.radar.track.state == TRACK_STATE_EMPTY);
-    assert(strstr(output, "Radar measurement timeout: track cleared\n") != NULL);
+    assert(strstr(output, "Radar measurement timeout: track=cleared\n") != NULL);
 }
 
 static void test_status_encode_wire(void)
@@ -250,10 +250,10 @@ static void test_status_submit_failure_and_recovery(void)
         request_status(&handler);
         assert(submit_calls == 1 && stats_reads == 1);
         char expected[64];
-        snprintf(expected, sizeof(expected), "STATUS submit failed: %d", errors[i]);
+        snprintf(expected, sizeof(expected), "STATUS submit failed: error=%d", errors[i]);
         assert(strstr(output, expected) != NULL);
         assert(strstr(output, "report queued") == NULL);
-        assert((strstr(output, "TX queue full") != NULL) == (errors[i] == -ENOMSG));
+        assert((strstr(output, "reason=queue_full") != NULL) == (errors[i] == -ENOMSG));
         assert(memcmp(before, &handler, sizeof(handler)) == 0);
         assert(source_stats.crc_errors == 0x12345678U && source_stats.queue_drops == 0);
 
@@ -277,7 +277,7 @@ static void test_status_encode_failure_does_not_submit(void)
     request_status(&handler);
     assert(stats_reads == 1 && submit_calls == 0);
     char expected[64];
-    snprintf(expected, sizeof(expected), "STATUS encode failed: %d\n", -EINVAL);
+    snprintf(expected, sizeof(expected), "STATUS encode failed: error=%d\n", -EINVAL);
     assert(strstr(output, expected) != NULL);
     assert(memcmp(before, &handler, sizeof(handler)) == 0);
 
@@ -298,7 +298,7 @@ static void test_incoming_status_report_is_ignored(void)
     };
     frame_handler_process(&handler, &frame);
     assert(stats_reads == 0 && submit_calls == 0);
-    assert(strcmp(output, "STATUS_REPORT ignored: unexpected input\n") == 0);
+    assert(strcmp(output, "STATUS_REPORT ignored: reason=unexpected_input\n") == 0);
     assert(memcmp(before, &handler, sizeof(handler)) == 0);
 }
 
@@ -400,8 +400,8 @@ static void test_valid_measurements_arm_refresh_and_expire(void)
         log_lines += *p_char == '\n';
     }
     assert(log_lines == 4);
-    assert(strstr(output, "TRACK report queued: payload=32 bytes") != NULL);
-    assert(strstr(output, "range_rate=") != NULL);
+    assert(strstr(output, "TRACK report queued: payload_bytes=32") != NULL);
+    assert(strstr(output, "range_rate_mps=") != NULL);
     assert(strstr(output, "Track state:") == NULL);
     frame_handler_handle_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS / 2);
     assert(handler.radar.timeout_armed);
@@ -409,7 +409,7 @@ static void test_valid_measurements_arm_refresh_and_expire(void)
     assert(handler.radar.timeout_armed);
     frame_handler_handle_timeout(&handler, 5500 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS);
     assert(!handler.radar.timeout_armed && handler.radar.track.state == TRACK_STATE_EMPTY);
-    assert(strstr(output, "Radar measurement timeout: track cleared\n") != NULL);
+    assert(strstr(output, "Radar measurement timeout: track=cleared\n") != NULL);
     const size_t log_size = output_size;
     frame_handler_handle_timeout(&handler, 9000);
     assert(output_size == log_size);
@@ -469,11 +469,11 @@ static void test_gate_rejection_refreshes_receive_timeout(void)
         frame_handler_process(&handler, &frame);
     }
     assert(handler.radar.track.state == TRACK_STATE_CONFIRMED);
-    assert(strstr(output, "Track state: TENTATIVE -> CONFIRMED") != NULL);
+    assert(strstr(output, "Track state: previous=TENTATIVE current=CONFIRMED") != NULL);
     struct rx_frame frame = measurement(400, 2000, 5900);
     frame_handler_process(&handler, &frame);
     assert(strstr(output, "Measurement rejected by gate") != NULL);
-    assert(strstr(output, "Track state: CONFIRMED -> COASTING") != NULL);
+    assert(strstr(output, "Track state: previous=CONFIRMED current=COASTING") != NULL);
     assert(handler.radar.track.state == TRACK_STATE_COASTING && handler.radar.track.miss_count == 1);
     assert(handler.radar.timeout_armed && handler.radar.last_valid_rx_uptime_ms == 5900);
     frame_handler_handle_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
@@ -494,7 +494,7 @@ static void test_timestamp_rejection_refreshes_receive_timeout(void)
         memcpy(before, &handler.radar.track, sizeof(before));
         frame = measurement(timestamps[i], 1000, 5900);
         frame_handler_process(&handler, &frame);
-        assert(strstr(output, "Prediction skipped: previous_estimate_sensor_ms=100,") != NULL);
+        assert(strstr(output, "Prediction skipped: previous_estimate_sensor_ms=100 ") != NULL);
         assert(memcmp(before, &handler.radar.track, sizeof(before)) == 0);
         assert(handler.radar.timeout_armed && handler.radar.last_valid_rx_uptime_ms == 5900);
         frame_handler_handle_timeout(&handler, 5900 + CONFIG_RADAR_MEASUREMENT_TIMEOUT_MS - 1);
@@ -774,7 +774,7 @@ static void test_track_submit_failure_and_recovery(void)
         assert(handler.radar.track.state == TRACK_STATE_TENTATIVE);
         assert(strstr(output, "TRACK submit failed:") != NULL);
         assert(strstr(output, "TRACK report queued:") == NULL);
-        assert((strstr(output, "TX queue full") != NULL) == (errors[i] == -ENOMSG));
+        assert((strstr(output, "reason=queue_full") != NULL) == (errors[i] == -ENOMSG));
         submit_result = 0;
         feed_measurement(&handler, 200, 1000);
         check_track_report(1, 200, 200, TRACK_STATE_TENTATIVE, TRACK_REPORT_RESULT_UPDATED, true);
@@ -810,7 +810,7 @@ static void test_incoming_track_report_is_ignored(void)
     frame_handler_process(&handler, &frame);
     assert(submit_calls == 0 && stats_reads == 0);
     assert(memcmp(before, &handler, sizeof(before)) == 0);
-    assert(strcmp(output, "TRACK_REPORT ignored: unexpected input\n") == 0);
+    assert(strcmp(output, "TRACK_REPORT ignored: reason=unexpected_input\n") == 0);
 }
 
 static void test_processor_invalid_input_preserves_output(void)

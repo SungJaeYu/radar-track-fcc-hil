@@ -160,7 +160,7 @@ def main():
         clean = re.sub(r'\x1b\[[0-9;]*m', '', raw.decode(errors='replace'))
         drops = [int(value) for value in re.findall(r'(\d+) messages dropped', clean)]
         results['log_dropped_notice_total'] = sum(drops)
-        results['producer_sequences_received'] = len(set(re.findall(r'Log stress sequence=(\d+)', clean)))
+        results['producer_sequences_received'] = len(set(re.findall(r'Log stress: sequence=(\d+)', clean)))
         results['checks'] = {
             'no_io_errors': not results['errors'],
             'wire_responses_valid': check_wire(traffic, len(results['status'])),
@@ -171,10 +171,10 @@ def main():
                                      for phase in results['phases']) and bool(results['phases']),
             'status_after_stop': any(s['phase'] == 'after-stop' for s in results['status']),
             'no_fatal_or_assert': not re.search(r'ASSERTION FAIL|FATAL ERROR|Hard fault', clean, re.I),
-            'single_boot': clean.count('FCC learning-rebuild boot') == 1,
-            'confirmed': 'TENTATIVE -> CONFIRMED' in clean,
-            'recovery_measurement_logged': f"Measurement: t={results.get('last_measurement_ms')} ms" in clean,
-            'timeout_once': clean.count('Radar measurement timeout: track cleared') == 1,
+            'single_boot': clean.count('FCC boot: status=starting') == 1,
+            'confirmed': 'previous=TENTATIVE current=CONFIRMED' in clean,
+            'recovery_measurement_logged': f"Measurement: sensor_ms={results.get('last_measurement_ms')}" in clean,
+            'timeout_once': clean.count('Radar measurement timeout: track=cleared') == 1,
         }
         if args.mode == 'producer':
             results['checks']['producer_completed'] = 'Log stress complete: attempted=20000' in clean

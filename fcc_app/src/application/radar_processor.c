@@ -43,13 +43,13 @@ bool radar_processor_process_measurement(struct radar_processor *p_processor,
 
     const bool payload_decoded = measurement_message_decode(p_frame->payload, p_frame->payload_length, &measurement);
     if (!payload_decoded) {
-        LOG_WRN("Invalid radar payload: length=%u", (unsigned int)p_frame->payload_length);
+        LOG_WRN("Invalid radar payload: length_bytes=%u", (unsigned int)p_frame->payload_length);
         return false;
     }
 
     const bool measurement_valid = measurement_message_validate(&measurement);
     if (!measurement_valid) {
-        LOG_WRN("Invalid radar measurement: range=%.2f m, azimuth=%.4f rad",
+        LOG_WRN("Invalid radar measurement: range_m=%.2f azimuth_rad=%.4f",
                 (double)measurement.range_m, (double)measurement.azimuth_rad);
         return false;
     }
@@ -59,7 +59,7 @@ bool radar_processor_process_measurement(struct radar_processor *p_processor,
     p_processor->last_valid_rx_uptime_ms = received_uptime_ms;
     p_processor->timeout_armed = true;
 
-    LOG_DBG("Measurement: sensor_ms=%u, range=%.2f m, azimuth=%.4f rad",
+    LOG_DBG("Measurement: sensor_ms=%u range_m=%.2f azimuth_rad=%.4f",
             (unsigned int)measurement.sensor_time_ms, (double)measurement.range_m, (double)measurement.azimuth_rad);
 
     const TrackState previous_state = p_processor->track.state;
@@ -67,7 +67,7 @@ bool radar_processor_process_measurement(struct radar_processor *p_processor,
 
     // Startup has its own log; report other state transitions only when they occur.
     if (previous_state != TRACK_STATE_EMPTY && previous_state != p_processor->track.state) {
-        LOG_INF("Track state: %s -> %s",
+        LOG_INF("Track state: previous=%s current=%s",
                 track_state_name(previous_state), track_state_name(p_processor->track.state));
     }
 
@@ -142,20 +142,20 @@ static TrackReportResult update_track_from_measurement(struct track *p_track, co
 
 static void log_prediction(const struct estimator_output *p_estimate)
 {
-    LOG_DBG("Prediction: range=%.2f m, azimuth=%.4f rad",
+    LOG_DBG("Prediction: range_m=%.2f azimuth_rad=%.4f",
             (double)p_estimate->range_m, (double)p_estimate->azimuth_rad);
 }
 
 static void log_track_started(const struct radar_measurement *p_measurement)
 {
-    LOG_INF("Track started: TENTATIVE, sensor_ms=%u, range=%.2f m, azimuth=%.4f rad",
+    LOG_INF("Track started: state=TENTATIVE sensor_ms=%u range_m=%.2f azimuth_rad=%.4f",
             (unsigned int)p_measurement->sensor_time_ms,
             (double)p_measurement->range_m, (double)p_measurement->azimuth_rad);
 }
 
 static void log_prediction_skipped(uint32_t previous_estimate_sensor_ms, uint32_t input_sensor_ms, TrackState state)
 {
-    LOG_DBG("Prediction skipped: previous_estimate_sensor_ms=%u, input_sensor_ms=%u, state=%s",
+    LOG_DBG("Prediction skipped: previous_estimate_sensor_ms=%u input_sensor_ms=%u state=%s",
             (unsigned int)previous_estimate_sensor_ms,
             (unsigned int)input_sensor_ms, track_state_name(state));
 }
@@ -167,14 +167,14 @@ static void log_track_update(const struct track *p_track, bool measurement_accep
         p_track->state == TRACK_STATE_COASTING) {
         const struct estimator_output updated = track_get_estimate(p_track);
 
-        LOG_DBG("%s: range=%.2f m, azimuth=%.4f rad, range_rate=%.2f m/s, azimuth_rate=%.4f rad/s",
+        LOG_DBG("%s: range_m=%.2f azimuth_rad=%.4f range_rate_mps=%.2f azimuth_rate_radps=%.4f",
                 measurement_accepted ? "Measurement accepted" : "Measurement rejected by gate",
                 (double)updated.range_m,
                 (double)updated.azimuth_rad,
                 (double)updated.range_rate_mps,
                 (double)updated.azimuth_rate_radps);
     } else {
-        LOG_DBG("%s: state=%s, estimate invalid",
+        LOG_DBG("%s: state=%s estimate=invalid",
                 measurement_accepted ? "Measurement accepted" : "Measurement rejected by gate",
                 track_state_name(p_track->state));
     }

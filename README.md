@@ -152,4 +152,6 @@ I defined the problem, architecture, and validation criteria, and wrote the STM3
 
 ## Estimator execution timing (2026-11-22)
 
-The `perf.conf` build aggregates predict/correct timer cycles separately and reports sample count and minimum/mean/maximum nanoseconds every five seconds. Aggregates are cumulative since boot; empty aggregates report `no samples`. Host tests and firmware builds cover this addition; the new execution-time output has not yet been validated on hardware. See the [measurement contract](docs/performance-monitoring.md) for boundaries and limitations.
+The `perf.conf` build aggregates predict/correct timer cycles separately and reports sample count and minimum/mean/maximum nanoseconds every five seconds. Aggregates are cumulative since boot; empty aggregates report `status=no_samples`. Host tests, firmware builds, and a 10-second STM32 smoke run validate the output path; these are not WCET or long-duration performance guarantees. See the [measurement contract](docs/performance-monitoring.md) for boundaries and limitations.
+
+The [2026-11-22 log-format regression](docs/hardware-test-2026-11-22-logging.md) covers structured console logs and GUI/PC compatibility.

@@ -72,7 +72,7 @@ void frame_handler_handle_timeout(struct frame_handler *p_handler, int64_t now_u
 
     // Disarm monitoring before reporting so subsequent checks do not repeat the event.
     radar_processor_reset(&p_handler->radar);
-    LOG_WRN("Radar measurement timeout: track cleared");
+    LOG_WRN("Radar measurement timeout: track=cleared");
     report_sender_submit_track(&p_handler->report_sender, &p_handler->radar.track,
                                0, false, TRACK_REPORT_RESULT_RESET);
 }
@@ -88,7 +88,7 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
 
     switch (p_frame->frame.type) {
     case FRAME_TYPE_INIT:
-        LOG_INF("INIT: track and measurement monitoring reset");
+        LOG_INF("INIT: track=reset measurement_monitor=reset");
         frame_handler_init(p_handler);
         report_sender_submit_track(&p_handler->report_sender, &p_handler->radar.track, 0, false, TRACK_REPORT_RESULT_RESET);
         break;
@@ -102,7 +102,7 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
                 p_handler->stale_measurements++;
             }
             if (p_handler->stale_measurements == 1 || p_handler->stale_measurements % 100 == 0) {
-                LOG_WRN("Stale measurements dropped: %u", (unsigned int)p_handler->stale_measurements);
+                LOG_WRN("Stale measurements dropped: count=%u", (unsigned int)p_handler->stale_measurements);
             }
             break;
         }
@@ -122,21 +122,21 @@ void frame_handler_process(struct frame_handler *p_handler, const struct rx_fram
     }
     // Placeholder: no command payload interpretation or control action yet.
     case FRAME_TYPE_COMMAND:
-        LOG_WRN("COMMAND ignored: not implemented");
+        LOG_WRN("COMMAND ignored: reason=not_implemented");
         break;
     case FRAME_TYPE_RESET:
-        LOG_INF("RESET: track and measurement monitoring reset");
+        LOG_INF("RESET: track=reset measurement_monitor=reset");
         frame_handler_reset(p_handler);
         report_sender_submit_track(&p_handler->report_sender, &p_handler->radar.track, 0, false, TRACK_REPORT_RESULT_RESET);
         break;
     case FRAME_TYPE_STATUS_REPORT:
-        LOG_WRN("STATUS_REPORT ignored: unexpected input");
+        LOG_WRN("STATUS_REPORT ignored: reason=unexpected_input");
         break;
     case FRAME_TYPE_TRACK_REPORT:
-        LOG_WRN("TRACK_REPORT ignored: unexpected input");
+        LOG_WRN("TRACK_REPORT ignored: reason=unexpected_input");
         break;
     default:
-        LOG_WRN("Frame ignored: unsupported type=0x%02X", p_frame->frame.type);
+        LOG_WRN("Frame ignored: reason=unsupported_type type=0x%02X", p_frame->frame.type);
         break;
     }
 #if defined(CONFIG_RADAR_PERF_MONITOR)

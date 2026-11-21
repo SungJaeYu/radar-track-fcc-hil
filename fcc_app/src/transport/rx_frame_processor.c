@@ -103,13 +103,13 @@ static void submit_parsed_frame(void)
         // Report the first drop and every hundredth drop to limit repetitive output.
         const atomic_val_t queue_drops = atomic_get(&queue_drops_count);
         if (queue_drops == 1 || queue_drops % 100 == 0) {
-            LOG_WRN("Frame queue drops: %u", (unsigned int)queue_drops);
+            LOG_WRN("Frame queue drops: count=%u", (unsigned int)queue_drops);
         }
     } else if (ret == -EINVAL) {
-        LOG_ERR("Frame submit rejected: type=0x%02X, length=%u",
+        LOG_ERR("Frame submit rejected: type=0x%02X length_bytes=%u",
            (unsigned int)received.frame.type,
            (unsigned int)received.frame.payload_length);
     } else if (ret != 0) {
-        LOG_ERR("Frame submit failed: %d", ret);
+        LOG_ERR("Frame submit failed: error=%d", ret);
     }
 }

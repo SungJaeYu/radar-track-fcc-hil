@@ -162,3 +162,5 @@ STATUS payload는 건너뜁니다. 연결 해제/통신 오류로 종료하면 �
 ![실제 보드 추정값·STATUS 연결 GUI](../docs/test-results/evaluation-2026-11-18/gui-track.png)
 
 [결과·작은 창·STALE 캡처](../docs/hardware-test-2026-11-18-evaluation.md).
+
+콘솔 본문은 `항목: key=value` 형식이며 단위는 키에 표시합니다. GUI 콘솔은 원문을 표시하고, 보드 추정값·STATUS는 이진 프레임을 해석하므로 로그 문자열에 의존하지 않습니다. [로그 형식](../docs/logging.md)을 참고하세요.

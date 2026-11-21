@@ -1,0 +1,25 @@
+{
+  "python": {
+    "command": "python -m pytest -q",
+    "passed": 783,
+    "subtests_passed": 9,
+    "skipped": 0
+  },
+  "ctest": {
+    "radar-time-rx": 45,
+    "radar-next-handler": 31,
+    "radar-time-handler-perf": 32,
+    "radar-readability-tx": 4,
+    "radar-reporter-tx-perf": 4,
+    "radar-time-perf": 12
+  },
+  "builds": [
+    "build",
+    "build_debug",
+    "build_perf",
+    "build_transport_stress",
+    "build_log_stress"
+  ],
+  "format_strings_checked": 50,
+  "normal_firmware_restored": true
+}
