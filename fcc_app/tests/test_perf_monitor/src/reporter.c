@@ -73,7 +73,7 @@ static void test_summary_and_stack_queries(void)
     assert(strstr(output, "PERF queue_wait: n=100") != NULL);
     assert(strstr(output, "p50_bin=1 p95_bin=20 p99_bin=21 max_ms=40 over_budget_count=5") != NULL);
     assert(strstr(output, "PERF stack handler: unused_bytes=800 min_unused_bytes=800") != NULL);
-    assert(strstr(output, "PERF stack tx: unavailable=-") != NULL);
+    assert(strstr(output, "PERF stack tx: status=unavailable error=-") != NULL);
     assert(strstr(output, "PERF stack tx: unused_bytes=") == NULL);
     stack_unused[1] = 1000;
     stack_result[2] = 0;

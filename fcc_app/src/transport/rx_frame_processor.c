@@ -61,10 +61,11 @@ void rx_frame_processor_handle_timeout(int64_t now_uptime_ms)
 
 void rx_frame_processor_get_stats(struct rx_frame_processor_stats *out_stats)
 {
-    out_stats->crc_errors = atomic_get(&crc_error_count);
-    out_stats->length_errors = atomic_get(&length_error_count);
-    out_stats->frame_timeouts = atomic_get(&frame_timeout_count);
-    out_stats->queue_drops = atomic_get(&queue_drops_count);
+    // Preserve the counters' low 32 bits, including wrap past the signed atomic range.
+    out_stats->crc_errors = (uint32_t)atomic_get(&crc_error_count);
+    out_stats->length_errors = (uint32_t)atomic_get(&length_error_count);
+    out_stats->frame_timeouts = (uint32_t)atomic_get(&frame_timeout_count);
+    out_stats->queue_drops = (uint32_t)atomic_get(&queue_drops_count);
 }
 
 static void process_parser_result(ParserResult result)
@@ -81,7 +82,6 @@ static void process_parser_result(ParserResult result)
         break;
     case PARSER_RESULT_INCOMPLETE:
     default:
-        // Do nothing
         break;
     }
 }

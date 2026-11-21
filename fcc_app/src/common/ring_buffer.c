@@ -24,7 +24,7 @@ bool ring_push(struct ring_buffer *p_rb, uint8_t byte)
         return false;
     }
     p_rb->data[p_rb->head] = byte;
-    p_rb->head = (p_rb->head + 1) % RING_BUFFER_SIZE;
+    p_rb->head = (uint8_t)((p_rb->head + 1) % RING_BUFFER_SIZE);
     return true;
 }
 
@@ -37,6 +37,6 @@ bool ring_pop(struct ring_buffer *p_rb, uint8_t *out_byte)
         return false;
     }
     *out_byte = p_rb->data[p_rb->tail];
-    p_rb->tail = (p_rb->tail + 1) % RING_BUFFER_SIZE;
+    p_rb->tail = (uint8_t)((p_rb->tail + 1) % RING_BUFFER_SIZE);
     return true;
 }

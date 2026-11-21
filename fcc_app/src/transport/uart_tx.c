@@ -27,7 +27,6 @@ K_THREAD_DEFINE(uart_tx_tid, 1024, uart_tx_thread, NULL, NULL, NULL, 7, 0, 0);
 
 int uart_tx_init(void)
 {
-    // Check UART device is ready
     const bool device_ready = device_is_ready(p_uart);
     if (!device_ready) {
         LOG_ERR("UART init: uart=USART6 status=not_ready");

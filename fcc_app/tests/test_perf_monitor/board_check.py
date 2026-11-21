@@ -47,6 +47,8 @@ class PerfConsole:
             body = line.split('PERF ', 1)[1]
             values = {key: int(value) for key, value in re.findall(r'(\w+)=(-?\d+)', body)}
             # Keep the stored evidence schema compatible with earlier captures.
+            if body.startswith('stack ') and 'status=unavailable' in body and 'error' in values:
+                values['unavailable'] = values.pop('error')
             for current, legacy in (('unused_bytes', 'unused'), ('min_unused_bytes', 'min_unused'),
                                     ('over_budget_count', 'over20')):
                 if current in values:

@@ -20,7 +20,7 @@ uint16_t protocol_frame_crc(const struct protocol_frame *p_frame)
     uint16_t crc = CRC16_INITIAL_VALUE;
 
     crc = crc16_update(crc, p_frame->payload_length);
-    crc = crc16_update(crc, p_frame->type);
+    crc = crc16_update(crc, (uint8_t)p_frame->type);
 
     for (uint8_t i = 0; i < p_frame->payload_length; ++i) {
         crc = crc16_update(crc, p_frame->payload[i]);
@@ -36,7 +36,7 @@ int protocol_frame_encode(const struct protocol_frame *p_frame, uint8_t *out_buf
         return -EINVAL;
     }
 
-    const size_t length = p_frame->payload_length;
+    const size_t length = (size_t)p_frame->payload_length;
     const size_t frame_size = length + PROTOCOL_FRAME_OVERHEAD;
 
     if (capacity < frame_size) {

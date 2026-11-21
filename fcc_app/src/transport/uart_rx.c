@@ -57,14 +57,12 @@ K_THREAD_DEFINE(uart_rx_tid, 1024, uart_rx_thread, NULL, NULL, NULL, 5, 0, 0);
 
 int uart_rx_init(void)
 {
-    // Check UART device is ready
     const bool device_ready = device_is_ready(p_uart);
     if (!device_ready) {
         LOG_ERR("UART init: uart=USART6 status=not_ready");
         return -ENODEV;
     }
 
-    // Set Callback Function
     const int ret = uart_irq_callback_user_data_set(p_uart, uart_callback, NULL);
     if (ret != 0) {
         LOG_ERR("UART callback: status=failed error=%d", ret);
@@ -76,11 +74,9 @@ int uart_rx_init(void)
     // Initialize partial-frame state before enabling the ISR.
     rx_frame_processor_reset();
 
-    // Enable RX Interrupt
     uart_irq_rx_enable(p_uart);
 
     // Bytes may already be buffered by the ISR; the initialized ring retains them.
-    // Signal that RX initialization is completed
     k_sem_give(&rx_ready_sem);
 
     return 0;
@@ -105,13 +101,10 @@ static void uart_callback(const struct device *p_dev, void *p_user_data)
     // Refresh interrupt status before querying pending/ready flags.
     uart_irq_update(p_dev);
 
-    // UART Interrupt is pending
     while (uart_irq_is_pending(p_dev)) {
-        // if UART Interrupt Receive Ready
         const int rx_ready = uart_irq_rx_ready(p_dev);
         if (rx_ready) {
             uint8_t byte;
-            // UART FIFO Read
             while (uart_fifo_read(p_dev, &byte, 1) == 1) {
                 // Keep draining the hardware FIFO during recovery, but discard new bytes.
                 // Drain recovery requires the buffer to contain only bytes received before the first loss.
@@ -236,8 +229,9 @@ static void rx_finish_recovery(void)
 
     // Count unread bytes before clearing the ring.
     // Drain recovery normally leaves no unread bytes.
-    const uint32_t discarded_bytes = (rx_ring.head + RING_BUFFER_SIZE - rx_ring.tail) % RING_BUFFER_SIZE;
-    atomic_add(&recovery_discarded_bytes, discarded_bytes);
+    // At most 255 buffered bytes fit in both uint32_t and atomic_val_t.
+    const uint32_t discarded_bytes = (uint32_t)((rx_ring.head + RING_BUFFER_SIZE - rx_ring.tail) % RING_BUFFER_SIZE);
+    atomic_add(&recovery_discarded_bytes, (atomic_val_t)discarded_bytes);
 
     // Clear the software buffer and partial frame, then resume searching for PROTOCOL_STX.
     // This does not flush the hardware FIFO or guarantee alignment with the next frame.

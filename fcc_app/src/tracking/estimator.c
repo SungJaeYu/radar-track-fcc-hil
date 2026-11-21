@@ -7,7 +7,7 @@ void estimator_init(struct estimator *p_estimator, float initial_range_m, float 
     // q = 100 (m/s^2)^2; these are initial tuning values, not sensor calibration data.
     kalman_cv_init(
         &p_estimator->range_filter,
-        initial_range_m,      // initial_range_m
+        initial_range_m,
         0.0f,      // initial_range_rate
         25.0f,     // p00: range uncertainty
         0.0f,      // p01
@@ -19,7 +19,7 @@ void estimator_init(struct estimator *p_estimator, float initial_range_m, float 
 
     kalman_cv_init(
         &p_estimator->azimuth_filter,
-        initial_azimuth_rad,      // initial_azimuth
+        initial_azimuth_rad,
         0.0f,      // initial_azimuth_rate
         0.00121847f,     // p00: azimuth uncertainty: std dev = 2 deg, p00 = (2 * PI / 180)^2 [rad^2]
         0.0f,      // p01

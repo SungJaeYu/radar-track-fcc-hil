@@ -68,8 +68,8 @@ void report_sender_submit_track(struct report_sender *p_sender, const struct tra
     struct track_report report = {
         .report_sequence = p_sender->next_track_report_sequence++,
         .input_sensor_ms = input_present ? input_sensor_ms : 0,
-        .state = p_track->state,
-        .result = result,
+        .state = (uint8_t)p_track->state,
+        .result = (uint8_t)result,
         .flags = input_present ? TRACK_REPORT_FLAG_INPUT_PRESENT : 0,
         .reserved = 0,
     };

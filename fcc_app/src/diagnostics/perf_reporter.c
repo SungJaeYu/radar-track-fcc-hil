@@ -60,7 +60,7 @@ static void log_stack(const char *p_name, const struct k_thread *p_thread, unsig
     const int ret = k_thread_stack_space_get(p_thread, &unused_bytes);
     if (ret != 0) {
         // Never present an unavailable scan as zero free bytes.
-        LOG_INF("PERF stack %s: unavailable=%d", p_name, ret);
+        LOG_INF("PERF stack %s: status=unavailable error=%d", p_name, ret);
         return;
     }
     if (unused_bytes < min_unused[index]) {

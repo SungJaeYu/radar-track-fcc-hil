@@ -55,10 +55,11 @@ def test_perf_console_discards_incomplete_summary_before_next_header():
     assert parser.snapshots[0]['header']['uptime_ms'] == 10000
 
 
-def test_perf_console_keeps_stack_query_errors_visible():
+@pytest.mark.parametrize('error_fields', ['unavailable=-134', 'status=unavailable error=-134'])
+def test_perf_console_keeps_stack_query_errors_visible(error_fields):
     parser = board_check.PerfConsole()
     parser.feed(summary().replace('PERF stack tx: unused_bytes=700 min_unused_bytes=680',
-                                  'PERF stack tx: unavailable=-134'))
+                                  f'PERF stack tx: {error_fields}'))
     assert parser.snapshots[0]['stack tx'] == {'unavailable': -134}
 
 

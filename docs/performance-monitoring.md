@@ -100,7 +100,7 @@ PERF estimator_correct: n=3 min_ns=100 mean_ns=200 max_ns=300
 | `observed_max_used` | 제출 직후 조회한 큐 점유 수의 최대. 소비자가 이미 꺼낼 수 있어 실제 최대 점유율의 하한 관측값 |
 | `tx poll_completed` | 프레임의 모든 `uart_poll_out()` 호출을 마친 수. 상대 수신 ACK나 마지막 stop bit 완료가 아님 |
 | `tx encode_failed` | TX 워커에서 wire 인코딩에 실패한 수 |
-| `stack rx/handler/tx unused_bytes/min_unused_bytes` | 스택 패턴 검사에서 관측한 미사용 바이트와 조회한 값들의 최솟값. 조회 실패는 `unavailable=<negative errno>` |
+| `stack rx/handler/tx unused_bytes/min_unused_bytes` | 스택 패턴 검사에서 관측한 미사용 바이트와 조회한 값들의 최솟값. 조회 실패는 `status=unavailable error=<negative errno>`. 파서는 과거 `unavailable=<negative errno>` 형식도 읽고 저장 결과의 `unavailable` 키를 유지함 |
 
 collector의 짧은 `k_spinlock` 구간에서 카운터·snapshot을 보호한다. 그 안에서는 시계 조회·큐 API·스택 검사·로그를 실행하지 않는다. handler만 측정 begin/end를 호출하며 중첩 호출을 지원하지 않는다. 제출 여부와 무관하게 종료 지점에서 문맥을 해제한다. INIT/RESET·무수신 timeout의 입력 없는 TRACK은 측정 지연에 포함하지 않는다.
 
